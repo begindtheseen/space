@@ -11,9 +11,10 @@ import { pickFocus, type FocusInputs, type FocusPick } from '@/engine/focus'
 import { dueAtoms, masteryMap, rankFrontier } from '@/engine/scheduler'
 import type { LearnerState } from '@/engine/state'
 import type { Dag } from '@/engine/graph'
-import { TRACKS, currentTrack, findLesson, nextLesson, tracksFor } from '@/learn'
+import { TRACKS, currentTrack, findLesson, ladderOf, nextLesson } from '@/learn'
 import { PLACEMENT_SKILLS } from '@/curriculum/placement'
 import { lessonKeyOf, planFor, testedOutKeys } from '@/engine/placement'
+import { creditedLessonKeys } from '@/learn/credit'
 
 export function focusInputs(state: LearnerState, dag: Dag, now: Date = new Date()): FocusInputs {
   const modules = dag.all()
@@ -58,6 +59,8 @@ export function focusInputs(state: LearnerState, dag: Dag, now: Date = new Date(
   // A lesson she tested out of counts as done for choosing what comes next;
   // it is still there to read.
   const testedOut = testedOutKeys(PLACEMENT_SKILLS, state.placement)
+  // Mastered in Learn to code counts as known here too.
+  for (const key of creditedLessonKeys(state.learn)) testedOut.add(key)
   const unread = (moduleId: string) =>
     lessonsFor(moduleId).find((l) => !state.read[lessonKey(moduleId, l.id)] && !testedOut.has(lessonKey(moduleId, l.id)))
 
@@ -115,14 +118,15 @@ export function codePick(state: LearnerState, lessonId?: string): FocusPick | nu
   let track = asked?.track
   if (!lesson) {
     const latest = Object.entries(state.learn).sort((a, b) => b[1].localeCompare(a[1]))[0]
-    const lang = latest ? findLesson(latest[0])?.track.lang : undefined
+    // A practice problem (`py2-04.p3`) counts as its lesson.
+    const lang = latest ? findLesson(latest[0].replace(/\.p\d+$/, ''))?.track.lang : undefined
     track = lang ? currentTrack(lang, state.learn) : TRACKS[0]
     if (!track) return null
     lesson = nextLesson(track, state.learn)
   }
   if (!track || !lesson) return null
   const index = track.lessons.indexOf(lesson)
-  const siblings = tracksFor(track.lang)
+  const siblings = ladderOf(track)
   const also = [
     ...siblings.map((t) => `/learn/${t.id}`),
     ...siblings.flatMap((t) => t.lessons.map((l) => `/learn/${l.id}`)),

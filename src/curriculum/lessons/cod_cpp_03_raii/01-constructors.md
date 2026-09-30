@@ -77,7 +77,7 @@ Vector3 p(1.5, -2.0, 400.0);   // parentheses
 Vector3 q{1.5, -2.0, 400.0};   // braces: the modern default
 ```
 
-Both call the same constructor. The braces have one advantage: they forbid a **[[narrowing conversion|narrowing]]** — a conversion that can lose information, such as a `double` squeezed into an `int`, or a `long long` too large for a `double` to hold exactly. The standard says a narrowing conversion inside braces makes the program ill-formed. clang stops with an error; g++ 13 prints a `-Wnarrowing` warning, which teams usually promote to an error with `-Werror`.
+Both call the same constructor. The braces have one advantage: they forbid a **[[narrowing conversion|narrowing]]** — a conversion that can lose information, such as a `double` squeezed into an `int`, or a `long long` too large for a `double` to hold exactly. The standard says a narrowing conversion inside braces makes the program ill-formed. clang stops with an error. g++ 13 also stops with an error when the value is a constant that does not fit, such as `int n{2.5};`, but when the value is a variable, as in `int n{d};` with `double d`, it only prints a `-Wnarrowing` warning, which teams usually promote to an error with `-Werror`.
 
 ## Delegating constructors
 

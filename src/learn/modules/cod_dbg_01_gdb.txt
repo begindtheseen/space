@@ -1,0 +1,1388 @@
+@track python
+@course mod-cod_dbg_01_gdb
+@module cod_dbg_01_gdb
+@title Debugging and profiling: practice and test
+
+=== dbg01-l01 | Practice: Debugging as an experiment
+--- for
+l01-debugging-as-science
+
++++ question | Which one is the infection?
+--- ask
+A star tracker program keeps the spacecraft's attitude as a quaternion, four numbers whose squares should add up to 1. Line 40 is meant to normalize it, but it divides each of the four numbers by the sum of their squares instead of by the square root of that sum. The quaternion stored in memory now has a length of 0.98. Three minutes later, the ground display shows the spacecraft slowly spinning, although it is holding still.
+
+In the words of the lesson, what is the **infection**?
+--- choice correct
+The quaternion with length 0.98, sitting in memory.
+--- choice
+Line 40, which divides by the wrong number.
+--- choice
+The spinning attitude on the ground display.
+--- choice
+The three minutes between line 40 running and the display going wrong.
+--- why
+The defect is the wrong line of code (line 40). The infection is the bad value that line creates in memory (the quaternion that is no longer of length 1). The failure is what you finally see from outside (the display shows a spin). Debugging walks backwards from the failure, through the infection, to the defect. Fixing the display code would treat the stain on the ceiling and leave the leaking pipe alone.
+
++++ question | How long to trust a fix
+--- ask
+Before your fix, the Monte Carlo suite failed about once in 200 runs. After the fix, you want to be 95% sure that the bug, if it were still there, would have shown up at least once. About how many runs in a row, all passing, do you need?
+--- choice
+200 runs, because that is how often it failed.
+--- choice
+About 300 runs.
+--- choice correct
+About 600 runs.
+--- choice
+About 20,000 runs.
+--- why
+If the bug were still present, each run would miss it with probability $1 - \tfrac{1}{200} = 0.995$. All $n$ runs miss it with probability $0.995^n$, and you want that to be at most 0.05: $n \ge \ln 0.05 / \ln 0.995 = -2.996 / -0.00501 \approx 598$. That is the "about $3N$ runs for a one-in-$N$ failure" rule. After only 200 passing runs, a bug that is still there would have stayed hidden about $0.995^{200} \approx 37\%$ of the time.
+
++++ question | Tests to bisect a log
+--- ask
+A 5,000-line sensor log makes a program fail, and an empty log makes it pass. The failure has one switch point: every prefix shorter than some length passes, and every longer one fails. You bisect on the prefix length. At most how many test runs does bisection need to find the first line that breaks it? Type a whole number.
+--- answer
+13
+13 tests
+13 runs
+--- why
+Each test halves the range of possible lengths, so the most tests is $\lceil \log_2 5000 \rceil$. $2^{12} = 4096$ is less than 5,000 and $2^{13} = 8192$ is more, so $\log_2 5000 \approx 12.3$, which rounds up to 13. Thirteen runs instead of up to 5,000.
+
++++ question | A bisect script with set -e
+--- ask
+A teammate writes this script for `git bisect run`:
+
+```bash
+#!/usr/bin/env bash
+# repro.sh: exit 0 if this commit is good, non-zero if the bug is present.
+set -euo pipefail
+g++ -O0 -o /tmp/nav_bisect nav.cpp
+./tests/replay.sh /tmp/nav_bisect data/pass_17.log
+```
+
+Some commits in the range do not compile. What goes wrong at those commits, and what is the fix?
+--- choice
+Nothing: `set -e` makes git skip any commit where a command fails.
+--- choice
+The script keeps going and runs the old `/tmp/nav_bisect` from an earlier step, so the verdict belongs to another commit. Adding `set -e` would fix it.
+--- choice
+`git bisect run` stops the whole search with an error at the first commit that does not compile.
+--- choice correct
+`g++` fails, `set -e` ends the script with g++'s non-zero status, and git marks the commit bad. Bisection can then blame the wrong commit. Write `g++ -O0 -o /tmp/nav_bisect nav.cpp || exit 125` so git skips commits it cannot build.
+--- why
+`git bisect run` reads only the script's exit status: 0 is good, 125 is skip, and other codes from 1 to 127 are bad. With `set -e`, a failed build ends the script with the compiler's status, 1, so a commit that could not even be tested is reported as containing the bug. Git trusts every verdict, so one false "bad" can move the answer to the wrong commit. The `|| exit 125` turns "cannot build" into "skip". (Without `set -e`, the danger in the choice about the old binary would be real: the script would carry on and test the old binary from an earlier step. Either way, the build line needs its own explicit check.)
+
++++ question | A fix that only hides the failure
+--- ask
+A heading filter averages the samples that passed a quality check:
+
+```cpp
+double mean_heading = sum / n_valid;
+if (std::isnan(mean_heading)) mean_heading = 0.0;   // the fix
+```
+
+Before the fix, the program printed `nan` when no sample passed the check, because `n_valid` was 0 and `sum` was 0.0. After the fix, the test that printed `nan` passes. What is wrong with this fix?
+--- choice
+Nothing: the test that failed now passes, and that is what verifying a fix means.
+--- choice
+`std::isnan` cannot detect the result of $0.0 / 0$, so the check never runs.
+--- choice correct
+It treats the failure, not the defect. When no sample is valid, the program now reports a heading of 0 degrees as if it were real. The code should notice `n_valid == 0` and report "no valid heading" instead.
+--- choice
+The fix is right, but it belongs before the division, so that the division never produces a NaN.
+--- why
+A NaN was an honest signal that there was no answer. Replacing it with 0.0 turns an obvious failure into a believable wrong number, which is worse. The defect is dividing when there is nothing to average, so the fix belongs there: check `n_valid` and say that no heading is available. Verifying a fix also means asking whether it fixed the right thing, not only whether the red test turned green.
+
++++ question | Two bad samples and one reset
+--- ask
+`gyro_int` adds up one gyro sample per line and exits with status 1 if its total angle is not finite at the end. A line reading `RESET` sets the total back to 0. A 10,000-line log has a corrupt sample that reads `nan` at line 4,000, a `RESET` at line 4,100, and another `nan` sample at line 9,000.
+
+You run the lesson's prefix-bisection script on it, starting from good = 0 and bad = 10,000. Which line does it report as the shortest failing prefix? Type the number.
+--- answer
+9000
+9,000
+line 9000
+line 9,000
+--- why
+Prefixes shorter than 4,000 lines pass, 4,000 to 4,099 fail, 4,100 to 8,999 pass again (the reset cleared the NaN), and 9,000 or more fail. The first test is the middle, 5,000 lines: it passes, so good becomes 5,000. From then on the search only looks between 5,000 and 10,000, where the one switch point is line 9,000. The corrupt sample at line 4,000 is never found. Prefix bisection assumes a single switch point; when something in the input can undo the failure, it finds a switch, not necessarily the first one.
+
+=== dbg01-l02 | Practice: gdb breakpoints, backtraces and watchpoints
+--- for
+l02-gdb-breakpoints-and-backtraces
+
++++ question | Moving down the stack
+--- ask
+A telemetry program crashes, and `bt` prints:
+
+```text
+#0  __memmove_avx_unaligned_erms () at ../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:317
+#1  0x0000555555555a1c in pack_frame (buf=0x7fffffffc800 "", hdr=0x0) at telem.cpp:48
+#2  0x0000555555555b40 in send_telemetry (link=...) at telem.cpp:71
+#3  0x0000555555555c2e in main () at telem.cpp:102
+```
+
+You type `frame 3`, then `down`. Which function's variables does `print` now look at? Type the function name.
+--- answer
+send_telemetry
+send_telemetry()
+--- why
+`frame 3` selects `main`, the outermost frame. `down` moves one frame back toward frame 0, the innermost, so you land in frame 2, `send_telemetry`. `up` goes toward `main`, `down` toward the frame where the program stopped. Frame 1 is also worth a look: `hdr=0x0` means `pack_frame` was handed a null header, and the library copy in frame 0 only tripped over it.
+
++++ question | A variable gdb cannot show
+--- ask
+You build with `g++ -g -O2 -o filt filt.cpp`, stop at a breakpoint inside the filter loop, and type `print dt`. gdb answers `$1 = <optimized out>`. What is going on, and what do you do?
+--- choice correct
+The optimizer kept `dt` in a register, or dropped it, so at this spot it has no home gdb can read. Rebuild with `-g -O0` for this session.
+--- choice
+`-g` was ignored because `-O2` came after it on the command line. Put `-g` last.
+--- choice
+`dt` is a local of another frame. Type `up` and print it there.
+--- choice
+The breakpoint is on a line before `dt` is set, so gdb refuses to print it.
+--- why
+`-g` adds the tables that map code back to lines and variables, and it works at any optimization level. But at `-O2` the compiler keeps values in registers, reuses those registers, and removes values it no longer needs, so a variable can truly have no location at that moment. With `-O0`, every variable stays in memory where gdb can find it. A variable that is not set yet is not reported as optimized out; gdb prints whatever bytes are in its slot.
+
++++ question | A watchpoint that stops inside the C library
+--- ask
+A packet's `gain` field keeps turning into 0. You set `watch p.gain` in `main`, where `p` lives, and continue. gdb stops here:
+
+```text
+Hardware watchpoint 2: p.gain
+
+Old value = 0.80000000000000004
+New value = 0
+__memset_avx512_unaligned_erms () at ../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:217
+```
+
+That is a C library function you did not write. What is the next step?
+--- choice
+Continue: a watchpoint inside a library is a false alarm, and the real write will come later in your own code.
+--- choice
+Set a breakpoint on `memset` and run again, since `memset` must be broken.
+--- choice
+Replace `watch` with `watch -l`, because a hardware watchpoint cannot see writes made by library code.
+--- choice correct
+Type `bt`. The frames above `memset` show which line of your code called it and with what size. That call is the culprit.
+--- why
+The watchpoint caught the exact instruction that changed the value, and that instruction happens to be inside `memset`. A library function writes where it is told, so the question is who told it. `bt` answers: here the next frame was `clear_name (p=...) at cmd.cpp:21`, a call that cleared 24 bytes of a 16-byte name and ran over into `gain`. Walk up to your first frame and read the call there.
+
++++ question | A watchpoint that never fires
+--- ask
+You suspect that line 31, `sensor.mode = 0;`, is what switches the sensor to mode 0. You set `watch sensor.mode` and continue. The program runs to the end without the watchpoint ever stopping, yet a plain breakpoint shows that line 31 runs 50 times. Why, and how do you stop on every run of line 31?
+--- choice
+Hardware watchpoints only watch pointers. Use a software watchpoint.
+--- choice
+`sensor` is a global, and gdb deletes watchpoints on globals when `main` starts. Use `watch -l`.
+--- choice correct
+`mode` was already 0, so line 31 wrote the same value back, and `watch` only stops when the value changes. Put a breakpoint on line 31, or use `awatch sensor.mode`, which stops on every read or write.
+--- choice
+The watchpoint fired, but gdb only reports a watchpoint after the program exits.
+--- why
+A watchpoint compares the value before and after each write it sees, and it stops only when they differ. Writing 0 over 0 changes nothing, so it stays quiet. That is usually what you want: it skips harmless writes and stops at the one that corrupts. When you really want every access, `awatch` stops on reads and writes (it prints `Value = 0` each time), and `rwatch` on reads only.
+
++++ question | A condition with one equals sign
+--- ask
+A teammate sets this breakpoint to catch the moment the controller enters mode 2:
+
+```text
+(gdb) break control.cpp:40 if mode = 2
+```
+
+`mode` is a global. What happens when they run the program?
+--- choice correct
+gdb evaluates `mode = 2` as an assignment each time line 40 is reached. The result, 2, counts as true, so it stops on every pass, and it also sets `mode` to 2, changing the program's behavior.
+--- choice
+gdb rejects the command, because a condition must use `==`.
+--- choice
+It works as intended: gdb treats `=` in a condition as a comparison.
+--- choice
+The breakpoint never stops, because an assignment has no true or false value.
+--- why
+The condition is a C++ expression, evaluated in the program. `mode = 2` stores 2 in `mode` and has the value 2, which is not zero, so it counts as true. The breakpoint fires on every pass, and each check quietly forces the controller into mode 2: the debugger is now causing the behavior it was meant to catch. Write `if mode == 2`.
+
++++ question | Four gains and a mode
+--- ask
+Built with `g++ -g -O0`, counting lines from the first `#include` as line 1:
+
+```cpp
+struct Cmd {
+    float gains[3];
+    int   mode;                     // 2 = FINE_POINT, 0 = SAFE
+};
+
+void reset_gains(Cmd& c) {          // line 9
+    for (int i = 0; i <= 3; ++i) {  // line 10
+        c.gains[i] = 0.0f;          // line 11
+    }
+}
+```
+
+`main` makes `Cmd c{{0.5f, 0.2f, 0.1f}, 2};` and calls `reset_gains(c)`. After the call, the spacecraft is in SAFE mode. You set `watch c.mode` in `main` before the call and continue. What does gdb report?
+--- choice
+It stops at line 11 with `New value = 0`, the line that did the write.
+--- choice
+It never stops, because `reset_gains` only writes to `gains`, not to `mode`.
+--- choice
+It stops with `New value = 1065353216`, the bits of a float read as an int.
+--- choice correct
+It stops at line 10 with `Old value = 2` and `New value = 0`. The write was line 11, on the pass with `i = 3`.
+--- why
+The loop runs for `i` equal to 0, 1, 2 and 3, but `gains` has only three elements. `gains` takes bytes 0 to 11 of the struct and `mode` bytes 12 to 15, so `c.gains[3]` is the same 4 bytes as `mode`. Writing `0.0f` there stores four zero bytes, which read as the `int` 0: SAFE. A watchpoint reports after the write has finished, at the next thing to run, here the loop's `++i` on line 10, so the guilty line is the one before it. The fix is `i < 3`.
+
+=== dbg01-l03 | Practice: Looking inside a stopped program
+--- for
+l03-inspecting-state-in-gdb
+
++++ question | How many bytes x reads
+--- ask
+`q` is an array of four `double`s holding an attitude quaternion. How many bytes of memory does `x/3xg &q` show? Type a whole number.
+--- answer
+24
+24 bytes
+--- why
+The shape is `x/NFU`: N = 3 units, F = `x` for hexadecimal, U = `g` for "giant", 8 bytes. Three units of 8 bytes is 24 bytes, so it shows the first three elements of `q` as three 16-digit hex numbers, not the fourth.
+
++++ question | The middle of an array behind a pointer
+--- ask
+`raw` is an `int16_t*` pointing at 8 ADC counts. You want gdb to print only the elements at indices 2, 3, 4 and 5. Which command does that?
+--- choice correct
+`print raw[2]@4`
+--- choice
+`print raw@4`
+--- choice
+`print *raw@2..5`
+--- choice
+`x/4dh raw`
+--- why
+`@` repeats the value on its left: `raw[2]@4` means "four elements starting at `raw[2]`", so it prints `{30, 40, 50, 60}` when the counts are 10, 20, ..., 80. `raw@4` repeats the pointer itself, not what it points at. There is no range syntax with two dots. `x/4dh raw` does show four 2-byte numbers, but starting at element 0, not element 2 (`x/4dh raw+2` would work).
+
++++ question | A sync word in memory
+--- ask
+A telemetry frame starts with the 32-bit sync word `0x1ACFFC1D`. In your ground tool, running on x86-64, it is held in `std::uint32_t sync = 0x1ACFFC1D;`. What does `x/4xb &sync` print after the address? Type the four bytes as gdb shows them, separated by spaces.
+--- answer
+0x1d 0xfc 0xcf 0x1a
+1d fc cf 1a
+0x1D 0xFC 0xCF 0x1A
+0x1d, 0xfc, 0xcf, 0x1a
+--- why
+x86-64 is little-endian: the least significant byte is stored at the lowest address. The least significant byte of `0x1ACFFC1D` is `0x1d`, so the bytes come out in reverse order: `0x1d 0xfc 0xcf 0x1a`. On the radio link the same word is sent big-endian, `1a cf fc 1d`, which is why a tool that copies it off the wire without swapping sees a different number.
+
++++ question | An array, and the pointer it became
+--- ask
+`main` declares `double samples[6] = {1.5, 2.5, 3.5, 4.5, 5.5, 6.5};` and calls `mean(samples, 6)`, where `mean` takes `const double* s`. Stopped inside `mean`, you type `print s`. Then you type `up` and `print samples`. What do you see?
+--- choice
+Both print all six numbers, because they are the same memory.
+--- choice
+`print s` shows the six numbers, and `print samples` fails because arrays cannot be printed without `@`.
+--- choice
+Both show only the address `0x7fffffffc900`.
+--- choice correct
+`print s` shows only an address, `(const double *) 0x7fffffffc900`. `print samples` in `main` shows all six numbers, because there it is an array whose size gdb knows.
+--- why
+In `main`, `samples` has the type `double [6]`, and gdb knows its length from the debug information. When passed to `mean`, the array decays to a pointer, and a pointer carries no length. So gdb prints the address and needs to be told the count: `print *s@6`, or `print *s@n`. The same memory, two types, two answers.
+
++++ question | Bytes of the wrong thing
+--- ask
+`state` is a `double*` pointing at a heap block of six doubles. To see the raw bytes of the first element, a teammate types:
+
+```text
+(gdb) x/8xb &state
+0x7fffffffc8d8:	0xb0	0xb2	0x56	0x55	0x55	0x55	0x00	0x00
+```
+
+They conclude that the first state value is corrupted. What did they really look at?
+--- choice
+The first element, stored big-endian, so it must be byte-swapped to read.
+--- choice
+The first element, which holds a subnormal number close to zero.
+--- choice correct
+The 8 bytes of the pointer `state` itself, on the stack. Read backwards they are `0x000055555556b2b0`, a heap address. `x/8xb state` shows the first element.
+--- choice
+Random memory, because `x` cannot read heap addresses.
+--- why
+`&state` is the address of the pointer variable, so `x` dumped the pointer's own 8 bytes. Little-endian, backwards: `0x55555556b2b0`, which has the shape of a heap address. `x` wants the address of the data, and `state` already is that address, so `x/8xb state` (or `x/8xb &state[0]`) shows the double. With `x`, ask yourself whether the thing after the format is the address you mean.
+
++++ question | A crash with no names
+--- ask
+A supplier's library has no debug information. It crashes in a function that sums the bytes of a buffer:
+
+```text
+Program received signal SIGSEGV, Segmentation fault.
+0x0000555555555149 in sum_bytes(unsigned char const*, int) ()
+(gdb) x/i $pc
+=> 0x555555555149 <_Z9sum_bytesPKhi+32>:	movzbl (%rdx,%rax,1),%eax
+(gdb) info registers rax rdx
+rax            0x7ffff000          2147479552
+rdx            0x55555556b2b0      93824992326320
+```
+
+In AT&T syntax, `(%rdx,%rax,1)` means "the memory at address rdx + rax × 1", and `movzbl` loads one byte. What do the registers suggest?
+--- choice correct
+`rdx` looks like a sensible heap address for the buffer, and `rax` is an index of about 2.1 billion. The loop ran far past the end, so the length or loop count is wrong, not the buffer pointer.
+--- choice
+`rdx` is garbage, so the buffer pointer is bad and the caller passed a corrupt pointer.
+--- choice
+The instruction writes a byte, so the crash is a buffer overflow on the stack.
+--- choice
+Nothing can be concluded without debug information.
+--- why
+The instruction loads the byte at `rdx + rax`. `rdx` holds `0x55555556b2b0`, the shape of a heap address under gdb, so the buffer's start is plausible. `rax` is 2,147,479,552: no telemetry buffer is 2 GB long, so the index has run away, and reading that far past the buffer left the program's memory. Check the length the caller passed; a negative or uninitialized `int` length is a classic cause. Without names, `x/i $pc` and `info registers` still tell you which value was wrong.
+
+=== dbg01-l04 | Practice: Stepping and changing state
+--- for
+l04-stepping-and-changing-state
+
++++ question | Where step lands
+--- ask
+A thermal model, built with `g++ -g -O0`, with line numbers counted from the `#include`:
+
+```cpp
+#include <cstdio>
+
+double loss(double temp) {
+    double k = 0.05;                  // line 4
+    return k * (temp - 20.0);         // line 5
+}
+
+void limit(double& cmd) {
+    if (cmd > 1.0) cmd = 1.0;         // line 9
+}
+
+int main() {
+    double temp = 80.0;
+    double throttle = 0.4;
+    for (int i = 0; i < 3; i++) {     // line 15
+        double q = loss(temp);        // line 16
+        temp = temp - q * 10.0;       // line 17
+        limit(throttle);              // line 18
+    }
+    std::printf("temp = %.2f, throttle = %.2f\n", temp, throttle);
+    return 0;
+}
+```
+
+You are stopped at a breakpoint on line 16 and type `step`. On which line does gdb stop? Type the line number.
+--- answer
+4
+line 4
+--- why
+Line 16 calls `loss`, which has debug information, so `step` goes into it and stops at its first line, line 4, printing `loss (temp=80) at ...:4` on the way in. `next` would have run the whole call and stopped at line 17. gdb skips the function's setup code and stops at the first line of its body.
+
++++ question | Reusing a returned value
+--- ask
+Same program. On the second pass of the loop, where `temp` is 50, you step into `loss` and type `finish`. gdb prints `Value returned is $1 = 1.5`. You then type `print $ * 4`. What does gdb print as the value? Type the number.
+--- answer
+6
+$2 = 6
+6.0
+--- why
+`finish` saves the returned value in the value history as `$1`, and `$` on its own means the most recent value, here `$1`. So `print $ * 4` is $1.5 \times 4 = 6$, saved as `$2`. Check the 1.5 too: $0.05 \times (50 - 20) = 1.5$.
+
++++ question | until meets a breakpoint
+--- ask
+Same program. A breakpoint is set on line 16. On the first pass you walk with `next` through lines 16, 17 and 18, and arrive at line 15, the `for` line, about to add one to `i` and jump back. You type `until`, hoping to run the remaining passes and land on the `printf`. Where does gdb stop?
+--- choice
+On the `printf` line, because `until` never stops at an earlier line.
+--- choice
+On line 17, because `until` behaves exactly like `next`.
+--- choice correct
+On line 16 again, at the start of the second pass, because the breakpoint on line 16 stops it.
+--- choice
+Nowhere: `until` runs the program to the end.
+--- why
+`until` lets the program run at full speed and will not stop by itself at a line earlier than where you are, but any breakpoint met on the way still stops it. Line 16 is hit on the next pass, so you stop there with `i` equal to 1. Delete the breakpoint first (`delete 1`), or turn it off with `disable 1`, then `until` from line 15 runs the rest of the loop and lands on the `printf`.
+
++++ question | until at the top of the body
+--- ask
+Same program, no breakpoints left. You are stopped on line 16, the first line of the loop body, and type `until`. Where does gdb stop?
+--- choice
+On the `printf` line, after all three passes.
+--- choice
+Inside `loss`, on line 4.
+--- choice
+On line 15, the `for` line.
+--- choice correct
+On line 17, exactly as `next` would.
+--- why
+`until` is `next` with one extra rule: never stop at a line earlier in the program than the current one. Line 17 is later than line 16, so nothing stops it from stopping there, and it behaves like `next`. It only skips the rest of a loop when you type it at the bottom of the loop, where the next step would jump back up.
+
++++ question | Changing a value through a reference
+--- ask
+Same program. You set `break limit`, run, and stop on line 9 during the first pass. `limit` takes its argument by reference, `double& cmd`, and `main` passed `throttle`, which is 0.4. You type `set var cmd = 3.0`, then `delete`, then `continue`. What does the program print for `throttle`? Type the number as it prints.
+--- answer
+1.00
+1
+1.0
+--- why
+`cmd` is a reference: another name for `main`'s `throttle`, not a copy. So `set var cmd = 3.0` changes `throttle` itself to 3.0. Line 9 has not run yet, because gdb stops before the line, so it now runs, sees $3.0 > 1.0$, and clamps it to 1.0. The next two passes leave 1.0 alone. The program prints `temp = 27.50, throttle = 1.00`. With a parameter passed by value, the change would have been lost when `limit` returned.
+
++++ question | A print that moved the program on
+--- ask
+Built with `g++ -g -O0`:
+
+```cpp
+double table[6] = {1.5, 2.5, 3.5, 4.5, 5.5, 6.5};
+int idx = 0;
+
+double next_sample() {
+    return table[idx++];
+}
+
+int main() {
+    for (int k = 0; k < 3; ++k) {
+        double s = next_sample();     // breakpoint here
+        std::printf("%.1f\n", s);
+    }
+    return 0;
+}
+```
+
+You stop at the breakpoint on the first pass, before the call runs. To check what the function returns, you type `print next_sample()` twice, then `delete` and `continue`. What does the program print? Type the three lines, separated by spaces.
+--- answer
+3.5 4.5 5.5
+3.5, 4.5, 5.5
+3.5,4.5,5.5
+--- why
+`print next_sample()` really runs the function inside the paused program, side effects included. The two prints returned 1.5 and 2.5, and each one moved `idx` on by one. So the program's own three calls read `table[2]`, `table[3]` and `table[4]`: 3.5, 4.5 and 5.5. The first two samples were used up by the debugger. Calling a function from gdb is an experiment on the program, and it can change what happens next.
+
+=== dbg01-l05 | Practice: Attaching and core dumps
+--- for
+l05-attaching-and-core-dumps
+
++++ question | Allowing core files
+--- ask
+`ulimit -c` prints `0` in your terminal. Which command, typed in that same terminal, lets the programs you start from it write core files of any size?
+--- answer
+ulimit -c unlimited
+--- why
+The core size limit belongs to the shell and to the programs it starts afterwards. A limit of 0 means "write nothing". `ulimit -c unlimited` removes it for this shell only, so reproduce the crash in the same terminal. Also check `/proc/sys/kernel/core_pattern` to know where the file will go.
+
++++ question | A core that went into a pipe
+--- ask
+You allowed core files and reproduced the crash. The shell printed `Segmentation fault (core dumped)`, but there is no `core` file in the working directory. `cat /proc/sys/kernel/core_pattern` prints:
+
+```text
+|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h
+```
+
+Where is the core, and how do you open it?
+--- choice correct
+The kernel handed it to systemd-coredump, which stored it. `coredumpctl list` shows the crash and `coredumpctl debug` opens it in gdb.
+--- choice
+Nowhere: a pattern starting with `|` throws cores away. Change it to `core` and try again.
+--- choice
+In `/usr/lib/systemd/`, under the name `systemd-coredump`.
+--- choice
+In the program's working directory, but hidden, as `.core`.
+--- why
+A pattern that starts with `|` tells the kernel to pipe the core to a collector program instead of writing a file. Here that is systemd-coredump, which keeps cores compressed and logs each crash. "(core dumped)" was true: the core exists, just not as a file in your folder.
+
++++ question | A null struct and its fault address
+--- ask
+A crash leaves a core. Opening it shows frame 0 on the line `return imu->bias[1];`, and `print imu` gives `(const Imu *) 0x0`. The struct, compiled for x86-64 Linux, is:
+
+```cpp
+struct Imu {
+    int    id;
+    double scale;
+    float  bias[3];
+};
+```
+
+What address does `print $_siginfo._sifields._sigfault.si_addr` report? Type it in hex.
+--- answer
+0x14
+(void *) 0x14
+0x0000000000000014
+20
+--- why
+`imu->bias[1]` reads the address `imu` plus the offset of `bias[1]`. `id` takes bytes 0 to 3. A `double` must start at a multiple of 8, so there are 4 bytes of padding and `scale` takes bytes 8 to 15. `bias` starts at 16, and each `float` is 4 bytes, so `bias[1]` is at $16 + 4 = 20$, which is `0x14`. With `imu` equal to 0, that is the address the CPU refused. A small fault address like this means "a field of a null pointer".
+
++++ question | Two terminals
+--- ask
+In terminal A you run `ulimit -c unlimited`. In terminal B, open since this morning, you run `./sim`, and it crashes with `Segmentation fault` but without `(core dumped)`. `core_pattern` is `core`. Why is there no core?
+--- choice
+The binary was built without `-g`, and the kernel only writes cores for programs with debug information.
+--- choice
+`ulimit -c unlimited` only takes effect after a reboot.
+--- choice correct
+The limit was lifted only in terminal A's shell. Terminal B still has a limit of 0. Run `ulimit -c unlimited` in terminal B, then reproduce.
+--- choice
+A segmentation fault never produces a core; only an abort does.
+--- why
+`ulimit` changes a setting of the shell it runs in, which the shell passes to the programs it starts from then on. Other terminals, and programs already running, keep their own limits. Debug information has nothing to do with whether a core is written; it only decides how readable the core is later.
+
++++ question | A thread waiting for itself
+--- ask
+A single-threaded GNC process hangs at 0% CPU. You attach and look:
+
+```text
+(gdb) bt
+#0  futex_wait (private=0, expected=2, futex_word=0x5561c9a4c040 <state_lock>) at ...
+#3  ___pthread_mutex_lock (mutex=0x5561c9a4c040 <state_lock>) at ./nptl/pthread_mutex_lock.c:93
+#5  std::mutex::lock (this=0x5561c9a4c040 <state_lock>) at ...
+#6  std::lock_guard<std::mutex>::lock_guard (...) at ...
+#7  log_event (msg=0x5561c9a4a004 "mode change") at gnc.cpp:22
+#8  set_mode (m=2) at gnc.cpp:31
+#9  main () at gnc.cpp:40
+(gdb) print state_lock._M_mutex.__data.__owner
+$1 = 3101
+(gdb) info threads
+* 1    Thread 0x7f2a1c8b0740 (LWP 3101) "gnc" futex_wait (...)
+```
+
+Line 29 of `set_mode` is `std::lock_guard<std::mutex> g(state_lock);`, and line 22 of `log_event` locks `state_lock` too. What is the bug?
+--- choice
+Another thread holds `state_lock` and has died without unlocking it.
+--- choice
+`lock_guard` forgot to unlock at the end of `log_event`.
+--- choice
+The futex call is a bug in the C library; the program is fine.
+--- choice correct
+The one thread already owns `state_lock` (the owner, 3101, is its own LWP) and tries to lock it again inside `log_event`. A `std::mutex` cannot be locked twice by the same thread, so it waits for itself forever.
+--- why
+The backtrace shows the call path: `set_mode` took the lock at line 29, then called `log_event`, which asks for the same lock at line 22. The owner field matches the thread's own LWP, so nobody else is involved. A plain `std::mutex` is not recursive, and locking it a second time from the same thread waits forever. Fix it by not calling `log_event` while holding the lock, or by splitting out a version of `log_event` that expects the lock to be held already.
+
++++ question | A snapshot without tripping the watchdog
+--- ask
+A ground-station bridge on a test bench runs a 100 Hz loop, and a watchdog resets the bench if the loop stops for more than 500 ms. The bridge seems to be stuck in part of its work, and you want every thread's call stack to study at leisure. Which plan fits?
+--- choice
+`gdb -p PID`, then look around with `thread apply all bt`, `frame` and `print` for as long as you need, then `detach`.
+--- choice correct
+`gcore PID` to write a core of the running process, then open it with `gdb ./bridge core.PID` and run `thread apply all bt` offline.
+--- choice
+Send the process `SIGSEGV` with `kill`, so the kernel writes a core you can open.
+--- choice
+Restart the bridge under gdb with `run`, and wait for the problem to come back.
+--- why
+While gdb holds a process at the prompt, it does nothing at all, so a long look with `gdb -p` would stop the loop and trip the watchdog. `gcore` attaches, writes the core, and detaches, so the process is frozen only while the file is written, and the full `thread apply all bt` picture is then in a file you can study for hours. Killing it with a signal also gives a core, but it ends the bridge. Restarting loses the stuck state you want to see.
+
+=== dbg01-l06 | Practice: gdb comfort, remote debugging and running backwards
+--- for
+l06-gdb-comfort-and-remote-debugging
+
++++ question | What goes on the target
+--- ask
+You will debug `nav_app` on an ARM flight computer on the bench from your x86 workstation. The binary installed on the board is stripped. What must be on the board itself?
+--- choice correct
+Only the program and gdbserver. The unstripped binary (or its debug file) and the source stay on the workstation, with a gdb that understands ARM.
+--- choice
+gdb, the unstripped binary and the source code, so that gdb can show lines.
+--- choice
+Only the source code, because gdbserver compiles the program with `-g` when it starts.
+--- choice
+Nothing extra: `target remote` copies gdb onto the board when it connects.
+--- why
+gdbserver is the small end that runs on the target: it starts or attaches to the program and does what the host tells it. The host's gdb does the thinking, so it needs the symbols and the source: the unstripped build of the same program, or the stripped one plus its debug file, and `gdb-multiarch` or the cross toolchain's gdb for an ARM target. The board never needs symbols or source.
+
++++ question | A covariance matrix in raw storage
+--- ask
+A 6×6 covariance matrix `P` is stored column by column in `double data[36]`, the way Eigen stores it. `print/r P` shows the 36 raw numbers. At which index is element $P(4, 1)$, row 4, column 1, counting rows and columns from 0? Type the index.
+--- answer
+10
+data[10]
+--- why
+Column by column, each column is 6 numbers long, so element $(r, c)$ is at index $6c + r = 6 \times 1 + 4 = 10$. Read row by row, the same element would be at $6r + c = 25$. A printer that used the wrong formula would show the transpose of the matrix, which for a covariance happens to look the same, but for a rotation matrix is the opposite rotation.
+
++++ question | Counting a vector from its raw pointers
+--- ask
+You suspect a vector of star-tracker samples is corrupted, so you look at it raw:
+
+```text
+(gdb) print/r samples
+... _M_start = 0x55555556c2b0, _M_finish = 0x55555556c2e8,
+        _M_end_of_storage = 0x55555556c2f0 ...
+```
+
+`samples` is a `std::vector<double>`. What are its length and capacity? Type the two numbers, length first.
+--- answer
+7 8
+7, 8
+7,8
+length 7, capacity 8
+--- why
+The data runs from `_M_start` to `_M_finish`: $0x2e8 - 0x2b0 = 0x38 = 56$ bytes, and $56 / 8 = 7$ doubles. The reserved space ends at `_M_end_of_storage`: $0x2f0 - 0x2b0 = 0x40 = 64$ bytes, room for 8. So the length is 7 and the capacity 8, and the end of storage is not before the finish. These pointers are consistent; if the pretty-printer shows something else, suspect the printer.
+
++++ question | A vector that is not born yet
+--- ask
+You stop at a breakpoint on the first line of `average(int n)`, whose first statement is `std::vector<double> samples(n, 1.5);`. You type `print samples` and gdb shows:
+
+```text
+$1 = std::vector of length 582, capacity 1165 = {Cannot access memory at address 0x555555555555da70
+```
+
+What does this tell you?
+--- choice
+The vector is corrupted: something overwrote it with 582 elements.
+--- choice
+The libstdc++ pretty-printer is broken; reinstall gdb.
+--- choice correct
+Nothing is wrong yet. The constructor has not run, so the printer is reading leftover stack bytes as if they were a vector. Step past the line and print it again.
+--- choice
+`n` was 582 when the function was called.
+--- why
+A pretty-printer believes the memory is a real vector and reports what its three pointers would mean. Before the constructor runs, those pointers are leftover bytes from earlier calls, so the length is nonsense and the element pointer leads nowhere. It is the same trap as `info locals` before a line has run. Once the line has run, the printer shows `std::vector of length 4, capacity 4 = {1.5, 1.5, 1.5, 1.5}` for `n = 4`.
+
++++ question | A printer that shows the wrong matrix
+--- ask
+A team's printer for `Mat3`, whose nine doubles are stored column by column like Eigen's, reads:
+
+```python
+def to_string(self):
+    d = self.val["data"]
+    rows = []
+    for r in range(3):
+        row = [float(d[r * 3 + c]) for c in range(3)]
+        rows.append("[" + ", ".join(f"{x:g}" for x in row) + "]")
+    return "Mat3 " + " ".join(rows)
+```
+
+The code sets only `M(0, 2) = 0.5`, row 0 and column 2, on an otherwise zero matrix. Where does the printer show the 0.5?
+--- choice
+In row 0, column 2, where the code put it.
+--- choice
+Nowhere: the printer reads past the end of `data`.
+--- choice
+In row 0, column 0, because `float()` rounds the index.
+--- choice correct
+In row 2, column 0. The printer uses the row-by-row formula `r * 3 + c` on column-by-column storage, so it shows the transpose.
+--- why
+With column-by-column storage, element $(0, 2)$ is at index $3c + r = 3 \times 2 + 0 = 6$. The printer, for row $r = 2$ and column $c = 0$, reads index $3r + c = 6$, so it shows `data[6]` in row 2, column 0. Every element is mirrored across the diagonal: the printer shows the transpose. The fix is `d[c * 3 + r]`. `print/r` shows the raw storage and settles which side is lying.
+
++++ question | Backwards to the last write
+--- ask
+Built with `g++ -g -O0`:
+
+```cpp
+double limit = 0.0;                   // actuator limit, N
+
+void configure(int cycle) { if (cycle == 2) limit = 5.0; }
+void patch(int cycle)     { if (cycle == 7) limit = 50.0; }
+
+int main() {
+    double sum = 0.0;
+    for (int cycle = 0; cycle < 10; cycle++) {
+        configure(cycle);
+        patch(cycle);
+        sum += limit;
+    }
+    std::printf("limit = %.1f, sum = %.1f\n", limit, sum);
+}
+```
+
+You `break main`, `run`, type `record`, then run to the `printf` line. There you type `watch limit` and `reverse-continue`. Where does gdb stop, and what does the watchpoint report?
+--- choice correct
+In `patch`, at cycle 7, with `Old value = 50` and `New value = 5`.
+--- choice
+In `configure`, at cycle 2, with `Old value = 0` and `New value = 5`.
+--- choice
+In `patch`, at cycle 7, with `Old value = 5` and `New value = 50`.
+--- choice
+At the start of `main`, because a watchpoint cannot fire while running backwards.
+--- why
+Running backwards from the end, the first write you meet is the last one the program made: `limit = 50.0` in `patch` during cycle 7. Going back in time, the "old" value is the later one you came from, 50, and the "new" value is the earlier one, 5. Another `reverse-continue` would stop at `configure` in cycle 2 (old 5, new 0). One command found the guilty write without guessing which cycle to look at.
+
+=== dbg01-l07 | Practice: Debugging Python
+--- for
+l07-debugging-python
+
++++ question | pdb's finish
+--- ask
+In gdb, `finish` runs until the current function returns and shows the value it returned. Which pdb command does the same job? Type the command.
+--- answer
+r
+return
+--- why
+`r`, short for `return`, runs until the current function is about to return. pdb then prints `--Return--` and the value after the function name, as in `total_impulse()->1975.0`. `c` would run on to the next breakpoint, and `n` only runs one line.
+
++++ question | A conditional breakpoint in pdb
+--- ask
+In a script run with `python3 -m pdb check.py`, you want to stop at line 12 only when `alt` is negative. Which command sets that breakpoint?
+--- choice
+`b 12 if alt < 0`
+--- choice
+`b 12 (alt < 0)`
+--- choice correct
+`b 12, alt < 0`
+--- choice
+`break check.py:12 when alt < 0`
+--- why
+pdb writes the condition after a comma, as any Python expression, and checks it each time line 12 is reached. The `if` form belongs to gdb. Getting the syntax wrong matters: a breakpoint that never stops looks the same as a condition that is never true.
+
++++ question | A post-mortem on a repeated time stamp
+--- ask
+```python
+# rates.py: climb rate between barometer samples.
+def rates(t, alt):
+    out = []
+    for i in range(1, len(t)):
+        out.append((alt[i] - alt[i - 1]) / (t[i] - t[i - 1]))
+    return out
+
+t = [0.00, 0.02, 0.04, 0.04, 0.06]
+alt = [100.0, 101.0, 102.1, 102.2, 103.0]
+print(rates(t, alt))
+```
+
+You run `python3 -m pdb -c continue rates.py`. It stops in post-mortem on the line inside the loop. You type `p i, len(out)`. What does pdb print?
+--- answer
+(3, 2)
+3, 2
+3 2
+(3,2)
+3,2
+--- why
+`t[3]` and `t[2]` are both 0.04, so on the pass with `i = 3` the time difference is 0.0 and Python raises `ZeroDivisionError: float division by zero`. The passes for `i = 1` and `i = 2` had already appended their rates, so `out` holds 2 items. The append for `i = 3` never happened, because the division failed before `append` was called. Unlike C++, which would quietly produce infinity, Python stops, and post-mortem lands you on the exact sample.
+
++++ question | A slow program that is not computing
+--- ask
+A telemetry archiver is slow. `py-spy top --pid N` shows:
+
+```text
+GIL: 3.00%, Active: 6.00%, Threads: 1
+```
+
+What does that suggest?
+--- choice correct
+The program is mostly waiting, for a disk, the network or a sleep, not running Python code. Making the Python faster would change little; look at what it waits for.
+--- choice
+The program is computing hard in Python. Rewriting the hottest function in a faster way will help most.
+--- choice
+py-spy could not read the process, so the numbers are meaningless.
+--- choice
+The program has a deadlock between two threads.
+--- why
+The GIL line says how often a thread was running Python code when py-spy looked. At 3%, the program was doing something else 97% of the time: waiting on a file, a socket or a sleep, which releases the lock. With one thread there is nobody to deadlock with. Compare the lesson's simulation at GIL 100%, which was busy computing the whole time.
+
++++ question | A landing that never comes
+--- ask
+A Monte Carlo landing run has been going for an hour on its first case. Its loop is:
+
+```python
+def descend(alt, vel, dt=0.01):
+    while alt > 0.0:
+        vel += (-9.80665 + drag(vel) / 25000.0) * dt
+        alt -= vel * dt
+    return vel
+```
+
+It starts with `alt = 1000.0` and `vel = -60.0` (negative is downward). Two `py-spy dump --locals` taken a minute apart both show the program on the `alt -= vel * dt` line of `descend`, with `vel` about $-223.7$ both times and `alt` much larger in the second dump than in the first. What is wrong?
+--- choice
+Nothing: the run is slow because Python is slow, and the counter shows progress.
+--- choice
+`drag` is too strong, so the vehicle hovers and the loop takes a long time.
+--- choice
+The loop is stuck because floating-point numbers cannot reach exactly 0.0.
+--- choice correct
+A sign error. With `vel` negative, `alt -= vel * dt` adds to the altitude, so the vehicle climbs forever and `alt > 0.0` never becomes false. It should be `alt += vel * dt`.
+--- why
+Two dumps a minute apart are the test from the lesson: if the program were progressing toward the ground, `alt` would shrink. It grows. `vel` stays at the terminal speed, where drag balances gravity, about 224 m/s downward, and subtracting a negative number adds it. The loop condition only asks `alt > 0.0`, so it never ends. The dumps showed the stuck line and the values that prove it, without stopping the run.
+
++++ question | When will it finish?
+--- ask
+A Monte Carlo job was asked for 5,000 runs. `py-spy dump --locals` shows the loop counter `k: 1204`. Exactly 60 seconds later, a second dump shows `k: 1444`. Assuming the speed stays the same, about how long until the job finishes?
+--- choice
+About 5 minutes.
+--- choice correct
+About 15 minutes.
+--- choice
+About 21 minutes.
+--- choice
+About an hour.
+--- why
+In 60 s the counter moved $1444 - 1204 = 240$ runs: 4 runs per second. There are $5000 - 1444 = 3556$ runs left, and $3556 / 4 = 889$ s, about 14.8 minutes. The 21 minutes comes from dividing all 5,000 runs by the speed and forgetting the ones already done. Two dumps and a division, and the job was never stopped.
+
+=== dbg01-l08 | Practice: Sanitizers and Valgrind
+--- for
+l08-sanitizers-and-valgrind
+
++++ question | A read before the start
+--- ask
+A function computes differences between neighboring altitude samples, `s[i] - s[i - 1]`, in a heap array of four doubles. ASan reports:
+
+```text
+ERROR: AddressSanitizer: heap-buffer-overflow ...
+READ of size 8 at 0x503000000038 thread T0
+...
+0x503000000038 is located 8 bytes before 32-byte region [0x503000000040,0x503000000060)
+```
+
+Which index was read? Type it.
+--- answer
+-1
+s[-1]
+--- why
+The region starts at `0x...040`, and the read was 8 bytes before that, at `0x...038`. One `double` is 8 bytes, so that is one element before element 0: `s[-1]`. The loop started at `i = 0`, where `s[i - 1]` has no element to read. ASan checks the fence before a block as well as the one after it.
+
++++ question | When a counter runs out
+--- ask
+A flight computer counts ticks of a 10 kHz clock in a 32-bit signed `int`, starting from 0 at boot. The largest such `int` is $2^{31} - 1 = 2\,147\,483\,647$. About how long after boot does the next tick overflow it?
+--- choice
+About 3.6 minutes.
+--- choice
+About 6 hours.
+--- choice correct
+About 2.5 days.
+--- choice
+About 68 years.
+--- why
+$2\,147\,483\,647 / 10\,000 \approx 214\,748$ seconds, and $214\,748 / 3600 \approx 59.7$ hours, about 2.5 days. A short bench test never gets there, but a mission does. Signed overflow is undefined behavior, so UBSan reports it at the moment it happens, and a test can reach it in seconds by starting the counter near the top instead of waiting.
+
++++ question | Which one is a race?
+--- ask
+Three programs share a global `int status = 0;` between `main` and one other thread:
+
+- **A:** `main` sets `status = 1;`, then starts the thread, which reads `status`. `main` then joins the thread.
+- **B:** the thread sets `status = 1;` and ends. `main` joins it, then reads `status`.
+- **C:** `main` starts the thread, which sets `status = 1;`. While it runs, `main` reads `status` in a loop, and joins it at the end.
+
+No mutex or atomic is used anywhere. Which does ThreadSanitizer report as a data race?
+--- choice
+All three, because `status` is shared without a lock.
+--- choice
+A and C, because both read `status` from a second thread.
+--- choice
+None, because an `int` is written in a single instruction.
+--- choice correct
+Only C.
+--- why
+TSan asks whether one access happens before the other. In A, everything `main` did before creating the thread happens before the thread starts. In B, the thread's end happens before the `join` returns, so `main`'s read comes after the write. In C, `main` reads while the thread may be writing, with nothing ordering them: a race, even if the loop happens to see the right value. "Single instruction" does not help: a data race is undefined behavior, and the compiler may, for example, keep `status` in a register and never see the change.
+
++++ question | A stack array under memcheck
+--- ask
+Your own code reads one element past the end of a local array, `float buf[8]`, at `buf[8]`. You run the normal `-g` build under `valgrind` (memcheck). What should you expect?
+--- choice correct
+Probably nothing at that line. memcheck tracks heap blocks, not the edges of stack arrays; at best it complains later about an uninitialised value somewhere else. Build with ASan, which reports `stack-buffer-overflow` at the line.
+--- choice
+An `Invalid read of size 4` pointing at the exact line, as for a heap block.
+--- choice
+Valgrind refuses to run a program that has stack arrays.
+--- choice
+A leak report, because `buf` is never freed.
+--- why
+memcheck knows where each heap block starts and ends, but a stack frame is one region it may read and write freely, so reading `buf[8]` just reads the next local. ASan puts redzones around local arrays, so it stops at the bad read and names the line. This is one case where rebuilding with a sanitizer beats running under Valgrind.
+
++++ question | A name that outlived its string
+--- ask
+```cpp
+std::string label = "reaction_wheel_A";   // 16 characters
+const char* name = label.c_str();
+label += "_backup";
+std::printf("%s\n", name);
+```
+
+The normal build prints a few garbage characters. Built with `-fsanitize=address`, the program stops with `heap-use-after-free`, READ at the `printf` line, "0 bytes inside of 17-byte region", freed at the `+=` line. Which change fixes it?
+--- choice
+Build with `-O0`, where the garbage goes away.
+--- choice
+Make `name` a `volatile const char*`, so the compiler reloads it.
+--- choice correct
+Take the pointer after the last change, or print `label.c_str()` directly. `c_str()` points into the string's buffer, and `+=` moved the text to a bigger buffer and freed the old one.
+--- choice
+Add `delete[] name;` after the `printf`.
+--- why
+A 16-character string plus its ending zero is the 17-byte heap block in the report. `+=` needed more room, so the string moved its text to a new, bigger block and freed the old one, exactly like the vector that grows in the lesson. `name` still points at the freed block. Any change that makes the string grow can invalidate a pointer taken from `c_str()`. `volatile` changes nothing about ownership, and deleting memory the string owns would be a double free.
+
++++ question | A CI plan for a threaded library
+--- ask
+Your team's navigation library is your own C++ code, runs several threads, and has a 12-minute test suite. It also links a vendor's closed-source `.so`, which you suspect of reading uninitialised memory. Which plan fits?
+--- choice
+One CI job built with `-fsanitize=address,thread,undefined` on every merge request, to save time.
+--- choice correct
+Two CI jobs on every merge request: one ASan+UBSan build, one TSan build. Plus one targeted `valgrind --track-origins=yes` run of the tests that use the vendor library, outside the merge gate.
+--- choice
+`valgrind` memcheck on the whole suite for every merge request, since it needs no recompile and checks the vendor library too.
+--- choice
+MemorySanitizer on the vendor library in CI, since it is the sanitizer for uninitialised reads.
+--- why
+TSan cannot share a build with ASan, so races need their own job. At about 2 times, the ASan+UBSan job takes about 24 minutes, and TSan at 5 to 15 times takes about 1 to 3 hours, which is still workable for every change. memcheck at 20 to 50 times would take 4 to 10 hours, far too slow for a gate but fine for one targeted run. MSan needs every library rebuilt with it, which a closed-source `.so` cannot be.
+
+=== dbg01-l09 | Practice: Finding where the time goes
+--- for
+l09-profiling-with-perf-and-benchmarks
+
++++ question | Instructions per cycle
+--- ask
+`perf stat` on a guidance loop reports 4,500,000,000 instructions and 3,000,000,000 cycles. What is the IPC? Type the number.
+--- answer
+1.5
+1.50
+--- why
+IPC is instructions divided by cycles: $4.5 \times 10^9 / 3.0 \times 10^9 = 1.5$. One and a half instructions finish per clock tick on average. That is not starved (well below 1 would suggest waiting on memory), but a modern core can do more, so the other counters decide what to look at next.
+
++++ question | Self and children
+--- ask
+`perf report` on a trajectory tool, recorded with `-g`, shows:
+
+```text
+Children   Self   Symbol
+  99.1%    0.4%   main
+  97.8%    2.1%   run_case
+  71.0%   68.3%   interp_density
+  24.6%   24.6%   std::sin
+```
+
+Which function is the hotspot to work on first?
+--- choice
+`main`, because it has the most time.
+--- choice
+`run_case`, because nearly all the time passes through it.
+--- choice correct
+`interp_density`, because it spends 68.3% of the samples in its own code.
+--- choice
+`std::sin`, because library maths functions are always slow.
+--- why
+Children counts everything a function called, so `main` and `run_case` are high only because the work happens under them. Self is where the processor actually was. `interp_density` is running in 68% of the samples, so it is the hotspot. `std::sin` is second at about 25%, and the right question there is who calls it so often, not whether `sin` is slow.
+
++++ question | Speeding up part of a program
+--- ask
+A profile shows that one function takes 40% of a program's run time. You make that function 4 times faster and change nothing else. About how much faster does the whole program get?
+--- choice
+4 times faster.
+--- choice
+2.5 times faster.
+--- choice
+1.6 times faster.
+--- choice correct
+About 1.43 times faster.
+--- why
+Amdahl's law: the 60% you did not touch stays the same, and the 40% becomes $40\% / 4 = 10\%$. The new run time is $60\% + 10\% = 70\%$ of the old, so the program is $1 / 0.7 \approx 1.43$ times faster. Even an infinitely fast function would only reach $1 / 0.6 \approx 1.67$ times. The share of the time a part takes limits what speeding it up can give.
+
++++ question | A profile of the wrong program
+--- ask
+A teammate profiles a propagator built with `g++ -g -O0` and finds that `std::vector<double>::operator[]` takes 30% of the samples. They plan to replace every `v[i]` with raw pointer arithmetic. What do you say first?
+--- choice correct
+Profile the optimized build first, with `-O2 -g -fno-omit-frame-pointer`. At `-O0` the small function `operator[]` is not inlined, so the profile measures a different program from the one you ship.
+--- choice
+Good plan: `operator[]` is known to be slow in all builds.
+--- choice
+Switch to `at()`, which checks the bounds and is faster.
+--- choice
+The profile is right, but the fix is to build with `-O3` instead of changing code.
+--- why
+Timing or profiling an unoptimized build measures the wrong program. At `-O2`, `operator[]` is copied into its caller and becomes a single load, so it disappears from the profile. Rewriting code to fix a cost that only exists at `-O0` costs readability and gains nothing. `-g` keeps names for the profiler without slowing the code.
+
++++ question | A loop that copies
+--- ask
+A flame graph of a ground tool is one wide tower over `__memcpy_avx512_unaligned_erms`, called from `std::vector<double>` copy constructors, called from `check_history`. Its code:
+
+```cpp
+double check_history(const std::vector<std::vector<double>>& history) {
+    double worst = 0.0;
+    for (auto row : history) {                 // each row holds 4096 doubles
+        worst = std::fmax(worst, row.back() - row.front());
+    }
+    return worst;
+}
+```
+
+What is the fix?
+--- choice
+Call `history.reserve()` before the loop so that nothing is reallocated.
+--- choice
+Replace `std::fmax` with an `if`, since the call is what copies.
+--- choice correct
+Write `for (const auto& row : history)`. `auto row` makes a copy of every 4096-double row just to read two numbers.
+--- choice
+Pass `history` by value instead, so the compiler can optimize the copies away.
+--- why
+`auto` in a range-for makes a new variable of the element type, a `std::vector<double>`, copied from each row: 32,768 bytes copied, allocated and freed per row. `const auto&` binds a name to the row that already exists. This is the same mistake as the lesson's pass-by-value parameter, hidden in a loop header. The function already takes `history` by `const` reference, so that part was fine.
+
++++ question | The most a fix can win
+--- ask
+Fifty stack samples of a Monte Carlo run were collected with gdb, the poor man's profiler way, and counted:
+
+```text
+30  main ; run_case ; median_filter ; std::sort ; ...
+12  main ; run_case ; lookup_density ; interp
+ 5  main ; run_case ; step
+ 3  main ; run_case
+```
+
+If the sorting inside `median_filter` could be made to take no time at all, at most how much faster would the run be?
+--- choice
+About 1.6 times.
+--- choice correct
+About 2.5 times.
+--- choice
+About 5 times.
+--- choice
+About 30 times.
+--- why
+The sort is on the stack in 30 of 50 samples, so it takes about $p = 0.6$ of the time. With it at zero, the rest, $1 - 0.6 = 0.4$ of the time, remains, so the ceiling is $1 / 0.4 = 2.5$ times. That is Amdahl's limit with $s$ infinitely large. With only 50 samples, 0.6 is itself uncertain by a few percent, so treat 2.5 as a rough ceiling, then measure the real change with hyperfine.
+
+=== dbg01-l10 | Practice: Logs, ring buffers and the one dataset
+--- for
+l10-logging-and-post-flight-investigation
+
++++ question | What gets through the threshold
+--- ask
+```python
+import logging
+import sys
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(levelname)s %(message)s")
+log = logging.getLogger("prop")
+
+readings = [201.0, 203.5, 250.9, 204.1, 290.0, 205.2]
+mode = "IDLE"
+for k, p in enumerate(readings):
+    log.debug("sample %d: %.1f kPa", k, p)
+    if p > 240.0:
+        log.warning("pressure spike %.1f kPa", p)
+    if k == 2 and mode == "IDLE":
+        mode = "PRESS"
+        log.info("mode IDLE -> PRESS")
+log.error("done with %d warnings", 2)
+```
+
+`basicConfig` sets up printing to the screen with the given threshold. How many lines does it print? Type a whole number.
+--- answer
+4
+4 lines
+--- why
+The threshold is INFO, 20. The six DEBUG records (level 10) are dropped. What gets through: WARNING for 250.9, the INFO mode change right after it (both on the pass with `k = 2`), WARNING for 290.0, and the final ERROR. That is 4 lines. In flight, the dropped DEBUG detail is exactly what the high-rate ring buffer is for.
+
++++ question | How many channels fit the link
+--- ask
+A propulsion test article has 12 sensor channels, each sample a 2-byte number, sampled at 500 Hz. The downlink carries 32 kilobits per second, and nothing else uses it. How many channels can be sent down at the full 500 Hz? Type a whole number.
+--- answer
+4
+4 channels
+--- why
+One channel at full rate is $2 \times 500 = 1000$ bytes per second. The link carries $32\,000 / 8 = 4000$ bytes per second, so it fits $4000 / 1000 = 4$ channels. All 12 would need 12,000 bytes per second, three times the link. The usual design sends the rest at a lower rate and keeps full-rate data in an on-board ring buffer, saved when something trips.
+
++++ question | Where the newest sample sits
+--- ask
+The lesson's `RingBuffer<Sample, 8>` has had 23 samples pushed into it. In which slot of `buf_` is the newest sample? Type the slot number.
+--- answer
+6
+slot 6
+buf_[6]
+--- why
+Each push writes at `head_` and then moves `head_` on by one, modulo 8. After 23 pushes, `head_` is $23 \bmod 8 = 7$: the slot the next push will use, which is also the oldest sample, since the buffer is full. The newest sample is one step behind the head: $(7 + 8 - 1) \bmod 8 = 6$. The 23rd push went into slot $22 \bmod 8 = 6$, which agrees.
+
++++ question | Warnings nobody heard about
+--- ask
+A 50 Hz loop runs a rate limiter like the lesson's, with a period of 2.0 seconds. A pressure warning holds on every sample from $t = 1.00$ s to $t = 4.48$ s, which is 175 samples, one every 0.02 s. The limiter lets the first warning through at $t = 1.00$ s, then lets one through each time at least 2.0 s have passed since the last one it let through, reporting how many it swallowed. Nothing flushes the count when the warning stops. How many of the 175 warnings are never reported, not even in a count? Type a whole number.
+--- answer
+74
+--- why
+The first message goes out at 1.00 s. The next goes out at 3.00 s, carrying a count of the 99 samples from 1.02 s to 2.98 s. After that, the samples from 3.02 s to 4.48 s are swallowed: $(4.48 - 3.02) / 0.02 + 1 = 74$ of them. The next message would have come at 5.00 s, but by then the warning had stopped, so no message carried the count. Check: $2 + 99 + 74 = 175$. The log would suggest the problem ended 1.5 s early; a limiter must flush its count when the condition clears.
+
++++ question | A dump full of zeros
+--- ask
+A teammate simplifies the ring buffer's `at` function:
+
+```cpp
+// i = 0 is the oldest sample still held
+const T& at(std::size_t i) const {
+    return buf_[(head_ + i) % N];
+}
+```
+
+Everything else is the lesson's `RingBuffer<Sample, 8>`, whose `buf_` starts filled with zeros. A trigger fires just after the third push, with samples at $t$ = 0.00, 0.02 and 0.04 s, and the dump prints the 3 samples returned by `at(0)`, `at(1)` and `at(2)`. What does it print?
+--- choice
+The three samples, oldest first: 0.00, 0.02 and 0.04 s.
+--- choice
+The three samples, newest first.
+--- choice
+Only the sample at 0.04 s, three times.
+--- choice correct
+Three samples of all zeros, from slots 3, 4 and 5, which were never written.
+--- why
+After 3 pushes, `head_` is 3 and the data sits in slots 0, 1 and 2. The new `at` starts at `head_`, which is the oldest slot only when the buffer is full. Here it reads slots 3, 4 and 5, still zero from `buf_{}`. The lesson's version steps back `count_` places from the head, which gives slot 0 whether or not the buffer is full. A trigger soon after boot is exactly when this bug would bite, and a dump of zeros looks like a sensor fault.
+
++++ question | Putting an event on UTC
+--- ask
+The flight computer's log uses seconds since boot. The ground station logged sending a command at 14:02:10.300 UTC, and the radio link takes 0.020 s. The flight log shows that command received at 512.800 s since boot. A later anomaly is logged at 530.050 s since boot. At what UTC time did it happen? Type it as hh:mm:ss.sss.
+--- answer
+14:02:27.570
+14:02:27.57
+--- why
+The command arrived at $10.300 + 0.020 = 10.320$ s past 14:02 UTC, and at that moment the boot clock read 512.800 s. The anomaly came $530.050 - 512.800 = 17.250$ s later on the boot clock, so at $10.320 + 17.250 = 27.570$ s past 14:02, which is 14:02:27.570 UTC. One event recorded on both clocks lines up every other record, which is why every received command is logged.
+
+=== dbg01-test | Debugging and profiling: module test
+--- teach
+The test covers the whole module: the scientific method and bisection, gdb from breakpoints and watchpoints to core dumps, threads and reverse debugging, pdb and py-spy, sanitizers and Valgrind, profiling with perf, hyperfine and Amdahl's law, and logging for a single flight dataset. Most questions combine two or more lessons: you trace a session, compute an address or a speed-up, or pick the real reason. To get ready, redo the practice questions of the lessons that felt hard, and work each number out on paper before you answer.
+--- gate
+questions 13
+minutes 25
+
++++ question | A flaky bug under git bisect
+--- ask
+A bug makes a replay test fail in about 1 run in 4 at a bad commit, and it never fails at a good one. Your `git bisect run` script runs the replay 12 times and exits 1 if any run fails, 0 if all 12 pass. At a bad commit, what is the chance that the script wrongly reports "good"?
+--- choice
+About 0.3%.
+--- choice correct
+About 3%.
+--- choice
+About 25%.
+--- choice
+Zero, because 12 runs is three times the one in 4.
+--- why
+Each run at a bad commit passes with probability $3/4$, so all 12 pass with probability $0.75^{12} \approx 0.032$, about 3%. That sounds small, but bisection trusts every verdict. A search over 120 commits tests about 7 of them, perhaps 3 or 4 of them bad, so the chance that at least one gets a wrong "good" is roughly 10%, and one is enough to send the search into the wrong half. More repeats help: $0.75^{24} \approx 0.001$. The "$3N$" rule gives 95% confidence, not certainty.
+
++++ question | Which sample the null table gave
+--- ask
+A ground tool crashes, and its core shows frame 0 on line 12 of this code:
+
+```cpp
+struct Sample { double t; double alt; };     // 16 bytes
+
+const Sample* table = nullptr;               // set by load_table(), which failed
+
+double alt_at(int i) {
+    const Sample* s = &table[i];
+    return s->alt;                           // line 12
+}
+```
+
+In frame 0, `print s` gives `(const Sample *) 0x40`, and `print $_siginfo._sifields._sigfault.si_addr` gives `(void *) 0x48`. The build was `-O2`, and `print i` says `<optimized out>`. What was `i`? Type a whole number.
+--- answer
+4
+i = 4
+--- why
+`&table[i]` is `table` plus $16i$ bytes. With `table` null, `s` is $16i$, and `0x40` is 64, so $i = 64 / 16 = 4$. The fault address adds the offset of `alt` inside the struct, 8 bytes: $64 + 8 = 72$, which is `0x48`, so the two facts agree. The pointer is not 0, but it is a small number built from a null base, which is why the fault address is small too. The root cause is not line 12 but the unchecked failure of `load_table`.
+
++++ question | Watching a whole window
+--- ask
+A 4,096-element array `double window[4096]` gets one corrupt element somewhere during a long run. You type `watch window`, and gdb answers `Watchpoint 2: window`, without the word "Hardware". The program now runs thousands of times slower than normal. Why, and what is better?
+--- choice correct
+32,768 bytes is far more than the processor's few 8-byte debug registers can watch, so gdb falls back to a software watchpoint and single-steps the program. Find which element goes bad first, then watch just that one, such as `watch window[17]`, which gets a hardware watchpoint.
+--- choice
+gdb only uses hardware watchpoints on local variables. Copy the array into a local first.
+--- choice
+The array is global, and globals can only be watched with `rwatch`.
+--- choice
+`watch` on an array watches only its first element, so it will never catch the corruption.
+--- why
+x86-64 has four debug registers, each covering up to 8 bytes. A `double` fits in one; the whole window does not, so gdb checks the value after every instruction itself, hundreds or thousands of times slower. Narrow the question first: print the window at the end to see which element is wrong, then `watch window[17]` (gdb says `Hardware watchpoint`), and rerun at full speed.
+
++++ question | A walk through a loop
+--- ask
+Built with `g++ -g -O0`, lines counted from the `#include`:
+
+```cpp
+#include <cstdio>
+
+double scale(double x) {
+    return 2.0 * x;                   // line 4
+}
+
+int main() {
+    double sum = 0.0;
+    for (int i = 0; i < 3; i++) {     // line 9
+        sum += scale(i);              // line 10
+    }
+    std::printf("%.1f\n", sum);       // line 12
+    return 0;
+}
+```
+
+The session is: `break 10`, `run`, `step`, `finish`, `next`, `until`, then `print i`. Where is the program after the `until`, and what does `print i` show?
+--- choice
+On line 12, after the loop, with `i` out of scope.
+--- choice
+On line 4, inside `scale`, with `i` out of scope.
+--- choice
+On line 10, with `i` equal to 0, because `until` repeated the same pass.
+--- choice correct
+On line 10, at the breakpoint, with `i` equal to 1.
+--- why
+`step` enters `scale` at line 4. `finish` runs it to the end and returns to the middle of line 10, printing `Value returned is $1 = 0`. `next` finishes line 10 and stops on line 9, where the `i++` and the test are about to run. `until` would now run the rest of the loop, but the breakpoint on line 10 is still set, and it stops the program on the next pass, with `i` equal to 1. Delete the breakpoint before `until` if you want to land on line 12.
+
++++ question | A double in words
+--- ask
+On x86-64, `double d = -2.0;` has the bit pattern `0xc000000000000000`. What does `x/2xw &d` print after the address? Type the two words as gdb shows them.
+--- answer
+0x00000000 0xc0000000
+0x0 0xc0000000
+00000000 c0000000
+0x00000000, 0xc0000000
+--- why
+`x/2xw` shows two 4-byte words in hex. In memory the 8 bytes are, lowest address first, `00 00 00 00 00 00 00 c0`, because x86-64 is little-endian. The first word is the lower 4 bytes, all zero. The second word is the next 4 bytes, `00 00 00 c0`, which read as a little-endian number is `0xc0000000`. So the high half of the number comes second, and each word, read on its own, looks the right way round.
+
++++ question | True of the memory tools
+--- ask
+Which statement is true?
+--- choice correct
+memcheck needs no recompile, and with `--track-origins=yes` it names the allocation that produced an uninitialised value.
+--- choice
+memcheck catches overruns of local arrays more precisely than ASan, because it checks every instruction.
+--- choice
+ASan reports reading heap memory that was allocated but never written.
+--- choice
+ASan and TSan can share one build, which halves the number of CI jobs.
+--- why
+memcheck translates the unmodified program, so it needs no rebuild, and `--track-origins=yes` adds "Uninitialised value was created by..." with the stack or heap allocation. The other three are the usual mix-ups. ASan knows whether memory may be touched, not whether it was ever written, so uninitialised reads pass it silently. memcheck does not see the edges of stack arrays, where ASan's redzones do. And g++ refuses `-fsanitize=thread` together with `-fsanitize=address`.
+
++++ question | Two atomics that still disagree
+--- ask
+A GPS thread writes a fix and a navigation thread reads it:
+
+```cpp
+struct Fix { double t; double alt; };
+Fix fix;                             // shared
+
+// GPS thread:            fix.t = t_new;  fix.alt = alt_new;
+// Navigation thread:     double rate = (fix.alt - last.alt) / (fix.t - last.t);
+```
+
+TSan reports a data race on `fix`. A teammate changes both fields to `std::atomic<double>`, and TSan goes quiet. Is the bug fixed?
+--- choice
+Yes: TSan is quiet, and each field is now read and written in one indivisible step.
+--- choice correct
+No. Each field is safe on its own, but the navigation thread can read a new `t` with an old `alt`, or the other way round, and compute a wrong rate. The pair must change together: a mutex around both writes and both reads, or one shared snapshot swapped in one step.
+--- choice
+No, because `std::atomic<double>` does not exist; atomics only work on integers.
+--- choice
+Yes, but only if both fields are also declared `volatile`.
+--- why
+TSan reports races on individual memory locations, and atomics remove those. But the program's rule is about two values that belong together, and nothing stops the reader from running between the writer's two stores. The rate is then computed from a mismatched pair, and with a small time difference it can be wildly wrong. A mutex held by both threads around the whole update and the whole read keeps the pair consistent. `volatile` orders nothing between threads.
+
++++ question | A loop that only hangs when optimized
+--- ask
+```cpp
+#include <cstdio>
+
+int main() {
+    int n = 0;
+    for (int t = 2147483000; t > 0; t += 100)
+        ++n;
+    std::printf("ticks = %d\n", n);
+    return 0;
+}
+```
+
+Built with `g++ -O0`, it prints `ticks = 7`. Built with `g++ -O2`, it never finishes, and the compiler warned `iteration 6 invokes undefined behavior`. Why?
+--- choice
+At `-O2`, `int` becomes 64 bits wide, so `t` takes much longer to overflow.
+--- choice
+It is a bug in the optimizer; the `-O0` answer is the correct one.
+--- choice
+At `-O2` the loop runs on several cores at once, and they wait for each other.
+--- choice correct
+Signed overflow is undefined behavior, so the optimizer may assume it never happens. Then a positive `t` plus 100 is always positive, `t > 0` is always true, and the loop test is removed.
+--- why
+At `-O0`, `t` really wraps to a negative number after 7 additions ($2\,147\,483\,000 + 700$ passes $2^{31} - 1$), the test fails and the loop ends. That is one possible result of undefined behavior, not a correct one. At `-O2`, the compiler reasons from "overflow never happens" and deletes the test. The same source, two builds, two behaviors: the heisenbug pattern. UBSan names the overflow at the first run, and `long long` or `std::int64_t` is the fix.
+
++++ question | What the counters say
+--- ask
+`perf stat` on a loop that sums readings whose valid flag is set, over random data, reports:
+
+```text
+ 6,000,000,000   cycles
+15,000,000,000   instructions
+     0.8%        of cache references missed
+ 1,000,000,000   branches
+   120,000,000   branch-misses
+```
+
+A wrong branch guess costs roughly 15 to 20 cycles. What does this suggest?
+--- choice
+The loop is memory-bound; change the data layout.
+--- choice correct
+It is not memory-bound, but mispredicted branches waste about a third of the cycles. Make the branch predictable (for example, sort or group the data by flag) or remove it with arithmetic.
+--- choice
+The IPC is low, so the core is waiting for data.
+--- choice
+Nothing can be gained: an IPC of 2.5 is the most a core can do.
+--- why
+IPC is $15 / 6 = 2.5$, healthy, and 0.8% cache misses is low, so data is arriving fine. But 12% of branches are mispredicted: $120 \times 10^6$ misses at 15 to 20 cycles each is $1.8$ to $2.4 \times 10^9$ cycles, 30 to 40% of the 6 billion. An `if` on random flags is a coin toss for the predictor. Each counter answers a different question, so read them all before choosing a fix.
+
++++ question | The predicted after number
+--- ask
+A baseline measured with hyperfine is 800 ms. A profile shows 70% of the time in `interp_table`, and you rewrite it to be 10 times faster, changing nothing else. What run time does Amdahl's law predict? Type it in milliseconds.
+--- answer
+296
+296 ms
+296ms
+--- why
+The untouched 30% stays: $0.3 \times 800 = 240$ ms. The 70% shrinks tenfold: $0.7 \times 800 / 10 = 56$ ms. Total $240 + 56 = 296$ ms, a speed-up of $800 / 296 \approx 2.7$ times. Write that prediction down, then measure. If hyperfine says 500 ms, the profile or the change did not do what you thought, and that gap is the next thing to explain.
+
++++ question | Stuck inside compiled code
+--- ask
+A Python ground tool has hung. Three `py-spy dump --pid N` taken a minute apart all show the same stack, ending at the line `x = lib.solve(A, b)`, where `lib` is a compiled C++ extension. How do you see where inside `solve` it is stuck, without restarting it?
+--- choice
+Run it again with `python3 -m pdb tool.py` and `s` into `lib.solve`.
+--- choice correct
+Look at the native frames: `py-spy dump --native --pid N`, or attach with `gdb -p N` and run `thread apply all bt`.
+--- choice
+Add `breakpoint()` inside `solve` and wait for it to hang again.
+--- choice
+`py-spy record` for a minute, since its flame graph shows the C++ functions by default.
+--- why
+py-spy shows Python functions, so time inside compiled code appears as the Python line that called it. `--native` adds the C and C++ frames, and gdb attached to the live process shows every thread's native stack, lines included if the extension has debug information. pdb and `breakpoint()` need a restart and cannot step into C++. Without `--native`, a flame graph would show the same Python line.
+
++++ question | A bench setup that works
+--- ask
+The flight computer on the bench is an ARM board at 10.0.0.7 running a stripped `nav_app`, release a41c9e2. Your workstation is x86. Which setup lets you debug it with source lines, safely?
+--- choice
+On the board, `gdbserver 0.0.0.0:2345 ./nav_app`, reachable by everyone on the lab network. On the workstation, the system `gdb` with a fresh build of commit a41c9e2 made today.
+--- choice correct
+On the board, `gdbserver localhost:2345 ./nav_app`, reached through `ssh -L 2345:localhost:2345`. On the workstation, `gdb-multiarch` with the archived debug file of release a41c9e2, `set sysroot` to copies of the board's libraries, and `target remote localhost:2345`.
+--- choice
+Copy the source to the board and run gdb there, so that nothing crosses the network.
+--- choice
+On the board, `gdbserver :2345 ./nav_app`. On the workstation, `target remote 10.0.0.7:2345` with no program file, since gdbserver sends the symbols.
+--- why
+The host needs a gdb that understands ARM, and the debug information of the exact build that runs: a fresh rebuild has a different build ID and may show wrong lines. `set sysroot` lets it make sense of calls into the board's libraries. gdbserver has no password, so it listens only on the board itself and is reached through an SSH tunnel. gdbserver does not send symbols; a stripped binary has none to send.
+
++++ question | A ring buffer for a vibration
+--- ask
+You design a ring buffer to capture a 40 Hz reaction wheel vibration. You will sample at 5 times the vibration frequency, keep 3 s before a trigger and 1 s after it, and each sample takes 16 bytes. How many bytes does the buffer need? Type a whole number.
+--- answer
+12800
+12,800
+12800 bytes
+12,800 bytes
+--- why
+5 times 40 Hz is 200 samples per second, comfortably above the Nyquist rate of 80 per second. The buffer must hold $3 + 1 = 4$ s, so $4 \times 200 = 800$ slots. At 16 bytes each, that is $800 \times 16 = 12\,800$ bytes, reserved once at start-up. The trigger then keeps $1 \times 200 = 200$ more samples before freezing, leaving 600 from before it.
+
++++ question | What the data can say
+--- ask
+After a flight, the attitude controller saturated at $t = 41.2$ s. The team has every command received and every mode change, a 1 Hz status log, and a 100 Hz ring buffer of gyro rates saved by the saturation trigger. Three hypotheses:
+
+- H1: a ground command caused it.
+- H2: a gyro spike caused it.
+- H3: a reaction wheel reached its speed limit, and the others took over too little.
+
+The command log shows only routine commands, none near 41.2 s. The ring buffer shows smooth gyro rates, with no spike. Wheel speeds were not logged at all. What should the report say?
+--- choice
+H3 is the cause, since it is the only hypothesis left standing.
+--- choice correct
+H1 and H2 are ruled out by the data. H3 can be neither confirmed nor ruled out, because wheel speeds were not recorded; it stays open, and wheel speeds join the next flight's logging.
+--- choice
+Nothing can be concluded, since the event cannot be rerun.
+--- choice
+H2 is still likely: the ring buffer may have missed the spike between samples.
+--- why
+H1 has a checkable signature, a command near 41.2 s, and because every received command is logged, its absence is real evidence. H2 predicts a spike in the gyro data, and the 100 Hz buffer around the trigger shows none. H3 predicts high wheel speeds, which were not recorded, so the data is silent on it. "Last one standing" is not proof; there may be causes nobody listed. Saying what cannot be known is part of the answer, and it becomes a logging requirement.
+
++++ question | The first NaN in a long replay
+--- ask
+A filter replay of 200,000 samples ends with `v_est` equal to NaN. You want gdb to stop at line 88, where `v_est` is updated, at the first pass where it has already become NaN, in one run, without typing anything else. A NaN compares unequal to every value, itself included. Which command does that?
+--- choice
+`watch v_est`, then `continue`.
+--- choice correct
+`break filter.cpp:88 if v_est != v_est`
+--- choice
+`break filter.cpp:88 if v_est == v_est`
+--- choice
+`tbreak filter.cpp:88`, then `until`.
+--- why
+Only a NaN is unequal to itself, so `v_est != v_est` is true exactly when `v_est` is NaN, and gdb stops on the first such pass. `watch v_est` stops at every change, 200,000 times. `v_est == v_est` is true for every normal value, the opposite of what you want. `tbreak` stops once, on the first pass. Each check of a condition is a trip into gdb, so the run is slower than normal, but nobody has to type `continue` thousands of times.
+
++++ question | A crash inside a bisect script
+--- ask
+The lesson's `repro.sh` ends with the line `printf '0 0\n0 1\n' | /tmp/af_bisect > /dev/null`. At some commits in the range, the program no longer returns 1 on bad input: it crashes with a segmentation fault instead, and the shell reports its exit status as 139. What does `git bisect run` do when it reaches such a commit?
+--- choice
+It marks the commit bad, like any non-zero status.
+--- choice correct
+It stops the whole bisection with an error, because 139 is outside the range 1 to 127 that means "bad".
+--- choice
+It skips the commit, as for 125.
+--- choice
+It marks the commit good, because the program did not return 1.
+--- why
+A program killed by signal 11, SIGSEGV, gets the status $128 + 11 = 139$ from the shell, and the script's status is that of its last command. `git bisect run` reads 0 as good, 125 as skip and 1 to 127 as bad, and treats anything else as a sign the script itself went wrong, so it aborts ("exit code 139 ... is < 0 or >= 128"). To count a crash as bad, end the last line with `|| exit 1`: `printf '0 0\n0 1\n' | /tmp/af_bisect > /dev/null || exit 1`.

@@ -324,7 +324,8 @@ Copy only what a user would get — `src/`, `pyproject.toml`, `README.md`, `exam
 ```text
 $ python3 -m venv .venv && .venv/bin/pip install -q ".[plot]"
 $ .venv/bin/gnc-orbit 400
-7672.6 m/s
+speed    7668.6 m/s
+period     92.6 min
 $ .venv/bin/python examples/leo_to_geo.py
 LEO 400 km -> GEO: dv1 = 2399 m/s, dv2 = 1457 m/s, total = 3857 m/s
 saved leo_to_geo.png

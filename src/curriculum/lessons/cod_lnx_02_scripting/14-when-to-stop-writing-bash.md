@@ -12,7 +12,7 @@ Bash is the wiring harness. Every script in this module has been bash, and right
 
 But shell scripts grow. The sweep driver gets a retry, then a summary, then a tolerance check, then a comparison with last week. At some point it stopped being a list of commands and became a program — written in a language with no nested data, no floating point, no exceptions and no tests. This lesson is about noticing that moment. Noticing it late is expensive. Noticing it early costs nothing.
 
-All output below was produced on this machine and pasted verbatim, with GNU bash 5.2.21, Python 3.11.15, GNU Awk 5.2.1 and ShellCheck 0.9.0 on Ubuntu 24.04.4.
+All output below was produced on this machine and pasted verbatim, with GNU bash 5.2.21, Python 3.11.15, GNU Awk 5.2.1 and ShellCheck 0.11.0 on Ubuntu 24.04.4.
 
 ## What bash is genuinely good at
 
@@ -102,10 +102,10 @@ if __name__ == "__main__":
 On a 400-line log, both print the same numbers:
 
 ```text
-BUS_VOLTS     100     28.029
-GYRO_X_DPS    100      0.153
-TANK_PSI      100    310.810
-WHEEL_RPM     100   4208.376
+BUS_VOLTS     100     28.017
+GYRO_X_DPS    100      0.164
+TANK_PSI      100    310.332
+WHEEL_RPM     100   4208.751
 ```
 
 Sanity check: 4 channels times 100 samples is 400 lines. Now the three differences that matter.
@@ -280,7 +280,7 @@ main() {
 main "$@"
 ```
 
-**Bash** reads options, makes a scratch folder with a trap to remove it, runs the cases in parallel with `xargs -P` (lesson 05 of the previous module), and stops on the first failure. It does no arithmetic and parses nothing.
+**Bash** reads options, makes a scratch folder with a trap to remove it, runs the cases in parallel with `xargs -P` (lesson 05 of the previous module), and fails if any case failed. It does not stop at the first failure: `xargs` keeps running the other cases, then exits 123 once they have all finished. It does no arithmetic and parses nothing.
 
 **`analyse.py`** reads the case outputs, computes the statistics in floating point and writes a JSON report. Its tests can run in a second without a simulator.
 

@@ -31,10 +31,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends xvfb
       - run: npm ci --legacy-peer-deps
+      # Some unit tests run Python (lesson code blocks, the Explain coverage script, which counts a name
+      # only if this Python has it), so they get the same Python as the lesson checker.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Python packages lessons may import
+        run: pip install numpy scipy matplotlib pandas
       - name: Typecheck
         run: npx tsc -b
+      # Everything but the lesson checker, which runs in the lessons job below.
       - name: Unit tests
-        run: npx vitest run
+        run: npx vitest run --exclude src/learn/solutions.test.ts
       - name: Build and stamp the web bundle
         run: npm run build:bundle
       - name: Desktop end-to-end
@@ -58,3 +66,33 @@ jobs:
           path: release/e2e/*.png
           if-no-files-found: ignore
           retention-days: 14
+
+  # The lesson checker (src/learn/solutions.test.ts) runs every problem in every course for real:
+  # the reference solution must pass its checks and the starter must not. It is thousands of programs,
+  # so it is split across machines: shard k of 3 checks every third problem, from the k-th.
+  lessons:
+    name: Lesson checker (${{ matrix.shard }}/3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci --legacy-peer-deps
+      # Python problems run on CPython: the same Python as the app's Pyodide, with the packages
+      # lessons may import.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Python packages lessons may import
+        run: pip install numpy scipy matplotlib pandas
+      - name: Every problem, shard ${{ matrix.shard }} of 3
+        run: npx vitest run src/learn/solutions.test.ts
+        env:
+          LEARN_SHARD: ${{ matrix.shard }}/3

@@ -186,7 +186,8 @@ $ uv sync
  + gnc-toolkit==0.1.0 (from file:///home/you/gnc-toolkit)
  + numpy==2.4.6
 $ uv run gnc-orbit 400
-7672.6 m/s
+speed    7668.6 m/s
+period     92.6 min
 ```
 
 - `uv lock` resolves the full dependency graph and writes `uv.lock`. It is a **universal lockfile**: one file that records the right choice for every platform and every Python the project allows. That is why it holds 26 packages here, more than any one machine installs — it includes the extras and, for example, an older NumPy for Python 3.10, since NumPy 2.3 and later need Python 3.11.

@@ -86,7 +86,7 @@ The standard itself promises very little here. It guarantees that storing a plai
 Talk about allocations is cheap. Counting them is better. C++ lets a program **[[replace the global operator new|replace-new]]**: if you define your own `operator new(std::size_t)`, every `new` in the program — including the ones inside the standard library — calls yours instead. Put a counter in it, and you can watch the library allocate.
 
 ::: example Counting std::function's allocations
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <cstdlib>
 #include <functional>

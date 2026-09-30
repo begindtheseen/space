@@ -124,7 +124,7 @@ A **[[thread|what-is-a-thread]]** is one line of execution inside a program. A p
 ::: example One counter per thread, one for the program
 `g_shared_count` has static storage duration, so there is exactly one of it. `t_count` is declared `thread_local`, so there is one *per thread*, each starting from its own initial value.
 
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <thread>
 

@@ -78,10 +78,10 @@ frame 5  rate 0.95  count 3  FAULT CONFIRMED
 frame 6  rate 0.90  count 3  FAULT CONFIRMED
 ```
 
-Walk through it. Frame 1 is bad, so the count goes to 1. Frame 2 is good, so the count drops back to 0 — that lonely spike was ignored. Frames 3, 4 and 5 are all bad, so the count climbs 1, 2, 3, and on frame 5 the fault is **[[confirmed|persistence-picture]]**. Notice two flight habits in the code. The count stops growing once it reaches `needed`, so an 8-bit counter can never wrap around to zero after 255 bad frames. And the loop in `update` has no loop at all: the monitor does a fixed, tiny amount of work every frame, which keeps its timing bounded (lessons 01 and 02).
+Walk through it. Frame 1 is bad, so the count goes to 1. Frame 2 is good, so the count drops back to 0 — that lonely spike was ignored. Frames 3, 4 and 5 are all bad, so the count climbs 1, 2, 3, and on frame 5 the fault is **[[confirmed|persistence-picture]]**. Notice two flight habits in the code. The count stops growing once it reaches `needed`, so an 8-bit counter can never wrap around to zero after 255 bad frames. And `update` has no loop at all: the monitor does a fixed, tiny amount of work every frame, which keeps its timing bounded (lessons 01 and 02).
 
 ::: key
-A monitor declares a fault only after the bad condition **persists** for $N$ consecutive frames. A larger $N$ means fewer false alarms but a slower response: detection takes at least $N$ frame periods.
+A monitor declares a fault only after the bad condition **persists** for $N$ consecutive frames. A larger $N$ means fewer false alarms but a slower response: the fault is confirmed on its $N$th bad sample, at least $N - 1$ frame periods after it begins and at most $N$.
 :::
 
 ::: example How much does persistence buy?
@@ -102,7 +102,7 @@ $$
 - $N = 3$: $0.001^3 \times 864000 = 0.000864$ per day. Over a 15-year mission ($15 \times 365.25$ days) that is about 4.7 false alarms in total.
 - $N = 4$: about $8.6 \times 10^{-7}$ per day, or about 0.005 in 15 years.
 
-**The price** is the delay. At 10 Hz one frame is 0.1 s, so the fastest possible detection is $N \times 0.1$ s: 0.3 s for $N = 3$ and 0.4 s for $N = 4$.
+**The price** is the delay. At 10 Hz one frame is 0.1 s, and the fault is confirmed on its $N$th bad sample. If the first bad sample is taken the instant the fault begins, the $N$th comes $N - 1$ frames later, so the fastest possible detection is $(N - 1) \times 0.1$ s: 0.2 s for $N = 3$ and 0.3 s for $N = 4$. If the fault begins just after a sample, add up to one more frame.
 
 **Sanity check.** Each extra frame of persistence cut the false alarms by a factor of 1,000, which is $1/p$, as it should. And a few tenths of a second is short compared with how fast a spacecraft's attitude drifts off, so $N = 3$ or $4$ is a sensible choice here. A thruster that is firing when it should not may need a shorter $N$; a slow battery-temperature trend can afford a much longer one.
 :::
@@ -288,7 +288,7 @@ A monitor runs at 50 Hz with persistence $N = 5$. What is the shortest time from
 :::
 
 ::: answer
-One frame at 50 Hz lasts $1/50 = 0.02$ s. The fault must be seen on 5 frames in a row, so confirmation takes at least $5 \times 0.02 = 0.1$ s. It can take a little longer if the fault starts right after a frame was sampled, because the first bad sample then arrives up to one frame later.
+One frame at 50 Hz lasts $1/50 = 0.02$ s. The fault must be seen on 5 samples in a row. In the best case the first bad sample is taken at the very instant the fault begins, and the fifth comes 4 frames later, so the shortest time is $4 \times 0.02 = 0.08$ s. If the fault starts right after a sample, the first bad sample arrives up to one frame later, so it can take up to $5 \times 0.02 = 0.1$ s.
 :::
 
 ::: check
@@ -339,7 +339,7 @@ The check stays in the flight build, the out-of-range read never happens, and th
 |---|---|---|
 | Fault vs failure | broken part vs wrong vehicle behavior | FDIR catches faults before they become failures |
 | Monitor | code that checks one thing every frame | limit, cross-check, rate, heartbeat, assertion |
-| Persistence $N$ | bad on $N$ frames in a row before acting | false alarms about $p^N$ per frame; delay at least $N$ frames |
+| Persistence $N$ | bad on $N$ frames in a row before acting | false alarms about $p^N$ per frame; delay $N - 1$ to $N$ frame periods |
 | Isolation | which part is bad | two detect, three isolate; or analytical redundancy |
 | Median vote | middle of three values | hides one wild value on the frame it happens |
 | Recovery ladder | smallest fix first, escalate on a budget | retry, spare, reset, safe mode, processor reset |

@@ -175,9 +175,11 @@ Then ask how much error the skew costs. Two samples $\delta t$ apart (read "delt
 It is tempting to pass `tolerance=1.0` "so nothing comes back NaN". In the example above, that would match the fix at $3.0001\,\mathrm{s}$ to IMU sample 640, taken $202\,\mathrm{ms}$ later, and the table would show an acceleration from a different moment as if it belonged to that fix. The NaN was information: it told you about the dropout. Pick the tolerance from the sample rates, not from how the output looks.
 :::
 
-Two more details you will meet at once in real data.
+Three more details you will meet at once in real data.
 
 When the key is a real datetime column (the kind you built in lesson 9), the tolerance must be a time span too: `tolerance=pd.Timedelta("3ms")`. Passing a bare `0.003` raises a `MergeError`, because pandas cannot tell whether you meant seconds or days.
+
+The two datetime keys must also have the same resolution. In pandas 3, `pd.to_timedelta` on floats picks its unit from the values: whole-second GPS times added to a start `Timestamp` end up in microseconds (`datetime64[us, UTC]`), while 200 Hz IMU times end up in nanoseconds (`datetime64[ns, UTC]`). `merge_asof` then stops with `MergeError: incompatible merge keys`. Cast both keys to one unit before merging: `gps["t"] = gps["t"].dt.as_unit("ns")`, and the same for `imu`.
 
 When one table holds several vehicles or several Monte Carlo runs stacked together, pass `by="run"` as well. pandas then matches only rows with the same run, and within that, nearest in time.
 

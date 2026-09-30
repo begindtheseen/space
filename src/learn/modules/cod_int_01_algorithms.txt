@@ -1,0 +1,3791 @@
+@track python
+@course mod-cod_int_01_algorithms
+@module cod_int_01_algorithms
+@title Algorithmic fluency: practice and test
+
+=== int01-l01 | Practice: The honest calibration
+--- for
+l01-the-honest-calibration
+
++++ practice | Timed problems in a week
+--- task
+You plan your practice at about 35 minutes a problem: 25 on the timer, then 10 to review and log it. Write a function `problems_per_week(hours, minutes_each=35)` that returns how many whole problems fit into `hours` hours of practice in a week.
+
+- Round down: a problem you cannot finish inside the week does not count.
+- Return an `int`, even when `hours` is a float such as `7.5`.
+- Raise `ValueError` if `minutes_each` is 0 or less, or if `hours` is negative.
+
+So `problems_per_week(9)` returns `15`: 9 hours is 540 minutes, and 540 / 35 is about 15.4.
+--- starter
+def problems_per_week(hours, minutes_each=35):
+    pass
+--- solution
+def problems_per_week(hours, minutes_each=35):
+    """Whole timed problems that fit into a week of `hours` hours."""
+    if minutes_each <= 0 or hours < 0:
+        raise ValueError("need hours >= 0 and minutes_each > 0")
+    return int(hours * 60 // minutes_each)
+--- hint
+Turn the hours into minutes first, then ask how many whole problems fit.
+--- hint
+`//` divides and rounds down. It gives a float when one side is a float, so wrap the result in `int(...)`.
+--- check case | Nine hours at 35 minutes
+problems_per_week(9)
+=> 15
+--- check case | Seven and a half hours rounds down
+problems_per_week(7.5)
+=> 12
+--- check case | Forty minutes a problem
+problems_per_week(10, 40)
+=> 15
+--- check case | No time, or less than one problem's worth
+(problems_per_week(0), problems_per_week(0.5))
+=> (0, 0)
+--- check test | Always an int
+type(problems_per_week(7.5)) is int
+--- check test | Bad inputs raise ValueError
+raises(ValueError, lambda: problems_per_week(5, 0)) and raises(ValueError, lambda: problems_per_week(-1))
+
++++ practice | What the budget leaves for problems
+--- task
+A study budget pays for the lessons and the exercises first. Whatever is left buys timed problems. Write `problems_in_budget(total_hours, lesson_minutes, exercise_hours, minutes_each=35)` that returns how many whole timed problems the rest of the budget pays for.
+
+- `total_hours` is the whole budget, `lesson_minutes` is reading time in minutes, and `exercise_hours` is exercise time in hours.
+- Round down to whole problems and return an `int`.
+- If lessons and exercises use up the whole budget, or more, return `0`.
+
+So `problems_in_budget(30, 240, 5)` returns `36`: 30 hours minus 4 hours of lessons minus 5 hours of exercises leaves 21 hours, which is 1260 minutes, and 1260 / 35 = 36.
+--- starter
+def problems_in_budget(total_hours, lesson_minutes, exercise_hours, minutes_each=35):
+    pass
+--- solution
+def problems_in_budget(total_hours, lesson_minutes, exercise_hours, minutes_each=35):
+    """Whole timed problems the budget pays for after lessons and exercises."""
+    left = total_hours * 60 - lesson_minutes - exercise_hours * 60   # minutes
+    if left <= 0:
+        return 0
+    return int(left // minutes_each)
+--- hint
+Work in minutes all the way through: convert the two amounts given in hours, subtract, then divide.
+--- hint
+Check for "nothing left" before you divide, so a negative remainder never turns into a negative count.
+--- check case | Thirty hours with 4 h of lessons and 5 h of exercises
+problems_in_budget(30, 240, 5)
+=> 36
+--- check case | The module's own forty hours
+problems_in_budget(40, 300, 7)
+=> 48
+--- check case | Lessons and exercises cost more than the budget
+problems_in_budget(12, 600, 3)
+=> 0
+--- check case | Thirty minutes left is not a whole problem
+problems_in_budget(10, 60, 8.5)
+=> 0
+--- check case | A different time per problem
+problems_in_budget(10, 0, 0, 25)
+=> 24
+
++++ practice | Which patterns still need reps
+--- task
+A practice log is a list of dictionaries, one per timed problem, like `{"pattern": "heap", "minutes": 22, "solved": True}`. The lesson warns that counting problems can hide a pattern you never practiced, so count by pattern instead.
+
+A problem counts as a **rep** for its pattern only when it was solved and took 25 minutes or less, inside the timer.
+
+Write `coverage_gaps(log, patterns, min_reps)` that returns the patterns from the list `patterns` that have fewer than `min_reps` reps, in the order they appear in `patterns`.
+
+- Log entries whose pattern is not in `patterns` are ignored.
+- A pattern with no entries at all has 0 reps.
+--- starter
+def coverage_gaps(log, patterns, min_reps):
+    pass
+--- solution
+def coverage_gaps(log, patterns, min_reps):
+    """Patterns with fewer than min_reps solved-in-time problems, in list order."""
+    reps = {p: 0 for p in patterns}
+    for entry in log:
+        p = entry["pattern"]
+        if p in reps and entry["solved"] and entry["minutes"] <= 25:
+            reps[p] += 1
+    return [p for p in patterns if reps[p] < min_reps]
+--- hint
+Start a dictionary with every pattern at 0, so patterns that never appear in the log are still counted.
+--- hint
+An entry adds a rep only if all three hold: its pattern is being tracked, it was solved, and its minutes are at most 25.
+--- check case | An unsolved problem and a slow one do not count
+coverage_gaps([{"pattern": "heap", "minutes": 20, "solved": True}, {"pattern": "heap", "minutes": 31, "solved": True}, {"pattern": "graph", "minutes": 25, "solved": True}, {"pattern": "window", "minutes": 18, "solved": False}, {"pattern": "trie", "minutes": 10, "solved": True}], ["window", "heap", "graph"], 1)
+=> ["window"]
+--- check case | Two reps needed: every pattern falls short
+coverage_gaps([{"pattern": "heap", "minutes": 20, "solved": True}, {"pattern": "heap", "minutes": 31, "solved": True}, {"pattern": "graph", "minutes": 25, "solved": True}, {"pattern": "window", "minutes": 18, "solved": False}], ["window", "heap", "graph"], 2)
+=> ["window", "heap", "graph"]
+--- check case | Keeps the order of the pattern list
+coverage_gaps([{"pattern": "window", "minutes": 12, "solved": True}], ["graph", "stack", "window"], 1)
+=> ["graph", "stack"]
+--- check case | An empty log
+coverage_gaps([], ["heap", "graph"], 1)
+=> ["heap", "graph"]
+--- check case | Zero reps needed
+coverage_gaps([], ["heap", "graph"], 0)
+=> []
+
++++ practice | The plan that comes up a week short
+--- task
+`weeks_needed(target, hours_per_week, minutes_each=35)` should return how many weeks it takes to do `target` timed problems at `hours_per_week` hours a week. A week you only partly need still has to be lived through, so the answer rounds up.
+
+It is wrong. `weeks_needed(135, 8)` should be `10`: 135 problems at 35 minutes is 78.75 hours, and 9 weeks of 8 hours is only 72, so a tenth week is needed. The function returns `9`.
+
+Fix it. When the hours divide exactly it must not add an extra week: `weeks_needed(120, 7)` is exactly 70 hours, which is `10` weeks, not 11. Zero problems take `0` weeks.
+--- starter
+def weeks_needed(target, hours_per_week, minutes_each=35):
+    """Whole weeks needed to do `target` timed problems."""
+    total_hours = target * minutes_each / 60
+    return int(total_hours / hours_per_week)
+--- solution
+def weeks_needed(target, hours_per_week, minutes_each=35):
+    """Whole weeks needed to do `target` timed problems."""
+    total_minutes = target * minutes_each
+    per_week = hours_per_week * 60
+    return int(-(-total_minutes // per_week))      # divide, rounding up
+--- hint
+`int(9.84)` is 9: it throws the fraction away. You need to round up instead.
+--- hint
+`math.ceil` rounds up. So does whole-number ceiling division, `-(-a // b)`, which also avoids float surprises if you work in minutes.
+--- check case | A partial tenth week still counts
+weeks_needed(135, 8)
+=> 10
+--- check case | Hours that divide exactly add no extra week
+weeks_needed(120, 7)
+=> 10
+--- check case | Forty-six problems at eight hours a week
+weeks_needed(46, 8)
+=> 4
+--- check case | One problem takes one week
+weeks_needed(1, 10)
+=> 1
+--- check case | No problems, no weeks
+weeks_needed(0, 5)
+=> 0
+
++++ question | A log after five weeks
+--- ask
+After five weeks your log shows 72 timed problems: 41 on arrays and strings, 18 on hash maps, 13 on binary search, and none on trees, graphs or heaps. The interview is in three weeks. Which plan follows the lesson's advice?
+--- choice
+Keep going in the same order. 72 is already more than half of 120, so the count is on track.
+--- choice correct
+Spend most of the next weeks on timed tree, graph and heap problems, grouped by pattern, and redo the ones you fail a few days later.
+--- choice
+Switch to about 40 hard tree and graph problems, because hard problems also cover the medium ones.
+--- choice
+Stop practicing and read solutions instead, since 72 problems is enough to recognize every pattern.
+--- why
+The count hides the real gap: three high-yield patterns have no reps at all, and the first thing the interview tests is recognizing which pattern a new problem is. Grouped, timed practice on the missing patterns fixes that, and redoing failures a few days later makes it stick. Hard problems are not the bar, and reading solutions teaches the solutions without teaching you to produce one in 25 minutes.
+
++++ question | One small detail that changes between languages
+--- ask
+In C++, `v` is an empty `std::vector<int>`. What is the value of `v.size() - 1`?
+--- choice
+`-1`
+--- choice
+`0`
+--- choice correct
+A huge positive number, because `size()` is unsigned and subtracting 1 from 0 wraps around.
+--- choice
+It does not compile.
+--- why
+`size()` returns an unsigned type, which cannot hold a negative number, so 0 minus 1 wraps around to the largest value the type can hold. A loop such as `for (i = 0; i <= v.size() - 1; ++i)` then runs far past the end of an empty vector. Python's `len(xs) - 1` is simply -1. Small differences like this are why the lesson says to pick one live-coding language early and do every timed problem in it.
+
+=== int01-l02 | Practice: Complexity you can say out loud
+--- for
+l02-complexity-out-loud
+
++++ practice | Which shapes fit the step budget
+--- task
+An interviewer tells you how big the input can be. You know roughly how many steps you can afford. Write `fits_budget(n, budget)` that returns the names of the growth classes whose step count at input size `n` is at most `budget`, in this order:
+
+`"O(1)"`, `"O(log n)"`, `"O(n)"`, `"O(n log n)"`, `"O(n^2)"`, `"O(2^n)"`
+
+Use these step counts: 1; log base 2 of n; n; n times log base 2 of n; n squared; 2 to the power n. `n` is a whole number, at least 1. You can get log base 2 from `math.log2`.
+
+So `fits_budget(10**6, 10**8)` returns `["O(1)", "O(log n)", "O(n)", "O(n log n)"]`: n log n is about 2 × 10^7 steps, but n squared is 10^12.
+--- starter
+import math
+
+def fits_budget(n, budget):
+    pass
+--- solution
+import math
+
+def fits_budget(n, budget):
+    """The growth classes whose step count at size n is at most budget."""
+    steps = [
+        ("O(1)", 1),
+        ("O(log n)", math.log2(n)),
+        ("O(n)", n),
+        ("O(n log n)", n * math.log2(n)),
+        ("O(n^2)", n * n),
+        ("O(2^n)", 2 ** n),
+    ]
+    return [name for name, count in steps if count <= budget]
+--- hint
+Make a list of (name, step count) pairs in the given order, then keep the names whose count is at most the budget.
+--- hint
+Python's whole numbers have no size limit, so `2 ** n` works even for a large `n`; comparing it with the budget is still quick.
+--- check case | A million items and 10^8 steps
+fits_budget(10**6, 10**8)
+=> ["O(1)", "O(log n)", "O(n)", "O(n log n)"]
+--- check case | Twenty items: 2^20 is just over a million
+fits_budget(20, 10**6)
+=> ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"]
+--- check case | Twenty items with room for every subset
+fits_budget(20, 2**20)
+=> ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)", "O(2^n)"]
+--- check case | A tiny budget leaves only constant time
+fits_budget(10**6, 10)
+=> ["O(1)"]
+--- check case | One item: only 2^1 is over a budget of 1
+fits_budget(1, 1)
+=> ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"]
+
++++ practice | Growing by a fixed step
+--- task
+The lesson showed that a growable array which doubles makes fewer than 2n copies for n pushes. Here is the other design. The array starts with room for `step` items. When it is full and one more item is pushed, it moves to a block `step` slots bigger and copies every item it holds.
+
+Write `copies_fixed_growth(n, step)` that returns the total number of item copies made by `n` pushes into an empty array.
+
+- So `copies_fixed_growth(35, 10)` is `60`: the array is full at 10, 20 and 30 items, and those three moves copy 10 + 20 + 30 items.
+- Raise `ValueError` if `step` is less than 1.
+- It must handle `n = 10**6` in well under a second.
+--- starter
+def copies_fixed_growth(n, step):
+    pass
+--- solution
+def copies_fixed_growth(n, step):
+    """Item copies made by n pushes into an array that grows by `step` slots."""
+    if step < 1:
+        raise ValueError("step must be at least 1")
+    copies = 0
+    capacity = step
+    while capacity < n:          # pushing item capacity + 1 forces a move
+        copies += capacity       # every item held is copied once
+        capacity += step
+    return copies
+--- hint
+A move happens only when the array is full and another item still has to go in: full at `step` items, then at `2 * step`, and so on, while that size is less than `n`.
+--- hint
+You only need one loop step per move, not one per push: add the current capacity to the total, then grow the capacity by `step`.
+--- check case | Thirty-five pushes, step 10
+copies_fixed_growth(35, 10)
+=> 60
+--- check case | Exactly full, but nothing more was pushed
+copies_fixed_growth(10, 10)
+=> 0
+--- check case | One push past full
+copies_fixed_growth(11, 10)
+=> 10
+--- check case | No pushes
+copies_fixed_growth(0, 4)
+=> 0
+--- check case | A million pushes, growing by 1000: about n squared over 2000
+copies_fixed_growth(10**6, 1000)
+=> 499500000
+--- check test | A step below 1 raises ValueError
+raises(ValueError, lambda: copies_fixed_growth(5, 0))
+
++++ practice | The closest pair of readings
+--- task
+Write `min_gap(readings)` that returns the smallest difference between two readings at different positions in the list. The readings are numbers in any order.
+
+- Raise `ValueError` if there are fewer than two readings.
+- Two equal readings give a gap of 0.
+- The check runs it on 200,000 readings. Comparing every pair would be about 2 × 10^10 comparisons, far too many. Aim for O(n log n) time: after sorting, the closest pair must sit side by side.
+--- starter
+def min_gap(readings):
+    pass
+--- solution
+def min_gap(readings):
+    """Smallest difference between two readings. O(n log n) time, O(n) extra space."""
+    if len(readings) < 2:
+        raise ValueError("need at least two readings")
+    s = sorted(readings)
+    return min(s[k + 1] - s[k] for k in range(len(s) - 1))
+--- hint
+Sort a copy first. In sorted order, a reading's closest partner is one of its two neighbours.
+--- hint
+After sorting, walk the neighbours once and keep the smallest difference. Sorting is O(n log n) and the walk is O(n).
+--- check case | Four readings in any order
+min_gap([40, 12, 29, 33])
+=> 4
+--- check case | Equal readings
+min_gap([5, 5])
+=> 0
+--- check case | Negative readings
+min_gap([-3, 7, -10])
+=> 7
+--- check test | One reading raises ValueError
+raises(ValueError, lambda: min_gap([1]))
+--- check case | 200,000 readings in scrambled order
+min_gap([(i * 7919) % 200003 for i in range(200000)])
+=> 1
+--- check test | Leaves the caller's list alone
+(lambda xs: (min_gap(xs), xs)[1] == [9, 1, 5])([9, 1, 5])
+
++++ practice | The sum that runs out of stack
+--- task
+`total(xs)` should add up a list of numbers of any length. It is right on short lists, but a flight log of 100,000 samples crashes it with `RecursionError`.
+
+Every call waits on the call stack until the ones after it return, so it uses O(n) stack space. Each `xs[1:]` also copies the rest of the list, which makes the time O(n^2).
+
+Rewrite it to run in O(n) time with O(1) extra space. Do not use the built-in `sum`.
+--- starter
+def total(xs):
+    """Sum of a list of numbers."""
+    if not xs:
+        return 0
+    return xs[0] + total(xs[1:])
+--- solution
+def total(xs):
+    """Sum of a list of numbers. O(n) time, O(1) extra space."""
+    running = 0
+    for x in xs:
+        running += x
+    return running
+--- hint
+A loop needs no call stack at all. Keep one running total and add each number to it.
+--- check case | A short list
+total([2, 5, -1])
+=> 6
+--- check case | An empty list
+total([])
+=> 0
+--- check case | A hundred thousand samples
+total(list(range(100000)))
+=> 4999950000
+--- check source absent | Does not use the built-in sum
+\bsum\s*\(
+
++++ question | Two sizes in one loop
+--- ask
+Let `n` be `len(xs)`, and let `k` be much smaller than `n`. What is the time complexity of this function?
+
+```python
+def later_bigger(xs, k):
+    count = 0
+    for i in range(len(xs)):
+        for j in range(i + 1, min(i + k, len(xs))):
+            if xs[j] > xs[i]:
+                count += 1
+    return count
+```
+--- choice
+O(n)
+--- choice
+O(n^2)
+--- choice correct
+O(n · k)
+--- choice
+O(k)
+--- why
+The outer loop runs n times and the inner loop at most k - 1 times for each, so the inner line runs at most about n·k times: O(n·k). It is not O(n^2), because the inner loop never looks more than k places ahead. It is only O(n) if k is a fixed constant, so name both letters out loud instead of quietly saying "O(n)".
+
++++ question | The hidden copy
+--- ask
+Let `n` be `len(xs)`. What are the time and the extra space of this function?
+
+```python
+def spread(xs):
+    s = sorted(xs)
+    return s[-1] - s[0]
+```
+--- choice
+O(n) time and O(1) extra space
+--- choice correct
+O(n log n) time and O(n) extra space
+--- choice
+O(n log n) time and O(1) extra space
+--- choice
+O(n^2) time and O(n) extra space
+--- why
+`sorted` builds a new sorted list, which costs O(n log n) time and O(n) extra memory for the copy, even though the function only returns one number. `max(xs) - min(xs)` gives the same answer in O(n) time and O(1) extra space. Counting copies is part of the space term.
+
+=== int01-l03 | Practice: Two pointers and sliding windows
+--- for
+l03-two-pointers-and-sliding-windows
+
++++ practice | Pairs that fit a mass limit
+--- task
+A kit holds two spare parts, and their masses together must be at most a limit. Write `count_pairs_at_most(masses, limit)` that returns how many pairs of positions `i < j` have `masses[i] + masses[j] <= limit`.
+
+- `masses` is sorted from lightest to heaviest.
+- Use two pointers from opposite ends: O(n) time, O(1) extra space. The check runs it on 200,000 masses.
+
+So `count_pairs_at_most([1, 2, 3, 5, 8], 7)` is `5`: the pairs (1, 2), (1, 3), (1, 5), (2, 3) and (2, 5).
+--- starter
+def count_pairs_at_most(masses, limit):
+    pass
+--- solution
+def count_pairs_at_most(masses, limit):
+    """masses sorted ascending. O(n) time, O(1) extra space."""
+    i, j = 0, len(masses) - 1
+    count = 0
+    while i < j:
+        if masses[i] + masses[j] <= limit:
+            count += j - i      # masses[i] fits with every partner from i + 1 to j
+            i += 1
+        else:
+            j -= 1              # masses[j] is too heavy even for the lightest part left
+    return count
+--- hint
+Put `i` on the lightest part and `j` on the heaviest. If the pair fits, what does that tell you about `masses[i]` with every part between them?
+--- hint
+When the pair fits, all `j - i` partners of `masses[i]` fit, so add them at once and move `i` right. When it does not fit, `masses[j]` fits with nothing left, so move `j` left.
+--- check case | Five parts, limit 7
+count_pairs_at_most([1, 2, 3, 5, 8], 7)
+=> 5
+--- check case | No parts, and one part
+(count_pairs_at_most([], 5), count_pairs_at_most([3], 5))
+=> (0, 0)
+--- check case | Equal masses
+count_pairs_at_most([2, 2, 2, 2], 4)
+=> 6
+--- check case | Nothing fits
+count_pairs_at_most([1, 2, 3], 2)
+=> 0
+--- check case | Negative values
+count_pairs_at_most([-5, -1, 0, 4], 0)
+=> 4
+--- check case | 200,000 parts
+count_pairs_at_most(list(range(200000)), 200000)
+=> 10000099999
+
++++ practice | Squeeze out the glitches in place
+--- task
+Write `keep_in_range(readings, lo, hi)` that moves every reading with `lo <= r <= hi` to the front of the same list, keeping their original order, and returns how many there are.
+
+- Work in place with a slow and a fast pointer. Do not build a second list, and do not change the list's length: what is left after the kept readings does not matter.
+- O(n) time, O(1) extra space.
+
+So with `xs = [3, 99, 4, -50, 5]`, `keep_in_range(xs, 0, 10)` returns `3`, and `xs[:3]` is then `[3, 4, 5]`.
+--- starter
+def keep_in_range(readings, lo, hi):
+    pass
+--- solution
+def keep_in_range(readings, lo, hi):
+    """Move in-range readings to the front, in order. O(n) time, O(1) extra space."""
+    write = 0                               # readings[:write] holds the kept values
+    for read in range(len(readings)):       # the fast pointer looks at every reading
+        r = readings[read]
+        if lo <= r <= hi:
+            readings[write] = r
+            write += 1
+    return write
+--- hint
+The fast pointer visits every position. The slow pointer marks where the next kept reading goes.
+--- hint
+When a reading is in range, copy it to the slow pointer's position and move the slow pointer on. At the end, the slow pointer is the count.
+--- check case | Returns the count and fills the front in order
+(lambda xs: (keep_in_range(xs, 0, 10), xs[:3]))([3, 99, 4, -50, 5])
+=> (3, [3, 4, 5])
+--- check case | The list keeps its length
+(lambda xs: (keep_in_range(xs, 0, 10), len(xs)))([3, 99, 4, -50, 5])
+=> (3, 5)
+--- check case | Both limits are allowed
+(lambda xs: (keep_in_range(xs, 1, 2), xs[:2]))([0, 1, 3, 2])
+=> (2, [1, 2])
+--- check case | Nothing in range
+keep_in_range([100, 200], 0, 10)
+=> 0
+--- check case | An empty list
+keep_in_range([], 0, 10)
+=> 0
+--- check case | Everything in range stays where it is
+(lambda xs: (keep_in_range(xs, 0, 10), xs))([1, 2, 3])
+=> (3, [1, 2, 3])
+
++++ practice | The shortest charging stretch
+--- task
+A battery log has one positive energy value per minute, in watt-hours. Write `shortest_stretch(energy, target)` that returns the length of the shortest run of consecutive minutes whose total is at least `target`, or `0` if no run reaches it.
+
+- Every value is positive and `target` is positive.
+- Use a variable-size window: O(n) time, O(1) extra space. The check runs it on 200,000 minutes.
+
+So `shortest_stretch([2, 3, 1, 2, 4, 3], 7)` is `2`: minutes 4 and 5 give 4 + 3 = 7.
+--- starter
+def shortest_stretch(energy, target):
+    pass
+--- solution
+def shortest_stretch(energy, target):
+    """Shortest run with total >= target, or 0. O(n) time, O(1) extra space."""
+    best = 0
+    left = 0
+    window = 0                          # total of energy[left : right + 1]
+    for right, e in enumerate(energy):
+        window += e
+        while window >= target:         # valid: record it, then try a shorter one
+            length = right - left + 1
+            if best == 0 or length < best:
+                best = length
+            window -= energy[left]
+            left += 1
+    return best
+--- hint
+Grow the window on the right one minute at a time. As long as its total reaches the target, it is a candidate: record its length and shrink it from the left.
+--- hint
+Because every value is positive, dropping the leftmost minute can only lower the total, so the left edge only ever moves forward. Each edge moves at most n times.
+--- check case | The example
+shortest_stretch([2, 3, 1, 2, 4, 3], 7)
+=> 2
+--- check case | No run reaches the target
+shortest_stretch([1, 1, 1], 5)
+=> 0
+--- check case | An empty log
+shortest_stretch([], 3)
+=> 0
+--- check case | One minute is enough
+shortest_stretch([10], 7)
+=> 1
+--- check case | Only the whole log works
+shortest_stretch([1, 2, 3, 4, 5], 15)
+=> 5
+--- check case | The best run is at the very end
+shortest_stretch([1, 1, 1, 1, 6, 1, 7], 8)
+=> 2
+--- check case | 200,000 minutes
+shortest_stretch([1] * 200000, 150000)
+=> 150000
+
++++ practice | At most k channels in a row
+--- task
+A downlink log is a string of channel letters. Write `longest_k_channels(log, k)` that returns the length of the longest substring (a run of consecutive letters) that uses at most `k` different letters.
+
+- `k` is a whole number, 0 or more.
+- Keep a dictionary of how many times each letter appears in the current window. O(n) time.
+
+So `longest_k_channels("GGNCNNG", 2)` is `4`: `"NCNN"` uses only N and C.
+--- starter
+def longest_k_channels(log, k):
+    pass
+--- solution
+def longest_k_channels(log, k):
+    """Longest substring with at most k distinct letters. O(n) time, O(k) extra space."""
+    counts = {}                 # letter -> how many times it is in the window
+    left = 0
+    best = 0
+    for right, ch in enumerate(log):
+        counts[ch] = counts.get(ch, 0) + 1
+        while len(counts) > k:  # too many letters: shrink from the left
+            out = log[left]
+            counts[out] -= 1
+            if counts[out] == 0:
+                del counts[out]
+            left += 1
+        best = max(best, right - left + 1)
+    return best
+--- hint
+The number of different letters in the window is the number of keys in your dictionary, as long as you delete a key when its count drops to 0.
+--- hint
+Add the new letter on the right. While there are more than `k` keys, remove letters from the left. Then the window is valid: compare its length with the best.
+--- hint
+With `k = 0` no letter is allowed, so every window shrinks back to nothing. Make sure your loop handles that without an error.
+--- check case | The example
+longest_k_channels("GGNCNNG", 2)
+=> 4
+--- check case | An empty log
+longest_k_channels("", 2)
+=> 0
+--- check case | One channel all the way
+longest_k_channels("AAAA", 1)
+=> 4
+--- check case | k is zero
+longest_k_channels("ABC", 0)
+=> 0
+--- check case | k covers every letter
+longest_k_channels("ABCABC", 3)
+=> 6
+--- check case | Only single letters fit
+longest_k_channels("ABAC", 1)
+=> 1
+
++++ practice | A minimum that lingers one step too long
+--- task
+`min_window(v, w)` should return the minimum of every window of `w` consecutive values, using a monotonic deque of indices whose values rise from front to back. It returns an empty list when `w` is out of range.
+
+It is wrong. `min_window([1, 5, 6, 7], 2)` should be `[1, 5, 6]`, but it returns `[1, 1, 5]`: a value that has already left the window stays at the front one step too long. Find the line and fix it.
+--- starter
+from collections import deque
+
+def min_window(v, w):
+    """Minimum of every w consecutive values. O(n) time, O(w) extra space."""
+    n = len(v)
+    if w < 1 or w > n:
+        return []
+    dq = deque()            # indices; their values rise from front to back
+    out = []
+    for i in range(n):
+        while dq and v[dq[-1]] >= v[i]:
+            dq.pop()
+        dq.append(i)
+        if dq[0] < i - w:
+            dq.popleft()
+        if i >= w - 1:
+            out.append(v[dq[0]])
+    return out
+--- solution
+from collections import deque
+
+def min_window(v, w):
+    """Minimum of every w consecutive values. O(n) time, O(w) extra space."""
+    n = len(v)
+    if w < 1 or w > n:
+        return []
+    dq = deque()            # indices; their values rise from front to back
+    out = []
+    for i in range(n):
+        while dq and v[dq[-1]] >= v[i]:
+            dq.pop()
+        dq.append(i)
+        if dq[0] <= i - w:
+            dq.popleft()
+        if i >= w - 1:
+            out.append(v[dq[0]])
+    return out
+--- hint
+The window ending at index `i` holds the indices from `i - w + 1` to `i`. Which index is the first one that is no longer in it?
+--- hint
+Index `i - w` has just left the window, so the front must go when it is at most `i - w`, not only when it is smaller.
+--- check case | The example
+min_window([1, 5, 6, 7], 2)
+=> [1, 5, 6]
+--- check case | Seven values, window of 3
+min_window([4, 2, 12, 3, 8, 1, 6], 3)
+=> [2, 2, 3, 1, 1]
+--- check case | A window of 1 is every value
+min_window([3, 1, 2], 1)
+=> [3, 1, 2]
+--- check case | All equal
+min_window([7, 7, 7], 2)
+=> [7, 7]
+--- check case | Window bigger than the list
+min_window([5, 4], 3)
+=> []
+
++++ question | Without the check on left
+--- ask
+This version of the longest-substring function leaves out the test `last_seen[ch] >= left`. What does it print?
+
+```python
+def longest_unique(s):
+    last_seen = {}
+    left = 0
+    best = 0
+    for right, ch in enumerate(s):
+        if ch in last_seen:
+            left = last_seen[ch] + 1
+        last_seen[ch] = right
+        best = max(best, right - left + 1)
+    return best
+
+print(longest_unique("tmmzuxt"))
+```
+--- answer
+6
+six
+--- why
+It prints 6, but the right answer is 5 (`"mzuxt"`). The second `m` moves `left` to 2. When the final `t` arrives, its earlier copy is at index 0, which is already outside the window, yet the code sets `left` to 0 + 1 = 1. The left edge moves backward, and the window `"mmzuxt"`, which repeats `m`, is counted as length 6. Only jump `left` forward: the check `last_seen[ch] >= left` is what keeps it from going back.
+
+=== int01-l04 | Practice: Hash maps and binary search
+--- for
+l04-hash-maps-and-binary-search
+
++++ practice | The first channel heard only once
+--- task
+Write `first_unique(ids)` that returns the first channel ID in the list that appears exactly once in the whole list, or `None` if every ID repeats.
+
+- Count with a dictionary, then walk the list a second time: O(n) average time, O(k) extra space for k different IDs.
+- Calling `ids.count(x)` for every item would be O(n^2); the check runs it on 200,001 IDs.
+
+So `first_unique([205, 101, 205, 330, 101, 412])` is `330`.
+--- starter
+def first_unique(ids):
+    pass
+--- solution
+def first_unique(ids):
+    """First ID that appears exactly once, or None. O(n) average time, O(k) space."""
+    counts = {}
+    for x in ids:
+        counts[x] = counts.get(x, 0) + 1
+    for x in ids:                       # second pass keeps the list's order
+        if counts[x] == 1:
+            return x
+    return None
+--- hint
+The first pass fills a dictionary from each ID to how many times it appears.
+--- hint
+The second pass walks the list in its original order and returns the first ID whose count is 1.
+--- check case | The example
+first_unique([205, 101, 205, 330, 101, 412])
+=> 330
+--- check case | An empty list
+first_unique([])
+=> None
+--- check case | Everything repeats
+first_unique([7, 7])
+=> None
+--- check case | Works for text IDs too
+first_unique(["IMU", "GPS", "IMU"])
+=> "GPS"
+--- check case | 200,001 IDs with the only unique one last
+first_unique(list(range(100000)) * 2 + [-1])
+=> -1
+
++++ practice | The most recent packet at or before a time
+--- task
+Write `last_at_or_before(times, t)`: `times` is a sorted list of packet times, possibly with repeats. Return the index of the last packet whose time is at most `t`, or `-1` if every packet is later than `t`.
+
+- Write the binary search yourself, with `lo`, `hi` and an invariant: O(log n) time. Do not import `bisect`.
+- The check asks 100,000 questions of a list of a million times, so a scan from the start is far too slow.
+
+So with `times = [5, 12, 12, 30, 41]`, `last_at_or_before(times, 12)` is `2` and `last_at_or_before(times, 4)` is `-1`.
+--- starter
+def last_at_or_before(times, t):
+    pass
+--- solution
+def last_at_or_before(times, t):
+    """Index of the last time <= t, or -1. O(log n) time, O(1) space."""
+    lo, hi = 0, len(times)          # the first index with times[i] > t is in [lo, hi]
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if times[mid] <= t:
+            lo = mid + 1            # times[mid] is not later than t: the answer is past it
+        else:
+            hi = mid                # times[mid] is later than t: it might be the first such
+    return lo - 1                   # the one just before the first later time
+--- hint
+Find the first index whose time is greater than `t`. The answer is the index just before it.
+--- hint
+Keep the lesson's invariant: that first index is always in the range `lo` to `hi`, both included. If `times[mid] <= t`, it must be past `mid`; otherwise `mid` itself might be it.
+--- check case | A repeated time: the last copy
+last_at_or_before([5, 12, 12, 30, 41], 12)
+=> 2
+--- check case | Earlier than everything
+last_at_or_before([5, 12, 12, 30, 41], 4)
+=> -1
+--- check case | Between two times
+last_at_or_before([5, 12, 12, 30, 41], 29)
+=> 2
+--- check case | At or past the end
+(last_at_or_before([5, 12, 12, 30, 41], 41), last_at_or_before([5, 12, 12, 30, 41], 100))
+=> (4, 4)
+--- check case | An empty list
+last_at_or_before([], 7)
+=> -1
+--- check case | 100,000 questions of a million times
+(lambda big: sum(last_at_or_before(big, q) for q in range(1, 200001, 2)))(list(range(0, 2000000, 2)))
+=> 4999950000
+--- check source absent | Writes the search by hand
+\bbisect\b
+
++++ practice | Packets per channel in a time window
+--- task
+Packets arrive as `(channel, t)` pairs, in no particular order. Write `channel_counts(packets, queries)`: each query is `(channel, start, end)`, and its answer is how many packets of that channel have `start <= t <= end`. Return the answers as a list, one per query, in order.
+
+- A channel with no packets gives 0. A query with `start > end` gives 0.
+- Group the times by channel in a dictionary, sort each group once, and answer each query with two binary searches. You may use `bisect`.
+- The check runs 200,000 packets and 100,000 queries.
+
+So with `packets = [("GPS", 30), ("IMU", 12), ("GPS", 10), ("GPS", 20)]`, the query `("GPS", 10, 25)` gives `2`.
+--- starter
+def channel_counts(packets, queries):
+    pass
+--- solution
+import bisect
+
+def channel_counts(packets, queries):
+    """Packets per (channel, start, end) query. O(n log n + m log n) time, O(n) space."""
+    by_channel = {}
+    for ch, t in packets:
+        by_channel.setdefault(ch, []).append(t)
+    for times in by_channel.values():
+        times.sort()
+    out = []
+    for ch, start, end in queries:
+        times = by_channel.get(ch, [])
+        count = bisect.bisect_right(times, end) - bisect.bisect_left(times, start)
+        out.append(max(0, count))
+    return out
+--- hint
+A dictionary from channel to a list of its times turns one big question into many small ones. Sort each list once, before any query.
+--- hint
+In a sorted list, the number of times in `start..end` is (the first index past `end`) minus (the first index at or after `start`): `bisect_right` and `bisect_left`.
+--- check case | The example, and a channel with no packets
+channel_counts([("GPS", 30), ("IMU", 12), ("GPS", 10), ("GPS", 20)], [("GPS", 10, 25), ("IMU", 0, 100), ("RAD", 0, 100)])
+=> [2, 1, 0]
+--- check case | Both ends of the window count
+channel_counts([("A", 5), ("A", 5), ("A", 9)], [("A", 5, 9), ("A", 6, 8)])
+=> [3, 0]
+--- check case | A window with start after end
+channel_counts([("A", 5)], [("A", 9, 1)])
+=> [0]
+--- check case | No packets at all
+channel_counts([], [("A", 0, 10)])
+=> [0]
+--- check case | 200,000 packets and 100,000 queries
+sum(channel_counts([(i % 7, (i * 31) % 100000) for i in range(200000)], [(q % 7, q, q + 999) for q in range(0, 100000, 1)]))
+=> 28428716
+
++++ practice | Pairs that make the target, with repeats
+--- task
+Write `count_pairs(masses, target)` that returns how many pairs of positions `i < j` have `masses[i] + masses[j] == target`.
+
+- The list is not sorted and may hold repeats.
+- One pass with a dictionary of counts seen so far: O(n) average time.
+- A single value never pairs with itself: it needs a second copy.
+
+So `count_pairs([12, 38, 25, 25, 12], 50)` is `3`: each of the two 12s pairs with the 38, and the two 25s pair with each other.
+--- starter
+def count_pairs(masses, target):
+    pass
+--- solution
+def count_pairs(masses, target):
+    """Pairs i < j with masses[i] + masses[j] == target. O(n) average time, O(n) space."""
+    seen = {}                               # value -> how many times it came earlier
+    pairs = 0
+    for m in masses:
+        pairs += seen.get(target - m, 0)    # m pairs with every earlier partner
+        seen[m] = seen.get(m, 0) + 1        # only now may later values pair with m
+    return pairs
+--- hint
+When you reach a value `m`, the pairs it completes are with the earlier values equal to `target - m`. A dictionary of counts tells you how many there were.
+--- hint
+Add `m` to the counts only after you have looked up its partner, so it never pairs with itself.
+--- check case | The example
+count_pairs([12, 38, 25, 25, 12], 50)
+=> 3
+--- check case | A single 25 cannot pair with itself
+count_pairs([25], 50)
+=> 0
+--- check case | Three equal halves make three pairs
+count_pairs([25, 25, 25], 50)
+=> 3
+--- check case | Negative values and zeros
+count_pairs([-5, 5, 0, 0], 0)
+=> 2
+--- check case | An empty list
+count_pairs([], 10)
+=> 0
+--- check case | A hundred thousand equal values
+count_pairs([1] * 100000, 2)
+=> 4999950000
+
++++ practice | The pump rate that comes out one short
+--- task
+Tanks are filled one after another by a pump running at a whole number of kilograms per second. A tank needing `kg` kilograms takes `kg / rate` seconds, rounded up to a whole second. `min_rate(tanks, limit)` should return the smallest rate that fills every tank within `limit` seconds in total, or `-1` if even the fastest useful rate cannot: at a rate of `max(tanks)`, every tank takes one second, so more tanks than seconds is hopeless.
+
+A faster pump never takes longer, so the code binary searches the rate. But it is wrong: `min_rate([38, 35], 4)` should be `19`, and it returns `18`, which needs 5 seconds. Find the bug and fix it. `tanks` is never empty.
+--- starter
+def seconds_needed(tanks, rate):
+    return sum(-(-kg // rate) for kg in tanks)     # each tank rounds up to whole seconds
+
+def min_rate(tanks, limit):
+    """Smallest whole rate that fills every tank within limit seconds, or -1."""
+    if len(tanks) > limit:
+        return -1
+    lo, hi = 1, max(tanks)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if seconds_needed(tanks, mid) <= limit:
+            hi = mid - 1
+        else:
+            lo = mid + 1
+    return lo
+--- solution
+def seconds_needed(tanks, rate):
+    return sum(-(-kg // rate) for kg in tanks)     # each tank rounds up to whole seconds
+
+def min_rate(tanks, limit):
+    """Smallest whole rate that fills every tank within limit seconds, or -1."""
+    if len(tanks) > limit:
+        return -1
+    lo, hi = 1, max(tanks)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if seconds_needed(tanks, mid) <= limit:
+            hi = mid            # mid works, so it might be the answer: keep it
+        else:
+            lo = mid + 1
+    return lo
+--- hint
+Say the invariant out loud: the answer is always somewhere from `lo` to `hi`. Which branch can throw the answer away?
+--- hint
+When `mid` works, it might be the smallest rate that works. Setting `hi = mid - 1` drops it from the range.
+--- check case | Two tanks in four seconds
+min_rate([38, 35], 4)
+=> 19
+--- check case | Five tanks in six seconds
+min_rate([30, 11, 23, 4, 20], 6)
+=> 23
+--- check case | One tank in eleven seconds
+min_rate([46], 11)
+=> 5
+--- check case | Rate 1 is too slow by one second
+min_rate([9], 8)
+=> 2
+--- check case | More tanks than seconds
+min_rate([30, 11, 23, 4, 20], 4)
+=> -1
+
++++ question | Sort once, then search many times
+--- ask
+You sort `n` timestamps once, then answer `m` questions of the form "first timestamp at or after t", each with `bisect_left`. What is the total time?
+--- choice
+O(n · m)
+--- choice correct
+O(n log n + m log n)
+--- choice
+O(m log n)
+--- choice
+O(n + m)
+--- why
+Sorting costs O(n log n), paid once. Each question is then a binary search, O(log n), so m of them cost O(m log n). Leaving out the sort is the common slip: "O(m log n)" is true only if the data arrived sorted. Scanning the list for every question would be O(n · m), which is what the sort buys you out of.
+
+=== int01-l05 | Practice: Sorting, intervals, stacks, queues and linked lists
+--- for
+l05-sorting-intervals-stacks-and-lists
+
++++ practice | Can one antenna take every pass?
+--- task
+A single ground antenna can track one satellite pass at a time. Each pass is a `(start, end)` pair of minutes. Write `can_serve_all(passes)` that returns `True` if no two passes overlap, and `False` otherwise.
+
+- A pass may start at the exact minute the previous one ends: `(95, 108)` and `(108, 120)` do not overlap.
+- The passes arrive in any order. Sort first, then walk once: O(n log n) time.
+- No passes, or one pass, is always fine.
+--- starter
+def can_serve_all(passes):
+    pass
+--- solution
+def can_serve_all(passes):
+    """True if no two passes overlap (touching is fine). O(n log n) time, O(n) space."""
+    ordered = sorted(passes)                    # by start time
+    for (s1, e1), (s2, e2) in zip(ordered, ordered[1:]):
+        if s2 < e1:                             # starts before the previous one ends
+            return False
+    return True
+--- hint
+After sorting by start time, a pass can only clash with the pass just before it in the sorted order.
+--- hint
+Two neighbours clash when the later one starts strictly before the earlier one ends. Starting exactly at the end is allowed.
+--- check case | Two passes overlap
+can_serve_all([(610, 622), (95, 108), (600, 615)])
+=> False
+--- check case | Touching passes are fine
+can_serve_all([(300, 310), (108, 120), (95, 108)])
+=> True
+--- check case | One pass inside another
+can_serve_all([(0, 100), (10, 20)])
+=> False
+--- check case | No passes, and one pass
+(can_serve_all([]), can_serve_all([(5, 9)]))
+=> (True, True)
+
++++ practice | Gaps in the contact schedule
+--- task
+Write `free_gaps(windows, day_start, day_end)` that returns the stretches of time between `day_start` and `day_end` when the satellite is in contact with no station, as a list of `(start, end)` pairs in time order.
+
+- `windows` holds `(start, end)` contact windows in any order. They may overlap, touch, or reach outside the day; only the part inside the day matters.
+- Never report a gap of length zero. `day_start` is less than `day_end`.
+- No windows means the whole day is one gap.
+
+So `free_gaps([(100, 112), (95, 108), (340, 351)], 0, 400)` is `[(0, 95), (112, 340), (351, 400)]`.
+--- starter
+def free_gaps(windows, day_start, day_end):
+    pass
+--- solution
+def free_gaps(windows, day_start, day_end):
+    """Uncovered stretches of [day_start, day_end]. O(n log n) time, O(n) space."""
+    gaps = []
+    cursor = day_start                  # everything before cursor is covered or reported
+    for start, end in sorted(windows):
+        if start > cursor:
+            gaps.append((cursor, min(start, day_end)))
+        cursor = max(cursor, end)       # a long window may swallow short ones
+        if cursor >= day_end:
+            return gaps
+    gaps.append((cursor, day_end))
+    return gaps
+--- hint
+Sort the windows by start time and keep a cursor: the time up to which everything is already covered or already reported as a gap.
+--- hint
+A window that starts after the cursor leaves a gap from the cursor to its start. Either way, move the cursor to the later of itself and the window's end, never backward.
+--- hint
+Stop as soon as the cursor reaches the end of the day. If the loop finishes first, the rest of the day is one last gap.
+--- check case | The example
+free_gaps([(100, 112), (95, 108), (340, 351)], 0, 400)
+=> [(0, 95), (112, 340), (351, 400)]
+--- check case | No windows at all
+free_gaps([], 0, 60)
+=> [(0, 60)]
+--- check case | Covered from start to end
+free_gaps([(0, 30), (25, 60)], 0, 60)
+=> []
+--- check case | A long window swallows a short one
+free_gaps([(10, 50), (20, 30), (55, 60)], 0, 60)
+=> [(0, 10), (50, 55)]
+--- check case | Windows reaching outside the day
+free_gaps([(-20, 5), (58, 90)], 0, 60)
+=> [(5, 58)]
+--- check case | Touching windows leave no zero-length gap
+free_gaps([(0, 10), (10, 20)], 0, 30)
+=> [(20, 30)]
+
++++ practice | How deep do the brackets go?
+--- task
+A command script uses `()`, `[]` and `{}`. Write `nesting_depth(script)` that returns the deepest level of bracket nesting, or `-1` if the brackets are not balanced: a closer of the wrong kind, a closer with no opener, or openers left open at the end.
+
+- Every other character is ignored.
+- A script with no brackets has depth 0.
+
+So `nesting_depth("seq{ burn(3); wait[ (2) ] }")` is `3`: the `(2)` sits inside `[ ]`, inside `{ }`.
+--- starter
+def nesting_depth(script):
+    pass
+--- solution
+CLOSES = {")": "(", "]": "[", "}": "{"}
+
+def nesting_depth(script):
+    """Deepest bracket nesting, or -1 if unbalanced. O(n) time, O(n) space."""
+    stack = []
+    deepest = 0
+    for ch in script:
+        if ch in "([{":
+            stack.append(ch)
+            deepest = max(deepest, len(stack))   # the stack's height is the depth
+        elif ch in CLOSES:
+            if not stack or stack.pop() != CLOSES[ch]:
+                return -1
+    return deepest if not stack else -1
+--- hint
+Use a stack of open brackets. Its height at any moment is the current nesting depth.
+--- hint
+Track the largest height you ever see. Still return `-1` for any mismatch, and for openers left at the end.
+--- check case | The example
+nesting_depth("seq{ burn(3); wait[ (2) ] }")
+=> 3
+--- check case | Side by side is not deeper
+nesting_depth("[{}]{}")
+=> 2
+--- check case | No brackets, and an empty script
+(nesting_depth("hold 5"), nesting_depth(""))
+=> (0, 0)
+--- check case | The wrong kind of closer
+nesting_depth("(]")
+=> -1
+--- check case | Openers left at the end
+nesting_depth("((")
+=> -1
+--- check case | A closer before any opener
+nesting_depth(")(")
+=> -1
+
++++ practice | How long has it been this high?
+--- task
+For each reading in a list, its **span** is how many readings in a row, ending with this one and going back in time, are less than or equal to it. The reading itself counts, so every span is at least 1.
+
+Write `spans(vals)` that returns the list of spans. Use a monotonic stack so the whole thing is O(n): the check runs it on 200,000 readings, where looking back from every reading would be O(n^2).
+
+So `spans([100, 80, 60, 70, 60, 75, 85])` is `[1, 1, 1, 2, 1, 4, 6]`. For 75, the readings 60, 70, 60 before it are all lower, but 80 is not, so its span is 4.
+--- starter
+def spans(vals):
+    pass
+--- solution
+def spans(vals):
+    """Span of each reading. O(n) time, O(n) space."""
+    out = []
+    stack = []          # indices of readings higher than everything after them so far
+    for i, v in enumerate(vals):
+        while stack and vals[stack[-1]] <= v:
+            stack.pop()                 # not higher than v, so it can never stop a later span
+        out.append(i + 1 if not stack else i - stack[-1])
+        stack.append(i)
+    return out
+--- hint
+Keep a stack of indices of readings that are still strictly higher than every reading after them. Their values fall from the bottom of the stack to the top.
+--- hint
+When a new reading arrives, pop every index whose value is less than or equal to it. The index left on top, if any, is the first higher reading going back: the span is the distance to it. With nothing left, the span reaches back to the start.
+--- check case | The example
+spans([100, 80, 60, 70, 60, 75, 85])
+=> [1, 1, 1, 2, 1, 4, 6]
+--- check case | Equal readings count
+spans([3, 3, 3])
+=> [1, 2, 3]
+--- check case | Falling readings
+spans([4, 3, 2, 1])
+=> [1, 1, 1, 1]
+--- check case | An empty list and one reading
+(spans([]), spans([5]))
+=> ([], [1])
+--- check case | 200,000 rising readings
+spans(list(range(200000)))[-1]
+=> 200000
+
++++ practice | Removing values from a linked list
+--- task
+`remove_value(head, target)` should remove every node holding `target` from a singly linked list and return the new head. The starter also has the `Node` class and two helpers, `build` and `to_list`, which the checks use: leave those as they are.
+
+It is wrong. On the list 1 → 2 → 2 → 3, removing 2 gives 1 → 2 → 3: when two nodes to remove sit next to each other, the second one survives. Fix `remove_value`. It must still work when the head itself must go, and when every node goes.
+--- starter
+class Node:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+def build(values):
+    head = None
+    for v in reversed(values):
+        head = Node(v, head)
+    return head
+
+def to_list(head):
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    return out
+
+def remove_value(head, target):
+    """Remove every node holding target; return the new head."""
+    while head and head.val == target:
+        head = head.next
+    cur = head
+    while cur and cur.next:
+        if cur.next.val == target:
+            cur.next = cur.next.next
+        cur = cur.next
+    return head
+--- solution
+class Node:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
+def build(values):
+    head = None
+    for v in reversed(values):
+        head = Node(v, head)
+    return head
+
+def to_list(head):
+    out = []
+    while head:
+        out.append(head.val)
+        head = head.next
+    return out
+
+def remove_value(head, target):
+    """Remove every node holding target; return the new head. O(n) time, O(1) space."""
+    while head and head.val == target:
+        head = head.next
+    cur = head
+    while cur and cur.next:
+        if cur.next.val == target:
+            cur.next = cur.next.next    # unlink it, and look at the new next before moving
+        else:
+            cur = cur.next
+    return head
+--- hint
+Trace 1 → 2 → 2 → 3 by hand. After the first 2 is unlinked, where does `cur` point, and which node does it skip over?
+--- hint
+After unlinking a node, the new `cur.next` has not been checked yet. Only step forward when nothing was removed.
+--- check case | Two in a row
+to_list(remove_value(build([1, 2, 2, 3]), 2))
+=> [1, 3]
+--- check case | Three in a row
+to_list(remove_value(build([5, 7, 7, 7, 5]), 7))
+=> [5, 5]
+--- check case | The head goes too
+to_list(remove_value(build([2, 2, 5]), 2))
+=> [5]
+--- check case | Every node goes
+to_list(remove_value(build([7, 7]), 7))
+=> []
+--- check case | Nothing to remove, and an empty list
+(to_list(remove_value(build([4, 9, 4]), 3)), to_list(remove_value(build([]), 1)))
+=> ([4, 9, 4], [])
+
++++ question | Sorting twice
+--- ask
+What does this print?
+
+```python
+passes = [("B", 3), ("A", 1), ("C", 3), ("A", 3), ("B", 1)]
+by_name = sorted(passes, key=lambda p: p[0])
+by_priority = sorted(by_name, key=lambda p: p[1])
+print([name for name, _ in by_priority])
+```
+--- answer
+['A', 'B', 'A', 'B', 'C']
+["A", "B", "A", "B", "C"]
+A, B, A, B, C
+A B A B C
+ABABC
+--- why
+The first sort puts the passes in name order: A1, A3, B3, B1, C3 (the two A passes and the two B passes keep their original order). The second sort is by priority, and Python's sort is stable, so passes with the same priority keep the name order from the first sort: A1, B1, then A3, B3, C3. Sorting by the secondary key first and the main key second is a standard trick that only works because the sort is stable; C++'s `std::sort` would not promise it.
+
+=== int01-l06 | Practice: Trees, graphs, BFS, DFS and topological sort
+--- for
+l06-trees-and-graphs
+
++++ practice | The total on each level of a tree
+--- task
+Write `level_sums(root)` that returns a list with the sum of the values on each level of a binary tree, from the root's level downward. The starter has the `TreeNode` class; keep it.
+
+- Visit the tree level by level with a queue (breadth-first): O(n) time.
+- The empty tree (`None`) gives `[]`.
+
+So for the tree with root 50, children 30 and 70, and grandchildren 20, 40 (under 30) and 80 (under 70), the answer is `[50, 100, 140]`.
+--- starter
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def level_sums(root):
+    pass
+--- solution
+from collections import deque
+
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def level_sums(root):
+    """Sum of each level, top down. O(n) time, O(w) space for the widest level."""
+    if root is None:
+        return []
+    sums = []
+    q = deque([root])
+    while q:
+        total = 0
+        for _ in range(len(q)):         # exactly the nodes of this level
+            node = q.popleft()
+            total += node.val
+            for child in (node.left, node.right):
+                if child is not None:
+                    q.append(child)
+        sums.append(total)
+    return sums
+--- hint
+A queue holds the nodes still to visit. At the start of each round, everything in the queue is on the same level.
+--- hint
+Read how many nodes the queue holds, pop exactly that many while adding their children, and total their values as you go.
+--- check case | The example tree
+level_sums(TreeNode(50, TreeNode(30, TreeNode(20), TreeNode(40)), TreeNode(70, None, TreeNode(80))))
+=> [50, 100, 140]
+--- check case | The empty tree
+level_sums(None)
+=> []
+--- check case | A single node
+level_sums(TreeNode(7))
+=> [7]
+--- check case | A chain leaning left, with negatives
+level_sums(TreeNode(1, TreeNode(-2, TreeNode(3))))
+=> [1, -2, 3]
+
++++ practice | Hops from a station
+--- task
+A network of ground stations is stored as an adjacency list: a dictionary from each station to the list of stations it links to directly. Write `hops_from(links, start)` that returns a dictionary from every station reachable from `start` to the fewest links needed to reach it. `start` itself is at 0.
+
+- A station may appear in someone's list without being a key of its own; treat it as having no links out.
+- Stations that cannot be reached are left out.
+- Breadth-first search: O(V + E) time.
+--- starter
+def hops_from(links, start):
+    pass
+--- solution
+from collections import deque
+
+def hops_from(links, start):
+    """Fewest links from start to every reachable station. O(V + E) time, O(V) space."""
+    dist = {start: 0}                   # also serves as the visited set
+    q = deque([start])
+    while q:
+        here = q.popleft()
+        for nxt in links.get(here, []):
+            if nxt not in dist:         # mark it when it joins the queue
+                dist[nxt] = dist[here] + 1
+                q.append(nxt)
+    return dist
+--- hint
+Breadth-first search reaches every station at distance 1 before any at distance 2, so the first time you reach a station is by the fewest links.
+--- hint
+Use a dictionary of distances as the visited set, and give a station its distance at the moment you add it to the queue.
+--- check case | A small network with a loop
+hops_from({"A": ["B", "C"], "B": ["A", "D"], "C": ["A", "D"], "D": ["B", "C", "E"], "E": ["D"]}, "A")
+=> {"A": 0, "B": 1, "C": 1, "D": 2, "E": 3}
+--- check case | An unreachable part is left out
+hops_from({"A": ["B"], "B": ["A"], "X": ["Y"], "Y": ["X"]}, "A")
+=> {"A": 0, "B": 1}
+--- check case | A station with no links
+hops_from({"A": []}, "A")
+=> {"A": 0}
+--- check case | Links that only go one way, to a station with no entry
+hops_from({"A": ["B"], "B": ["C"]}, "A")
+=> {"A": 0, "B": 1, "C": 2}
+
++++ practice | Starting in waves
+--- task
+A payload's software tasks start in waves. Each task lists the tasks that must already be running before it can start. Wave 0 holds every task that waits on nothing. Each later wave holds every task whose prerequisites all started in earlier waves.
+
+Write `startup_waves(deps)` that returns the list of waves, each wave a list of task names in alphabetical order, or `None` if some tasks wait on each other in a cycle.
+
+- `deps` maps a task to the list of tasks that must start before it. A task that appears only inside a list is a task too, with no prerequisites.
+- Kahn's algorithm, one wave at a time: O(V + E) time, apart from sorting each wave.
+--- starter
+def startup_waves(deps):
+    pass
+--- solution
+def startup_waves(deps):
+    """Tasks grouped into startup waves, or None on a cycle. O(V + E) plus sorting."""
+    tasks = set(deps)
+    for before in deps.values():
+        tasks.update(before)
+    needed_by = {t: [] for t in tasks}      # edge: before -> after
+    waiting = {t: 0 for t in tasks}         # how many prerequisites each task still has
+    for after, befores in deps.items():
+        for b in befores:
+            needed_by[b].append(after)
+            waiting[after] += 1
+    wave = sorted(t for t in tasks if waiting[t] == 0)
+    waves = []
+    started = 0
+    while wave:
+        waves.append(wave)
+        started += len(wave)
+        nxt = []
+        for t in wave:
+            for after in needed_by[t]:
+                waiting[after] -= 1
+                if waiting[after] == 0:
+                    nxt.append(after)
+        wave = sorted(nxt)
+    return waves if started == len(tasks) else None
+--- hint
+Count each task's prerequisites (its in-degree). Wave 0 is every task whose count is 0.
+--- hint
+Starting a whole wave lowers the counts of the tasks that need them. The ones that reach 0 form the next wave.
+--- hint
+If the waves run out before every task has started, the rest are waiting on each other: return `None`.
+--- check case | A payload's startup
+startup_waves({"heater": ["power"], "camera": ["heater", "bus"], "bus": ["power"], "storage": ["bus"], "compress": ["camera", "storage"], "downlink": ["compress", "radio"], "radio": ["power"]})
+=> [["power"], ["bus", "heater", "radio"], ["camera", "storage"], ["compress"], ["downlink"]]
+--- check case | Independent tasks share wave 0
+startup_waves({"b": [], "a": [], "c": ["a"]})
+=> [["a", "b"], ["c"]]
+--- check case | A cycle
+startup_waves({"a": ["c"], "b": ["a"], "c": ["b"], "d": []})
+=> None
+--- check case | A task that needs itself
+startup_waves({"a": ["a"]})
+=> None
+--- check case | No tasks
+startup_waves({})
+=> []
+
++++ practice | Is it really a search tree?
+--- task
+Write `is_bst(root)` that returns `True` if the binary tree is a binary search tree: for every node, every value in its left subtree is smaller than it and every value in its right subtree is bigger. Equal values are not allowed. The starter has the `TreeNode` class; keep it.
+
+- Checking each node only against its own two children is not enough: a value deep in the left subtree can still be bigger than the root.
+- The empty tree and a single node are search trees.
+- O(n) time.
+--- starter
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def is_bst(root):
+    pass
+--- solution
+class TreeNode:
+    def __init__(self, val, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def is_bst(root, low=None, high=None):
+    """True if every node sits strictly between the bounds its ancestors set. O(n) time."""
+    if root is None:
+        return True
+    if (low is not None and root.val <= low) or (high is not None and root.val >= high):
+        return False
+    return is_bst(root.left, low, root.val) and is_bst(root.right, root.val, high)
+--- hint
+Each node has a range it must fall in, set by its ancestors: going left sets a new upper bound, going right sets a new lower bound.
+--- hint
+Pass the bounds down as you recurse, starting with no bounds at the root. A node equal to a bound fails, because equal values are not allowed.
+--- check case | A valid tree
+is_bst(TreeNode(50, TreeNode(30, TreeNode(20), TreeNode(40)), TreeNode(70, None, TreeNode(80))))
+=> True
+--- check case | A grandchild bigger than the root
+is_bst(TreeNode(50, TreeNode(30, None, TreeNode(60)), TreeNode(70)))
+=> False
+--- check case | Equal values are not allowed
+is_bst(TreeNode(5, TreeNode(5)))
+=> False
+--- check case | The empty tree and a single node
+(is_bst(None), is_bst(TreeNode(1)))
+=> (True, True)
+--- check case | A chain of 500 nodes, each the left child of a bigger one
+is_bst(__import__("functools").reduce(lambda node, v: TreeNode(v, node), range(500), None))
+=> True
+
++++ practice | A cycle check that cries wolf
+--- task
+`has_cycle(graph)` should say whether a directed dependency graph has a cycle. `graph` maps each module to the list of modules it needs; a module that appears only inside a list needs nothing.
+
+It gives false alarms. On a diamond, where `app` needs `msg` and `log`, and both of those need `util`, it returns `True`, but there is no cycle: `util` is simply reached twice. Having visited a module before is not the same as being on the path you are exploring right now. Fix it so only a real cycle returns `True`.
+--- starter
+def has_cycle(graph):
+    """True if some chain of needs loops back on itself."""
+    visited = set()
+
+    def visit(v):
+        if v in visited:
+            return True
+        visited.add(v)
+        for w in graph.get(v, []):
+            if visit(w):
+                return True
+        return False
+
+    return any(visit(v) for v in list(graph) if v not in visited)
+--- solution
+def has_cycle(graph):
+    """True if some chain of needs loops back on itself. O(V + E) time, O(V) space."""
+    on_path = set()     # grey: on the path being explored right now
+    done = set()        # black: finished, with everything below it
+
+    def visit(v):
+        if v in on_path:
+            return True                 # an edge back into our own path
+        if v in done:
+            return False                # a shared dependency, already checked
+        on_path.add(v)
+        for w in graph.get(v, []):
+            if visit(w):
+                return True
+        on_path.discard(v)
+        done.add(v)
+        return False
+
+    return any(visit(v) for v in list(graph))
+--- hint
+The lesson's three colors: not visited, on the current path, and finished. Only an arrow to a module that is still on the current path proves a cycle.
+--- hint
+Keep two sets: one for the modules on the path right now, and one for finished modules. Add a module to the path when you enter it, and move it to finished when all its needs are done.
+--- check case | A diamond is not a cycle
+has_cycle({"app": ["msg", "log"], "msg": ["util"], "log": ["util"], "util": []})
+=> False
+--- check case | A real loop
+has_cycle({"app": ["msg"], "msg": ["io"], "io": ["msg"]})
+=> True
+--- check case | A module that needs itself
+has_cycle({"a": ["a"]})
+=> True
+--- check case | An empty graph
+has_cycle({})
+=> False
+--- check case | A loop in a second, separate part
+has_cycle({"a": ["b"], "b": [], "x": ["y"], "y": ["z"], "z": ["x"]})
+=> True
+--- check case | Needs that only appear inside lists
+has_cycle({"a": ["b", "c"], "b": ["c"]})
+=> False
+
++++ question | Storing a big network
+--- ask
+A ground network has V = 10,000 stations and E = 30,000 two-way links. About how many entries does each way of storing it hold?
+--- choice correct
+An adjacency matrix holds 100,000,000 cells; an adjacency list holds about 70,000 entries (10,000 stations plus each link listed twice).
+--- choice
+Both hold about 30,000 entries, one per link.
+--- choice
+An adjacency matrix holds 30,000 cells; an adjacency list holds 100,000,000 entries.
+--- choice
+An adjacency matrix holds 20,000 cells, two per station; an adjacency list holds 10,000 entries.
+--- why
+A matrix always has V × V cells, 10^8 here, however few links there are. An adjacency list costs O(V + E): one entry per station, plus each two-way link stored in both stations' lists, so 10,000 + 2 × 30,000 = 70,000. For a sparse network like this one, the list is over a thousand times smaller, which is why it is the default in interviews.
+
+=== int01-l07 | Practice: Heaps, prefix sums, light DP and bits
+--- for
+l07-heaps-prefix-sums-dp-and-bits
+
++++ practice | The readings closest to a target
+--- task
+Write `k_closest(readings, target, k)` that returns the `k` readings closest to `target`, ordered by distance from `target`. Break ties by putting the smaller reading first.
+
+- If `k` is 0 or less, return `[]`. If `k` is more than the number of readings, return all of them, in the same order.
+- Use a heap: O(n log k) time. `heapq.nsmallest` with a key is allowed, or keep your own heap of size `k`.
+
+So `k_closest([9.5, 10.2, 9.9, 10.0, 11.0, 8.0], 10.0, 3)` is `[10.0, 9.9, 10.2]`.
+--- starter
+def k_closest(readings, target, k):
+    pass
+--- solution
+import heapq
+
+def k_closest(readings, target, k):
+    """k readings nearest target, nearest first, ties to the smaller. O(n log k) time."""
+    if k <= 0:
+        return []
+    return heapq.nsmallest(k, readings, key=lambda r: (abs(r - target), r))
+--- hint
+Rank each reading by a pair: first its distance from the target, then the reading itself, so ties go to the smaller one.
+--- hint
+`heapq.nsmallest(k, items, key=...)` keeps a heap of size k while it scans, which is O(n log k).
+--- check case | The example
+k_closest([9.5, 10.2, 9.9, 10.0, 11.0, 8.0], 10.0, 3)
+=> [10.0, 9.9, 10.2]
+--- check case | Ties go to the smaller reading
+k_closest([8, 12, 11, 9], 10, 2)
+=> [9, 11]
+--- check case | k larger than the list
+k_closest([8, 12, 11, 9], 10, 10)
+=> [9, 11, 8, 12]
+--- check case | k of zero, and no readings
+(k_closest([1, 2], 0, 0), k_closest([], 5, 3))
+=> ([], [])
+
++++ practice | Bad readings in many windows
+--- task
+Write `out_of_limits(readings, lo, hi, windows)`. Each window is a pair `(l, r)` meaning positions `l` up to but not including `r`, like a slice. For each window, count the readings in it that are below `lo` or above `hi`, and return the counts as a list, in order.
+
+- Build a prefix-sum array once, then answer each window with one subtraction: O(n + m) time for n readings and m windows.
+- A window with `l == r` is empty and holds 0.
+- The check runs 200,000 readings and 100,000 windows, so adding up each window separately is too slow.
+--- starter
+def out_of_limits(readings, lo, hi, windows):
+    pass
+--- solution
+def out_of_limits(readings, lo, hi, windows):
+    """Out-of-limit counts for half-open windows. O(n + m) time, O(n) space."""
+    P = [0]                                 # P[i] = bad readings among readings[:i]
+    for r in readings:
+        P.append(P[-1] + (1 if r < lo or r > hi else 0))
+    return [P[r] - P[l] for l, r in windows]
+--- hint
+Turn each reading into 1 if it is out of limits and 0 if not. Counting bad readings in a window is then summing a slice of those.
+--- hint
+With `P[0] = 0` and `P[i + 1] = P[i] + x[i]`, the sum of positions `l` to `r - 1` is `P[r] - P[l]`.
+--- check case | Three windows
+out_of_limits([20, 95, 21, 22, -40, 23, 120], 0, 50, [(0, 7), (0, 2), (2, 4)])
+=> [3, 1, 0]
+--- check case | Both limits are allowed values
+out_of_limits([0, 50, -1, 51], 0, 50, [(0, 4)])
+=> [2]
+--- check case | Empty windows
+out_of_limits([99, 99], 0, 50, [(0, 0), (2, 2)])
+=> [0, 0]
+--- check case | 200,000 readings and 100,000 windows
+sum(out_of_limits([(i * 37) % 101 for i in range(200000)], 10, 90, [(i, i + 100000) for i in range(100000)]))
+=> 1980198018
+
++++ practice | How many antennas?
+--- task
+Each satellite pass `(start, end)` needs an antenna for its whole length. One antenna can serve many passes one after another, and a pass may start at the exact minute another pass on the same antenna ends.
+
+Write `antennas_needed(passes)` that returns the fewest antennas that can serve every pass. The passes arrive in any order.
+
+- Sort the passes by start time and keep a min-heap of the end times of the passes in progress: O(n log n) time.
+- No passes need 0 antennas.
+--- starter
+def antennas_needed(passes):
+    pass
+--- solution
+import heapq
+
+def antennas_needed(passes):
+    """Fewest antennas for all passes. O(n log n) time, O(n) space."""
+    busy_until = []                     # min-heap: end times of passes in progress
+    most = 0
+    for start, end in sorted(passes):
+        if busy_until and busy_until[0] <= start:
+            heapq.heapreplace(busy_until, end)   # that antenna is free again: reuse it
+        else:
+            heapq.heappush(busy_until, end)      # every antenna is busy: add one
+        most = max(most, len(busy_until))
+    return most
+--- hint
+Walk the passes in start order. At each start, the antenna that frees up soonest is the only one worth checking. A min-heap of end times keeps it on top.
+--- hint
+If the soonest end is at or before this start, reuse that antenna: replace its end time. Otherwise push a new end time. The heap's size is the number of antennas in use.
+--- check case | Three passes, two overlap a long one
+antennas_needed([(0, 30), (5, 10), (15, 20)])
+=> 2
+--- check case | Back to back on one antenna
+antennas_needed([(10, 20), (0, 10), (20, 30)])
+=> 1
+--- check case | All at once
+antennas_needed([(0, 100), (10, 90), (20, 80)])
+=> 3
+--- check case | No passes
+antennas_needed([])
+=> 0
+--- check case | Unsorted, with a reuse
+antennas_needed([(50, 60), (0, 40), (10, 55), (40, 45)])
+=> 2
+
++++ practice | Science slots with room to slew
+--- task
+An instrument can observe in any of a row of time slots, and each slot has a science value. A value can be negative, when a slot costs more than it returns. Two neighbouring slots can never both be used, because the instrument needs a slot in between to slew.
+
+Write `best_science(values)` that returns the largest total you can collect. Using no slots at all gives 0.
+
+- This is light dynamic programming: the best total up to slot `i` either skips slot `i` or uses it on top of the best total up to slot `i - 2`.
+- Keep only the last two answers: O(n) time, O(1) space. The check runs 200,000 slots, so a plain recursion would hit Python's limit.
+
+So `best_science([5, 1, 1, 5])` is `10`: the first and last slots.
+--- starter
+def best_science(values):
+    pass
+--- solution
+def best_science(values):
+    """Largest total with no two neighbouring slots. O(n) time, O(1) space."""
+    two_back, one_back = 0, 0           # best totals up to slot i-2 and slot i-1
+    for v in values:
+        two_back, one_back = one_back, max(one_back, two_back + v)
+    return one_back
+--- hint
+Let `best(i)` be the largest total using slots 0 to i. Slot i is either skipped, giving `best(i - 1)`, or used, giving `best(i - 2) + values[i]`.
+--- hint
+Start both earlier answers at 0 (the empty choice). Then a negative slot is simply never worth using, and the empty list returns 0.
+--- check case | The example
+best_science([5, 1, 1, 5])
+=> 10
+--- check case | Every other slot, but not from the start
+best_science([2, 7, 9, 3, 1])
+=> 12
+--- check case | All negative: use nothing
+best_science([-3, -1])
+=> 0
+--- check case | Mixed signs
+best_science([-2, 6, -1, 6, -2])
+=> 12
+--- check case | No slots, and one slot
+(best_science([]), best_science([4]))
+=> (0, 4)
+--- check case | 200,000 equal slots
+best_science([1] * 200000)
+=> 100000
+
++++ practice | The status decoder that only sees bit 0
+--- task
+`flags_set(status)` should return the names of the flags whose bits are set in a status byte, bit 0 first. The names of bits 0 to 4 are in the list `FLAGS`; any higher bits are ignored.
+
+It is wrong. `flags_set(0b01010)` should be `["gps_lock", "batt_low"]`, but it returns `[]`, and it never reports any flag except `heater_on`. Find the bug and fix it.
+--- starter
+FLAGS = ["heater_on", "gps_lock", "safe_mode", "batt_low", "wheel_fault"]   # bit 0 to bit 4
+
+def flags_set(status):
+    """Names of the flags whose bit is set, bit 0 first."""
+    names = []
+    for k, name in enumerate(FLAGS):
+        if status & (1 << k) == 1:
+            names.append(name)
+    return names
+--- solution
+FLAGS = ["heater_on", "gps_lock", "safe_mode", "batt_low", "wheel_fault"]   # bit 0 to bit 4
+
+def flags_set(status):
+    """Names of the flags whose bit is set, bit 0 first."""
+    names = []
+    for k, name in enumerate(FLAGS):
+        if (status >> k) & 1:
+            names.append(name)
+    return names
+--- hint
+In Python, `==` binds more tightly than `&`. Work out what `status & (1 << k) == 1` really computes for k = 1.
+--- hint
+Even with brackets, `status & (1 << k)` is `2 ** k` when the bit is set, not 1. The lesson's test is `(status >> k) & 1`.
+--- check case | Bits 1 and 3
+flags_set(0b01010)
+=> ["gps_lock", "batt_low"]
+--- check case | Every named flag
+flags_set(0b11111)
+=> ["heater_on", "gps_lock", "safe_mode", "batt_low", "wheel_fault"]
+--- check case | No flags
+flags_set(0)
+=> []
+--- check case | Only bit 0
+flags_set(1)
+=> ["heater_on"]
+--- check case | Bit 5 has no name and is ignored
+flags_set(0b100100)
+=> ["safe_mode"]
+
++++ question | A topic from the skip list
+--- ask
+A problem in your practice list turns out to need maximum flow, and a later one needs a segment tree. You are preparing for a medium-level screen with real-world framing. What does the lesson say to do?
+--- choice
+Stop and study both topics properly, because a gap anywhere can sink you.
+--- choice correct
+Log both as skipped on purpose and spend the hours on the high-yield patterns and the engineering variants; if one comes up anyway, give a clear brute-force answer with its complexity.
+--- choice
+Memorize the two solutions word for word so you can type them if asked.
+--- choice
+Replace the rest of your list with advanced graph problems, since those are the hardest.
+--- why
+Maximum flow is advanced graph theory and a segment tree is a range-query structure for changing data; both are on the skip list, because a medium bar with real-world framing does not test them. Logging them as skipped keeps your hours on what is tested. Skipping is not refusing, though: if one does come up, a correct slow answer with honest complexity, and an idea of where the speed-up lives, beats silence.
+
+=== int01-l08 | Practice: Talking while solving, and testing before you are done
+--- for
+l08-talking-and-testing
+
++++ practice | Write the tests that catch the bugs
+--- task
+Here is a spec. `count_crossings(readings, limit)` returns how many times a signal crosses its limit upward: the number of neighbouring pairs `a, b` with `a <= limit < b`. A reading exactly at the limit is not above it. Fewer than two readings means 0 crossings.
+
+You will not write `count_crossings`. Write `good_tests(f)`, which runs your own test cases on a function `f` that claims to meet the spec, and returns `True` if `f` gives the right answer on every case, or `False` if any answer is wrong or `f` raises an exception.
+
+The checks hand `good_tests` one correct function and six broken ones, each with one mistake people really make. Your cases must pass the correct one and catch every broken one. Work through the lesson's edge cases: empty, a single reading, a reading equal to the limit, all readings equal, negative values, and a crossing on the very last pair.
+--- starter
+def good_tests(f):
+    return True
+--- solution
+CASES = [
+    (([], 5), 0),                   # empty
+    (([9], 5), 0),                  # a single reading
+    (([5, 7], 5), 1),               # starts exactly at the limit: still a crossing
+    (([3, 5], 5), 0),               # reaching the limit is not going above it
+    (([6, 6, 6], 5), 0),            # all equal, all above: no crossing
+    (([8, 3], 5), 0),               # starts above, then falls: not upward
+    (([1, 9, 1, 9], 5), 2),         # up, down, up: the last pair counts
+    (([-9, -2, -7, -1], -3), 2),    # negative values
+]
+
+def good_tests(f):
+    """True only if f passes every case without raising."""
+    for args, want in CASES:
+        try:
+            if f(*args) != want:
+                return False
+        except Exception:
+            return False
+    return True
+--- hint
+Keep a list of (arguments, expected answer) pairs, and work out each expected answer by hand from the spec, not by running someone's code.
+--- hint
+Call `f` inside `try`/`except Exception`, so a crash counts as a failure instead of stopping your tests.
+--- hint
+Think about what each broken version might do: count downward crossings, treat a start at the limit as not below it, treat reaching the limit as crossing it, skip the last pair, crash on an empty list, or count a first reading that is already above the limit.
+--- check case | Passes a correct function
+good_tests(lambda r, lim: sum(1 for a, b in zip(r, r[1:]) if a <= lim < b))
+=> True
+--- check case | Catches a version that ignores a start exactly at the limit
+good_tests(lambda r, lim: sum(1 for a, b in zip(r, r[1:]) if a < lim < b))
+=> False
+--- check case | Catches a version that counts downward crossings too
+good_tests(lambda r, lim: sum(1 for a, b in zip(r, r[1:]) if (a <= lim) != (b <= lim)))
+=> False
+--- check case | Catches a version that skips the last pair
+good_tests(lambda r, lim: sum(1 for a, b in zip(r[:-1], r[1:-1]) if a <= lim < b))
+=> False
+--- check case | Catches a version that crashes on an empty list
+good_tests(lambda r, lim: r[0] * 0 + sum(1 for a, b in zip(r, r[1:]) if a <= lim < b))
+=> False
+--- check case | Catches a version that counts a first reading above the limit
+good_tests(lambda r, lim: sum(1 for a, b in zip([lim] + r, r) if a <= lim < b))
+=> False
+--- check case | Catches a version that counts reaching the limit
+good_tests(lambda r, lim: sum(1 for a, b in zip(r, r[1:]) if a <= lim <= b and a != b))
+=> False
+
++++ practice | Let a slow function check a fast one
+--- task
+Write `first_disagreement(f, g, n_max)` that compares two functions on small lists and returns the first list they disagree on.
+
+- Try every list of length 0, then 1, and so on up to `n_max`, whose items are each `-1`, `0` or `1`.
+- Lists of the same length go in the order `itertools.product([-1, 0, 1], repeat=length)` gives them: `[-1, -1]`, `[-1, 0]`, `[-1, 1]`, `[0, -1]`, and so on.
+- Return the first list, as a list, on which `f(xs) != g(xs)`. If either function raises an exception on a list, that list counts as a disagreement.
+- Give each function its own copy of the list, in case one of them changes it.
+- Return `None` if they agree on every list.
+--- starter
+def first_disagreement(f, g, n_max):
+    pass
+--- solution
+from itertools import product
+
+def first_disagreement(f, g, n_max):
+    """The first small list where f and g differ (or one raises), else None."""
+    for length in range(n_max + 1):
+        for combo in product([-1, 0, 1], repeat=length):
+            xs = list(combo)
+            try:
+                if f(list(xs)) != g(list(xs)):
+                    return xs
+            except Exception:
+                return xs
+    return None
+--- hint
+Two loops: one over the length, and inside it one over `product([-1, 0, 1], repeat=length)`, which yields tuples. Turn each into a list.
+--- hint
+Wrap the comparison in `try`/`except Exception` and return the list from both the "different" branch and the "raised" branch.
+--- check case | Finds the first all-negative list
+first_disagreement(lambda xs: max(xs, default=0), lambda xs: max([0] + xs), 3)
+=> [-1]
+--- check case | Finds the first unsorted list
+first_disagreement(lambda xs: sorted(xs), lambda xs: xs, 3)
+=> [0, -1]
+--- check case | A crash on the empty list counts
+first_disagreement(lambda xs: xs[0], lambda xs: 0, 2)
+=> []
+--- check case | Two versions that agree
+first_disagreement(sum, lambda xs: sum(x for x in xs), 4)
+=> None
+--- check case | n_max of 0 tries only the empty list
+first_disagreement(len, lambda xs: 0, 0)
+=> None
+
++++ practice | The best gain that is never negative
+--- task
+`best_gain(readings)` should return the largest `readings[j] - readings[i]` with `i < j`: the biggest rise from an earlier reading to a later one. It needs at least two readings and raises `ValueError` otherwise. When the readings only ever fall, the answer is negative: the smallest fall.
+
+It is wrong. `best_gain([9, 7, 4, 1])` should be `-2`, from 9 to 7, but it returns `0`, a gain that no pair of readings has. Fix it.
+--- starter
+def best_gain(readings):
+    """Largest readings[j] - readings[i] with i < j. Needs at least two readings."""
+    if len(readings) < 2:
+        raise ValueError("need at least two readings")
+    best = 0
+    lowest = readings[0]
+    for r in readings[1:]:
+        best = max(best, r - lowest)
+        lowest = min(lowest, r)
+    return best
+--- solution
+def best_gain(readings):
+    """Largest readings[j] - readings[i] with i < j. O(n) time, O(1) extra space."""
+    if len(readings) < 2:
+        raise ValueError("need at least two readings")
+    best = readings[1] - readings[0]    # a real pair, not a made-up zero
+    lowest = readings[0]
+    for r in readings[1:]:
+        best = max(best, r - lowest)
+        lowest = min(lowest, r)
+    return best
+--- hint
+Which edge case from the lesson's list exposes a running best that starts at zero?
+--- hint
+Start `best` at the gain of a real pair, such as the first two readings.
+--- check case | Only falling
+best_gain([9, 7, 4, 1])
+=> -2
+--- check case | A rise after a dip
+best_gain([3, 8, 2, 10])
+=> 8
+--- check case | Two equal readings
+best_gain([5, 5])
+=> 0
+--- check case | Two readings, falling
+best_gain([6, 4])
+=> -2
+--- check test | One reading raises ValueError
+raises(ValueError, lambda: best_gain([1]))
+
++++ practice | Code the answer to your clarifying questions
+--- task
+The prompt was: "Return the index of the first reading that repeats." Before coding, you asked your clarifying questions, and the interviewer answered:
+
+1. "First" means the repeat whose second appearance comes earliest. Return the index of its *first* appearance.
+2. If nothing repeats, return `-1`.
+3. The list can hold a million readings.
+4. The readings are whole numbers, so comparing with `==` is fine.
+5. Do not change the list.
+
+Write `first_repeat_index(readings)` to that spec. So `first_repeat_index([7, 3, 9, 3, 7])` is `1`: both 3 and 7 repeat, but the second 3 (at index 3) comes before the second 7, and the first 3 is at index 1.
+--- starter
+def first_repeat_index(readings):
+    pass
+--- solution
+def first_repeat_index(readings):
+    """Index of the first copy of the earliest repeat, or -1. O(n) average time, O(n) space."""
+    first_seen = {}                     # reading -> index of its first appearance
+    for i, r in enumerate(readings):
+        if r in first_seen:
+            return first_seen[r]        # the earliest second appearance
+        first_seen[r] = i
+    return -1
+--- hint
+Walk the list once. The first time you meet a reading you have seen before, that is the earliest second appearance.
+--- hint
+A dictionary from each reading to the index where you first saw it gives you the index to return, in O(1) on average.
+--- check case | The example
+first_repeat_index([7, 3, 9, 3, 7])
+=> 1
+--- check case | Repeats straight away
+first_repeat_index([5, 5])
+=> 0
+--- check case | The inner pair closes first
+first_repeat_index([4, 8, 8, 4])
+=> 1
+--- check case | Nothing repeats, and an empty list
+(first_repeat_index([1, 2, 3]), first_repeat_index([]))
+=> (-1, -1)
+--- check case | The list is left unchanged
+(lambda xs: (first_repeat_index(xs), xs))([3, 1, 3])
+=> (0, [3, 1, 3])
+--- check case | 200,001 readings with the repeat at the end
+first_repeat_index(list(range(200000)) + [199999])
+=> 199999
+
++++ question | One window too many
+--- ask
+The first window's sum `s` is built before this loop, from `x[:k]`. What goes wrong with the loop?
+
+```python
+for i in range(k, len(x) + 1):
+    s += x[i] - x[i - k]
+    best = max(best, s)
+```
+--- choice correct
+On the last pass `i` equals `len(x)`, so `x[i]` raises an `IndexError`.
+--- choice
+It skips the last window, because `range` stops one early.
+--- choice
+It counts the first window twice.
+--- choice
+Nothing: `len(x) + 1` is needed so the last window is included.
+--- why
+There are n - k + 1 windows, and the first is built before the loop, so the loop should run n - k times, for i = k up to n - 1: `range(k, len(x))`. The `+ 1` adds one pass too many, and that pass reads `x[len(x)]`, which does not exist. This is the fencepost error; a trace table on a small list, counting the windows, shows it before any code runs.
+
++++ question | Why raise instead of assert
+--- ask
+`max_window_sum` from the lesson rejects a bad `k` with `raise ValueError(...)` rather than `assert 1 <= k <= len(x)`. Why?
+--- choice
+`assert` is slower than an `if` statement.
+--- choice correct
+Python skips every `assert` when run with the `-O` flag, so a check that must guard real input has to be a real `raise`.
+--- choice
+An `assert` cannot carry a message.
+--- choice
+`ValueError` is the only exception a caller can catch.
+--- why
+Asserts are for tests, where their job is to fail loudly. Run with `python -O`, Python removes them, and bad input would sail through into the loop. C and C++ have the same split: the `assert` macro disappears when a program is compiled with `NDEBUG`. Input checks that must survive in a shipped program are written as real `if` and `raise`.
+
+=== int01-l09 | Practice: Bytes, endianness and checksums
+--- for
+l09-bytes-endianness-and-checksums
+
++++ practice | Big-endian counts by hand
+--- task
+A sensor sends a run of unsigned 16-bit counts, big-endian, two bytes each, one after another. Write `be_u16_list(data)` that returns the counts as a list of ints.
+
+- Assemble each count from its two bytes with a shift and an OR, by hand: do not use `struct` or `int.from_bytes`.
+- Raise `ValueError` if `data` has an odd number of bytes. No bytes give `[]`.
+
+So `be_u16_list(bytes([0x01, 0xF4, 0x00, 0x07]))` is `[500, 7]`: `0x01F4` is 1 × 256 + 244.
+--- starter
+def be_u16_list(data):
+    pass
+--- solution
+def be_u16_list(data):
+    """Unsigned 16-bit big-endian counts from raw bytes."""
+    if len(data) % 2:
+        raise ValueError("a 16-bit count needs two bytes")
+    return [(data[i] << 8) | data[i + 1] for i in range(0, len(data), 2)]
+--- hint
+Big-endian means the first byte of each pair is the high byte, worth 256 times as much.
+--- hint
+Shift the first byte left by 8 and OR in the second. Step through the data two bytes at a time.
+--- check case | The example
+be_u16_list(bytes([0x01, 0xF4, 0x00, 0x07]))
+=> [500, 7]
+--- check case | The largest count
+be_u16_list(bytes([0xFF, 0xFF]))
+=> [65535]
+--- check case | Byte order matters
+be_u16_list(bytes([0x80, 0x00, 0x00, 0x80]))
+=> [32768, 128]
+--- check case | No bytes
+be_u16_list(b"")
+=> []
+--- check test | An odd length raises ValueError
+raises(ValueError, lambda: be_u16_list(bytes([1, 2, 3])))
+--- check source absent | Assembles the numbers by hand
+\bstruct\b|from_bytes
+
++++ practice | A housekeeping record with struct
+--- task
+A housekeeping record is 11 bytes, little-endian, with no gaps: an unsigned byte `id`, a signed 16-bit temperature in hundredths of a degree C, an unsigned 32-bit time in milliseconds, and a 32-bit float bus voltage.
+
+Write `decode_hk(rec)` that returns a dictionary `{"id": ..., "temp_c": ..., "t_ms": ..., "volts": ...}`, where `temp_c` is the raw temperature divided by 100 and `volts` is rounded to 3 decimal places.
+
+- Use `struct` with an explicit byte order.
+- Raise `ValueError` if `rec` is not exactly 11 bytes long.
+--- starter
+import struct
+
+def decode_hk(rec):
+    pass
+--- solution
+import struct
+
+FMT = "<BhIf"           # id, temperature (hundredths), time (ms), bus voltage
+
+def decode_hk(rec):
+    """Decode one 11-byte little-endian housekeeping record."""
+    if len(rec) != struct.calcsize(FMT):
+        raise ValueError(f"expected {struct.calcsize(FMT)} bytes, got {len(rec)}")
+    ident, raw_temp, t_ms, volts = struct.unpack(FMT, rec)
+    return {"id": ident, "temp_c": raw_temp / 100, "t_ms": t_ms, "volts": round(volts, 3)}
+--- hint
+Write the format one letter per field, after a `<` for little-endian: unsigned byte, signed short, unsigned int, float. `struct.calcsize` should give 11.
+--- hint
+A float32 carries only about 7 significant digits, so 28.1 comes back as 28.100000381…; that is why `volts` is rounded.
+--- check case | A cold reading
+decode_hk(bytes.fromhex("0300fee8030000cdcce041"))
+=> {"id": 3, "temp_c": -5.12, "t_ms": 1000, "volts": 28.1}
+--- check case | A big time and a negative voltage
+decode_hk(bytes.fromhex("c8660800286bee333353c0"))
+=> {"id": 200, "temp_c": 21.5, "t_ms": 4000000000, "volts": -3.3}
+--- check test | A record of the wrong length raises ValueError
+raises(ValueError, lambda: decode_hk(bytes(10))) and raises(ValueError, lambda: decode_hk(bytes(12)))
+
++++ practice | Fields packed into a status word
+--- task
+A 2-byte status word arrives big-endian. Read it as one 16-bit number, whose bits mean:
+
+- bits 0 to 3: the mode, a number from 0 to 15;
+- bit 4: the heater, on or off;
+- bits 5, 6 and 7: three fault flags;
+- bits 8 to 15: a temperature offset, a signed 8-bit number (two's complement, -128 to 127).
+
+Write `decode_status(two)` that returns `{"mode": ..., "heater": ..., "faults": ..., "offset": ...}`, where `heater` is a bool and `faults` is how many of the three fault flags are set. Raise `ValueError` unless `two` is exactly 2 bytes.
+--- starter
+def decode_status(two):
+    pass
+--- solution
+def decode_status(two):
+    """Decode a big-endian 16-bit status word."""
+    if len(two) != 2:
+        raise ValueError("need exactly 2 bytes")
+    word = (two[0] << 8) | two[1]           # the first byte is the high byte
+    mode = word & 0xF                       # the low 4 bits
+    heater = bool((word >> 4) & 1)
+    faults = bin((word >> 5) & 0b111).count("1")
+    offset = word >> 8                      # the high byte, 0 to 255
+    if offset >= 128:
+        offset -= 256                       # two's complement: the top bit means negative
+    return {"mode": mode, "heater": heater, "faults": faults, "offset": offset}
+--- hint
+Build the 16-bit number first: the first byte shifted left by 8, ORed with the second.
+--- hint
+Shift a field down to bit 0, then mask it: `& 0xF` keeps 4 bits, `& 1` keeps one, `& 0b111` keeps three. Count set bits with `bin(x).count("1")`.
+--- hint
+The high byte is 0 to 255. As a signed 8-bit number, 128 and above stand for negative values: subtract 256.
+--- check case | Every field in use
+decode_status(bytes([0xFE, 0xB5]))
+=> {"mode": 5, "heater": True, "faults": 2, "offset": -2}
+--- check case | A positive offset, heater off
+decode_status(bytes([0x05, 0x0A]))
+=> {"mode": 10, "heater": False, "faults": 0, "offset": 5}
+--- check case | All three faults and the most negative offset
+decode_status(bytes([0x80, 0xE0]))
+=> {"mode": 0, "heater": False, "faults": 3, "offset": -128}
+--- check case | The largest mode and offset
+decode_status(bytes([0x7F, 0x1F]))
+=> {"mode": 15, "heater": True, "faults": 0, "offset": 127}
+--- check test | Not two bytes raises ValueError
+raises(ValueError, lambda: decode_status(bytes([1, 2, 3])))
+
++++ practice | Reading two's complement at any width
+--- task
+Write `to_signed(value, bits)` that reads an unsigned whole number of the given width as a two's-complement signed number.
+
+- `bits` is the width, 1 or more: 8, 16, 32, or anything else.
+- `value` must be between 0 and 2^bits - 1; otherwise raise `ValueError`.
+- A value whose top bit is set is negative: it stands for `value - 2**bits`.
+
+So `to_signed(0xFF38, 16)` is `-200`, and `to_signed(0x7FFF, 16)` is `32767`.
+--- starter
+def to_signed(value, bits):
+    pass
+--- solution
+def to_signed(value, bits):
+    """Read an unsigned bits-wide value as two's complement."""
+    if bits < 1 or not 0 <= value < (1 << bits):
+        raise ValueError("value does not fit in that many bits")
+    if value >> (bits - 1):             # the top bit is the sign bit
+        return value - (1 << bits)
+    return value
+--- hint
+`1 << bits` is 2 to the power `bits`, one more than the largest value that fits.
+--- hint
+The sign bit is bit `bits - 1`. Shift the value right by that much: if anything is left, the number is negative.
+--- check case | The example
+to_signed(0xFF38, 16)
+=> -200
+--- check case | The largest and smallest 16-bit values
+(to_signed(0x7FFF, 16), to_signed(0x8000, 16))
+=> (32767, -32768)
+--- check case | Eight and thirty-two bits
+(to_signed(0x80, 8), to_signed(0xFFFFFFFF, 32))
+=> (-128, -1)
+--- check case | Zero, and a one-bit number
+(to_signed(0, 8), to_signed(1, 1))
+=> (0, -1)
+--- check test | Values that do not fit raise ValueError
+raises(ValueError, lambda: to_signed(256, 8)) and raises(ValueError, lambda: to_signed(-1, 8))
+
++++ practice | A record reader that wants twelve bytes
+--- task
+`read_record(rec)` should read a 10-byte record, packed little-endian with no gaps: an unsigned 16-bit channel, an unsigned 32-bit time in milliseconds, and a 32-bit float value. It returns `(channel, t_ms, value)` with the value rounded to 4 places.
+
+It crashes on every real record with `struct.error: unpack requires a buffer of 12 bytes`. Find the bug and fix it, so that a 10-byte record works and anything else, including 12 bytes, raises `struct.error`.
+--- starter
+import struct
+
+def read_record(rec):
+    """(channel, t_ms, value) from a 10-byte little-endian record."""
+    channel, t_ms, value = struct.unpack("HIf", rec)
+    return channel, t_ms, round(value, 4)
+--- solution
+import struct
+
+def read_record(rec):
+    """(channel, t_ms, value) from a 10-byte little-endian record."""
+    channel, t_ms, value = struct.unpack("<HIf", rec)
+    return channel, t_ms, round(value, 4)
+--- hint
+A format with no byte-order prefix means this machine's order and sizes, with padding. Where does `struct` put two padding bytes in `HIf`?
+--- hint
+Start the format with the byte order from the spec. `<` is little-endian with standard sizes and no padding.
+--- check case | Channel 513 at 70 seconds
+read_record(bytes.fromhex("010270110100000010c0"))
+=> (513, 70000, -2.25)
+--- check case | The largest channel and time
+read_record(bytes.fromhex("ffffffffffff0000003f"))
+=> (65535, 4294967295, 0.5)
+--- check test | Twelve bytes is the wrong length
+raises(__import__("struct").error, lambda: read_record(bytes(12)))
+
++++ question | NOT on a small unsigned byte
+--- ask
+What does this C++ print?
+
+```cpp
+std::uint8_t b = 0xF0;
+std::uint8_t c = ~b;
+std::printf("%d %d\n", ~b, c);
+```
+--- answer
+-241 15
+-241, 15
+--- why
+Arithmetic on a `uint8_t` first promotes it to a plain `int`, which is signed and 32 bits wide. So `~b` flips all 32 bits of `0x000000F0`, giving `0xFFFFFF0F`, which is -241. Storing that back into a `uint8_t` keeps only the low 8 bits, `0x0F`, so `c` is 15. The same promotion is why the lesson casts each byte to `uint32_t` before shifting it left by 24.
+
+=== int01-l10 | Practice: Decommutation and dropouts
+--- for
+l10-decommutation-and-dropouts
+
++++ practice | Decode one frame
+--- task
+A pressure sensor's frames are 8 bytes long. The packet spec:
+
+| Offset | Width | Field |
+| --- | --- | --- |
+| 0 | 2 | sync word, always the bytes `EB 90` |
+| 2 | 1 | counter, 0 to 255, then wraps |
+| 3 | 2 | pressure, signed 16-bit little-endian, in tenths of a kPa |
+| 5 | 2 | time, unsigned 16-bit little-endian, in tenths of a second |
+| 7 | 1 | checksum: the XOR of bytes 0 to 6 |
+
+Write `decode_frame(frame)` that returns `(counter, kpa, t_s)`, with the pressure and time divided by 10, or `None` if the frame is not exactly 8 bytes, its sync word is wrong, or its checksum does not match.
+--- starter
+def decode_frame(frame):
+    pass
+--- solution
+import struct
+
+def decode_frame(frame):
+    """(counter, kPa, seconds) from one 8-byte frame, or None if it is bad."""
+    if len(frame) != 8 or frame[0] != 0xEB or frame[1] != 0x90:
+        return None
+    check = 0
+    for b in frame[:7]:
+        check ^= b
+    if check != frame[7]:
+        return None
+    counter, raw_kpa, raw_t = struct.unpack_from("<BhH", frame, 2)
+    return (counter, raw_kpa / 10, raw_t / 10)
+--- hint
+Check the length and the two sync bytes first, then the XOR of the first seven bytes against the last one. Only then trust any field.
+--- hint
+The fields after the sync word are, in `struct` letters, `B`, `h` and `H`, little-endian: `struct.unpack_from("<BhH", frame, 2)` reads them starting at offset 2.
+--- check case | A good frame
+decode_frame(bytes.fromhex("eb9005f5037b00f3"))
+=> (5, 101.3, 12.3)
+--- check case | A negative pressure
+decode_frame(bytes.fromhex("eb9006e7ff7c0019"))
+=> (6, -2.5, 12.4)
+--- check case | The largest counter and time
+decode_frame(bytes.fromhex("eb90ff0000ffff84"))
+=> (255, 0.0, 6553.5)
+--- check case | A flipped bit fails the checksum
+decode_frame(bytes.fromhex("eb9009f503820007"))
+=> None
+--- check case | A wrong sync word
+decode_frame(bytes.fromhex("eb9109f503820007"))
+=> None
+--- check case | Too short
+decode_frame(bytes.fromhex("eb9005f5037b00"))
+=> None
+
++++ practice | Frames lost, from the counters
+--- task
+Each frame carries a counter that goes up by one per frame and wraps from 255 back to 0. Write `lost_frames(counters)` that returns how many frames were lost, given the counters of the frames that arrived, in order.
+
+- Between neighbouring counters `a` and `b`, the number lost is `(b - a - 1) % 256`.
+- A counter equal to the one before it is a duplicate frame, not 255 lost ones: count it as 0.
+- Fewer than two counters means nothing is known to be lost: return 0.
+
+So `lost_frames([254, 2])` is `3`: frames 255, 0 and 1 are missing.
+--- starter
+def lost_frames(counters):
+    pass
+--- solution
+def lost_frames(counters):
+    """Frames lost between arrivals, with the counter wrapping at 256. O(n) time."""
+    lost = 0
+    for a, b in zip(counters, counters[1:]):
+        if b != a:                          # a repeat is a duplicate, not a wrap
+            lost += (b - a - 1) % 256
+    return lost
+--- hint
+Walk the neighbouring pairs. Python's `%` always gives a result from 0 to 255 here, even when `b - a - 1` is negative.
+--- hint
+Without a special case, a duplicate gives `(a - a - 1) % 256 = 255`. Skip pairs where the two counters are equal.
+--- check case | Two frames lost
+lost_frames([10, 11, 14, 15])
+=> 2
+--- check case | Lost across the wrap
+lost_frames([254, 2])
+=> 3
+--- check case | A clean wrap loses nothing
+lost_frames([254, 255, 0, 1])
+=> 0
+--- check case | A duplicate frame
+lost_frames([7, 7, 8])
+=> 0
+--- check case | Almost a whole lap lost
+lost_frames([0, 255])
+=> 254
+--- check case | No counters, and one counter
+(lost_frames([]), lost_frames([5]))
+=> (0, 0)
+
++++ practice | A decommutator for the pressure stream
+--- task
+Frames in the pressure sensor's format (sync word `EB 90`, counter, pressure, time, XOR checksum; 8 bytes, as in the first problem of this set) arrive back to back in a byte stream, with junk and damage mixed in. The spec:
+
+| Offset | Width | Field |
+| --- | --- | --- |
+| 0 | 2 | sync word `EB 90` |
+| 2 | 1 | counter |
+| 3 | 2 | pressure, signed 16-bit little-endian, tenths of a kPa |
+| 5 | 2 | time, unsigned 16-bit little-endian, tenths of a second |
+| 7 | 1 | XOR of bytes 0 to 6 |
+
+Write `decom(stream)` that returns `(frames, leftover)`: `frames` is the list of `(counter, kpa, t_s)` tuples of the good frames, in order, and `leftover` is the bytes at the end that are too few to hold a whole frame.
+
+- If the bytes at the current position are not the sync word, step forward one byte.
+- If the sync word is there but the checksum fails, it may have been a false start: step forward one byte, not a whole frame.
+- After a good frame, jump past all 8 bytes.
+- Only look at a frame while at least 8 bytes remain, and never decode a partial one.
+--- starter
+def decom(stream):
+    pass
+--- solution
+import struct
+
+FRAME = 8
+
+def decom(stream):
+    """Good frames and the unread tail. O(n) time, O(f) space for f frames."""
+    frames = []
+    i, n = 0, len(stream)
+    while i + FRAME <= n:                      # a whole frame must remain
+        if stream[i] != 0xEB or stream[i + 1] != 0x90:
+            i += 1                             # hunt for the sync word
+            continue
+        check = 0
+        for b in stream[i:i + FRAME - 1]:
+            check ^= b
+        if check != stream[i + FRAME - 1]:
+            i += 1                             # maybe a false start: resync
+            continue
+        counter, raw_kpa, raw_t = struct.unpack_from("<BhH", stream, i + 2)
+        frames.append((counter, raw_kpa / 10, raw_t / 10))
+        i += FRAME
+    return frames, stream[i:]
+--- hint
+Keep one index into the stream and three cases: no sync word, sync word with a bad checksum, and a good frame. Only the good frame moves the index by 8.
+--- hint
+The loop condition `i + 8 <= len(stream)` is what stops you decoding half a frame. When it fails, everything from `i` on is the leftover.
+--- check case | Junk, a good frame, a damaged frame, a good frame and a cut-off tail
+decom(bytes.fromhex("00eb" + "eb9005f5037b00f3" + "eb9009f503820007" + "eb9006e7ff7c0019" + "eb9007fc03"))
+=> ([(5, 101.3, 12.3), (6, -2.5, 12.4)], bytes.fromhex("eb9007fc03"))
+--- check case | The tail joined to the next chunk decodes whole
+(lambda first: decom(first[1] + bytes.fromhex("7d00fe")))(decom(bytes.fromhex("eb9007fc03")))
+=> ([(7, 102.0, 12.5)], b"")
+--- check case | A false sync word just before a real frame
+decom(bytes.fromhex("eb900102" + "eb9005f5037b00f3"))
+=> ([(5, 101.3, 12.3)], b"")
+--- check case | Two frames back to back, ending exactly at the end
+decom(bytes.fromhex("eb9006e7ff7c0019" + "eb9007fc037d00fe"))
+=> ([(6, -2.5, 12.4), (7, 102.0, 12.5)], b"")
+--- check case | Too short for any frame
+decom(bytes.fromhex("eb9005"))
+=> ([], bytes.fromhex("eb9005"))
+--- check case | An empty stream
+decom(b"")
+=> ([], b"")
+
++++ practice | Honest statistics on messy telemetry
+--- task
+Telemetry values can be bad in three ways: a float `nan` (no valid reading), `None` (a dropped sample), or a number outside the sensor's physical range `lo` to `hi` (a glitch). Write `clean_stats(values, lo, hi)` that returns `(good, mean, std)` over the other values.
+
+- `good` is how many values were used. `lo` and `hi` themselves are allowed.
+- `std` is the population standard deviation: divide the sum of squared distances from the mean by `good`.
+- With no good values, return `(0, None, None)`.
+- Never turn a bad value into 0.
+--- starter
+def clean_stats(values, lo, hi):
+    pass
+--- solution
+import math
+
+def clean_stats(values, lo, hi):
+    """(count, mean, population std) of the usable values. O(n) time."""
+    good = [v for v in values
+            if v is not None and not math.isnan(v) and lo <= v <= hi]
+    if not good:
+        return (0, None, None)
+    mean = sum(good) / len(good)
+    var = sum((v - mean) ** 2 for v in good) / len(good)
+    return (len(good), mean, math.sqrt(var))
+--- hint
+Filter first: drop `None`, drop NaN with `math.isnan` (never with `==`), and drop anything outside `lo..hi`.
+--- hint
+Test for `None` before calling `math.isnan`, which cannot take `None`. Then the mean and standard deviation are two passes over the good values.
+--- check test | Three good values out of six
+(lambda r: r[0] == 3 and abs(r[1] - 22.0) < 1e-9 and abs(r[2] - 1.632993161855452) < 1e-9)(clean_stats([20.0, float("nan"), 22.0, None, 24.0, 900.0], -50, 150))
+--- check case | Nothing usable
+(clean_stats([], 0, 10), clean_stats([None, float("nan"), 11.0], 0, 10))
+=> ((0, None, None), (0, None, None))
+--- check case | One value has no spread
+clean_stats([21.5], 0, 50)
+=> (1, 21.5, 0.0)
+--- check case | Both limits are allowed
+clean_stats([-50, 150], -50, 150)
+=> (2, 50.0, 100.0)
+
++++ practice | Missing samples that come up short
+--- task
+`missing_count(t_ms, period_ms)` should return how many samples are missing from a stream that is sampled every `period_ms` milliseconds, given the timestamps that arrived, in order. A step counts as a gap only when it is more than 1.5 periods, so small timing jitter is ignored. A gap of about m periods means m - 1 samples are missing, and "about" means rounded to the nearest whole number of periods.
+
+It is wrong. `missing_count([0, 100, 395, 500], 100)` should be `2`: the step of 295 ms is 2.95 periods, which is really 3, so 2 samples are missing. It returns `1`. Fix it.
+--- starter
+def missing_count(t_ms, period_ms):
+    """How many samples are missing from a stream sampled every period_ms."""
+    missing = 0
+    for i in range(1, len(t_ms)):
+        steps = (t_ms[i] - t_ms[i - 1]) / period_ms     # periods this step spans
+        if steps > 1.5:
+            missing += int(steps) - 1
+    return missing
+--- solution
+def missing_count(t_ms, period_ms):
+    """How many samples are missing from a stream sampled every period_ms."""
+    missing = 0
+    for i in range(1, len(t_ms)):
+        steps = (t_ms[i] - t_ms[i - 1]) / period_ms     # periods this step spans
+        if steps > 1.5:
+            missing += round(steps) - 1                  # rounding absorbs the jitter
+    return missing
+--- hint
+What is `int(2.95)`? Jitter can make a gap a little shorter than a whole number of periods.
+--- hint
+Round to the nearest whole number of periods instead of cutting the fraction off.
+--- check case | A slightly short gap
+missing_count([0, 100, 395, 500], 100)
+=> 2
+--- check case | Another short gap
+missing_count([0, 260], 100)
+=> 2
+--- check case | A slightly long gap
+missing_count([0, 410], 100)
+=> 3
+--- check case | Jitter alone is not a gap
+missing_count([0, 110, 190, 300], 100)
+=> 0
+--- check case | No timestamps
+missing_count([], 100)
+=> 0
+
++++ question | Filtering out NaN
+--- ask
+What does this print?
+
+```python
+vals = [21.5, float("nan"), 22.5]
+good = [v for v in vals if v != float("nan")]
+print(len(good))
+```
+--- answer
+3
+three
+--- why
+It prints 3: the NaN is kept. NaN is not equal to anything, not even another NaN, so `v != float("nan")` is true for every value, including the NaN itself. Test for NaN with `math.isnan(v)` (or `np.isnan` for arrays), never with `==` or `!=`. A NaN left in the list then makes any mean of it NaN too.
+
+=== int01-l11 | Practice: Ring buffers and time alignment
+--- for
+l11-ring-buffers-and-time-alignment
+
++++ practice | Unroll a ring's raw state
+--- task
+A ring buffer's raw state is its list of slots `buf`, the index `start` of the oldest item, and `length`, how many items are stored. Write `unroll(buf, start, length)` that returns the stored items, oldest first.
+
+- The item `i` places after the oldest is in slot `(start + i) % len(buf)`.
+- `buf` has at least one slot. Raise `ValueError` if `start` is not a valid slot index, or if `length` is negative or more than `len(buf)`.
+
+So `unroll(["E", "F", "C", "D"], 2, 4)` is `["C", "D", "E", "F"]`.
+--- starter
+def unroll(buf, start, length):
+    pass
+--- solution
+def unroll(buf, start, length):
+    """The stored items, oldest first. O(length) time."""
+    n = len(buf)
+    if not 0 <= start < n or not 0 <= length <= n:
+        raise ValueError("start or length out of range")
+    return [buf[(start + i) % n] for i in range(length)]
+--- hint
+Read `length` items, counting from `start`, and let the remainder after dividing by the number of slots wrap the index back to 0.
+--- check case | Full, and wrapped
+unroll(["E", "F", "C", "D"], 2, 4)
+=> ["C", "D", "E", "F"]
+--- check case | Not full
+unroll(["E", "B", "C", "D"], 1, 3)
+=> ["B", "C", "D"]
+--- check case | Wrapping past the end with room to spare
+unroll([7, 0, 0, 5, 6], 3, 3)
+=> [5, 6, 7]
+--- check case | Empty, and a ring of one slot
+(unroll([1, 2], 1, 0), unroll([9], 0, 1))
+=> ([], [9])
+--- check test | Bad start or length raises ValueError
+raises(ValueError, lambda: unroll([1, 2, 3, 4], 4, 1)) and raises(ValueError, lambda: unroll([1, 2], 0, 3)) and raises(ValueError, lambda: unroll([1, 2], 0, -1))
+
++++ practice | A command ring that refuses when full
+--- task
+Commands waiting to go to a thruster must never be silently dropped. Write a class `CommandRing(capacity)`: a ring buffer whose overwrite policy is to **refuse** the newest item when full.
+
+- The constructor makes one list of `capacity` slots, kept in `self.slots`, and raises `ValueError` if `capacity` is less than 1. The list must never change length.
+- `offer(cmd)` stores `cmd` and returns `True`, or returns `False` and stores nothing when the ring is full.
+- `take()` removes and returns the oldest command, or returns `None` when the ring is empty.
+- `len(ring)` gives the number of commands stored.
+- Every operation is O(1). No `append`, `pop` or `insert` on the list.
+--- starter
+class CommandRing:
+    def __init__(self, capacity):
+        pass
+--- solution
+class CommandRing:
+    """Fixed-capacity FIFO of commands that refuses new ones when full."""
+
+    def __init__(self, capacity):
+        if capacity < 1:
+            raise ValueError("capacity must be at least 1")
+        self.slots = [None] * capacity
+        self.start = 0          # index of the oldest command
+        self.count = 0          # how many commands are stored
+
+    def offer(self, cmd):
+        if self.count == len(self.slots):
+            return False                        # full: refuse, never overwrite a command
+        self.slots[(self.start + self.count) % len(self.slots)] = cmd
+        self.count += 1
+        return True
+
+    def take(self):
+        if self.count == 0:
+            return None
+        cmd = self.slots[self.start]
+        self.slots[self.start] = None
+        self.start = (self.start + 1) % len(self.slots)
+        self.count -= 1
+        return cmd
+
+    def __len__(self):
+        return self.count
+--- hint
+Keep the index of the oldest command and a count, as in the lesson. The next free slot is `(start + count) % capacity`.
+--- hint
+`offer` checks for full before writing anything. `take` checks for empty, reads the oldest slot, then moves `start` on by one, wrapping.
+--- check case | Refuses when full
+(lambda r: [r.offer("OPEN"), r.offer("FIRE"), r.offer("CLOSE"), len(r)])(CommandRing(2))
+=> [True, True, False, 2]
+--- check case | Oldest first, across the wrap
+(lambda r: (r.offer(1), r.offer(2), r.offer(3), r.take(), r.take(), r.offer(4), r.offer(5), r.take(), r.take(), r.take(), r.take()))(CommandRing(3))
+=> (True, True, True, 1, 2, True, True, 3, 4, 5, None)
+--- check case | Taking from an empty ring
+CommandRing(1).take()
+=> None
+--- check case | The slots never change length
+(lambda r: ([r.offer(i) for i in range(10)], [r.take() for _ in range(5)], [r.offer(i) for i in range(4)], len(r.slots), len(r)))(CommandRing(5))[3:]
+=> (5, 4)
+--- check test | A capacity below 1 raises ValueError
+raises(ValueError, lambda: CommandRing(0)) and raises(ValueError, lambda: CommandRing(-2))
+
++++ practice | Sample and hold
+--- task
+A fast sensor has sorted timestamps `t` and values `v`. Write `hold_values(t, v, query_t)` that returns, for each time in the sorted list `query_t`, the value of the most recent sample at or before that time. This is **sample and hold**: the last reading is held until the next one arrives.
+
+- A query before the first sample, or any query when there are no samples, gets `None`.
+- Walk both sorted lists with two pointers that only move forward: O(n + m) time. The check runs 200,000 samples and 200,000 queries.
+
+So with `t = [0, 10, 20, 30]` and `v = [1.0, 1.5, 2.5, 2.0]`, the query time `7.5` gets `1.0`.
+--- starter
+def hold_values(t, v, query_t):
+    pass
+--- solution
+def hold_values(t, v, query_t):
+    """Latest value at or before each query time. O(n + m) time, O(m) space."""
+    out = []
+    j = -1                          # index of the latest sample at or before the query
+    for q in query_t:
+        while j + 1 < len(t) and t[j + 1] <= q:
+            j += 1                  # j only moves forward across all the queries
+        out.append(v[j] if j >= 0 else None)
+    return out
+--- hint
+Keep one index `j` into the samples. Because the queries are sorted, the right sample for the next query is never earlier than the one for this query.
+--- hint
+Before answering a query, move `j` forward while the next sample is at or before the query time. If `j` has not reached any sample yet, the answer is `None`.
+--- check case | Before, on, between and after the samples
+hold_values([0, 10, 20, 30], [1.0, 1.5, 2.5, 2.0], [-5, 0, 7.5, 20, 99])
+=> [None, 1.0, 1.0, 2.5, 2.0]
+--- check case | Repeated query times
+hold_values([0, 10], [3, 4], [10, 10, 10])
+=> [4, 4, 4]
+--- check case | No samples, and no queries
+(hold_values([], [], [1, 2]), hold_values([0], [5], []))
+=> ([None, None], [])
+--- check case | 200,000 samples and 200,000 queries
+sum(hold_values(list(range(0, 400000, 2)), list(range(0, 400000, 2)), list(range(1, 400001, 2))))
+=> 39999800000
+
++++ practice | A ring that wraps with a mask
+--- task
+When a ring's capacity is a power of two (1, 2, 4, 8, …), the slot index can wrap with a bit mask, `index & (capacity - 1)`, instead of the slower `%`. Write a class `MaskRing(capacity)`:
+
+- The constructor raises `ValueError` if `capacity` is not a power of two (0, 3, 6 and negative numbers all fail). It keeps a fixed list of `capacity` slots in `self.slots`.
+- `push(x)` stores `x`, overwriting the oldest item when the ring is full.
+- `latest(k)` returns the newest `k` items, newest first. If fewer than `k` are stored, it returns all of them. `k` of 0 or less gives `[]`.
+- Wrap every index with `&`; do not use `%`.
+--- starter
+class MaskRing:
+    def __init__(self, capacity):
+        pass
+--- solution
+class MaskRing:
+    """Overwriting ring whose power-of-two capacity lets a mask do the wrap."""
+
+    def __init__(self, capacity):
+        if capacity < 1 or capacity & (capacity - 1):
+            raise ValueError("capacity must be a power of two")
+        self.slots = [None] * capacity
+        self.mask = capacity - 1
+        self.next = 0           # the slot the next push writes
+        self.count = 0
+
+    def push(self, x):
+        self.slots[self.next] = x
+        self.next = (self.next + 1) & self.mask
+        if self.count < len(self.slots):
+            self.count += 1
+
+    def latest(self, k):
+        k = min(k, self.count)
+        return [self.slots[(self.next - 1 - i) & self.mask] for i in range(k)]
+--- hint
+A power of two has exactly one bit set, so `capacity & (capacity - 1)` is 0 for it and nonzero for anything else. Check `capacity >= 1` too.
+--- hint
+Keep the index of the next slot to write and a count. The newest item is one slot before the next write, the one before that is two slots back, and so on.
+--- hint
+In Python, `-1 & 3` is 3: the mask wraps negative indices around correctly as well.
+--- check case | Newest first after overwriting
+(lambda r: ([r.push(x) for x in range(1, 7)], r.latest(3))[1])(MaskRing(4))
+=> [6, 5, 4]
+--- check case | Asking for more than is stored
+(lambda r: ([r.push(x) for x in range(1, 7)], r.latest(10))[1])(MaskRing(4))
+=> [6, 5, 4, 3]
+--- check case | Not full yet, and k of zero
+(lambda r: (r.push("a"), r.push("b"), r.latest(5), r.latest(0))[2:])(MaskRing(8))
+=> (["b", "a"], [])
+--- check case | A ring of one keeps only the newest
+(lambda r: ([r.push(x) for x in (1, 2, 3)], r.latest(5))[1])(MaskRing(1))
+=> [3]
+--- check case | The slots never change length
+(lambda r: ([r.push(x) for x in range(100)], len(r.slots))[1])(MaskRing(8))
+=> 8
+--- check test | Capacities that are not powers of two raise ValueError
+all(raises(ValueError, lambda c=c: MaskRing(c)) for c in (0, 3, 6, -4))
+--- check source | Wraps with a mask
+&
+--- check source absent | Does not use % to wrap
+%
+
++++ practice | The byte ring that holds one too few
+--- task
+`ByteRing(capacity)` is a queue of bytes built on a head and a tail index. It should hold up to `capacity` bytes: `put(b)` returns `True`, or `False` when the ring is full; `get()` returns the oldest byte, or `None` when empty.
+
+It is wrong. `ByteRing(3)` refuses the third byte, and `ByteRing(1)` refuses every byte. The author used the lesson's "leave one slot always unused" design, so that `head == tail` can only mean empty, but forgot what that costs. Fix it with the smallest change, so the ring really holds `capacity` bytes.
+--- starter
+class ByteRing:
+    def __init__(self, capacity):
+        self.buf = [0] * capacity
+        self.head = 0           # the next slot to read
+        self.tail = 0           # the next slot to write
+
+    def empty(self):
+        return self.head == self.tail
+
+    def full(self):
+        return (self.tail + 1) % len(self.buf) == self.head
+
+    def put(self, b):
+        if self.full():
+            return False
+        self.buf[self.tail] = b
+        self.tail = (self.tail + 1) % len(self.buf)
+        return True
+
+    def get(self):
+        if self.empty():
+            return None
+        b = self.buf[self.head]
+        self.head = (self.head + 1) % len(self.buf)
+        return b
+--- solution
+class ByteRing:
+    def __init__(self, capacity):
+        self.buf = [0] * (capacity + 1)     # one slot always stays unused
+        self.head = 0           # the next slot to read
+        self.tail = 0           # the next slot to write
+
+    def empty(self):
+        return self.head == self.tail
+
+    def full(self):
+        return (self.tail + 1) % len(self.buf) == self.head
+
+    def put(self, b):
+        if self.full():
+            return False
+        self.buf[self.tail] = b
+        self.tail = (self.tail + 1) % len(self.buf)
+        return True
+
+    def get(self):
+        if self.empty():
+            return None
+        b = self.buf[self.head]
+        self.head = (self.head + 1) % len(self.buf)
+        return b
+--- hint
+With one slot always left empty, a list of N slots can hold only N - 1 bytes.
+--- hint
+Keep the design and give it the slot it needs: make the list one slot longer than the capacity.
+--- check case | Holds exactly three
+(lambda r: [r.put(b) for b in (1, 2, 3, 4)])(ByteRing(3))
+=> [True, True, True, False]
+--- check case | Oldest first across the wrap
+(lambda r: (r.put(1), r.put(2), r.get(), r.put(3), r.put(4), r.get(), r.get(), r.get(), r.get()))(ByteRing(3))
+=> (True, True, 1, True, True, 2, 3, 4, None)
+--- check case | A ring of one
+(lambda r: (r.put(9), r.put(8), r.get(), r.get()))(ByteRing(1))
+=> (True, False, 9, None)
+--- check case | Empty from the start
+ByteRing(4).get()
+=> None
+
++++ question | Estimating the slow sensor at the fast times
+--- ask
+You estimate a 10 Hz GPS position at every timestamp of a 100 Hz IMU, by linear interpolation between GPS fixes. Which statement is true?
+--- choice correct
+Nine of every ten GPS values you produce are estimates between real fixes; they carry no new measurement, so later code must not treat them as independent GPS data.
+--- choice
+Interpolating makes the GPS ten times more accurate, because there are ten times as many values.
+--- choice
+It is extrapolation, because the IMU times lie outside the GPS data.
+--- choice
+It costs O(n · m) however it is written, because every IMU time must be compared with every GPS time.
+--- why
+This is upsampling: most of the output values are points on straight lines between real fixes, not measurements. That is legitimate if you say so, but it adds no information. It is interpolation, not extrapolation, for every IMU time between the first and last fix. And because both time lists are sorted, two forward-only pointers do it in O(n + m).
+
+=== int01-l12 | Practice: PID with anti-windup and the running median
+--- for
+l12-pid-anti-windup-and-running-median
+
++++ practice | One step of conditional integration
+--- task
+Write `next_integral(integ, e, v, u_max, ki, dt)` that returns the integrator's new value under **conditional integration**.
+
+- Normally the integrator grows by `ki * e * dt`.
+- But when the controller is pushing into a limit, it stays exactly as it is. Pushing into a limit means asking for more than `u_max` while the error is positive, or asking for less than `-u_max` while the error is negative.
+- Asking for exactly `u_max` is not beyond the limit.
+
+Here `integ` is the current integrator value, `e` the error, `v` the command the controller asked for before clipping, and `u_max` the actuator's limit.
+--- starter
+def next_integral(integ, e, v, u_max, ki, dt):
+    pass
+--- solution
+def next_integral(integ, e, v, u_max, ki, dt):
+    """Integrator update with conditional integration (anti-windup)."""
+    pushing = (v > u_max and e > 0) or (v < -u_max and e < 0)
+    if pushing:
+        return integ                    # more integral cannot move a saturated actuator
+    return integ + ki * e * dt
+--- hint
+Write the "pushing into a limit" test as one condition with two halves joined by `or`, one for the top limit and one for the bottom.
+--- hint
+Saturated high with a negative error is not pushing: integrating then helps the controller come off the limit, so it must happen.
+--- check case | Saturated high, error positive: frozen
+next_integral(0.5, 0.25, 2.0, 1.0, 2.0, 0.5)
+=> 0.5
+--- check case | Saturated high, error negative: it unwinds
+next_integral(0.5, -0.25, 2.0, 1.0, 2.0, 0.5)
+=> 0.25
+--- check case | Not saturated: it integrates
+next_integral(0.0, 0.5, 0.75, 1.0, 2.0, 0.25)
+=> 0.25
+--- check case | Saturated low, error negative: frozen
+next_integral(-0.5, -1.0, -3.0, 1.0, 4.0, 0.125)
+=> -0.5
+--- check case | Saturated low, error positive: it unwinds
+next_integral(-0.5, 0.5, -3.0, 1.0, 4.0, 0.125)
+=> -0.25
+--- check case | Exactly at the limit still integrates
+next_integral(0.0, 1.0, 1.0, 1.0, 1.0, 0.5)
+=> 0.5
+
++++ practice | A PID controller with back-calculation
+--- task
+Write a class `PIDController(kp, ki, kd, kb, u_max)` with a method `update(r, y, dt)` that returns the command `u`. The integrator starts at 0 and is kept in `self.integ`. Each call does exactly this:
+
+1. The error is `e = r - y`.
+2. The derivative is taken on the measurement: `d = -(y - y_prev) / dt`, where `y_prev` is the measurement from the previous call. On the first call there is no previous measurement, so `d = 0`.
+3. The request is `v = kp * e + integ + kd * d`.
+4. The command is `v` clipped to the range `-u_max` to `u_max`.
+5. Back-calculation: `integ` grows by `(ki * e + kb * (u - v)) * dt`.
+6. Remember `y` for the next call, and return `u`.
+
+Raise `ValueError` if `dt` is 0 or less.
+--- starter
+class PIDController:
+    def __init__(self, kp, ki, kd, kb, u_max):
+        pass
+--- solution
+class PIDController:
+    """Discrete PID with derivative on measurement and back-calculation anti-windup."""
+
+    def __init__(self, kp, ki, kd, kb, u_max):
+        self.kp, self.ki, self.kd, self.kb = kp, ki, kd, kb
+        self.u_max = u_max
+        self.integ = 0.0
+        self.y_prev = None          # no measurement yet
+
+    def update(self, r, y, dt):
+        if dt <= 0:
+            raise ValueError("dt must be positive")
+        e = r - y
+        d = 0.0 if self.y_prev is None else -(y - self.y_prev) / dt
+        v = self.kp * e + self.integ + self.kd * d
+        u = max(-self.u_max, min(self.u_max, v))
+        self.integ += (self.ki * e + self.kb * (u - v)) * dt   # bleed off the excess
+        self.y_prev = y
+        return u
+--- hint
+Store `y_prev` as `None` at first, so the first call can tell there is nothing to take a difference from.
+--- hint
+Clip with `max(-u_max, min(u_max, v))`. The integrator update uses both `u` and `v`: when they are equal, the back-calculation term is zero.
+--- check case | Four steps toward the setpoint
+(lambda c: [c.update(1.0, y, 0.5) for y in (0.0, 0.25, 0.5, 0.75)])(PIDController(2.0, 1.0, 0.5, 1.0, 1.0))
+=> [1.0, 1.0, 1.0, 0.75]
+--- check case | The integrator after those four steps
+(lambda c: ([c.update(1.0, y, 0.5) for y in (0.0, 0.25, 0.5, 0.75)], c.integ)[1])(PIDController(2.0, 1.0, 0.5, 1.0, 1.0))
+=> 0.625
+--- check case | Saturated low: the command is clipped and the excess drains
+(lambda c: (c.update(0.0, 2.0, 0.5), c.integ))(PIDController(2.0, 1.0, 0.5, 1.0, 1.0))
+=> (-1.0, 0.5)
+--- check case | No derivative kick on the first call
+PIDController(1.0, 0.0, 10.0, 0.0, 5.0).update(1.0, 0.5, 0.25)
+=> 0.5
+--- check test | A time step of zero raises ValueError
+raises(ValueError, lambda: PIDController(1.0, 1.0, 0.0, 1.0, 1.0).update(1.0, 0.0, 0.0))
+
++++ practice | A median filter over a sliding window
+--- task
+Write `median_filter(xs, w)` that returns the median of every window of `w` consecutive readings, in order. A median filter like this removes single spikes that would drag an average far off.
+
+- `w` must be a positive odd number; otherwise raise `ValueError`. If `w` is more than `len(xs)`, return `[]`.
+- Keep the current window as a sorted list. Each step, remove the reading that leaves (find it with a binary search) and add the new one with `bisect.insort`: O(w) per step.
+
+So `median_filter([5, 7, 300, 6, 5, 8, 4], 3)` is `[7, 7, 6, 6, 5]`: the spike of 300 never comes through.
+--- starter
+import bisect
+
+def median_filter(xs, w):
+    pass
+--- solution
+import bisect
+
+def median_filter(xs, w):
+    """Median of each window of w readings (w odd). O(n · w) time, O(w) space."""
+    if w < 1 or w % 2 == 0:
+        raise ValueError("w must be a positive odd number")
+    if w > len(xs):
+        return []
+    window = sorted(xs[:w])
+    out = [window[w // 2]]
+    for i in range(w, len(xs)):
+        del window[bisect.bisect_left(window, xs[i - w])]     # the oldest reading leaves
+        bisect.insort(window, xs[i])                          # the newest joins
+        out.append(window[w // 2])
+    return out
+--- hint
+Sort the first window once. Its middle item, at index `w // 2`, is the first median.
+--- hint
+When the window slides, the reading at `xs[i - w]` leaves. `bisect_left` finds a copy of it in the sorted window, and `del` removes it; then `insort` adds `xs[i]` in its sorted place.
+--- check case | A spike is removed
+median_filter([5, 7, 300, 6, 5, 8, 4], 3)
+=> [7, 7, 6, 6, 5]
+--- check case | A window of one changes nothing
+median_filter([3, 1, 2], 1)
+=> [3, 1, 2]
+--- check case | Repeated values
+median_filter([2, 2, 2, 2], 3)
+=> [2, 2]
+--- check case | A window of five with a negative spike
+median_filter([10, 11, -500, 12, 13, 11, 10], 5)
+=> [11, 11, 11]
+--- check case | Window longer than the data
+median_filter([1, 2], 3)
+=> []
+--- check test | An even or zero window raises ValueError
+raises(ValueError, lambda: median_filter([1, 2, 3], 2)) and raises(ValueError, lambda: median_filter([1, 2, 3], 0))
+
++++ practice | A median that is always a real reading
+--- task
+Write a class `MedianTracker` with `add(x)` and `median()`.
+
+- `median()` returns the median of every value added so far: the middle value when the count is odd, and the **lower** of the two middle values when it is even, so the answer is always one of the readings. It raises `ValueError` when nothing has been added.
+- Use two heaps, a max-heap for the lower half and a min-heap for the upper half: `add` is O(log n) and `median` is O(1).
+- The check adds 200,000 readings and asks for the median after each one.
+
+So after adding 5, 15, 1 and 3, the median is 3: in sorted order 1, 3, 5, 15, the lower middle value is 3.
+--- starter
+class MedianTracker:
+    def __init__(self):
+        pass
+--- solution
+import heapq
+
+class MedianTracker:
+    """Lower median of a stream. add O(log n), median O(1), space O(n)."""
+
+    def __init__(self):
+        self.low = []       # max-heap of the lower half, stored as negatives
+        self.high = []      # min-heap of the upper half
+
+    def add(self, x):
+        if not self.low or x <= -self.low[0]:
+            heapq.heappush(self.low, -x)
+        else:
+            heapq.heappush(self.high, x)
+        # low holds the same number as high, or one more
+        if len(self.low) > len(self.high) + 1:
+            heapq.heappush(self.high, -heapq.heappop(self.low))
+        elif len(self.high) > len(self.low):
+            heapq.heappush(self.low, -heapq.heappop(self.high))
+
+    def median(self):
+        if not self.low:
+            raise ValueError("no readings yet")
+        return -self.low[0]                 # the lower middle for an even count
+--- hint
+If the lower half always holds the same number of values as the upper half, or one more, then the lower median is always the top of the lower half.
+--- hint
+`heapq` only makes min-heaps: store the lower half as negated numbers, and negate again whenever a value comes out of it.
+--- check case | After each of four readings
+(lambda m: [m.add(x) or m.median() for x in (5, 15, 1, 3)])(MedianTracker())
+=> [5, 5, 5, 3]
+--- check case | Negative and repeated readings
+(lambda m: [m.add(x) or m.median() for x in (-4, -8, -4, 0)])(MedianTracker())
+=> [-4, -8, -4, -4]
+--- check test | An empty tracker raises ValueError
+raises(ValueError, lambda: MedianTracker().median())
+--- check case | 200,000 rising readings, a median after each
+(lambda m: sum(m.add(x) or m.median() for x in range(200000)))(MedianTracker())
+=> 9999900000
+
++++ practice | The median that goes negative
+--- task
+`StreamMedian.feed(x)` adds a reading and returns the median of all readings so far, as a float: the middle value for an odd count, the average of the two middle values for an even count. It uses two heaps: `low`, the lower half, stored negated so `heapq` can treat it as a max-heap, and `high`, the upper half.
+
+It is wrong from the very first reading: `feed(5)` should return `5.0`, but it returns `-5.0`, and the medians after it are wrong too. Find the line and fix it.
+--- starter
+import heapq
+
+class StreamMedian:
+    def __init__(self):
+        self.low = []       # lower half, stored as negatives
+        self.high = []      # upper half
+
+    def feed(self, x):
+        heapq.heappush(self.low, -x)
+        heapq.heappush(self.high, -heapq.heappop(self.low))    # the largest low value moves up
+        if len(self.high) > len(self.low):
+            heapq.heappush(self.low, heapq.heappop(self.high))  # keep low at least as big
+        if len(self.low) > len(self.high):
+            return float(-self.low[0])
+        return (-self.low[0] + self.high[0]) / 2
+--- solution
+import heapq
+
+class StreamMedian:
+    def __init__(self):
+        self.low = []       # lower half, stored as negatives
+        self.high = []      # upper half
+
+    def feed(self, x):
+        heapq.heappush(self.low, -x)
+        heapq.heappush(self.high, -heapq.heappop(self.low))    # the largest low value moves up
+        if len(self.high) > len(self.low):
+            heapq.heappush(self.low, -heapq.heappop(self.high)) # negate on the way into low
+        if len(self.low) > len(self.high):
+            return float(-self.low[0])
+        return (-self.low[0] + self.high[0]) / 2
+--- hint
+Every value in `low` must be stored negated. Check each line that pushes onto `low`: is the value negated on the way in?
+--- hint
+The line that moves a value from `high` down to `low` pushes it as it is. It needs a minus sign.
+--- check case | Five readings
+(lambda m: [m.feed(x) for x in (5, 15, 1, 3, 2)])(StreamMedian())
+=> [5.0, 10.0, 5.0, 4.0, 3.0]
+--- check case | One reading
+StreamMedian().feed(7)
+=> 7.0
+--- check case | Equal readings
+(lambda m: [m.feed(x) for x in (4, 4, 4)])(StreamMedian())
+=> [4.0, 4.0, 4.0]
+--- check case | Negative readings
+(lambda m: [m.feed(x) for x in (-4, -8)])(StreamMedian())
+=> [-4.0, -6.0]
+
++++ question | The derivative kick
+--- ask
+A PID has `kd = 0.2` and runs every `dt = 0.01` s. Its derivative term uses the error, `kd * (e - e_prev) / dt`. The measurement is steady when an operator moves the setpoint from 0.5 to 0.8 in one step. How big is the derivative term on that one step? Type the number.
+--- answer
+6
+6.0
++6
+--- why
+The error jumps by 0.3 in one step, so the derivative term is 0.2 × 0.3 / 0.01 = 6: a one-tick spike, likely far past the actuator's limit. Taking the derivative of the measurement instead, `-kd * (y - y_prev) / dt`, gives 0 here, because the measurement has not moved yet, and gives the same damping at every other moment.
+
+=== int01-test | Algorithmic fluency: module test
+--- teach
+The test covers the whole module: complexity said out loud, the high-yield patterns (two pointers and windows, hash maps, binary search including on the answer, intervals, stacks and queues, linked lists, trees and graphs, heaps, prefix sums, light dynamic programming and bits), testing your own code, and all six engineering variants: the decommutator, the dropout detector, the ring buffer, the time aligner, the anti-windup PID and the running median. Its ten problems are new, most combine several lessons, and there are no hints; twelve questions after them check that you know why the code behaves as it does. To get ready, redo the practice problems of the lessons that felt hardest, timed and without hints, and write each engineering variant once from a blank page.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | Space packet headers and lost packets
+--- task
+Many spacecraft send telemetry as space packets. Each packet starts with a 6-byte primary header: three unsigned 16-bit words, big-endian. From the top bit down, the fields are:
+
+- word 1: version (3 bits), type (1 bit), secondary-header flag (1 bit), APID, the source's ID (11 bits);
+- word 2: sequence flags (2 bits), sequence count (14 bits, 0 to 16383, then wraps to 0);
+- word 3: packet length: the number of data bytes after the header, minus one.
+
+Write two functions.
+
+1. `read_header(six)` returns `{"version": ..., "type": ..., "sec_hdr": ..., "apid": ..., "seq_flags": ..., "seq_count": ..., "length": ...}`, all ints, and raises `ValueError` unless given exactly 6 bytes.
+2. `apid_losses(stream)` walks packets that sit back to back from the start of `stream` (header, then `length + 1` data bytes, then the next header) and returns a dictionary from each APID seen to the number of its packets that were lost.
+   - For one APID, between neighbouring counts `a` and `b`, the number lost is `(b - a - 1) % 16384`. A count equal to the one before it is a duplicate: 0 lost.
+   - An APID seen once has 0 lost.
+   - A packet cut off at the end of the stream (its header or its data incomplete) is ignored.
+--- starter
+def read_header(six):
+    pass
+
+def apid_losses(stream):
+    pass
+--- solution
+import struct
+
+def read_header(six):
+    """The fields of a 6-byte big-endian space packet primary header."""
+    if len(six) != 6:
+        raise ValueError("a primary header is 6 bytes")
+    w1, w2, length = struct.unpack(">HHH", six)
+    return {
+        "version": w1 >> 13,
+        "type": (w1 >> 12) & 1,
+        "sec_hdr": (w1 >> 11) & 1,
+        "apid": w1 & 0x7FF,
+        "seq_flags": w2 >> 14,
+        "seq_count": w2 & 0x3FFF,
+        "length": length,
+    }
+
+def apid_losses(stream):
+    """Packets lost per APID, from 14-bit sequence counts. O(n) time, O(a) space."""
+    last = {}               # APID -> its last sequence count
+    lost = {}               # APID -> packets lost so far
+    i, n = 0, len(stream)
+    while i + 6 <= n:
+        h = read_header(stream[i:i + 6])
+        end = i + 6 + h["length"] + 1
+        if end > n:
+            break                               # a cut-off packet: ignore it
+        apid, count = h["apid"], h["seq_count"]
+        if apid not in last:
+            lost[apid] = 0
+        elif count != last[apid]:               # an equal count is a duplicate
+            lost[apid] += (count - last[apid] - 1) % 16384
+        last[apid] = count
+        i = end
+    return lost
+--- check case | Every field of one header
+read_header(bytes.fromhex("0923ffff0002"))
+=> {"version": 0, "type": 0, "sec_hdr": 1, "apid": 291, "seq_flags": 3, "seq_count": 16383, "length": 2}
+--- check case | The largest APID and a zero count
+read_header(bytes.fromhex("17ff40000000"))
+=> {"version": 0, "type": 1, "sec_hdr": 0, "apid": 2047, "seq_flags": 1, "seq_count": 0, "length": 0}
+--- check test | A header of the wrong length raises ValueError
+raises(ValueError, lambda: read_header(bytes(5)))
+--- check case | Gaps, a wrap, a duplicate, a single packet and a cut-off tail
+apid_losses(bytes.fromhex("0864c0050001010208c8fffe0000070864c008000203030308c8c0010000070864c008000004092cc000000105050864c00900030102"))
+=> {100: 2, 200: 2, 300: 0}
+--- check case | A packet with one data byte, alone
+apid_losses(bytes.fromhex("0864c0050000ab"))
+=> {100: 0}
+--- check case | An empty stream, and a header with its data missing
+(apid_losses(b""), apid_losses(bytes.fromhex("0864c0050004ab")))
+=> ({}, {})
+
++++ problem | A decommutator for variable-length frames
+--- task
+A beacon sends frames of different lengths:
+
+| Part | Size | Meaning |
+| --- | --- | --- |
+| sync | 1 byte | always `0x5A` |
+| length | 1 byte | N, the number of payload bytes, 1 to 32 |
+| payload | N bytes | the data |
+| checksum | 1 byte | (the length byte + the sum of the payload bytes) mod 256 |
+
+Write `parse(buf)` that returns `(payloads, leftover, bad)`: the payloads of the good frames as a list of `bytes`, in order; the unread bytes at the end; and how many false or damaged frame starts were rejected. Keep an index `i` and follow these rules exactly:
+
+1. If `buf[i]` is not `0x5A`, step forward one byte.
+2. If the length byte is not there yet (the sync byte is the last byte), stop.
+3. If N is 0 or more than 32, count one bad start and step forward one byte.
+4. If the rest of the frame is not all there yet, stop.
+5. If the checksum does not match, count one bad start and step forward one byte.
+6. Otherwise keep the payload and jump past the whole frame, all N + 3 bytes.
+
+When you stop, `leftover` is everything from `i` on; if you run off the end, it is empty.
+--- starter
+def parse(buf):
+    pass
+--- solution
+SYNC = 0x5A
+
+def parse(buf):
+    """Payloads of good frames, the unread tail, and the bad starts. O(n) time."""
+    payloads, bad = [], 0
+    i, n = 0, len(buf)
+    while i < n:
+        if buf[i] != SYNC:
+            i += 1                                  # hunt for the sync byte
+            continue
+        if i + 1 >= n:
+            break                                   # the length byte has not arrived
+        size = buf[i + 1]
+        if not 1 <= size <= 32:
+            bad += 1                                # an impossible length: a false start
+            i += 1
+            continue
+        if i + size + 3 > n:
+            break                                   # the frame is not all here yet
+        if sum(buf[i + 1:i + 2 + size]) % 256 != buf[i + 2 + size]:
+            bad += 1                                # damaged, or a false start: resync
+            i += 1
+            continue
+        payloads.append(bytes(buf[i + 2:i + 2 + size]))
+        i += size + 3
+    return payloads, buf[i:], bad
+--- check case | Junk, an impossible length, a good frame, a damaged frame, a payload holding the sync value, and a cut-off frame
+parse(bytes.fromhex("115a005a03010203095a020909155a025a106c5a050707"))
+=> ([bytes([1, 2, 3]), bytes([0x5A, 0x10])], bytes.fromhex("5a050707"), 2)
+--- check case | One whole frame, nothing left over
+parse(bytes.fromhex("5a05070707070728"))
+=> ([bytes([7, 7, 7, 7, 7])], b"", 0)
+--- check case | The tail joined to the next chunk
+(lambda first: parse(first[1] + bytes.fromhex("07070728")))(parse(bytes.fromhex("5a050707")))
+=> ([bytes([7, 7, 7, 7, 7])], b"", 0)
+--- check case | A sync byte at the very end is kept
+parse(bytes.fromhex("5a0301020309005a"))
+=> ([bytes([1, 2, 3])], bytes.fromhex("5a"), 0)
+--- check case | An empty buffer
+parse(b"")
+=> ([], b"", 0)
+
++++ problem | A telemetry window that knows its gaps
+--- task
+Write a class `TelemetryWindow(capacity)` that keeps the most recent `capacity` samples of a sensor in a ring buffer and can report dropouts among them.
+
+- The constructor raises `ValueError` if `capacity` is less than 1. It keeps one list of `capacity` slots in `self.slots`, which never changes length.
+- `push(t, value)` stores a sample, overwriting the oldest when full, in O(1). Raise `ValueError` if `t` is not greater than the time of the last sample pushed (even if that sample has since been overwritten).
+- `samples()` returns the stored samples as `(t, value)` pairs, oldest first.
+- `gaps(period, k=1.5)` returns `(t_a, t_b, missing)` for every pair of neighbouring stored samples whose time step is more than `k * period`, oldest first, where `missing` is the step divided by `period`, rounded to the nearest whole number, minus 1.
+--- starter
+class TelemetryWindow:
+    def __init__(self, capacity):
+        pass
+--- solution
+class TelemetryWindow:
+    """The last `capacity` samples in fixed memory, with a dropout report."""
+
+    def __init__(self, capacity):
+        if capacity < 1:
+            raise ValueError("capacity must be at least 1")
+        self.slots = [None] * capacity
+        self.start = 0              # index of the oldest sample
+        self.count = 0
+        self.last_t = None          # time of the last sample pushed
+
+    def push(self, t, value):
+        if self.last_t is not None and t <= self.last_t:
+            raise ValueError("timestamps must increase")
+        n = len(self.slots)
+        self.slots[(self.start + self.count) % n] = (t, value)
+        if self.count == n:
+            self.start = (self.start + 1) % n       # the oldest was overwritten
+        else:
+            self.count += 1
+        self.last_t = t
+
+    def samples(self):
+        n = len(self.slots)
+        return [self.slots[(self.start + i) % n] for i in range(self.count)]
+
+    def gaps(self, period, k=1.5):
+        s = self.samples()
+        out = []
+        for (ta, _), (tb, _) in zip(s, s[1:]):
+            if tb - ta > k * period:
+                out.append((ta, tb, round((tb - ta) / period) - 1))
+        return out
+--- check case | After overwriting, oldest first
+(lambda w: ([w.push(t, t / 100) for t in (0, 100, 200, 500, 600, 900)], w.samples())[1])(TelemetryWindow(4))
+=> [(200, 2.0), (500, 5.0), (600, 6.0), (900, 9.0)]
+--- check case | Gaps among the stored samples only
+(lambda w: ([w.push(t, t / 100) for t in (0, 100, 200, 500, 600, 900)], w.gaps(100))[1])(TelemetryWindow(4))
+=> [(200, 500, 2), (600, 900, 2)]
+--- check case | Jitter is not a gap, and k can change
+(lambda w: ([w.push(t, 0) for t in (0, 110, 190, 300, 520)], w.gaps(100), w.gaps(100, 2.5))[1:])(TelemetryWindow(8))
+=> ([(300, 520, 1)], [])
+--- check case | A window of one never has a gap
+(lambda w: ([w.push(t, 1) for t in (0, 1000, 5000)], w.samples(), w.gaps(10))[1:])(TelemetryWindow(1))
+=> ([(5000, 1)], [])
+--- check test | A time that does not increase raises ValueError, even after an overwrite
+(lambda w: (w.push(10, 1), w.push(20, 2), raises(ValueError, lambda: w.push(15, 3)))[2])(TelemetryWindow(1))
+--- check case | The slots never change length
+(lambda w: ([w.push(t, t) for t in range(1000)], len(w.slots), len(w.samples()))[1:])(TelemetryWindow(16))
+=> (16, 16)
+--- check test | A capacity below 1 raises ValueError
+raises(ValueError, lambda: TelemetryWindow(0))
+
++++ problem | Align two sensors without bridging a dropout
+--- task
+Write `align(fast_t, fast_v, slow_t, period, k=1.5)` that estimates a fast sensor's value at each of a slow sensor's times by linear interpolation. `fast_t` (with values `fast_v`) and `slow_t` are both sorted, and `period` is the fast sensor's nominal sample period. For each slow time `t`, in order:
+
+- If `t` equals a fast sample's time, use that sample's value.
+- Otherwise, if there are no fast samples, or `t` is before the first or after the last, give `float("nan")`: never extrapolate.
+- Otherwise find the fast samples just before and just after `t`. If their time step is more than `k * period`, the data has a dropout there: give `float("nan")` rather than draw a line across it.
+- Otherwise interpolate: `v_j + (t - t_j) / (t_next - t_j) * (v_next - v_j)`.
+
+Walk both lists with forward-only pointers: O(n + m) time. The check runs 200,000 fast samples and 200,000 slow times.
+--- starter
+def align(fast_t, fast_v, slow_t, period, k=1.5):
+    pass
+--- solution
+def align(fast_t, fast_v, slow_t, period, k=1.5):
+    """Fast signal at each slow time; NaN outside the data or across a dropout. O(n + m)."""
+    out = []
+    j = 0
+    n = len(fast_t)
+    for t in slow_t:
+        while j + 1 < n and fast_t[j + 1] <= t:     # j only moves forward
+            j += 1
+        if n == 0 or t < fast_t[0] or t > fast_t[-1]:
+            out.append(float("nan"))                 # no extrapolation
+        elif fast_t[j] == t:
+            out.append(fast_v[j])                    # exactly on a sample
+        elif fast_t[j + 1] - fast_t[j] > k * period:
+            out.append(float("nan"))                 # do not bridge a dropout
+        else:
+            frac = (t - fast_t[j]) / (fast_t[j + 1] - fast_t[j])
+            out.append(fast_v[j] + frac * (fast_v[j + 1] - fast_v[j]))
+    return out
+--- check case | Outside, between, on a sample, across a gap, at a gap's edge, after it, past the end
+[round(x, 6) if x == x else "nan" for x in align([0, 10, 20, 50, 60], [1.0, 2.0, 4.0, 5.0, 3.0], [-1, 5, 20, 35, 50, 55, 61], 10)]
+=> ["nan", 1.5, 4.0, "nan", 5.0, 4.0, "nan"]
+--- check case | A wider k lets the line cross the gap
+[round(x, 6) for x in align([0, 10, 20, 50], [1.0, 2.0, 4.0, 5.0], [35], 10, 3.5)]
+=> [4.5]
+--- check case | No fast samples, and no slow times
+([x == x for x in align([], [], [1.0, 2.0], 10)], align([0, 10], [1.0, 2.0], [], 10))
+=> ([False, False], [])
+--- check case | 200,000 samples and 200,000 times
+sum(align(list(range(0, 400000, 2)), list(range(0, 400000, 2)), [x + 0.5 for x in range(0, 399998, 2)], 2))
+=> 39999500001.5
+
++++ problem | The slowest downlink that loses nothing
+--- task
+Samples arrive in bursts: `arrivals[i]` is how many arrive in tick `i`. They wait in an on-board buffer that holds `cap` samples. Each tick, after that tick's arrivals, a downlink of rate `r` sends up to `r` waiting samples. So the backlog after tick `i` is `max(0, backlog + arrivals[i] - r)`, starting from 0. If the backlog after any tick is more than `cap`, data is lost. A backlog still waiting at the end is fine.
+
+Write `min_drain_rate(arrivals, cap)` that returns the smallest whole rate `r`, 0 or more, that never loses data.
+
+- A faster downlink never does worse, so binary search the rate, checking each guess with a simulation: O(n log R).
+- The check runs 100,000 ticks with bursts of up to a million samples, so trying every rate from 0 upward is far too slow.
+
+So `min_drain_rate([5, 0, 0, 9, 1], 4)` is `5`: at rate 4, the backlog after the fourth tick would be 5.
+--- starter
+def min_drain_rate(arrivals, cap):
+    pass
+--- solution
+def loses_nothing(arrivals, cap, rate):
+    backlog = 0
+    for a in arrivals:
+        backlog = max(0, backlog + a - rate)
+        if backlog > cap:
+            return False
+    return True
+
+def min_drain_rate(arrivals, cap):
+    """Smallest rate that never overflows the buffer. O(n log R) time, O(1) space."""
+    lo, hi = 0, max(arrivals, default=0)    # at rate max(arrivals) nothing ever waits
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if loses_nothing(arrivals, cap, mid):
+            hi = mid                        # mid works: the answer is mid or smaller
+        else:
+            lo = mid + 1                    # mid fails, and so does every slower rate
+    return lo
+--- check case | The example
+min_drain_rate([5, 0, 0, 9, 1], 4)
+=> 5
+--- check case | No buffer at all
+min_drain_rate([3, 3, 3, 3], 0)
+=> 3
+--- check case | A buffer big enough for everything
+min_drain_rate([3, 3, 3, 3], 100)
+=> 0
+--- check case | Bursts with quiet ticks between
+min_drain_rate([10, 0, 10, 0], 6)
+=> 5
+--- check case | No ticks
+min_drain_rate([], 5)
+=> 0
+--- check case | 100,000 ticks
+min_drain_rate([(i * 7919) % 1000003 for i in range(100000)], 5 * 10**6)
+=> 722529
+
++++ problem | When does each task finish?
+--- task
+A test campaign has tasks with durations, and some tasks must wait for others to finish. A task starts as soon as all of its prerequisites have finished (at time 0 if it has none), and any number of tasks can run at once.
+
+Write `earliest_finish(durations, deps)`:
+
+- `durations` maps every task to its duration.
+- `deps` maps some tasks to the list of tasks that must finish before they start.
+- Return a dictionary from every task to the time it finishes, or `None` if some tasks wait on each other in a cycle.
+
+Use a topological order, filling in each finish time from the finish times before it: O(V + E) time.
+--- starter
+def earliest_finish(durations, deps):
+    pass
+--- solution
+from collections import deque
+
+def earliest_finish(durations, deps):
+    """Finish time of every task, or None on a cycle. O(V + E) time and space."""
+    needed_by = {t: [] for t in durations}
+    waiting = {t: 0 for t in durations}
+    for after, befores in deps.items():
+        for b in befores:
+            needed_by[b].append(after)
+            waiting[after] += 1
+    start = {t: 0 for t in durations}          # latest finish among prerequisites so far
+    ready = deque(t for t in durations if waiting[t] == 0)
+    finish = {}
+    while ready:
+        t = ready.popleft()
+        finish[t] = start[t] + durations[t]
+        for after in needed_by[t]:
+            start[after] = max(start[after], finish[t])
+            waiting[after] -= 1
+            if waiting[after] == 0:
+                ready.append(after)
+    return finish if len(finish) == len(durations) else None
+--- check case | A startup with two paths into nav
+earliest_finish({"power": 2, "bus": 3, "clock": 1, "imu": 4, "gps": 6, "nav": 2}, {"bus": ["power"], "clock": ["power"], "imu": ["bus", "clock"], "gps": ["bus"], "nav": ["imu", "gps"]})
+=> {"power": 2, "bus": 5, "clock": 3, "gps": 11, "imu": 9, "nav": 13}
+--- check case | Independent tasks all start at 0
+earliest_finish({"a": 5, "b": 1}, {})
+=> {"a": 5, "b": 1}
+--- check case | A task of zero length
+earliest_finish({"a": 3, "go": 0, "b": 2}, {"go": ["a"], "b": ["go"]})
+=> {"a": 3, "go": 3, "b": 5}
+--- check case | A cycle
+earliest_finish({"a": 1, "b": 1, "c": 1}, {"a": ["c"], "b": ["a"], "c": ["b"]})
+=> None
+--- check case | No tasks
+earliest_finish({}, {})
+=> {}
+
++++ problem | The longest stable stretch
+--- task
+Write `longest_stable(xs, tol)` that returns the length of the longest run of consecutive readings in which the largest reading minus the smallest is at most `tol`. An empty list gives 0.
+
+- Use a sliding window with two monotonic deques of indices: one whose values fall from front to back, for the window's maximum, and one whose values rise, for its minimum. Shrink the window from the left while it is unstable.
+- O(n) time. The check runs 200,000 readings, all equal, where recomputing each window's maximum and minimum would be O(n^2).
+
+So `longest_stable([20.1, 20.3, 20.2, 21.5, 21.4, 21.6, 21.5, 20.0], 0.3)` is `4`.
+--- starter
+def longest_stable(xs, tol):
+    pass
+--- solution
+from collections import deque
+
+def longest_stable(xs, tol):
+    """Longest run with max - min <= tol. O(n) time, O(n) space."""
+    hi_q = deque()          # indices; values fall from front to back (front = max)
+    lo_q = deque()          # indices; values rise from front to back (front = min)
+    left = 0
+    best = 0
+    for right, x in enumerate(xs):
+        while hi_q and xs[hi_q[-1]] <= x:
+            hi_q.pop()
+        hi_q.append(right)
+        while lo_q and xs[lo_q[-1]] >= x:
+            lo_q.pop()
+        lo_q.append(right)
+        while xs[hi_q[0]] - xs[lo_q[0]] > tol:     # unstable: drop the leftmost reading
+            left += 1
+            if hi_q[0] < left:
+                hi_q.popleft()
+            if lo_q[0] < left:
+                lo_q.popleft()
+        best = max(best, right - left + 1)
+    return best
+--- check case | The example
+longest_stable([20.1, 20.3, 20.2, 21.5, 21.4, 21.6, 21.5, 20.0], 0.3)
+=> 4
+--- check case | A tolerance that fits everything, and one that fits nothing
+(longest_stable([5, 1, 5, 1], 4), longest_stable([5, 1, 5, 1], 3))
+=> (4, 1)
+--- check case | Zero tolerance with repeats
+longest_stable([3, 3, 4, 4, 4, 3], 0)
+=> 3
+--- check case | Negative readings
+longest_stable([-2, -4, -3, 0, 1, 2, -1], 3)
+=> 4
+--- check case | An empty list, and one reading
+(longest_stable([], 1), longest_stable([7], 0))
+=> (0, 1)
+--- check case | 200,000 equal readings
+longest_stable([1.5] * 200000, 0)
+=> 200000
+
++++ problem | A rover that can hop one rock
+--- task
+A terrain map is a list of equal-length strings: `.` is a safe cell and `#` is a rock. Cells are `(row, column)`, counting from 0. The rover moves one cell up, down, left or right onto a safe cell; each move costs 1.
+
+Once per trip, and only once, it may also **hop**: move two cells in a straight line (up, down, left or right) when the cell in between is a rock and the landing cell is a safe cell on the map. A hop also costs 1.
+
+Write `fewest_moves_with_hop(grid, start, goal)` that returns the fewest moves from `start` to `goal`, or `-1` if the goal cannot be reached. Both are safe cells.
+
+- Breadth-first search, where a state is a cell together with whether the hop has been used. O(R · C) time.
+--- starter
+def fewest_moves_with_hop(grid, start, goal):
+    pass
+--- solution
+from collections import deque
+
+def fewest_moves_with_hop(grid, start, goal):
+    """BFS over (row, column, hop used). O(R * C) time and space."""
+    rows, cols = len(grid), len(grid[0])
+    first = (start[0], start[1], False)
+    dist = {first: 0}
+    q = deque([first])
+    while q:
+        r, c, used = q.popleft()
+        if (r, c) == tuple(goal):
+            return dist[(r, c, used)]
+        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nr, nc = r + dr, c + dc
+            if not (0 <= nr < rows and 0 <= nc < cols):
+                continue
+            if grid[nr][nc] == "." and (nr, nc, used) not in dist:
+                dist[(nr, nc, used)] = dist[(r, c, used)] + 1
+                q.append((nr, nc, used))
+            hr, hc = r + 2 * dr, c + 2 * dc
+            if (not used and grid[nr][nc] == "#" and 0 <= hr < rows and 0 <= hc < cols
+                    and grid[hr][hc] == "." and (hr, hc, True) not in dist):
+                dist[(hr, hc, True)] = dist[(r, c, used)] + 1
+                q.append((hr, hc, True))
+    return -1
+--- check case | A walled-off pocket, reached with a hop
+fewest_moves_with_hop(["..#..", ".##.#", "...#.", "#....", "..#.."], (0, 0), (0, 4))
+=> 3
+--- check case | A hop saves a move on a longer trip
+fewest_moves_with_hop(["..#..", ".##.#", "...#.", "#....", "..#.."], (0, 0), (4, 4))
+=> 7
+--- check case | Only one hop per trip
+fewest_moves_with_hop([".#.#."], (0, 0), (0, 4))
+=> -1
+--- check case | A hop clears one rock, not two
+fewest_moves_with_hop([".##."], (0, 0), (0, 3))
+=> -1
+--- check case | No rocks: plain moves
+fewest_moves_with_hop(["...."], (0, 0), (0, 3))
+=> 3
+--- check case | Start is the goal
+fewest_moves_with_hop(["..#..", ".##.#", "...#.", "#....", "..#.."], (2, 2), (2, 2))
+=> 0
+--- check case | Another field
+(fewest_moves_with_hop([".#...", "##.#.", "...#.", ".#...", "...#."], (0, 0), (4, 4)), fewest_moves_with_hop([".#...", "##.#.", "...#.", ".#...", "...#."], (2, 0), (0, 4)))
+=> (7, 5)
+
++++ problem | A throttle controller with a slew limit
+--- task
+A throttle valve can move only so fast, as well as only so far. Write a class `ThrottlePID(kp, ki, kd, u_max, slew)` with `update(r, y, dt)`, returning the command `u`. The integrator starts at 0 in `self.integ`, and the previous command starts at 0. Each call does exactly this:
+
+1. `e = r - y`.
+2. `d = -(y - y_prev) / dt` from the previous call's measurement, or `d = 0` on the first call.
+3. `v = kp * e + integ + kd * d`.
+4. `u` is `v` clipped to `-u_max .. u_max`, then clipped again to within `slew * dt` of the previous command: no lower than `u_prev - slew * dt` and no higher than `u_prev + slew * dt`.
+5. Anti-windup by conditional integration: if the command was cut short in the direction the error is pushing, that is if `(v - u) * e > 0`, leave the integrator alone. Otherwise add `ki * e * dt` to it.
+6. Remember `y` and `u` for the next call, and return `u`.
+
+Raise `ValueError` if `dt` is 0 or less.
+--- starter
+class ThrottlePID:
+    def __init__(self, kp, ki, kd, u_max, slew):
+        pass
+--- solution
+class ThrottlePID:
+    """PID with range and slew limits, derivative on measurement, conditional integration."""
+
+    def __init__(self, kp, ki, kd, u_max, slew):
+        self.kp, self.ki, self.kd = kp, ki, kd
+        self.u_max, self.slew = u_max, slew
+        self.integ = 0.0
+        self.y_prev = None
+        self.u_prev = 0.0
+
+    def update(self, r, y, dt):
+        if dt <= 0:
+            raise ValueError("dt must be positive")
+        e = r - y
+        d = 0.0 if self.y_prev is None else -(y - self.y_prev) / dt
+        v = self.kp * e + self.integ + self.kd * d
+        u = max(-self.u_max, min(self.u_max, v))                   # how far it can go
+        step = self.slew * dt
+        u = max(self.u_prev - step, min(self.u_prev + step, u))    # how fast it can get there
+        if (v - u) * e <= 0:        # not pushing against a limit: integrate
+            self.integ += self.ki * e * dt
+        self.y_prev, self.u_prev = y, u
+        return u
+--- check case | The slew limit ramps the command, and the integrator waits
+(lambda c: ([c.update(1.0, y, 0.25) for y in (0.0, 0.0, 0.0, 0.0, 0.0, 0.5)], c.integ))(ThrottlePID(2.0, 1.0, 0.0, 1.0, 1.0))
+=> ([0.25, 0.5, 0.75, 1.0, 1.0, 1.0], 0.125)
+--- check case | Frozen at the range limit, then unwinding
+(lambda c: ([c.update(2.0, y, 0.5) for y in (0.0, 0.5, 1.0, 2.5)], c.integ))(ThrottlePID(1.0, 2.0, 0.0, 1.0, 100.0))
+=> ([1.0, 1.0, 1.0, 0.5], 0.5)
+--- check case | Derivative on the measurement, with no kick on the first call
+(lambda c: ([c.update(0.0, y, 0.5) for y in (1.0, 0.5)], c.integ))(ThrottlePID(1.0, 1.0, 4.0, 10.0, 100.0))
+=> ([-1.0, 3.0], -0.75)
+--- check test | A time step of zero raises ValueError
+raises(ValueError, lambda: ThrottlePID(1.0, 1.0, 0.0, 1.0, 1.0).update(1.0, 0.0, 0.0))
+
++++ problem | Spikes against the running median
+--- task
+Write a class `SpikeDetector(limit)` with a method `check(x)` for a stream of readings.
+
+- `check(x)` returns `True` if `x` differs from the median of all the readings before it by more than `limit`, and `False` otherwise. The first reading has nothing before it and returns `False`.
+- Then it adds `x` to the readings, whether or not it was a spike.
+- The median is the middle reading for an odd count, and the average of the two middle readings for an even count.
+- Keep the readings in two heaps: each `check` is O(log n). The check runs 200,000 readings.
+--- starter
+class SpikeDetector:
+    def __init__(self, limit):
+        pass
+--- solution
+import heapq
+
+class SpikeDetector:
+    """Flags readings far from the median of everything before them. O(log n) per check."""
+
+    def __init__(self, limit):
+        self.limit = limit
+        self.low = []           # max-heap of the lower half, stored as negatives
+        self.high = []          # min-heap of the upper half
+
+    def median(self):
+        if len(self.low) > len(self.high):
+            return -self.low[0]
+        return (-self.low[0] + self.high[0]) / 2
+
+    def check(self, x):
+        spike = bool(self.low) and abs(x - self.median()) > self.limit
+        if not self.low or x <= -self.low[0]:
+            heapq.heappush(self.low, -x)
+        else:
+            heapq.heappush(self.high, x)
+        if len(self.low) > len(self.high) + 1:          # low may hold one extra
+            heapq.heappush(self.high, -heapq.heappop(self.low))
+        elif len(self.high) > len(self.low):
+            heapq.heappush(self.low, -heapq.heappop(self.high))
+        return spike
+--- check case | A stream with two spikes
+(lambda s: [s.check(x) for x in (20, 21, 40, 19, 22, 26, 27, 20)])(SpikeDetector(5))
+=> [False, False, True, False, False, False, True, False]
+--- check case | Even counts use the average of the middle two
+(lambda s: [s.check(x) for x in (10, 11, 11, 9.9)])(SpikeDetector(0.5))
+=> [False, True, False, True]
+--- check case | The first reading is never a spike
+SpikeDetector(0).check(1000)
+=> False
+--- check case | 200,000 readings
+(lambda s: sum(s.check((i * 7919) % 100003 - (60000 if i % 1000 == 999 else 0)) for i in range(200000)))(SpikeDetector(1000))
+=> 196008
+
++++ question | A window kept in a list
+--- ask
+Let `n` be the number of readings in the stream. What is the time complexity of this function?
+
+```python
+def recent_means(stream, w):
+    window, out = [], []
+    for x in stream:
+        window.append(x)
+        if len(window) > w:
+            window.pop(0)
+        out.append(sum(window) / len(window))
+    return out
+```
+--- choice
+O(n)
+--- choice
+O(n log w)
+--- choice correct
+O(n · w)
+--- choice
+O(n^2)
+--- why
+Each step does two things that cost O(w): `sum(window)` adds up to w numbers, and `window.pop(0)` shifts every remaining item one place left. Over n readings that is O(n · w). A running sum (add the new reading, subtract the one leaving) and a `deque` with `popleft` make every step O(1), so the whole function becomes O(n).
+
++++ question | A merge that forgets max
+--- ask
+A teammate's interval merge sorts the windows by start and, on an overlap, sets the last merged window's end to the new window's end instead of the larger of the two ends. What total covered time does their code report for these windows?
+
+`(20, 30)`, `(10, 20)`, `(35, 40)`, `(12, 15)`
+
+Overlapping or touching windows merge. Type the number.
+--- answer
+20
+--- why
+Sorted, the windows are (10, 20), (12, 15), (20, 30), (35, 40). The short (12, 15) overlaps, and the bug sets the end to 15, shrinking the window to (10, 15). Then (20, 30) starts after 15, so it becomes a separate window, and (35, 40) is a third: 5 + 10 + 5 = 20. The right answer is 25: (10, 30) and (35, 40). A long window can swallow a short one, which is why the end must be `max(last_end, end)`.
+
++++ question | A search on the answer that never ends
+--- ask
+Here `ok(x)` is monotone: `False` for small values of `x` and `True` from some value on. Which line makes this search loop forever on some inputs?
+
+```python
+lo, hi = 0, 100
+while lo < hi:                  # line A
+    mid = (lo + hi) // 2        # line B
+    if ok(mid):
+        hi = mid                # line C
+    else:
+        lo = mid                # line D
+```
+--- choice
+Line A: it should be `while lo <= hi`.
+--- choice
+Line B: it should round up.
+--- choice
+Line C: it should be `hi = mid - 1`.
+--- choice correct
+Line D: when `ok(mid)` is false, `mid` is not the answer, so it should be `lo = mid + 1`; as written, once `hi = lo + 1` and `ok(lo)` is false, `mid` is `lo` again and nothing changes.
+--- why
+With `lo = 4` and `hi = 5`, `mid` is 4. If `ok(4)` is false, line D sets `lo` to 4, which it already was, so the loop repeats forever. A failed guess is not the answer, so the range must drop it: `lo = mid + 1`. Line C is right as it is: a passing guess might be the answer, so it stays in the range.
+
++++ question | The tops of the two heaps
+--- ask
+`RunningMedian` is the lesson's class: `low` is a max-heap of the lower half stored as negatives, `high` a min-heap of the upper half, and `low` holds the same number of values as `high` or one more. What does this print?
+
+```python
+rm = RunningMedian()
+for x in [4, 9, 1, 7, 7, 2]:
+    rm.add(x)
+print(-rm.low[0], rm.high[0], rm.median())
+```
+--- answer
+4 7 5.5
+4, 7, 5.5
+--- why
+After six readings the halves are equal in size, so `low` holds the three smallest, 1, 2 and 4, and `high` holds 7, 7 and 9. The top of `low` is its largest, 4; the top of `high` is its smallest, 7. The count is even, so the median is their average, 5.5. In sorted order the readings are 1, 2, 4, 7, 7, 9, and the two tops are exactly the two middle values.
+
++++ question | Where anti-windup belongs
+--- ask
+A controller's output is already clipped to the actuator's limits: `u = max(-u_max, min(u_max, v))`. A colleague says that is its anti-windup. Why is that not enough?
+--- choice
+Clipping makes the output jump, and anti-windup exists to smooth it.
+--- choice correct
+Clipping limits only what reaches the actuator this step; the integrator's stored value keeps growing while saturated, and it keeps the actuator pinned past the target after the error changes sign.
+--- choice
+Clipping is fine, but it should be applied to the error instead of the output.
+--- choice
+Windup comes from the derivative term, so it has to be fixed there.
+--- why
+Windup is the integrator's state growing while the actuator is saturated, when more integral cannot produce any more output. On recovery that stored value keeps the command at the limit well past the setpoint, which causes a large overshoot. So the fix has to act on the line that updates the integrator: clamp it, freeze it while pushing into a limit, or drain it by back-calculation.
+
++++ question | A loop condition one character off
+--- ask
+A decommutator for 10-byte frames loops `while i + 10 < len(buf):` instead of `while i + 10 <= len(buf):`. The rest of the code is correct. What goes wrong?
+--- choice
+It decodes a partial frame at the end of the buffer.
+--- choice correct
+When a buffer ends exactly at the end of a good frame, that last frame is not decoded; it is handed back as leftover, or lost if the caller does not keep leftovers.
+--- choice
+It reads past the end of the buffer and raises an `IndexError`.
+--- choice
+Nothing changes, because `<` and `<=` behave the same for whole numbers.
+--- why
+A frame starting at `i` fits exactly when `i + 10 == len(buf)`. The `<` test is false in that case, so the loop stops one frame early. The strict test is still safe, since it never reads past the end, which is why the bug survives tests that happen to have junk after the last frame. Test a buffer that ends exactly on a frame boundary.
+
++++ question | Byte order and sign in one call
+--- ask
+What does this print?
+
+```python
+import struct
+print(struct.unpack(">hH", bytes([0xFF, 0x38, 0xFF, 0x38])))
+```
+--- answer
+(-200, 65336)
+-200, 65336
+-200 65336
+--- why
+`>` is big-endian, so both fields are read as `0xFF38`, the first byte high. `h` is signed 16-bit: `0xFF38` has its top bit set, so it is 65,336 - 65,536 = -200. `H` is unsigned, so the same two bytes are 65,336. `unpack` always returns a tuple. The same bytes mean different numbers depending on the type in the spec, and nothing crashes either way.
+
++++ question | The damage a checksum cannot see
+--- ask
+A frame's checksum is the XOR of its bytes. On the way down, two neighbouring bytes of the frame swap places. Which check would catch that?
+--- choice
+The XOR checksum, because the bytes are in the wrong place.
+--- choice
+An additive checksum, the sum of the bytes mod 256.
+--- choice correct
+A CRC, because every bit's position affects its value.
+--- choice
+None of them: no checksum can detect a reordering.
+--- why
+XOR and addition do not care about order: a ⊕ b = b ⊕ a and a + b = b + a, so both give the same check value after a swap, and the damaged frame passes. A CRC divides the whole message, treated as one long binary number, by a fixed pattern, so moving a byte changes the remainder. That is why real links use a CRC, and why you should say which errors your checksum can and cannot catch.
+
++++ question | Assembling a 32-bit field in C++
+--- ask
+In C++, `p` is a `const std::uint8_t*`. Why is `p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24)` risky for a 32-bit little-endian field?
+--- choice
+The bytes are in the wrong order for little-endian.
+--- choice correct
+Each byte is promoted to a signed `int` before the shift, so when `p[3]` is 128 or more, `p[3] << 24` sets the sign bit, which is undefined behavior; cast each byte to `std::uint32_t` first.
+--- choice
+`|` should be `+`, because OR loses carries.
+--- choice
+A `uint8_t` cannot be shifted at all; it has to be copied with `memcpy`.
+--- why
+Arithmetic on a `uint8_t` promotes it to `int`, which is signed. Shifting a 1 into the sign bit of a 32-bit `int` is undefined behavior in C++17, and the negative result can also sign-extend when widened. Casting to `std::uint32_t` before shifting keeps everything unsigned and well defined. The order is right, and OR is exact here, because the four pieces occupy different bits.
+
++++ question | Reversing with the steps out of order
+--- ask
+What does this "reverse" return for the list A → B → C?
+
+```python
+def reverse(head):
+    prev, cur = None, head
+    while cur:
+        cur.next = prev
+        prev = cur
+        cur = cur.next
+    return prev
+```
+--- choice
+C → B → A, correctly reversed.
+--- choice correct
+Just A: the first pass cuts A's only link to B, so `cur = cur.next` then moves to `None` and the loop ends.
+--- choice
+It loops forever, because A points back to itself.
+--- choice
+It raises an `AttributeError` on `None`.
+--- why
+On the first pass, `cur.next = prev` sets A's next to `None` before anything remembered B. Then `prev = cur` and `cur = cur.next` make `cur` equal to `None`, so the loop stops and returns A alone; B and C are lost. The fix is to save the rest first: `nxt = cur.next`, then turn the arrow, then step with `cur = nxt`.
+
++++ question | A topological order that comes up short
+--- ask
+You run Kahn's algorithm on a dependency graph with 9 tasks, and the order it builds holds only 6 of them. What does that tell you?
+--- choice
+The graph is not connected, so the 3 missing tasks can go anywhere.
+--- choice correct
+The 3 missing tasks never reached in-degree 0: they wait on each other in a cycle, or on a task that does, so no valid order exists.
+--- choice
+The queue was used in the wrong order; a stack would have found all 9.
+--- choice
+Three tasks have no prerequisites and were skipped by mistake.
+--- why
+A task joins the order only when everything it waits for has joined. If the queue empties with tasks left over, every one of them still waits on something that never finished: a cycle, or a task downstream of one. Disconnected tasks are not a problem, since any task with no prerequisites starts at in-degree 0. Reporting the leftover tasks is exactly how a build tool says "circular dependency".
+
++++ question | Saying the cost of two-sum
+--- ask
+You solved two-sum on a list of `n` numbers with one pass and a dictionary of the values seen so far. Which statement of its cost is the one to give in the interview?
+--- choice
+"It's O(1), because dictionary lookups are constant."
+--- choice
+"It's O(n) time."
+--- choice correct
+"Let n be the length of the list. One pass with an average O(1) dictionary lookup and insert per item, so O(n) average time, and O(n) extra space for the dictionary; the pair loop would be O(1) space but O(n^2) time."
+--- choice
+"It's O(n) time and O(1) space, since only one dictionary is used."
+--- why
+A complete answer names n, gives the time with its reason, gives the space with its reason, and mentions the trade. It also says "average", because a dictionary's O(1) is an average: many colliding keys would make each lookup O(n). One dictionary is not O(1) space: it can hold up to n entries.

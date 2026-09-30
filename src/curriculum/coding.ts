@@ -6228,7 +6228,7 @@ export const CODING: Module[] = [
         id: 'cpp06_c7',
         front: 'What does the spaceship operator generate?',
         back:
-          'Defaulting operator<=> gives you all six relational operators from a member-wise comparison, plus == when you default that too. It removes a large block of boilerplate that was a classic place for an inconsistent comparison bug.',
+          'Defaulting operator<=> gives you all six comparison operators from a member-wise comparison: <, <=, > and >= come from <=>, and the compiler also declares a defaulted == (so != works too) alongside it. It removes a large block of boilerplate that was a classic place for an inconsistent comparison bug.',
       },
       {
         id: 'cpp06_c8',
@@ -6343,13 +6343,13 @@ export const CODING: Module[] = [
         q: 'What does defaulting operator<=> give you?',
         choices: [
           'Only operator<',
-          'All four relational operators, and == as well if you default that too',
+          'All four relational operators, and a defaulted == that the compiler declares alongside it',
           'A hash function',
           'A swap function',
         ],
         answer: 1,
         explain:
-          'Three-way comparison generates <, <=, > and >=; equality is separate because it can often be implemented more cheaply.',
+          'Three-way comparison generates <, <=, > and >=. A defaulted <=> also makes the compiler declare a defaulted == (and so !=). Equality is a separate operator, because it can often be checked more cheaply than a full ordering; if you write your own <=>, you must write == yourself.',
         b: 0.5,
         bloom: 'recall',
       },
@@ -9536,7 +9536,7 @@ export const CODING: Module[] = [
     quiz: [
       {
         id: 'rs01_q1',
-        q: 'What happens on `let x: u8 = 250; let y = x + 10;` in a release build?',
+        q: '`x` is a `u8` read from a sensor at run time, and it holds 250. What does `let y = x + 10;` do in a release build?',
         choices: [
           'Compile error',
           'Panic at runtime',
@@ -9545,7 +9545,7 @@ export const CODING: Module[] = [
         ],
         answer: 2,
         explain:
-          'Release builds wrap by default while debug builds panic. Flight code should use checked_add or wrapping_add so the behavior is explicit and identical in both.',
+          'Release builds wrap by default while debug builds panic. (Written with constants, as `let x: u8 = 250; x + 10`, it would not compile at all: the compiler sees the overflow.) Flight code should use checked_add or wrapping_add so the behavior is explicit and identical in both.',
         b: 0.7,
         bloom: 'apply',
       },
@@ -10046,7 +10046,7 @@ export const CODING: Module[] = [
         id: 'rs03_c7',
         front: 'What exactly is Ferrocene qualified for?',
         back:
-          'A qualified Rust toolchain certified by TUV SUD for ISO 26262 up to ASIL D, IEC 61508 up to SIL 3 and IEC 62304 Class C, with support for customer qualification towards DO-178C DAL C. In December 2025 a certified subset of the core library reached IEC 61508 SIL 2 and ISO 26262 ASIL B. It is open source and drop-in compatible with upstream rustc.',
+          'A qualified Rust toolchain certified by TUV SUD for ISO 26262 up to ASIL D, IEC 61508 up to SIL 3 and IEC 62304 Class C, with support for customer qualification towards DO-178C DAL C. A certified subset of the core library reached IEC 61508 SIL 2 in December 2025, and ISO 26262 ASIL B in the next release (Ferrocene 26.02.0). It is open source and drop-in compatible with upstream rustc.',
       },
       {
         id: 'rs03_c8',

@@ -191,6 +191,268 @@ The second has the same shape: `std::cout << "…\n";` with the second sentence 
 Hello, world!
 C++ is compiled and running in your browser.
 
++++ practice | A mission patch in three lines
+--- task
+Write a program that prints exactly these three lines:
+
+```
+Mission: Artemis II
+Crew: four astronauts
+Destination: the Moon
+```
+
+Use one `std::cout` statement for each line, and end each line with `\n`. Capitals, spaces and colons must match exactly.
+--- starter
+#include <iostream>
+
+int main() {
+    // Print the three lines here.
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "Mission: Artemis II\n";
+    std::cout << "Crew: four astronauts\n";
+    std::cout << "Destination: the Moon\n";
+    return 0;
+}
+--- hint
+Each line is its own statement: `std::cout << "…\n";`, placed between the `{` and `return 0;`.
+--- hint
+The first statement is `std::cout << "Mission: Artemis II\n";`. The other two have the same shape.
+--- check output | Prints all three lines, exactly
+Mission: Artemis II
+Crew: four astronauts
+Destination: the Moon
+--- check includes | The last line is there
+Destination: the Moon
+--- check source | Prints with std::cout
+std::cout\s*<<
+
++++ practice | Two lines from one statement
+--- task
+Print these two lines, but use only **one** `std::cout` statement:
+
+```
+Go for launch
+Go for orbit
+```
+
+A string can hold more than one `\n`. Put a `\n` in the middle of the string to end the first line, and another at the end.
+--- starter
+#include <iostream>
+
+int main() {
+    std::cout << "Go for launch\n";
+    std::cout << "Go for orbit\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "Go for launch\nGo for orbit\n";
+    return 0;
+}
+--- hint
+Everything goes inside one pair of double quotes, after one `std::cout <<`.
+--- hint
+Where the first line ends, write `\n` and carry straight on with the second line's words, inside the same string.
+--- check output | Prints both lines
+Go for launch
+Go for orbit
+--- check source absent | Uses only one std::cout
+std::cout[\s\S]*std::cout
+--- check source | Ends a line with \n inside the string
+Go for launch\\nGo
+?? The first \n goes straight after "launch", with no space, inside the same string.
+
++++ practice | A checklist with a gap
+--- task
+Print this pre-flight checklist. The third line is empty: print a line with nothing on it.
+
+```
+PRE-FLIGHT CHECKLIST
+====================
+
+1. Suits sealed
+2. Hatch closed
+3. Comms check
+```
+
+Also write a comment, starting with `//`, somewhere inside `main` that says what the program does. The compiler ignores it, but a reader will not.
+--- starter
+#include <iostream>
+
+int main() {
+    std::cout << "PRE-FLIGHT CHECKLIST\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    // Print the pre-flight checklist.
+    std::cout << "PRE-FLIGHT CHECKLIST\n";
+    std::cout << "====================\n";
+    std::cout << "\n";
+    std::cout << "1. Suits sealed\n";
+    std::cout << "2. Hatch closed\n";
+    std::cout << "3. Comms check\n";
+    return 0;
+}
+--- hint
+An empty line is a string with nothing in it but the newline: `"\n"`.
+--- hint
+The line of equals signs is ordinary text: twenty `=` characters between the quotes, then `\n`.
+--- check output | Prints the checklist with its empty line
+PRE-FLIGHT CHECKLIST
+====================
+
+1. Suits sealed
+2. Hatch closed
+3. Comms check
+--- check includes | The numbered items are there
+1. Suits sealed
+3. Comms check
+--- check source | Has a comment
+//
+
++++ practice | Quotes and backslashes
+--- task
+Print exactly these two lines:
+
+```
+Say "Go" when ready
+Save it in C:\flight\main.cpp
+```
+
+The first line has double quotes inside it, and the second has backslashes. Inside a string, a plain `"` would end the string, and a plain `\` starts an escape like `\n`. So write a double quote as `\"` (backslash, quote) and a backslash as `\\` (two backslashes).
+--- starter
+#include <iostream>
+
+int main() {
+    // Print the two lines here.
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "Say \"Go\" when ready\n";
+    std::cout << "Save it in C:\\flight\\main.cpp\n";
+    return 0;
+}
+--- hint
+Each quote mark that should appear in the output is written `\"` inside the string.
+--- hint
+Each backslash that should appear in the output is written `\\`. Watch out: `\f` and `\m` are not what you want.
+--- check output | Prints both lines, exactly
+Say "Go" when ready
+Save it in C:\flight\main.cpp
+--- check includes | The quotes come out
+Say "Go" when ready
+--- check includes | The backslashes come out
+C:\flight\main.cpp
+
++++ practice | Fix the countdown that runs together
+--- task
+This program should print a countdown, one number per line:
+
+```
+T-minus 3
+T-minus 2
+T-minus 1
+Liftoff!
+```
+
+Instead it prints `T-minus 3T-minus 2` on one line and `T-minus 1Liftoff!` on another. Two of the statements are missing something. Find them and fix them.
+--- starter
+#include <iostream>
+
+int main() {
+    std::cout << "T-minus 3";
+    std::cout << "T-minus 2\n";
+    std::cout << "T-minus 1";
+    std::cout << "Liftoff!\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "T-minus 3\n";
+    std::cout << "T-minus 2\n";
+    std::cout << "T-minus 1\n";
+    std::cout << "Liftoff!\n";
+    return 0;
+}
+--- hint
+A line only ends where the program prints `\n`. Which strings do not end with one?
+--- hint
+`"T-minus 3"` needs a `\n` at its end, and so does one other string.
+--- check output | Prints the countdown, one line each
+T-minus 3
+T-minus 2
+T-minus 1
+Liftoff!
+--- check includes | 1 and Liftoff! are on separate lines
+T-minus 1
+Liftoff!
+--- check source | Each countdown line ends with \n
+T-minus 3\\n
+
++++ practice | Draw a rocket
+--- task
+Print this rocket. Copy every space: the spaces at the start of a line move the drawing to the right.
+
+```
+   /\
+  /  \
+  |  |
+  |  |
+ /____\
+   ||
+```
+
+Some lines contain backslashes. Remember that a backslash inside a string is written `\\`, and each line still ends with `\n`.
+--- starter
+#include <iostream>
+
+int main() {
+    // Draw the rocket here, one line at a time.
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "   /\\\n";
+    std::cout << "  /  \\\n";
+    std::cout << "  |  |\n";
+    std::cout << "  |  |\n";
+    std::cout << " /____\\\n";
+    std::cout << "   ||\n";
+    return 0;
+}
+--- hint
+Write one `std::cout` statement per line of the drawing, and count the spaces at the start of each line.
+--- hint
+The top line is three spaces, a slash, and a backslash. In the string that is `"   /\\"`, and then `\n` to end the line, so the string ends with three backslashes and an n.
+--- check output | Draws the whole rocket
+   /\
+  /  \
+  |  |
+  |  |
+ /____\
+   ||
+--- check includes | The base of the rocket
+ /____\
+--- check source | Writes a backslash as \\
+\\\\
+
 === cpp-01b | Printing text and numbers together
 --- teach
 Last lesson each `std::cout` statement printed one string. Now you will put several pieces into one statement, mix words with numbers, and learn what the compiler tells you when it is unhappy.
@@ -331,6 +593,252 @@ Days in orbit: 182
 <<\s*4\s*<<
 --- check source | Puts the number 182 into the output without quotes
 <<\s*182\s*<<
+
++++ practice | Launch pad numbers
+--- task
+Write a program that prints exactly these two lines:
+
+```
+Launch pad: 39
+Engines: 9, height: 70 m
+```
+
+Write `39`, `9` and `70` as numbers, without quotes, and chain each one into the output with `<<`. The second line has two numbers in it, so it needs more pieces.
+--- starter
+#include <iostream>
+
+int main() {
+    std::cout << "Launch pad: 39\n";
+    std::cout << "Engines: 9, height: 70 m\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "Launch pad: " << 39 << "\n";
+    std::cout << "Engines: " << 9 << ", height: " << 70 << " m\n";
+    return 0;
+}
+--- hint
+Split each line into text pieces and number pieces. The text pieces keep their spaces and punctuation inside the quotes.
+--- hint
+The second line is five pieces: `"Engines: "`, `9`, `", height: "`, `70`, `" m\n"`.
+--- check output | Prints both lines, exactly
+Launch pad: 39
+Engines: 9, height: 70 m
+--- check source | 39 is a number, not text
+<<\s*39\s*<<
+--- check source | 9 and 70 are numbers, not text
+<<\s*9\s*<<[\s\S]*<<\s*70\s*<<
+
++++ practice | A countdown in one statement
+--- task
+Print these three lines with a **single** `std::cout` statement, split over several lines of code to keep it readable:
+
+```
+T-minus 3
+T-minus 2
+T-minus 1
+```
+
+Write the numbers `3`, `2` and `1` as numbers, not inside quotes. Only one `;` ends the whole statement.
+--- starter
+#include <iostream>
+
+int main() {
+    std::cout << "T-minus 3\n";
+    std::cout << "T-minus 2\n";
+    std::cout << "T-minus 1\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "T-minus " << 3 << "\n"
+              << "T-minus " << 2 << "\n"
+              << "T-minus " << 1 << "\n";
+    return 0;
+}
+--- hint
+Start with `std::cout <<` once. Every later line of code starts with `<<` and carries on the same statement.
+--- hint
+Each output line is three pieces: `"T-minus "`, the number, and `"\n"`. Put the `;` only after the very last piece.
+--- check output | Prints the countdown
+T-minus 3
+T-minus 2
+T-minus 1
+--- check source absent | Uses only one std::cout
+std::cout[\s\S]*std::cout
+--- check source | The numbers are not in quotes
+<<\s*3\s*<<[\s\S]*<<\s*2\s*<<[\s\S]*<<\s*1\s*<<
+
++++ practice | A mission card
+--- task
+Print this card. The first line has double quotes in it, and the fourth line is empty:
+
+```
+"Apollo 11"
+Crew: 3
+Landed: 1969
+
+Moonwalk: 2 h 31 min
+```
+
+Write `3`, `1969`, `2` and `31` as numbers without quotes. The `11` is part of the name, so it stays inside the text. A double quote inside a string is written `\"`, as in the first lesson.
+--- starter
+#include <iostream>
+
+int main() {
+    // Print the card here.
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "\"Apollo 11\"\n";
+    std::cout << "Crew: " << 3 << "\n";
+    std::cout << "Landed: " << 1969 << "\n";
+    std::cout << "\n";
+    std::cout << "Moonwalk: " << 2 << " h " << 31 << " min\n";
+    return 0;
+}
+--- hint
+Do it one line at a time. The empty line is just `"\n"`.
+--- hint
+The first line is `"\"Apollo 11\"\n"`: an escaped quote, the name, another escaped quote, then the newline.
+--- hint
+The last line has five pieces: `"Moonwalk: "`, `2`, `" h "`, `31`, `" min\n"`.
+--- check output | Prints the whole card
+"Apollo 11"
+Crew: 3
+Landed: 1969
+
+Moonwalk: 2 h 31 min
+--- check source | 1969 is a number
+<<\s*1969\s*<<
+--- check source | 2 and 31 are numbers
+<<\s*2\s*<<\s*" h "\s*<<\s*31\s*<<
+
++++ practice | Zero, negatives and no space at all
+--- task
+Print exactly these three lines:
+
+```
+Temperature: -40 C
+Speed: 0 m/s
+Level:3/5
+```
+
+Write `-40`, `0`, `3` and `5` as numbers without quotes. Look closely at the spaces: the third line has **no** space after its colon, so nothing may come between `Level:` and `3`.
+--- starter
+#include <iostream>
+
+int main() {
+    std::cout << "Temperature: " << 40 << " C\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "Temperature: " << -40 << " C\n";
+    std::cout << "Speed: " << 0 << " m/s\n";
+    std::cout << "Level:" << 3 << "/" << 5 << "\n";
+    return 0;
+}
+--- hint
+A negative number is written with a minus sign in front, like `-40`, and it prints with its minus sign.
+--- hint
+C++ adds no spaces of its own. For the third line, the text piece is `"Level:"` with no space before the closing quote, and the slash is its own piece, `"/"`.
+--- check output | Prints all three lines, exactly
+Temperature: -40 C
+Speed: 0 m/s
+Level:3/5
+--- check source | -40 and 0 are numbers
+<<\s*-40\s*<<[\s\S]*<<\s*0\s*<<
+--- check includes | No space after Level:
+Level:3/5
+
++++ practice | Fix the crew report
+--- task
+This program should print:
+
+```
+Crew: 4
+Days: 182
+```
+
+It does not even compile. The compiler says `expected ';' after expression` on the `Days` line. And once that is fixed, the first line comes out as `Crew:4`, with no space. Fix both problems, and keep `4` and `182` as numbers.
+--- starter
+#include <iostream>
+
+int main() {
+    std::cout << "Crew:" << 4 << "\n";
+    std::cout << "Days: " 182 << "\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "Crew: " << 4 << "\n";
+    std::cout << "Days: " << 182 << "\n";
+    return 0;
+}
+--- hint
+On the `Days` line, every piece needs its own `<<` in front of it. Which piece has none?
+--- hint
+The space after `Crew:` has to be inside the quotes: `"Crew: "`.
+--- check output | Prints both lines, exactly
+Crew: 4
+Days: 182
+--- check source | 182 is a number, chained with <<
+<<\s*182\s*<<
+--- check source | 4 is a number, chained with <<
+<<\s*4\s*<<
+
++++ practice | A stage table
+--- task
+Print this table of rocket stages. The columns line up because of the spaces in the text:
+
+```
+Stage  Engines  Burn
+1      9        162 s
+2      1        397 s
+```
+
+Every number in the two lower rows (`1`, `9`, `162`, `2`, `1`, `397`) must be a number, not text in quotes. Count the spaces carefully: after `1` or `2` in the first column there are six spaces, and after `9` or `1` in the second column there are eight.
+--- starter
+#include <iostream>
+
+int main() {
+    std::cout << "Stage  Engines  Burn\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "Stage  Engines  Burn\n";
+    std::cout << 1 << "      " << 9 << "        " << 162 << " s\n";
+    std::cout << 2 << "      " << 1 << "        " << 397 << " s\n";
+    return 0;
+}
+--- hint
+A statement can start with a number: `std::cout << 1 << …`. The gaps between the columns are text pieces made only of spaces.
+--- hint
+Each row is six pieces: the stage number, `"      "` (six spaces), the engine count, `"        "` (eight spaces), the burn time, and `" s\n"`.
+--- check output | Prints the table, lined up
+Stage  Engines  Burn
+1      9        162 s
+2      1        397 s
+--- check source | 162 is a number
+<<\s*162\s*<<
+--- check source | 397 is a number
+<<\s*397\s*<<
 
 === cpp-02 | Variables and types
 --- teach
@@ -522,6 +1030,275 @@ const\s+std::string\s+city
 --- check source | population is an int
 \bint\s+population\b
 
++++ practice | A rover's data card
+--- task
+Inside `main`, declare these four variables:
+
+- a `std::string` called `rover` holding `"Perseverance"`
+- a `char` called `rover_class` holding `'A'`
+- an `int` called `wheels` holding `6`
+- a `double` called `mass_kg` holding `1025.5`
+
+Then print them in one `std::cout` statement, so the output is exactly:
+
+```
+Rover Perseverance, class A: 6 wheels, 1025.5 kg
+```
+
+The starter already includes `<string>`.
+--- starter
+#include <iostream>
+#include <string>
+
+int main() {
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string rover = "Perseverance";
+    char rover_class = 'A';
+    int wheels = 6;
+    double mass_kg = 1025.5;
+    std::cout << "Rover " << rover << ", class " << rover_class << ": " << wheels << " wheels, " << mass_kg << " kg\n";
+    return 0;
+}
+--- hint
+Each declaration is type, name, `=`, value, `;`. A `char` value goes in single quotes, a string in double quotes.
+--- hint
+The print chains nine pieces: `"Rover "`, `rover`, `", class "`, `rover_class`, `": "`, `wheels`, `" wheels, "`, `mass_kg`, and then `" kg\n"`.
+--- check output | Prints the data card
+Rover Perseverance, class A: 6 wheels, 1025.5 kg
+--- check source | rover_class is a char in single quotes
+\bchar\s+rover_class\s*=\s*'A'
+--- check source | wheels is an int and mass_kg is a double
+\bint\s+wheels\b[\s\S]*\bdouble\s+mass_kg\b
+
++++ practice | Let the compiler work out the food
+--- task
+Declare an `int` called `crew` holding `4` and a `double` called `food_per_person_kg` holding `1.8`. Then declare `food_kg` with `auto`, set to `crew` times `food_per_person_kg`, and print:
+
+```
+4 crew eat 7.2 kg of food a day
+```
+
+Every number in the output must come from a variable. Do not type `7.2` yourself: the program works it out.
+--- starter
+#include <iostream>
+
+int main() {
+    int crew = 4;
+    double food_per_person_kg = 1.8;
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int crew = 4;
+    double food_per_person_kg = 1.8;
+    auto food_kg = crew * food_per_person_kg;
+    std::cout << crew << " crew eat " << food_kg << " kg of food a day\n";
+    return 0;
+}
+--- hint
+`auto food_kg = crew * food_per_person_kg;` makes a `double`, because a whole number times a decimal is a decimal.
+--- hint
+Print `crew`, then `" crew eat "`, then `food_kg`, then the rest of the sentence with its `\n`.
+--- check output | Prints the food line
+4 crew eat 7.2 kg of food a day
+--- check source | Uses auto for food_kg
+\bauto\s+food_kg\s*=
+--- check source absent | Does not type 7.2
+7\.2
+
++++ practice | One name, used twice
+--- task
+Declare `const std::string ship = "Endurance";`, an `int` called `crew` holding `28`, and an `int` called `boats` holding `3`. Print these two lines:
+
+```
+Endurance had 28 crew.
+Endurance carried 3 boats.
+```
+
+The word `Endurance` must appear only once in your code, in the `const` declaration. Both lines print it from the variable. That way, changing the name means changing one line.
+--- starter
+#include <iostream>
+#include <string>
+
+int main() {
+    std::cout << "Endurance had 28 crew.\n";
+    std::cout << "Endurance carried 3 boats.\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <string>
+
+int main() {
+    const std::string ship = "Endurance";
+    int crew = 28;
+    int boats = 3;
+    std::cout << ship << " had " << crew << " crew.\n";
+    std::cout << ship << " carried " << boats << " boats.\n";
+    return 0;
+}
+--- hint
+Declare the three variables first. Then each line starts with `std::cout << ship << …`.
+--- hint
+The text between the variables keeps its spaces: `" had "`, `" crew.\n"`, `" carried "`, `" boats.\n"`.
+--- check output | Prints both lines
+Endurance had 28 crew.
+Endurance carried 3 boats.
+--- check source | ship is a const std::string
+const\s+std::string\s+ship\s*=\s*"Endurance"
+--- check source absent | Endurance is written only once
+Endurance[\s\S]*Endurance
+
++++ practice | Seven, '7' and nothing at all
+--- task
+Some values look alike but are not the same thing. Declare:
+
+- a `char` called `digit` holding the character `'7'`
+- an `int` called `seven` holding the number `7`
+- a `std::string` called `blank` holding the empty string `""`
+- a `std::string` called `gap` holding one space, `" "`
+- an `int` called `debt` holding `-250`
+
+Then print each one between square brackets, all on one line, so the output is exactly:
+
+```
+[7][7][][ ][-250]
+```
+
+The brackets make the empty string and the space visible.
+--- starter
+#include <iostream>
+#include <string>
+
+int main() {
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <string>
+
+int main() {
+    char digit = '7';
+    int seven = 7;
+    std::string blank = "";
+    std::string gap = " ";
+    int debt = -250;
+    std::cout << "[" << digit << "][" << seven << "][" << blank << "][" << gap << "][" << debt << "]\n";
+    return 0;
+}
+--- hint
+`'7'` in single quotes is a char. `7` with no quotes is an int. `""` is a string with nothing in it.
+--- hint
+Between two values the text piece is `"]["`. The line starts with `"["` and ends with `"]\n"`.
+--- check output | Prints all five values in brackets
+[7][7][][ ][-250]
+--- check source | digit is the character '7'
+\bchar\s+digit\s*=\s*'7'
+--- check source | blank is an empty string and gap is one space
+std::string\s+blank\s*=\s*""[\s\S]*std::string\s+gap\s*=\s*" "
+
++++ practice | Fix the Vostok record
+--- task
+This program should print:
+
+```
+Vostok 1 (class A) carried 1 person
+```
+
+It has two bugs. First, it does not compile: the compiler complains about the line that makes `grade`. Second, once that is fixed, it prints the word `name` instead of `Vostok 1`. Fix both.
+--- starter
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string name = "Vostok 1";
+    char grade = "A";
+    int crew = 1;
+    std::cout << "name" << " (class " << grade << ") carried " << crew << " person\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string name = "Vostok 1";
+    char grade = 'A';
+    int crew = 1;
+    std::cout << name << " (class " << grade << ") carried " << crew << " person\n";
+    return 0;
+}
+--- hint
+A `char` holds one character, written in single quotes. Double quotes make a string.
+--- hint
+A variable's name goes into `std::cout` without quotes. With quotes, it is just a word.
+--- check output | Prints the record
+Vostok 1 (class A) carried 1 person
+--- check source | grade is a char in single quotes
+\bchar\s+grade\s*=\s*'A'
+--- check source absent | Does not print the word "name"
+"name"
+
++++ practice | Solar panel area
+--- task
+A spacecraft has 8 solar panels, each 2.5 m wide and 1.2 m tall. Declare these as `const` values:
+
+- `const double width_m = 2.5;`
+- `const double height_m = 1.2;`
+- `const int panels = 8;`
+
+Then use `auto` twice: `panel_area`, which is `width_m` times `height_m`, and `total_area`, which is `panel_area` times `panels`. Print exactly:
+
+```
+One panel: 2.5 m x 1.2 m = 3 m2
+All 8 panels: 24 m2
+```
+
+Every number in the output comes from a variable. Do not type `3` or `24` yourself.
+--- starter
+#include <iostream>
+
+int main() {
+    const double width_m = 2.5;
+    const double height_m = 1.2;
+    const int panels = 8;
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    const double width_m = 2.5;
+    const double height_m = 1.2;
+    const int panels = 8;
+    auto panel_area = width_m * height_m;
+    auto total_area = panel_area * panels;
+    std::cout << "One panel: " << width_m << " m x " << height_m << " m = " << panel_area << " m2\n";
+    std::cout << "All " << panels << " panels: " << total_area << " m2\n";
+    return 0;
+}
+--- hint
+Work out `panel_area` first, then use it to work out `total_area`. The star `*` means times.
+--- hint
+`std::cout` shows `3.0` as `3` and `24.0` as `24`, so you do not need to do anything special to get those.
+--- hint
+The first line is seven pieces: `"One panel: "`, `width_m`, `" m x "`, `height_m`, `" m = "`, `panel_area`, then `" m2\n"`.
+--- check output | Prints both lines
+One panel: 2.5 m x 1.2 m = 3 m2
+All 8 panels: 24 m2
+--- check source | Uses auto
+\bauto\s+\w+\s*=
+--- check source absent | Does not type 24
+\b24\b
+
 === cpp-02b | Writing your own function
 --- teach
 You have already met one function: `main`, where every program starts. Now you will write your own. A function lets you give a piece of work a name, and then use that name whenever you need the work done.
@@ -665,6 +1442,210 @@ add(-4, 10)
 --- check case | fuel_left(500, 120) is 380
 fuel_left(500, 120)
 => 380
+
++++ practice | A fence around the pad
+--- task
+A landing pad is a rectangle. A fence runs all the way around its edge. Write a function `int perimeter(int width, int height)` that returns the length of the fence: two widths and two heights, added together.
+
+So `perimeter(30, 20)` returns `100`, and `perimeter(5, 5)` returns `20`. No `main`: the checker supplies it and calls your function.
+--- starter
+int perimeter(int width, int height) {
+    return 0;
+}
+--- solution
+int perimeter(int width, int height) {
+    return width + width + height + height;
+}
+--- hint
+Only the `return` line needs to change. Walk around the rectangle: along a width, up a height, back along a width, down a height.
+--- hint
+Hand back `width` plus `width` plus `height` plus `height`.
+--- check case | perimeter(30, 20) is 100
+perimeter(30, 20)
+=> 100
+--- check case | A square: perimeter(5, 5) is 20
+perimeter(5, 5)
+=> 20
+--- check case | A flat pad: perimeter(7, 0) is 14
+perimeter(7, 0)
+=> 14
+
++++ practice | Three inputs
+--- task
+Write a function `int total_crew(int pilots, int engineers, int scientists)` that returns how many people there are in all. It takes three parameters, separated by commas.
+
+For example, `total_crew(2, 1, 3)` returns `6`, and `total_crew(0, 0, 0)` returns `0`. No `main`.
+--- starter
+int total_crew(int pilots, int engineers) {
+    return pilots + engineers;
+}
+--- solution
+int total_crew(int pilots, int engineers, int scientists) {
+    return pilots + engineers + scientists;
+}
+--- hint
+The starter only takes two parameters. Add a third, `int scientists`, after a comma.
+--- hint
+Then add all three together in the `return` line.
+--- check case | total_crew(2, 1, 3) is 6
+total_crew(2, 1, 3)
+=> 6
+--- check case | total_crew(0, 0, 4) is 4
+total_crew(0, 0, 4)
+=> 4
+--- check case | total_crew(0, 0, 0) is 0
+total_crew(0, 0, 0)
+=> 0
+
++++ practice | Fuel after several burns
+--- task
+A spacecraft starts with some fuel and fires its engine several times. Every burn uses the same amount.
+
+Write `int fuel_after(int start, int burns, int per_burn)` that returns the fuel left. Inside the function, first make a variable `used` holding `burns` times `per_burn`, then return `start` minus `used`.
+
+For example, `fuel_after(1000, 3, 120)` returns `640`: three burns of 120 use 360, and 1000 minus 360 is 640. No `main`.
+--- starter
+int fuel_after(int start, int burns, int per_burn) {
+    return start;
+}
+--- solution
+int fuel_after(int start, int burns, int per_burn) {
+    int used = burns * per_burn;
+    return start - used;
+}
+--- hint
+A function body can hold more than one line. Declare `int used = …;` first, the same way you declared variables in `main`.
+--- hint
+`used` is `burns * per_burn`. The answer is `start - used`.
+--- check case | fuel_after(1000, 3, 120) is 640
+fuel_after(1000, 3, 120)
+=> 640
+--- check case | No burns leaves all the fuel
+fuel_after(500, 0, 50)
+=> 500
+--- check case | Burning exactly all of it leaves 0
+fuel_after(100, 5, 20)
+=> 0
+
++++ practice | Below sea level
+--- task
+A probe starts at some altitude in metres, climbs a while, then drops a while. Write `int net_altitude(int start, int climbed, int dropped)` that returns where it ends up: the start, plus the climb, minus the drop.
+
+The answer can be below 0, because the probe can go below sea level, and the start can be below 0 too. So `net_altitude(100, 50, 30)` returns `120`, `net_altitude(100, 0, 250)` returns `-150`, and `net_altitude(-30, 40, 0)` returns `10`. No `main`.
+--- starter
+int net_altitude(int start, int climbed, int dropped) {
+    return 0;
+}
+--- solution
+int net_altitude(int start, int climbed, int dropped) {
+    return start + climbed - dropped;
+}
+--- hint
+Climbing adds to the altitude and dropping takes away from it.
+--- hint
+Hand back `start + climbed - dropped`. It works the same whether the numbers are above or below 0.
+--- check case | net_altitude(100, 50, 30) is 120
+net_altitude(100, 50, 30)
+=> 120
+--- check case | Ending below sea level: net_altitude(100, 0, 250) is -150
+net_altitude(100, 0, 250)
+=> -150
+--- check case | Starting below sea level: net_altitude(-30, 40, 0) is 10
+net_altitude(-30, 40, 0)
+=> 10
+--- check case | All zero gives 0
+net_altitude(0, 0, 0)
+=> 0
+
++++ practice | Fix the mass functions
+--- task
+These two functions should work out a rocket's mass:
+
+- `cargo_mass(boxes, kg_per_box)` should return the mass of all the boxes: `cargo_mass(10, 25)` is `250`.
+- `launch_mass(dry_kg, cargo_kg)` should return the rocket's empty mass plus its cargo: `launch_mass(1000, 250)` is `1250`.
+
+Instead, `cargo_mass(10, 25)` returns `10`, and `launch_mass(1000, 250)` returns `750`. Each function has one wrong line. Fix them. No `main`.
+--- starter
+int cargo_mass(int boxes, int kg_per_box) {
+    int mass = boxes * kg_per_box;
+    return boxes;
+}
+
+int launch_mass(int dry_kg, int cargo_kg) {
+    return dry_kg - cargo_kg;
+}
+--- solution
+int cargo_mass(int boxes, int kg_per_box) {
+    int mass = boxes * kg_per_box;
+    return mass;
+}
+
+int launch_mass(int dry_kg, int cargo_kg) {
+    return dry_kg + cargo_kg;
+}
+--- hint
+`cargo_mass` works out the right number, then hands back something else. Which variable holds the answer?
+--- hint
+`launch_mass` should add the two masses, not take one from the other.
+--- check case | cargo_mass(10, 25) is 250
+cargo_mass(10, 25)
+=> 250
+--- check case | cargo_mass(0, 25) is 0
+cargo_mass(0, 25)
+=> 0
+--- check case | launch_mass(1000, 250) is 1250
+launch_mass(1000, 250)
+=> 1250
+--- check case | The two work together
+launch_mass(500, cargo_mass(4, 30))
+=> 620
+
++++ practice | Mission elapsed time
+--- task
+A mission clock shows hours, minutes and seconds. Write two functions. No `main`.
+
+- `int to_seconds(int hours, int minutes, int seconds)` returns the whole time in seconds. An hour is 3600 seconds and a minute is 60. So `to_seconds(1, 2, 3)` is `3723`.
+- `int elapsed(int start_h, int start_m, int start_s, int end_h, int end_m, int end_s)` returns how many seconds passed from the start time to the end time, on the same day. Use `to_seconds` inside it, once for each time. So `elapsed(9, 0, 0, 10, 30, 15)` is `5415`.
+
+Write `to_seconds` above `elapsed`, so the compiler has seen it by the time `elapsed` calls it.
+--- starter
+int to_seconds(int hours, int minutes, int seconds) {
+    return 0;
+}
+
+int elapsed(int start_h, int start_m, int start_s, int end_h, int end_m, int end_s) {
+    return 0;
+}
+--- solution
+int to_seconds(int hours, int minutes, int seconds) {
+    int from_hours = hours * 3600;
+    int from_minutes = minutes * 60;
+    return from_hours + from_minutes + seconds;
+}
+
+int elapsed(int start_h, int start_m, int start_s, int end_h, int end_m, int end_s) {
+    int start = to_seconds(start_h, start_m, start_s);
+    int end = to_seconds(end_h, end_m, end_s);
+    return end - start;
+}
+--- hint
+In `to_seconds`, turn the hours into seconds and the minutes into seconds, then add up all three parts. Variables inside the function keep each step clear.
+--- hint
+A call can go anywhere a value can. In `elapsed`, `int start = to_seconds(start_h, start_m, start_s);` turns the start time into seconds.
+--- hint
+Do the same for the end time, then return the end in seconds minus the start in seconds.
+--- check case | to_seconds(1, 2, 3) is 3723
+to_seconds(1, 2, 3)
+=> 3723
+--- check case | to_seconds(0, 0, 0) is 0
+to_seconds(0, 0, 0)
+=> 0
+--- check case | elapsed(9, 0, 0, 10, 30, 15) is 5415
+elapsed(9, 0, 0, 10, 30, 15)
+=> 5415
+--- check case | The same time twice gives 0
+elapsed(13, 45, 20, 13, 45, 20)
+=> 0
 
 === cpp-03 | Arithmetic, and integer division
 --- teach
@@ -819,6 +1800,211 @@ average(10, 4)
 remainder_of(17, 5)
 => 2
 
++++ practice | Samples into racks
+--- task
+A lab packs rock samples into racks. Each rack holds the same number of samples, and only full racks are shipped. Write two functions. No `main`.
+
+- `int full_racks(int samples, int per_rack)` returns how many racks can be filled completely. `full_racks(17, 5)` is `3`.
+- `int samples_left(int samples, int per_rack)` returns how many samples are left over after filling those racks. `samples_left(17, 5)` is `2`.
+--- starter
+int full_racks(int samples, int per_rack) {
+    return 0;
+}
+
+int samples_left(int samples, int per_rack) {
+    return 0;
+}
+--- solution
+int full_racks(int samples, int per_rack) {
+    return samples / per_rack;
+}
+
+int samples_left(int samples, int per_rack) {
+    return samples % per_rack;
+}
+--- hint
+Dividing two ints throws the remainder away. Here that is exactly what you want.
+--- hint
+The leftover is the remainder, which has its own operator: the percent sign.
+--- check case | full_racks(17, 5) is 3
+full_racks(17, 5)
+=> 3
+--- check case | samples_left(17, 5) is 2
+samples_left(17, 5)
+=> 2
+--- check case | Too few for one rack: full_racks(4, 5) is 0
+full_racks(4, 5)
+=> 0
+--- check case | An exact fit leaves 0
+samples_left(20, 5)
+=> 0
+
++++ practice | What percent?
+--- task
+Write `double percent(int part, int whole)` that returns what percent `part` is of `whole`, decimals kept. That is `part` times 100, divided by `whole`.
+
+So `percent(1, 4)` is `25`, `percent(1, 3)` is about `33.333`, and `percent(0, 7)` is `0`. The inputs are ints, so convert before you divide, or the decimals are lost. No `main`.
+--- starter
+double percent(int part, int whole) {
+    return part * 100 / whole;
+}
+--- solution
+double percent(int part, int whole) {
+    return static_cast<double>(part) * 100 / whole;
+}
+--- hint
+The starter divides two ints, so `percent(1, 3)` comes out as exactly 33, not 33.333.
+--- hint
+Convert `part` to a `double` with `static_cast` first. Then every step after it works in decimals.
+--- check case | percent(1, 4) is 25
+percent(1, 4)
+=> 25.0
+--- check test | percent(1, 3) keeps its decimals
+std::abs(percent(1, 3) - 33.333333333) < 1e-6
+--- check case | percent(0, 7) is 0
+percent(0, 7)
+=> 0.0
+--- check case | More than the whole: percent(3, 2) is 150
+percent(3, 2)
+=> 150.0
+
++++ practice | The average of three readings
+--- task
+Write `double average3(int a, int b, int c)` that returns the exact average of three whole-number readings: their sum divided by 3, with the decimals kept.
+
+So `average3(1, 2, 2)` is about `1.6667`, `average3(3, 3, 3)` is `3`, and `average3(-1, 0, 0)` is about `-0.3333`. No `main`.
+--- starter
+double average3(int a, int b, int c) {
+    return a + b + c / 3;
+}
+--- solution
+double average3(int a, int b, int c) {
+    return static_cast<double>(a + b + c) / 3;
+}
+--- hint
+The starter has two problems. Division happens before addition, so only `c` is divided by 3. And even with the sum first, int divided by int drops the decimals.
+--- hint
+Put the sum in parentheses, convert it to a `double` with `static_cast`, and then divide by 3.
+--- check test | average3(1, 2, 2) is about 1.6667
+std::abs(average3(1, 2, 2) - 5.0 / 3) < 1e-9
+--- check case | average3(3, 3, 3) is 3
+average3(3, 3, 3)
+=> 3.0
+--- check test | average3(-1, 0, 0) is about -0.3333
+std::abs(average3(-1, 0, 0) + 1.0 / 3) < 1e-9
+--- check case | average3(10, 20, 60) is 30
+average3(10, 20, 60)
+=> 30.0
+
++++ practice | Boxes needed, rounded up
+--- task
+Supplies are packed into crates. A crate holds `per_crate` items, and a crate that is only partly full still counts as a crate.
+
+Write `int crates_needed(int items, int per_crate)` that returns how many crates are needed. So `crates_needed(17, 5)` is `4` (three full crates and one with 2 items), `crates_needed(20, 5)` is `4` (exactly four full crates), `crates_needed(1, 5)` is `1`, and `crates_needed(0, 5)` is `0`.
+
+Use only whole-number arithmetic. No `main`.
+--- starter
+int crates_needed(int items, int per_crate) {
+    return items / per_crate + 1;
+}
+--- solution
+int crates_needed(int items, int per_crate) {
+    return (items + per_crate - 1) / per_crate;
+}
+--- hint
+The starter's `items / per_crate + 1` looks right for 17 items. Try it on 20 items and on 0 items: it asks for one crate too many.
+--- hint
+A trick for rounding up: add `per_crate - 1` to the items before dividing. Then any leftover, however small, pushes the answer up by one, but an exact fit does not.
+--- hint
+Use parentheses so the addition happens before the division: `(items + per_crate - 1) / per_crate`.
+--- check case | crates_needed(17, 5) is 4
+crates_needed(17, 5)
+=> 4
+--- check case | An exact fit: crates_needed(20, 5) is 4
+crates_needed(20, 5)
+=> 4
+--- check case | One item needs one crate
+crates_needed(1, 5)
+=> 1
+--- check case | No items need no crates
+crates_needed(0, 5)
+=> 0
+
++++ practice | Fix the temperature converter
+--- task
+`to_fahrenheit` should turn a temperature in Celsius into Fahrenheit, using the rule: times 9, divided by 5, plus 32. So 100 °C is 212 °F, 0 °C is 32 °F, and -40 °C is -40 °F.
+
+Instead, `to_fahrenheit(100.0)` returns `132`. The bug is in the one `return` line: find it and fix it. No `main`.
+--- starter
+double to_fahrenheit(double celsius) {
+    return 9 / 5 * celsius + 32;
+}
+--- solution
+double to_fahrenheit(double celsius) {
+    return celsius * 9 / 5 + 32;
+}
+--- hint
+C++ works left to right through `*` and `/`. What is `9 / 5` on its own, when both are ints?
+--- hint
+`9 / 5` is `1`, so the starter only adds 32. Start with `celsius`, which is a `double`, so every step after it keeps its decimals.
+--- check case | 100 C is 212 F
+to_fahrenheit(100.0)
+=> 212.0
+--- check case | 0 C is 32 F
+to_fahrenheit(0.0)
+=> 32.0
+--- check case | -40 C is -40 F
+to_fahrenheit(-40.0)
+=> -40.0
+--- check test | 37 C is about 98.6 F
+std::abs(to_fahrenheit(37.0) - 98.6) < 1e-9
+
++++ practice | Hours, minutes and seconds
+--- task
+A mission clock counts seconds since launch. Split that count into hours, minutes and seconds, the way a clock shows them. Write three functions. No `main`.
+
+- `int hours_part(int total_seconds)`: the whole hours. `hours_part(3725)` is `1`.
+- `int minutes_part(int total_seconds)`: the minutes left over after the whole hours, from 0 to 59. `minutes_part(3725)` is `2`.
+- `int seconds_part(int total_seconds)`: the seconds left over after the whole minutes, from 0 to 59. `seconds_part(3725)` is `5`.
+
+An hour is 3600 seconds and a minute is 60.
+--- starter
+int hours_part(int total_seconds) {
+    return 0;
+}
+
+int minutes_part(int total_seconds) {
+    return total_seconds / 60;
+}
+
+int seconds_part(int total_seconds) {
+    return 0;
+}
+--- solution
+int hours_part(int total_seconds) {
+    return total_seconds / 3600;
+}
+
+int minutes_part(int total_seconds) {
+    return (total_seconds / 60) % 60;
+}
+
+int seconds_part(int total_seconds) {
+    return total_seconds % 60;
+}
+--- hint
+The hours are the whole number of 3600s in the total. The seconds are what is left after taking out every whole minute.
+--- hint
+For the minutes: `total_seconds / 60` is the total in whole minutes. That can be more than 59, so keep only the part left after the whole hours: its remainder when divided by 60.
+--- check test | 3725 seconds is 1 h 2 min 5 s
+hours_part(3725) == 1 && minutes_part(3725) == 2 && seconds_part(3725) == 5
+--- check test | 59 seconds is 0 h 0 min 59 s
+hours_part(59) == 0 && minutes_part(59) == 0 && seconds_part(59) == 59
+--- check test | 86399 seconds is 23 h 59 min 59 s
+hours_part(86399) == 23 && minutes_part(86399) == 59 && seconds_part(86399) == 59
+--- check test | Exactly one hour is 1 h 0 min 0 s
+hours_part(3600) == 1 && minutes_part(3600) == 0 && seconds_part(3600) == 0
+
 === cpp-03b | Reading a value with std::cin
 --- teach
 Last lesson your functions got their numbers from the checker. Real programs get data from outside: a sensor, a file, a person typing. This lesson shows how a program reads values in.
@@ -964,6 +2150,310 @@ The print line is `std::cout << a << " + " << b << " = " << a + b << "\n";`.
 std::cin\s*>>
 --- check source absent | Works out 12 instead of typing it
 \b12\b
+
++++ practice | Seats in the hangar
+--- task
+The Input tab holds two whole numbers: the rows of seats in a viewing hangar, then the seats in each row.
+
+```
+12 7
+```
+
+Read them into two `int` variables, `rows` and `per_row`, and print exactly:
+
+```
+12 rows x 7 seats = 84 seats
+```
+
+Build the line from the variables. Do not type `84` yourself: let the program multiply.
+--- stdin
+12 7
+--- starter
+#include <iostream>
+
+int main() {
+    int rows, per_row;
+    std::cout << "12 rows x 7 seats = 84 seats\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int rows, per_row;
+    std::cin >> rows >> per_row;
+    std::cout << rows << " rows x " << per_row << " seats = " << rows * per_row << " seats\n";
+    return 0;
+}
+--- hint
+Read both numbers in one statement: `std::cin >> rows >> per_row;`.
+--- hint
+Print `rows`, `" rows x "`, `per_row`, `" seats = "`, then `rows * per_row`, then `" seats\n"`.
+--- check output | Prints the seat line
+12 rows x 7 seats = 84 seats
+--- check source | Reads with std::cin
+std::cin\s*>>
+--- check source absent | Works out 84 instead of typing it
+\b84\b
+
++++ practice | A word and a number
+--- task
+The Input tab holds the name of a small world and how many Earth days a trip there takes:
+
+```
+Ceres 6
+```
+
+Read the name into a `std::string` called `world` and the days into an `int` called `days`. Then print how many hours the trip is (a day is 24 hours):
+
+```
+Trip to Ceres: 6 days = 144 hours
+```
+
+Do not type `Ceres`, `6` or `144` yourself: they all come from the input or from arithmetic.
+--- stdin
+Ceres 6
+--- starter
+#include <iostream>
+#include <string>
+
+int main() {
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string world;
+    int days;
+    std::cin >> world >> days;
+    std::cout << "Trip to " << world << ": " << days << " days = " << days * 24 << " hours\n";
+    return 0;
+}
+--- hint
+`>>` into a `std::string` reads one word, stopping at the space. Then `>>` into an `int` reads the number after it.
+--- hint
+Declare `std::string world;` and `int days;`, then `std::cin >> world >> days;`.
+--- check output | Prints the trip line
+Trip to Ceres: 6 days = 144 hours
+--- check source absent | Reads the name instead of typing it
+Ceres
+--- check source absent | Works out 144 instead of typing it
+\b144\b
+
++++ practice | A mission's length
+--- task
+The Input tab holds a mission's name on the first line, and on the second line how long the mission lasted, in seconds:
+
+```
+Apollo 11
+703115
+```
+
+Read the name with `std::getline`, because it contains a space. Then read the seconds into an `int` with `>>`. Print the length in hours, minutes and seconds, like this:
+
+```
+Apollo 11: 195 h 18 min 35 s
+```
+
+An hour is 3600 seconds and a minute is 60. The minutes and seconds are what is left over, so each is from 0 to 59. Work every number out from the input.
+--- stdin
+Apollo 11
+703115
+--- starter
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string name;
+    int total;
+    std::cin >> name >> total;
+    std::cout << name << ": " << total << " s\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string name;
+    int total;
+    std::getline(std::cin, name);
+    std::cin >> total;
+    int hours = total / 3600;
+    int minutes = (total / 60) % 60;
+    int seconds = total % 60;
+    std::cout << name << ": " << hours << " h " << minutes << " min " << seconds << " s\n";
+    return 0;
+}
+--- hint
+`std::cin >> name` stops at the space, so it only gets `Apollo`. Use `std::getline(std::cin, name);` for the first line, then `std::cin >> total;` for the number.
+--- hint
+The hours are `total / 3600`. The minutes are the total in whole minutes, `total / 60`, with the whole hours taken out: its remainder when divided by 60. The seconds are `total % 60`.
+--- check output | Prints the name and the length
+Apollo 11: 195 h 18 min 35 s
+--- check source | Reads the name with getline
+std::getline\s*\(\s*std::cin
+--- check source absent | Works the hours out
+\b195\b
+
++++ practice | Spaces everywhere
+--- task
+The Input tab holds a full name on the first line. After it, somewhere below, there are two whole numbers: a year and a number of days. The numbers may have extra spaces around them, and there may be empty lines between them:
+
+```
+Sally Kristen Ride
+
+
+   1983
+     6
+```
+
+Read the whole name, spaces and all, then the two numbers. Print exactly:
+
+```
+Welcome aboard, Sally Kristen Ride!
+Flight: 1983, 6 days
+```
+--- stdin
+Sally Kristen Ride
+
+
+   1983
+     6
+--- starter
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string name;
+    int year, days;
+    std::cin >> name >> year >> days;
+    std::cout << "Welcome aboard, " << name << "!\n";
+    std::cout << "Flight: " << year << ", " << days << " days\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string name;
+    int year, days;
+    std::getline(std::cin, name);
+    std::cin >> year >> days;
+    std::cout << "Welcome aboard, " << name << "!\n";
+    std::cout << "Flight: " << year << ", " << days << " days\n";
+    return 0;
+}
+--- hint
+`>>` into a string stops at the first space, so the starter reads only `Sally`, and then tries to read `Kristen` as a number.
+--- hint
+Read the first line with `std::getline(std::cin, name);`. For the numbers, `>>` already skips any spaces and empty lines before a value.
+--- check output | Prints the whole name and both numbers
+Welcome aboard, Sally Kristen Ride!
+Flight: 1983, 6 days
+--- check includes | Keeps the spaces inside the name
+Sally Kristen Ride
+--- check source | Uses getline for the name
+std::getline
+
++++ practice | Fix the fuel total
+--- task
+This program should read the fuel in two tanks and print the total. With the input `600 750` it should print:
+
+```
+Total fuel: 1350 kg
+```
+
+It has two bugs. It does not compile, and the error mentions `invalid operands to binary expression`. And once that is fixed, it prints `Total fuel: 600750 kg`. Fix both.
+--- stdin
+600 750
+--- starter
+#include <iostream>
+
+int main() {
+    int a, b;
+    std::cin << a << b;
+    std::cout << "Total fuel: " << a << b << " kg\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int a, b;
+    std::cin >> a >> b;
+    std::cout << "Total fuel: " << a + b << " kg\n";
+    return 0;
+}
+--- hint
+Check the arrows. `cout <<` puts to the screen; `cin >>` gets from the input.
+--- hint
+`<< a << b` prints the two numbers one after the other, with nothing between them. You want one number: their sum.
+--- check output | Prints the total
+Total fuel: 1350 kg
+--- check source | Reads with std::cin >>
+std::cin\s*>>
+--- check source absent | Works out 1350 instead of typing it
+\b1350\b
+
++++ practice | An engine burn report
+--- task
+The Input tab holds an engine's name on the first line. The second line holds its thrust in kilonewtons (a decimal) and how long it burned, in whole seconds:
+
+```
+Merlin 1D
+845.5 162
+```
+
+Read the name with `std::getline`, then the thrust into a `double` and the burn time into an `int`. Print this report:
+
+```
+Engine: Merlin 1D
+Burn: 2 min 42 s
+Impulse: 136971 kN s
+```
+
+The burn time is split into whole minutes and the seconds left over. The impulse is the thrust times the burn time in seconds. Work every number out from the input.
+--- stdin
+Merlin 1D
+845.5 162
+--- starter
+#include <iostream>
+#include <string>
+
+int main() {
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string engine;
+    double thrust;
+    int burn;
+    std::getline(std::cin, engine);
+    std::cin >> thrust >> burn;
+    std::cout << "Engine: " << engine << "\n";
+    std::cout << "Burn: " << burn / 60 << " min " << burn % 60 << " s\n";
+    std::cout << "Impulse: " << thrust * burn << " kN s\n";
+    return 0;
+}
+--- hint
+Declare `std::string engine;`, `double thrust;` and `int burn;`. Read the first line with `getline`, then `std::cin >> thrust >> burn;`.
+--- hint
+The minutes are `burn / 60` and the seconds left over are `burn % 60`. The impulse is `thrust * burn`.
+--- check output | Prints the three-line report
+Engine: Merlin 1D
+Burn: 2 min 42 s
+Impulse: 136971 kN s
+--- check source | Uses getline for the name
+std::getline
+--- check source absent | Works the impulse out
+136971
 
 === cpp-04 | Reading input
 --- teach
@@ -1168,6 +2658,353 @@ count 5, sum 30, max 11
 --- check source | Reads with std::cin
 std::cin\s*>>
 
++++ practice | The coldest reading
+--- task
+The Input tab holds temperature readings, whole numbers, as many as there are:
+
+```
+14 9 22
+11 17
+```
+
+Read them all with a `while (std::cin >> t)` loop. Keep `count`, how many readings there were, and `lowest`, the smallest reading, starting from the first reading (not from 0). After the loop, print:
+
+```
+5 readings, lowest 9
+```
+
+Your program should work for any list, including one where every reading is above 0.
+--- stdin
+14 9 22
+11 17
+--- starter
+#include <iostream>
+
+int main() {
+    int t;
+    int count = 0;
+    int lowest = 0;
+    while (std::cin >> t) {
+        count++;
+    }
+    std::cout << count << " readings, lowest " << lowest << "\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int t;
+    int count = 0;
+    int lowest = 0;
+    while (std::cin >> t) {
+        if (count == 0 || t < lowest) lowest = t;
+        count++;
+    }
+    std::cout << count << " readings, lowest " << lowest << "\n";
+    return 0;
+}
+--- hint
+This is the "largest so far" idea turned around: change `lowest` whenever a reading is smaller. `<` means "is less than".
+--- hint
+Starting `lowest` at 0 and comparing from there would report 0, which was never read. Take the first reading instead: `if (count == 0 || t < lowest) lowest = t;`, before `count++`.
+--- check output | Prints the count and the lowest reading
+5 readings, lowest 9
+--- check source | Reads in a while loop
+while\s*\(\s*std::cin\s*>>
+
++++ practice | How many over the limit?
+--- task
+The first number in the Input tab is a limit. Every number after it is a reading:
+
+```
+100
+95 101 130 100 99 250
+```
+
+Read the limit first with `std::cin >> limit;`. Then read the readings in a `while` loop, and count how many there are and how many are **over** the limit (strictly greater: a reading equal to the limit is not over). Print:
+
+```
+3 of 6 readings over 100
+```
+--- stdin
+100
+95 101 130 100 99 250
+--- starter
+#include <iostream>
+
+int main() {
+    int limit;
+    int n;
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int limit;
+    int n;
+    int count = 0;
+    int over = 0;
+    std::cin >> limit;
+    while (std::cin >> n) {
+        count++;
+        if (n > limit) over++;
+    }
+    std::cout << over << " of " << count << " readings over " << limit << "\n";
+    return 0;
+}
+--- hint
+Two counters, both starting at 0: one goes up for every reading, the other only when `n > limit`.
+--- hint
+The limit is read once, before the loop. The loop then reads everything after it.
+--- check output | Counts the readings over the limit
+3 of 6 readings over 100
+--- check source | Reads in a while loop
+while\s*\(\s*std::cin\s*>>
+--- check source absent | Reads the limit instead of typing it
+\b100\b
+
++++ practice | The average reading
+--- task
+The Input tab holds whole-number readings:
+
+```
+4 8 11
+2 5 10
+```
+
+Read them all in a `while` loop, keeping a count and a sum. After the loop, print the count, the sum and the exact average (the sum divided by the count, decimals kept):
+
+```
+count 6, sum 40, average 6.66667
+```
+
+`std::cout` shows 6 significant digits, so the average comes out as `6.66667` on its own. The count and the sum are ints, so convert before you divide, as in the arithmetic lesson.
+--- stdin
+4 8 11
+2 5 10
+--- starter
+#include <iostream>
+
+int main() {
+    int n;
+    int count = 0;
+    int sum = 0;
+    while (std::cin >> n) {
+        count++;
+        sum += n;
+    }
+    std::cout << "count " << count << ", sum " << sum << ", average " << sum / count << "\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int n;
+    int count = 0;
+    int sum = 0;
+    while (std::cin >> n) {
+        count++;
+        sum += n;
+    }
+    double average = static_cast<double>(sum) / count;
+    std::cout << "count " << count << ", sum " << sum << ", average " << average << "\n";
+    return 0;
+}
+--- hint
+`sum / count` divides two ints, so the starter prints `6`, not `6.66667`.
+--- hint
+Convert the sum first: `static_cast<double>(sum) / count`.
+--- check output | Prints count, sum and exact average
+count 6, sum 40, average 6.66667
+--- check source | Converts with static_cast
+static_cast<double>
+
++++ practice | Every reading below zero
+--- task
+The Input tab holds whole-number readings from a probe in deep space. Every one of them is below zero:
+
+```
+-5 -12
+-3 -9
+```
+
+Read them all and print the smallest, the largest, and the range (the largest minus the smallest):
+
+```
+min -12, max -3, range 9
+```
+
+Both `min` and `max` must start from the first reading, not from 0. Your program should also work for a single reading, where the range is 0.
+--- stdin
+-5 -12
+-3 -9
+--- starter
+#include <iostream>
+
+int main() {
+    int n;
+    int min = 0;
+    int max = 0;
+    while (std::cin >> n) {
+        if (n < min) min = n;
+        if (n > max) max = n;
+    }
+    std::cout << "min " << min << ", max " << max << ", range " << max - min << "\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int n;
+    int count = 0;
+    int min = 0;
+    int max = 0;
+    while (std::cin >> n) {
+        if (count == 0 || n < min) min = n;
+        if (count == 0 || n > max) max = n;
+        count++;
+    }
+    std::cout << "min " << min << ", max " << max << ", range " << max - min << "\n";
+    return 0;
+}
+--- hint
+Starting `max` at 0 means no reading below zero can ever beat it, so the starter reports a largest reading of 0.
+--- hint
+Keep a count, and let the first reading set both `min` and `max`: `if (count == 0 || n > max) max = n;`, and the same shape for `min`. Then `count++`.
+--- check output | Prints min, max and range for all-negative readings
+min -12, max -3, range 9
+--- check source | Uses the first reading as the start
+count\s*==\s*0
+
++++ practice | Fix the negative totals
+--- task
+This program reads whole numbers and should print how many there were, their sum, and the largest. With this input:
+
+```
+-8 -3
+-11 -7
+```
+
+it should print:
+
+```
+count 4, sum -29, max -3
+```
+
+Instead it prints `count 4, sum -7, max 0`. There are two bugs, each on one line. Fix them.
+--- stdin
+-8 -3
+-11 -7
+--- starter
+#include <iostream>
+
+int main() {
+    int n;
+    int count = 0;
+    int sum = 0;
+    int max = 0;
+    while (std::cin >> n) {
+        if (n > max) max = n;
+        count++;
+        sum = n;
+    }
+    std::cout << "count " << count << ", sum " << sum << ", max " << max << "\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int n;
+    int count = 0;
+    int sum = 0;
+    int max = 0;
+    while (std::cin >> n) {
+        if (count == 0 || n > max) max = n;
+        count++;
+        sum += n;
+    }
+    std::cout << "count " << count << ", sum " << sum << ", max " << max << "\n";
+    return 0;
+}
+--- hint
+A sum of `-7` is just the last number. Look at the line that should add each number on: `=` replaces, `+=` adds.
+--- hint
+A max of 0 is a number that was never read. The first reading has to set `max`, whatever it is.
+--- check output | Prints the right count, sum and max
+count 4, sum -29, max -3
+--- check source | Adds each number to the sum
+sum\s*\+=\s*n
+
++++ practice | Climbs and drops
+--- task
+The Input tab holds a rocket's altitude, one reading per second:
+
+```
+100 180 240 235
+300 290 290
+```
+
+From one reading to the next, the rocket climbs (the new reading is higher), drops (the new reading is lower) or stays level. Work out:
+
+- `best`: the biggest climb between two readings in a row (here it is from 100 to 180, a climb of 80),
+- `drops`: how many times the reading went down (here 240 to 235 and 300 to 290, so 2).
+
+Print:
+
+```
+biggest climb 80, drops 2
+```
+
+Read the first reading into `prev` before the loop. In the loop, compare each new reading with `prev`, then set `prev` to the new reading, ready for the next one.
+--- stdin
+100 180 240 235
+300 290 290
+--- starter
+#include <iostream>
+
+int main() {
+    int prev;
+    int n;
+    std::cin >> prev;
+    while (std::cin >> n) {
+    }
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int prev;
+    int n;
+    int count = 0;
+    int best = 0;
+    int drops = 0;
+    std::cin >> prev;
+    while (std::cin >> n) {
+        if (count == 0 || n - prev > best) best = n - prev;
+        if (prev > n) drops++;
+        count++;
+        prev = n;
+    }
+    std::cout << "biggest climb " << best << ", drops " << drops << "\n";
+    return 0;
+}
+--- hint
+The change from one reading to the next is `n - prev`. The biggest climb is the largest of those changes, so use the "largest so far" pattern on `n - prev`.
+--- hint
+Let the first change set `best`, as with `max`: keep a count and use `count == 0 ||`. A drop is when `prev > n`: add one to `drops` then.
+--- hint
+At the end of each pass, `prev = n;` so the next reading is compared with this one.
+--- check output | Finds the biggest climb and counts the drops
+biggest climb 80, drops 2
+--- check source | Keeps the previous reading
+prev\s*=\s*n\s*;
+
 === cpp-05 | Making decisions
 --- teach
 Last lesson your program read numbers with `std::cin` and kept going `while` there was more input. Inside that loop it already made a small decision: "is this number bigger than the biggest one so far?" This lesson is about decisions — how a program looks at a value and picks which lines to run.
@@ -1361,6 +3198,281 @@ grade(64)
 --- check case | 12 fails
 grade(12)
 => "fail"
+
++++ practice | Above, below or on zero
+--- task
+Write `std::string sign_of(int n)` that returns:
+
+- `"positive"` when `n` is greater than 0,
+- `"negative"` when `n` is less than 0,
+- `"zero"` when `n` is 0.
+
+The starter already has `#include <string>`. No `main`: the checker calls `sign_of` with numbers like 5, -3 and 0.
+--- starter
+#include <string>
+
+std::string sign_of(int n) {
+    return "";
+}
+--- solution
+#include <string>
+
+std::string sign_of(int n) {
+    std::string answer = "zero";
+    if (n > 0) {
+        answer = "positive";
+    } else if (n < 0) {
+        answer = "negative";
+    }
+    return answer;
+}
+--- hint
+Three choices means an `if`, an `else if`, and something for the last case.
+--- hint
+Ask `n > 0` first, then `n < 0`. If neither is true, `n` must be 0. You can return from each branch, or keep the answer in a `std::string` variable and return it once at the end.
+--- check case | 5 is positive
+sign_of(5)
+=> "positive"
+--- check case | -3 is negative
+sign_of(-3)
+=> "negative"
+--- check case | 0 is zero
+sign_of(0)
+=> "zero"
+
++++ practice | The largest of three
+--- task
+Write `int max_of_three(int a, int b, int c)` that returns the largest of the three numbers. Two or all three of them may be equal, and they may be negative.
+
+For example, `max_of_three(1, 5, 3)` is `5`, `max_of_three(7, 7, 2)` is `7`, and `max_of_three(-4, -9, -1)` is `-1`. No `main`.
+--- starter
+int max_of_three(int a, int b, int c) {
+    return a;
+}
+--- solution
+int max_of_three(int a, int b, int c) {
+    int best = a;
+    if (b > best) {
+        best = b;
+    }
+    if (c > best) {
+        best = c;
+    }
+    return best;
+}
+--- hint
+Keep a "best so far", starting with `a`. Then look at `b`, then at `c`.
+--- hint
+`if (b > best) { best = b; }` and the same for `c`. After both checks, `best` is the largest.
+--- check case | max_of_three(1, 5, 3) is 5
+max_of_three(1, 5, 3)
+=> 5
+--- check case | The last one can be largest
+max_of_three(2, 3, 9)
+=> 9
+--- check case | A tie: max_of_three(7, 7, 2) is 7
+max_of_three(7, 7, 2)
+=> 7
+--- check case | All negative: max_of_three(-4, -9, -1) is -1
+max_of_three(-4, -9, -1)
+=> -1
+
++++ practice | Leap years
+--- task
+A year has 366 days (it is a **leap year**) when:
+
+- it can be divided by 4 with nothing left over, **and** it cannot be divided by 100 with nothing left over,
+- **or** it can be divided by 400 with nothing left over.
+
+So 2024 is a leap year, 2023 is not, 1900 is not (it divides by 100 but not by 400), and 2000 is (it divides by 400).
+
+Write `bool is_leap_year(int year)` that returns `true` for a leap year and `false` otherwise. Remember `%`, the remainder, from the arithmetic lesson. No `main`.
+--- starter
+bool is_leap_year(int year) {
+    return year % 4 == 0;
+}
+--- solution
+bool is_leap_year(int year) {
+    return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
+}
+--- hint
+"Can be divided by 4 with nothing left over" is `year % 4 == 0`. "Cannot be divided by 100" is `year % 100 != 0`.
+--- hint
+Join the first two with `&&`, put that in parentheses, and join it to the 400 rule with `||`.
+--- check case | 2024 is a leap year
+is_leap_year(2024)
+=> true
+--- check case | 2023 is not
+is_leap_year(2023)
+=> false
+--- check case | 1900 is not (divides by 100, not by 400)
+is_leap_year(1900)
+=> false
+--- check case | 2000 is (divides by 400)
+is_leap_year(2000)
+=> true
+
++++ practice | Go or hold
+--- task
+A launch director uses these rules. Write `std::string launch_call(int wind_kmh, int temp_c)` that returns:
+
+- `"hold: wind"` if the wind is 40 km/h or more,
+- otherwise `"hold: temperature"` if the temperature is below 2 or above 35,
+- otherwise `"go"`.
+
+The edges count: a wind of exactly 40 is a hold, and temperatures of exactly 2 or exactly 35 are fine. If both the wind and the temperature are bad, the answer is `"hold: wind"`. No `main`.
+--- starter
+#include <string>
+
+std::string launch_call(int wind_kmh, int temp_c) {
+    return "go";
+}
+--- solution
+#include <string>
+
+std::string launch_call(int wind_kmh, int temp_c) {
+    if (wind_kmh >= 40) {
+        return "hold: wind";
+    } else if (temp_c < 2 || temp_c > 35) {
+        return "hold: temperature";
+    }
+    return "go";
+}
+--- hint
+The wind is checked first, so it wins when both are bad. Use `>=` so that exactly 40 is a hold.
+--- hint
+"Below 2 or above 35" is `temp_c < 2 || temp_c > 35`. With `<` and `>`, the values 2 and 35 themselves are fine.
+--- check case | Calm and mild: go
+launch_call(10, 20)
+=> "go"
+--- check case | Wind of exactly 40 is a hold
+launch_call(40, 20)
+=> "hold: wind"
+--- check case | Wind of 39 is fine
+launch_call(39, 20)
+=> "go"
+--- check case | Exactly 2 and exactly 35 degrees are fine
+launch_call(5, 2) + launch_call(5, 35)
+=> "gogo"
+--- check case | 1 degree is too cold, 36 too hot
+launch_call(5, 1) + "/" + launch_call(5, 36)
+=> "hold: temperature/hold: temperature"
+--- check case | Both bad: the wind wins
+launch_call(55, -10)
+=> "hold: wind"
+
++++ practice | Fix the battery gauge
+--- task
+`battery_level` should return:
+
+- `"full"` for 80 percent or more,
+- `"ok"` for 21 to 79 percent,
+- `"low"` for 20 percent or less.
+
+It never returns `"full"`: `battery_level(95)` gives `"ok"`. And `battery_level(80)` should be `"full"` too. Fix the order of the questions and the edge. No `main`.
+--- starter
+#include <string>
+
+std::string battery_level(int percent) {
+    if (percent > 20) {
+        return "ok";
+    } else if (percent > 80) {
+        return "full";
+    }
+    return "low";
+}
+--- solution
+#include <string>
+
+std::string battery_level(int percent) {
+    if (percent >= 80) {
+        return "full";
+    } else if (percent > 20) {
+        return "ok";
+    }
+    return "low";
+}
+--- hint
+The first true question wins. 95 is more than 20, so the starter stops at `"ok"` before it ever asks about 80.
+--- hint
+Ask about the highest band first. And "80 or more" is `>=`, not `>`.
+--- check case | 95 is full
+battery_level(95)
+=> "full"
+--- check case | Exactly 80 is full
+battery_level(80)
+=> "full"
+--- check case | 50 is ok
+battery_level(50)
+=> "ok"
+--- check case | 21 is ok, 20 is low
+battery_level(21) + "/" + battery_level(20)
+=> "ok/low"
+
++++ practice | What kind of triangle?
+--- task
+Write `std::string triangle_type(int a, int b, int c)` that takes three side lengths and returns:
+
+- `"invalid"` if any side is 0 or less, or if the sides cannot make a triangle. They cannot when one side is as long as the other two added together, or longer. For example 1, 2, 3 is invalid: 1 + 2 is only 3, so the shape lies flat.
+- otherwise `"equilateral"` if all three sides are equal,
+- otherwise `"isosceles"` if exactly two sides are equal (any two),
+- otherwise `"scalene"`.
+
+No `main`.
+--- starter
+#include <string>
+
+std::string triangle_type(int a, int b, int c) {
+    if (a == b && b == c) {
+        return "equilateral";
+    }
+    return "scalene";
+}
+--- solution
+#include <string>
+
+std::string triangle_type(int a, int b, int c) {
+    if (a <= 0 || b <= 0 || c <= 0) {
+        return "invalid";
+    }
+    if (a + b <= c || a + c <= b || b + c <= a) {
+        return "invalid";
+    }
+    if (a == b && b == c) {
+        return "equilateral";
+    }
+    if (a == b || b == c || a == c) {
+        return "isosceles";
+    }
+    return "scalene";
+}
+--- hint
+Check for "invalid" first, before anything else. Each side must be greater than 0, and each side must be shorter than the other two added together.
+--- hint
+One side is too long when, for example, `a + b <= c`. Check all three ways round, joined with `||`.
+--- hint
+After the equilateral check, "exactly two equal" is simply `a == b || b == c || a == c`, because the all-equal case has already returned.
+--- check case | 3, 3, 3 is equilateral
+triangle_type(3, 3, 3)
+=> "equilateral"
+--- check case | 3, 3, 5 and 5, 3, 3 are isosceles
+triangle_type(3, 3, 5) + "/" + triangle_type(5, 3, 3)
+=> "isosceles/isosceles"
+--- check case | 4, 7, 4 is isosceles
+triangle_type(4, 7, 4)
+=> "isosceles"
+--- check case | 3, 4, 5 is scalene
+triangle_type(3, 4, 5)
+=> "scalene"
+--- check case | 1, 2, 3 lies flat: invalid
+triangle_type(1, 2, 3)
+=> "invalid"
+--- check case | A side of 0 or less is invalid
+triangle_type(0, 1, 1) + "/" + triangle_type(-2, 5, 5)
+=> "invalid/invalid"
+--- check case | One side far too long is invalid
+triangle_type(10, 2, 3)
+=> "invalid"
 
 === cpp-06 | Loops
 --- teach
@@ -1598,6 +3710,339 @@ FizzBuzz
 --- check source | Uses a loop
 \b(for|while)\b
 
++++ practice | The seven times table
+--- task
+Write a whole program (with `main`) that uses a `for` loop to print the seven times table, from `7 x 1` to `7 x 10`, one line each:
+
+```
+7 x 1 = 7
+7 x 2 = 14
+7 x 3 = 21
+7 x 4 = 28
+7 x 5 = 35
+7 x 6 = 42
+7 x 7 = 49
+7 x 8 = 56
+7 x 9 = 63
+7 x 10 = 70
+```
+
+Let the loop work out every answer. Do not type the answers yourself.
+--- starter
+#include <iostream>
+
+int main() {
+    std::cout << "7 x 1 = 7\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    for (int i = 1; i <= 10; i++) {
+        std::cout << "7 x " << i << " = " << 7 * i << "\n";
+    }
+    return 0;
+}
+--- hint
+The loop counter goes from 1 to 10: `for (int i = 1; i <= 10; i++)`.
+--- hint
+Each line is `"7 x "`, then `i`, then `" = "`, then `7 * i`, then `"\n"`.
+--- check output | Prints the whole table
+7 x 1 = 7
+7 x 2 = 14
+7 x 3 = 21
+7 x 4 = 28
+7 x 5 = 35
+7 x 6 = 42
+7 x 7 = 49
+7 x 8 = 56
+7 x 9 = 63
+7 x 10 = 70
+--- check source | Uses a for loop
+\bfor\s*\(
+--- check source absent | Does not type the answers
+\b(49|56|63|70)\b
+
++++ practice | The first square past a limit
+--- task
+Write `int first_square_over(int limit)` that returns the smallest whole number `n`, starting from 1, whose square `n * n` is greater than `limit`.
+
+For example, `first_square_over(50)` is `8`, because 7 × 7 is 49 (not over 50) and 8 × 8 is 64. `first_square_over(100)` is `11`, because 10 × 10 is exactly 100, which is not over. And `first_square_over(0)` is `1`.
+
+Use a `while` loop. No `main`.
+--- starter
+int first_square_over(int limit) {
+    return 0;
+}
+--- solution
+int first_square_over(int limit) {
+    int n = 1;
+    while (n * n <= limit) {
+        n++;
+    }
+    return n;
+}
+--- hint
+Start `n` at 1 and keep making it one bigger while its square is **not yet** over the limit.
+--- hint
+"Not over" is `n * n <= limit`. When the loop stops, `n` is the answer.
+--- check case | first_square_over(50) is 8
+first_square_over(50)
+=> 8
+--- check case | Exactly 100 is not over: first_square_over(100) is 11
+first_square_over(100)
+=> 11
+--- check case | first_square_over(99) is 10
+first_square_over(99)
+=> 10
+--- check case | first_square_over(0) is 1
+first_square_over(0)
+=> 1
+
++++ practice | Stop at zero, skip the glitches
+--- task
+The Input tab holds sensor readings. A negative reading is a glitch and must be skipped. A reading of `0` means "end of data": stop there, even though more numbers follow it.
+
+```
+5 -2 7 3
+-9 4 0 8 6
+```
+
+Read the readings in a `while (std::cin >> n)` loop. Use `break` to stop at the 0, and `continue` to skip the negative readings. Add up the good readings and count them. Print:
+
+```
+sum 19 from 4 readings
+```
+
+The 0 itself is not a reading, and nothing after it counts.
+--- stdin
+5 -2 7 3
+-9 4 0 8 6
+--- starter
+#include <iostream>
+
+int main() {
+    int n;
+    int sum = 0;
+    int count = 0;
+    while (std::cin >> n) {
+        sum += n;
+        count++;
+    }
+    std::cout << "sum " << sum << " from " << count << " readings\n";
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    int n;
+    int sum = 0;
+    int count = 0;
+    while (std::cin >> n) {
+        if (n == 0) {
+            break;
+        }
+        if (n < 0) {
+            continue;
+        }
+        sum += n;
+        count++;
+    }
+    std::cout << "sum " << sum << " from " << count << " readings\n";
+    return 0;
+}
+--- hint
+Put the two checks at the top of the loop body, before the reading is added: first the 0 check with `break`, then the negative check with `continue`.
+--- hint
+`if (n == 0) { break; }` leaves the loop. `if (n < 0) { continue; }` skips the rest of this pass, so the glitch is never added.
+--- check output | Adds the good readings before the 0
+sum 19 from 4 readings
+--- check source | Uses break
+\bbreak\s*;
+--- check source | Uses continue
+\bcontinue\s*;
+
++++ practice | How many digits?
+--- task
+Write `int count_digits(int n)` that returns how many digits `n` has when written out. The minus sign of a negative number is not a digit.
+
+So `count_digits(12345)` is `5`, `count_digits(7)` is `1`, `count_digits(-45)` is `2`, and `count_digits(0)` is `1`: zero is written with one digit.
+
+Chop digits off the end with `n = n / 10` until nothing is left. No `main`.
+--- starter
+int count_digits(int n) {
+    int count = 0;
+    while (n > 0) {
+        n = n / 10;
+        count++;
+    }
+    return count;
+}
+--- solution
+int count_digits(int n) {
+    int count = 1;
+    n = n / 10;
+    while (n != 0) {
+        n = n / 10;
+        count++;
+    }
+    return count;
+}
+--- hint
+Try the starter on 0 and on -45 by hand. With `n > 0`, the loop never runs for either, so it returns 0.
+--- hint
+Every number has at least one digit, so start the count at 1 and chop that digit off first. Dividing a negative number by 10 moves it toward 0, just like a positive one, so loop while `n != 0`.
+--- check case | count_digits(12345) is 5
+count_digits(12345)
+=> 5
+--- check case | count_digits(7) is 1
+count_digits(7)
+=> 1
+--- check case | Zero has one digit
+count_digits(0)
+=> 1
+--- check case | count_digits(-45) is 2
+count_digits(-45)
+=> 2
+--- check case | count_digits(1000000000) is 10
+count_digits(1000000000)
+=> 10
+
++++ practice | Fix the range sum
+--- task
+`sum_range(a, b)` should add up every whole number from `a` to `b`, **both included**. So `sum_range(1, 4)` is 1 + 2 + 3 + 4 = 10, and `sum_range(5, 5)` is just `5`. If `a` is bigger than `b`, there are no numbers to add, and the answer is `0`.
+
+Instead, `sum_range(1, 4)` returns `6` and `sum_range(5, 5)` returns `0`. Fix the one wrong line. No `main`.
+--- starter
+int sum_range(int a, int b) {
+    int total = 0;
+    for (int i = a; i < b; i++) {
+        total += i;
+    }
+    return total;
+}
+--- solution
+int sum_range(int a, int b) {
+    int total = 0;
+    for (int i = a; i <= b; i++) {
+        total += i;
+    }
+    return total;
+}
+--- hint
+Check the last pass by hand: when `i` is 4 and `b` is 4, is the condition true?
+--- hint
+The loop stops one number too early. `<` leaves `b` out; `<=` keeps it.
+--- check case | sum_range(1, 4) is 10
+sum_range(1, 4)
+=> 10
+--- check case | sum_range(5, 5) is 5
+sum_range(5, 5)
+=> 5
+--- check case | sum_range(-2, 2) is 0
+sum_range(-2, 2)
+=> 0
+--- check case | a bigger than b gives 0
+sum_range(3, 2)
+=> 0
+
++++ practice | Counting primes
+--- task
+A **prime** is a whole number greater than 1 that can only be divided evenly by 1 and by itself. The first primes are 2, 3, 5, 7, 11 and 13. The number 9 is not prime, because 3 divides it evenly.
+
+Write `int count_primes(int limit)` that returns how many primes there are from 2 up to `limit`, including `limit` itself if it is prime. So `count_primes(10)` is `4` (2, 3, 5 and 7), `count_primes(2)` is `1`, and `count_primes(1)` is `0`.
+
+The checker also tries `count_primes(20000)`, so your answer has to be quick. A number `n` that has a divisor has one no bigger than its square root, so you only need to try divisors `d` while `d * d <= n`. No `main`.
+--- starter
+int count_primes(int limit) {
+    return 0;
+}
+--- solution
+int count_primes(int limit) {
+    int count = 0;
+    for (int n = 2; n <= limit; n++) {
+        bool prime = true;
+        for (int d = 2; d * d <= n; d++) {
+            if (n % d == 0) {
+                prime = false;
+                break;
+            }
+        }
+        if (prime) {
+            count++;
+        }
+    }
+    return count;
+}
+--- hint
+Use one loop over every `n` from 2 to `limit`, and inside it a second loop that tries divisors `d`. A loop can sit inside another loop.
+--- hint
+Start each `n` with `bool prime = true;`. If `n % d == 0` for some `d`, it is not prime: set `prime` to `false` and `break` out of the inner loop.
+--- hint
+The inner loop is `for (int d = 2; d * d <= n; d++)`. After it, add one to the count if `prime` is still `true`.
+--- check case | count_primes(10) is 4
+count_primes(10)
+=> 4
+--- check case | count_primes(2) is 1
+count_primes(2)
+=> 1
+--- check case | count_primes(1) is 0
+count_primes(1)
+=> 0
+--- check case | count_primes(100) is 25
+count_primes(100)
+=> 25
+--- check case | count_primes(20000) is 2262
+count_primes(20000)
+=> 2262
+
++++ practice | Predict the loop
+--- task
+Read this program carefully, but do **not** run it:
+
+```cpp
+for (int i = 10; i >= 1; i -= 3) {
+    if (i % 2 == 0) {
+        continue;
+    }
+    if (i < 3) {
+        break;
+    }
+    std::cout << i << "\n";
+}
+std::cout << "done\n";
+```
+
+`i -= 3` means `i = i - 3`. Work out by hand what it prints. Then write a program whose `main` prints exactly that output, using plain `std::cout` lines. Your program must not use a loop: the point is to work it out yourself.
+--- starter
+#include <iostream>
+
+int main() {
+    // Print what the program above prints.
+    return 0;
+}
+--- solution
+#include <iostream>
+
+int main() {
+    std::cout << "7\n";
+    std::cout << "done\n";
+    return 0;
+}
+--- hint
+Follow `i` in a table: it takes the values 10, 7, 4 and 1. For each one, check the two `if`s in order.
+--- hint
+10 and 4 are even, so they are skipped by `continue`. At 1, the `break` ends the loop before anything is printed.
+--- check output | Prints what the program prints
+7
+done
+--- check source absent | Works it out without a loop
+\b(for|while)\b
+--- check includes | Ends with done
+done
+
 === cpp-07 | Functions
 --- teach
 Since you wrote `add`, you have been writing functions like `average` and `grade`, and the checker has been calling them. This lesson looks at functions properly: what each part means, functions that give nothing back, and how to pick a type big enough for the answer.
@@ -1769,6 +4214,268 @@ factorial(0)
 factorial(20)
 => 2432902008176640000LL
 
++++ practice | Inside the safe range
+--- task
+Write `bool in_range(int value, int low, int high)` that returns `true` when `value` is from `low` to `high`, both ends included, and `false` otherwise.
+
+So `in_range(5, 1, 10)` is `true`, `in_range(1, 1, 10)` and `in_range(10, 1, 10)` are `true` (the ends count), and `in_range(0, 1, 10)` is `false`. No `main`.
+--- starter
+bool in_range(int value, int low, int high) {
+    return false;
+}
+--- solution
+bool in_range(int value, int low, int high) {
+    return value >= low && value <= high;
+}
+--- hint
+Two conditions must both be true: the value is not below `low`, and it is not above `high`.
+--- hint
+Hand back `value >= low && value <= high` directly. It is already a `bool`.
+--- check case | 5 is in 1 to 10
+in_range(5, 1, 10)
+=> true
+--- check case | Both ends count
+in_range(1, 1, 10) && in_range(10, 1, 10)
+=> true
+--- check case | 0 is below the range
+in_range(0, 1, 10)
+=> false
+--- check case | 11 is above the range
+in_range(11, 1, 10)
+=> false
+
++++ practice | A bar of hashes
+--- task
+Write `void print_bar(std::string label, int n)` that prints the label, a colon and a space, then `n` hash signs `#`, then a new line. It returns nothing.
+
+So `print_bar("fuel", 3)` prints:
+
+```
+fuel: ###
+```
+
+and `print_bar("empty", 0)` prints `empty: ` with no hashes. The checker calls it a few times and compares everything printed. The starter includes `<iostream>` and `<string>`. No `main`.
+--- starter
+#include <iostream>
+#include <string>
+
+void print_bar(std::string label, int n) {
+    std::cout << label << "\n";
+}
+--- solution
+#include <iostream>
+#include <string>
+
+void print_bar(std::string label, int n) {
+    std::cout << label << ": ";
+    for (int i = 0; i < n; i++) {
+        std::cout << "#";
+    }
+    std::cout << "\n";
+}
+--- hint
+Print the label and `": "` first. Then a loop prints one `#` on each pass, `n` passes in all. The new line comes last, after the loop.
+--- hint
+`for (int i = 0; i < n; i++)` runs exactly `n` times, and not at all when `n` is 0.
+--- check test | print_bar runs for fuel, empty and oxygen
+[] { print_bar("fuel", 3); print_bar("empty", 0); print_bar("oxygen", 5); return true; }()
+--- check output | Prints the three bars
+fuel: ###
+empty:
+oxygen: #####
+--- check includes | Zero hashes still prints the label
+empty:
+
++++ practice | The Collatz walk
+--- task
+Here is a famous game. Start with a whole number `n` bigger than 0:
+
+- if `n` is even, halve it;
+- if `n` is odd, make it `3 * n + 1`;
+- stop when `n` reaches 1.
+
+Starting from 6 the walk is 6, 3, 10, 5, 16, 8, 4, 2, 1: that is 8 steps.
+
+Write `int collatz_steps(long long n)` that returns how many steps it takes to reach 1. `collatz_steps(1)` is `0`. Some walks climb very high on the way: from 113383 the number goes past 2 billion, too big for an `int`, so keep `n` a `long long`. Write a helper `bool is_even(long long n)` above it and use it. No `main`.
+--- starter
+bool is_even(long long n) {
+    return n % 2 == 0;
+}
+
+int collatz_steps(long long n) {
+    return 0;
+}
+--- solution
+bool is_even(long long n) {
+    return n % 2 == 0;
+}
+
+int collatz_steps(long long n) {
+    int steps = 0;
+    while (n != 1) {
+        if (is_even(n)) {
+            n = n / 2;
+        } else {
+            n = 3 * n + 1;
+        }
+        steps++;
+    }
+    return steps;
+}
+--- hint
+Use a `while` loop that runs until `n` is 1. Count one step on every pass.
+--- hint
+Inside the loop, `if (is_even(n))` halves `n`, and the `else` makes it `3 * n + 1`. Because `n` is a `long long`, the big values fit.
+--- check case | collatz_steps(1) is 0
+collatz_steps(1)
+=> 0
+--- check case | collatz_steps(6) is 8
+collatz_steps(6)
+=> 8
+--- check case | collatz_steps(27) is 111
+collatz_steps(27)
+=> 111
+--- check case | collatz_steps(113383) is 247, climbing past 2 billion
+collatz_steps(113383)
+=> 247
+
++++ practice | Cubes that do not fit
+--- task
+Write `long long cube(int n)` that returns `n * n * n`.
+
+Careful: `n` is an `int`, and an `int` times an `int` is worked out as an `int`. So `n * n * n` overflows for big `n` before the answer is ever turned into a `long long`. `cube(2000)` is 8,000,000,000, which does not fit in an `int`. Make the multiplying happen in `long long` from the start.
+
+The checker tries small numbers, negatives, zero and big ones. No `main`.
+--- starter
+long long cube(int n) {
+    return n * n * n;
+}
+--- solution
+long long cube(int n) {
+    long long x = n;
+    return x * x * x;
+}
+--- hint
+The starter's answer is right for small numbers, but for 2000 the ints overflow and the result is garbage.
+--- hint
+Copy `n` into a `long long` variable first, then multiply that. A `long long` times a `long long` is worked out as a `long long`.
+--- check case | cube(3) is 27
+cube(3)
+=> 27
+--- check case | cube(-4) is -64
+cube(-4)
+=> -64
+--- check case | cube(0) is 0
+cube(0)
+=> 0
+--- check case | cube(2000) does not overflow
+cube(2000)
+=> 8000000000LL
+--- check case | cube(-100000) does not overflow
+cube(-100000)
+=> -1000000000000000LL
+
++++ practice | Fix the odd counter
+--- task
+`count_odd(a, b)` should count how many odd numbers there are from `a` to `b`, both included. It uses a helper, `is_odd`.
+
+It works for positive numbers, but `count_odd(-5, 5)` returns `3` instead of `6`: -5, -3, -1, 1, 3 and 5 are all odd. The bug is in `is_odd`, on one line. Fix it. No `main`.
+--- starter
+bool is_odd(int n) {
+    return n % 2 == 1;
+}
+
+int count_odd(int a, int b) {
+    int count = 0;
+    for (int i = a; i <= b; i++) {
+        if (is_odd(i)) {
+            count++;
+        }
+    }
+    return count;
+}
+--- solution
+bool is_odd(int n) {
+    return n % 2 != 0;
+}
+
+int count_odd(int a, int b) {
+    int count = 0;
+    for (int i = a; i <= b; i++) {
+        if (is_odd(i)) {
+            count++;
+        }
+    }
+    return count;
+}
+--- hint
+Work out `-7 % 2` in C++. The remainder of a negative number is negative.
+--- hint
+`-7 % 2` is `-1`, not `1`. A number is odd when its remainder is not 0: test `!= 0`.
+--- check case | is_odd(7) is true
+is_odd(7)
+=> true
+--- check case | is_odd(-7) is true
+is_odd(-7)
+=> true
+--- check case | is_odd(-4) is false
+is_odd(-4)
+=> false
+--- check case | count_odd(-5, 5) is 6
+count_odd(-5, 5)
+=> 6
+
++++ practice | When two satellites line up
+--- task
+Two satellites pass over a ground station. One passes every `a` minutes, the other every `b` minutes, and both passed over together just now. They next pass together after the smallest number of minutes that both `a` and `b` divide evenly. That number is called the **least common multiple**.
+
+Write two functions. No `main`.
+
+- `long long gcd(long long a, long long b)` returns the **greatest common divisor**: the biggest number that divides both evenly. Use Euclid's method: while `b` is not 0, replace the pair `a, b` with `b, a % b`. When `b` reaches 0, `a` is the answer. So `gcd(12, 18)` is `6`.
+- `long long lcm(long long a, long long b)` returns the least common multiple, using `gcd`: it is `a / gcd(a, b) * b`. So `lcm(4, 6)` is `12`.
+
+Divide before you multiply, as written, so the numbers stay small. The checker tries `lcm(1000000, 999999)`, which is almost a trillion.
+--- starter
+long long gcd(long long a, long long b) {
+    return 1;
+}
+
+long long lcm(long long a, long long b) {
+    return a * b;
+}
+--- solution
+long long gcd(long long a, long long b) {
+    while (b != 0) {
+        long long r = a % b;
+        a = b;
+        b = r;
+    }
+    return a;
+}
+
+long long lcm(long long a, long long b) {
+    return a / gcd(a, b) * b;
+}
+--- hint
+Replacing two variables at once needs a spare, as when swapping: keep `a % b` in a variable `r`, then `a = b;` and `b = r;`.
+--- hint
+Loop `while (b != 0)`. After the loop, return `a`. Then `lcm` is one line that calls `gcd`.
+--- check case | gcd(12, 18) is 6
+gcd(12, 18)
+=> 6
+--- check case | lcm(4, 6) is 12
+lcm(4, 6)
+=> 12
+--- check case | Numbers with no common divisor: lcm(7, 13) is 91
+lcm(7, 13)
+=> 91
+--- check case | The same period: lcm(5, 5) is 5
+lcm(5, 5)
+=> 5
+--- check case | lcm(1000000, 999999) is almost a trillion
+lcm(1000000, 999999)
+=> 999999000000LL
+
 === cpp-07b | Recursion: a function that calls itself
 --- teach
 Last lesson you worked out a factorial with a loop, and met the idea that a function can call itself. This lesson shows how that works, and when it stops.
@@ -1902,6 +4609,275 @@ power(2, 40)
 --- check source | power calls itself
 \bpower\s*\([^)]*\)\s*\{[\s\S]*\bpower\s*\(
 ?? Inside the body of power, call power again with exponent - 1.
+
++++ practice | Stacking a triangle
+--- task
+Cans are stacked in a triangle: 1 can on top, 2 in the row below, 3 below that, and so on. A stack with `n` rows holds 1 + 2 + … + n cans.
+
+Write `int triangle(int n)` that returns how many cans a stack with `n` rows holds. Use recursion: a stack of `n` rows is the bottom row of `n` cans plus a stack of `n - 1` rows. A stack of 0 rows holds 0 cans.
+
+So `triangle(4)` is 10, `triangle(1)` is 1 and `triangle(0)` is 0. No `main`.
+--- starter
+int triangle(int n) {
+    return 0;
+}
+--- solution
+int triangle(int n) {
+    if (n == 0) {
+        return 0;
+    }
+    return n + triangle(n - 1);
+}
+--- hint
+The base case is 0 rows, which holds 0 cans.
+--- hint
+The recursive case adds the bottom row to the smaller stack: `n + triangle(n - 1)`.
+--- check case | triangle(4) is 10
+triangle(4)
+=> 10
+--- check case | triangle(1) is 1
+triangle(1)
+=> 1
+--- check case | triangle(0) is 0
+triangle(0)
+=> 0
+--- check case | triangle(100) is 5050
+triangle(100)
+=> 5050
+--- check source | triangle calls itself
+\btriangle\s*\([^)]*\)\s*\{[\s\S]*\btriangle\s*\(
+
++++ practice | A staircase of hashes
+--- task
+Write `void staircase(int n)` that prints a staircase of `n` steps, going down the page. The first line has 1 hash sign `#`, the second has 2, and so on, until the last line has `n`. So `staircase(3)` prints:
+
+```
+#
+##
+###
+```
+
+`staircase(0)` prints nothing. Use recursion for the steps: to print a staircase of `n` steps, first print a staircase of `n - 1` steps, then print one line of `n` hashes. A small loop may print the hashes of one line. The checker calls `staircase(3)` and then `staircase(1)`. The starter includes `<iostream>`. No `main`.
+--- starter
+#include <iostream>
+
+void staircase(int n) {
+    for (int i = 0; i < n; i++) {
+        std::cout << "#";
+    }
+    std::cout << "\n";
+}
+--- solution
+#include <iostream>
+
+void staircase(int n) {
+    if (n == 0) {
+        return;
+    }
+    staircase(n - 1);
+    for (int i = 0; i < n; i++) {
+        std::cout << "#";
+    }
+    std::cout << "\n";
+}
+--- hint
+The base case is `n == 0`: print nothing, just `return;`.
+--- hint
+In the recursive case, the call comes first and the line second. By the time `staircase(n - 1)` returns, the shorter lines are already printed, so the longest line lands at the bottom.
+--- check test | staircase runs for 3 and then for 1
+[] { staircase(3); staircase(1); return true; }()
+--- check output | Prints 1, 2 and 3 hashes, then 1
+#
+##
+###
+#
+--- check source | staircase calls itself
+\bstaircase\s*\([^)]*\)\s*\{[\s\S]*\bstaircase\s*\(
+
++++ practice | Adding up the digits
+--- task
+Write `int digit_sum(int n)` that returns the sum of the digits of `n`, which is 0 or more. So `digit_sum(1234)` is 1 + 2 + 3 + 4 = 10, and `digit_sum(7)` is 7.
+
+Use recursion, with `%` and `/` from the arithmetic lesson. `n % 10` is the last digit, and `n / 10` is the number with the last digit chopped off:
+
+- base case: a number below 10 is a single digit, so its sum is itself;
+- recursive case: the last digit plus the digit sum of the rest.
+
+No `main`.
+--- starter
+int digit_sum(int n) {
+    return n % 10;
+}
+--- solution
+int digit_sum(int n) {
+    if (n < 10) {
+        return n;
+    }
+    return n % 10 + digit_sum(n / 10);
+}
+--- hint
+For 1234, the last digit is `1234 % 10`, which is 4, and the rest is `1234 / 10`, which is 123.
+--- hint
+The recursive case is `n % 10 + digit_sum(n / 10)`. Each call has one digit fewer, so it always reaches a single digit.
+--- check case | digit_sum(1234) is 10
+digit_sum(1234)
+=> 10
+--- check case | digit_sum(7) is 7
+digit_sum(7)
+=> 7
+--- check case | digit_sum(0) is 0
+digit_sum(0)
+=> 0
+--- check case | digit_sum(99999) is 45
+digit_sum(99999)
+=> 45
+--- check source | digit_sum calls itself
+\bdigit_sum\s*\([^)]*\)\s*\{[\s\S]*\bdigit_sum\s*\(
+
++++ practice | Fibonacci needs two base cases
+--- task
+The **Fibonacci numbers** start 0, 1, and after that each one is the sum of the two before it: 0, 1, 1, 2, 3, 5, 8, 13, …
+
+Write `int fib(int n)` that returns Fibonacci number `n`, counting from 0. So `fib(0)` is 0, `fib(1)` is 1, `fib(2)` is 1, and `fib(10)` is 55.
+
+Use recursion: `fib(n)` is `fib(n - 1) + fib(n - 2)`. Careful with the base cases: that rule needs two smaller numbers, so both `fib(0)` and `fib(1)` must be answered directly. With only one base case, `fib(1)` would call `fib(-1)` and never stop. No `main`.
+--- starter
+int fib(int n) {
+    return 0;
+}
+--- solution
+int fib(int n) {
+    if (n == 0) {
+        return 0;
+    }
+    if (n == 1) {
+        return 1;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+--- hint
+Answer `n == 0` and `n == 1` first, each with its own `if` and `return`.
+--- hint
+After both base cases: `return fib(n - 1) + fib(n - 2);`.
+--- check case | fib(0) is 0
+fib(0)
+=> 0
+--- check case | fib(1) is 1
+fib(1)
+=> 1
+--- check case | fib(2) is 1
+fib(2)
+=> 1
+--- check case | fib(10) is 55
+fib(10)
+=> 55
+--- check case | fib(20) is 6765
+fib(20)
+=> 6765
+
++++ practice | Fix the bounce counter
+--- task
+A ball is dropped from a height. Each bounce, it comes back up to half the height before (whole-number division, so 25 becomes 12). It keeps bouncing while the height is 2 or more.
+
+`bounces(height)` should return how many times the ball bounces. From a height of 1 it does not bounce at all. From 100 it bounces 6 times: to 50, 25, 12, 6, 3 and 1.
+
+Instead, `bounces` always returns `0`. The bug is one line. Fix it. No `main`.
+--- starter
+int bounces(int height) {
+    if (height < 2) {
+        return 0;
+    }
+    return bounces(height / 2);
+}
+--- solution
+int bounces(int height) {
+    if (height < 2) {
+        return 0;
+    }
+    return 1 + bounces(height / 2);
+}
+--- hint
+Follow `bounces(4)` by hand. It calls `bounces(2)`, which calls `bounces(1)`, which returns 0. What does each call add on the way back up?
+--- hint
+Each call is one bounce, then the rest of the bounces. The starter forgets to count this call's bounce: it should add 1.
+--- check case | bounces(1) is 0
+bounces(1)
+=> 0
+--- check case | bounces(2) is 1
+bounces(2)
+=> 1
+--- check case | bounces(100) is 6
+bounces(100)
+=> 6
+--- check case | bounces(1024) is 10
+bounces(1024)
+=> 10
+
++++ practice | The Tower of Hanoi
+--- task
+The Tower of Hanoi is a puzzle with three pegs, called A, B and C, and a stack of disks of different sizes on peg A, the biggest at the bottom. The goal is to move the whole stack to another peg. You move one disk at a time, and a bigger disk may never sit on a smaller one.
+
+Recursion solves it. To move `n` disks from peg `from` to peg `to`, using peg `via` as the spare:
+
+1. move the top `n - 1` disks from `from` to `via` (using `to` as the spare),
+2. move disk `n` from `from` to `to`,
+3. move the `n - 1` disks from `via` to `to` (using `from` as the spare).
+
+Moving 0 disks means doing nothing. Write two functions. No `main`.
+
+- `void hanoi(int n, char from, char to, char via)` prints every move, one per line, like `move disk 1 from A to C`.
+- `long long hanoi_moves(int n)` returns how many moves `hanoi` makes for `n` disks. By the steps above, that is twice the moves for `n - 1` disks, plus 1. It is 0 for 0 disks.
+
+The checker calls `hanoi(2, 'A', 'C', 'B')`, then `hanoi(1, 'B', 'A', 'C')`, and asks for `hanoi_moves(40)`, which is over a trillion. The starter includes `<iostream>`.
+--- starter
+#include <iostream>
+
+void hanoi(int n, char from, char to, char via) {
+}
+
+long long hanoi_moves(int n) {
+    return 0;
+}
+--- solution
+#include <iostream>
+
+void hanoi(int n, char from, char to, char via) {
+    if (n == 0) {
+        return;
+    }
+    hanoi(n - 1, from, via, to);
+    std::cout << "move disk " << n << " from " << from << " to " << to << "\n";
+    hanoi(n - 1, via, to, from);
+}
+
+long long hanoi_moves(int n) {
+    if (n == 0) {
+        return 0;
+    }
+    return 2 * hanoi_moves(n - 1) + 1;
+}
+--- hint
+In `hanoi`, the base case is `n == 0`: just `return;`. The three steps become two recursive calls with the pegs swapped around, and one print between them.
+--- hint
+Step 1 is `hanoi(n - 1, from, via, to);` and step 3 is `hanoi(n - 1, via, to, from);`. A `char` prints as its letter.
+--- hint
+`hanoi_moves` follows the same shape: `return 2 * hanoi_moves(n - 1) + 1;` after its base case.
+--- check test | hanoi prints the moves for 2 disks, then 1
+[] { hanoi(2, 'A', 'C', 'B'); hanoi(1, 'B', 'A', 'C'); return true; }()
+--- check output | The moves, in order
+move disk 1 from A to B
+move disk 2 from A to C
+move disk 1 from B to C
+move disk 1 from B to A
+--- check case | hanoi_moves(3) is 7
+hanoi_moves(3)
+=> 7
+--- check case | hanoi_moves(0) is 0
+hanoi_moves(0)
+=> 0
+--- check case | hanoi_moves(40) is 1099511627775
+hanoi_moves(40)
+=> 1099511627775LL
 
 === cpp-08 | std::vector
 --- teach
@@ -2071,6 +5047,300 @@ max_value({-5, -2, -9})
 => -2
 --- check test | mean({1, 2, 3, 4}) is 2.5
 std::abs(mean({1, 2, 3, 4}) - 2.5) < 1e-9
+
++++ practice | Readings over a limit
+--- task
+Write `int count_above(const std::vector<int>& v, int limit)` that returns how many elements of `v` are greater than `limit`. An element equal to the limit does not count.
+
+So `count_above({1, 5, 10, 15}, 7)` is `2`, `count_above({7, 7}, 7)` is `0`, and for an empty vector the answer is `0`. No `main`: the checker supplies it.
+--- starter
+#include <vector>
+
+int count_above(const std::vector<int>& v, int limit) {
+    return 0;
+}
+--- solution
+#include <vector>
+
+int count_above(const std::vector<int>& v, int limit) {
+    int count = 0;
+    for (int x : v) {
+        if (x > limit) {
+            count++;
+        }
+    }
+    return count;
+}
+--- hint
+Visit every element with a range-for loop, and keep a counter that starts at 0.
+--- hint
+Add one to the counter only when `x > limit`.
+--- check case | count_above({1, 5, 10, 15}, 7) is 2
+count_above({1, 5, 10, 15}, 7)
+=> 2
+--- check case | Equal to the limit does not count
+count_above({7, 7}, 7)
+=> 0
+--- check case | An empty vector gives 0
+count_above({}, 3)
+=> 0
+--- check case | Negative readings
+count_above({-10, -3, -8}, -5)
+=> 1
+
++++ practice | Keep only the even ones
+--- task
+Write `std::vector<int> evens_only(const std::vector<int>& v)` that returns a **new** vector holding only the even elements of `v`, in the same order. The original vector does not change.
+
+So `evens_only({1, 2, 3, 4, 6})` is `{2, 4, 6}`, and `evens_only({-2, 0, 5})` is `{-2, 0}` (0 is even, and so is -2). If there are no even elements, return an empty vector. No `main`.
+--- starter
+#include <vector>
+
+std::vector<int> evens_only(const std::vector<int>& v) {
+    return v;
+}
+--- solution
+#include <vector>
+
+std::vector<int> evens_only(const std::vector<int>& v) {
+    std::vector<int> out;
+    for (int x : v) {
+        if (x % 2 == 0) {
+            out.push_back(x);
+        }
+    }
+    return out;
+}
+--- hint
+Start with an empty vector: `std::vector<int> out;`. Go through `v` and `push_back` each element you want to keep.
+--- hint
+A number is even when `x % 2 == 0`. That is right for negative numbers too.
+--- check case | evens_only({1, 2, 3, 4, 6}) is {2, 4, 6}
+evens_only({1, 2, 3, 4, 6})
+=> std::vector<int>{2, 4, 6}
+--- check case | Zero and negatives can be even
+evens_only({-2, 0, 5})
+=> std::vector<int>{-2, 0}
+--- check case | No evens gives an empty vector
+evens_only({1, 3, 5})
+=> std::vector<int>{}
+--- check case | An empty vector gives an empty vector
+evens_only({})
+=> std::vector<int>{}
+
++++ practice | Read them all, print them backwards
+--- task
+The Input tab holds whole numbers:
+
+```
+3 1 4
+1 5 9
+```
+
+Read them all into a `std::vector<int>` with a `while (std::cin >> n)` loop and `push_back`. Then print how many there were, and the numbers in reverse order, separated by spaces:
+
+```
+6 numbers
+9 5 1 4 1 3
+```
+
+Go through the vector with a counting loop, from the last index down to 0. Remember that `size()` is unsigned, so make an `int` copy of it first: `int count = v.size();`. Then an index that goes below 0 is a real negative number and the loop stops.
+--- stdin
+3 1 4
+1 5 9
+--- starter
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> v;
+    int n;
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> v;
+    int n;
+    while (std::cin >> n) {
+        v.push_back(n);
+    }
+    int count = v.size();
+    std::cout << count << " numbers\n";
+    for (int i = count - 1; i >= 0; i--) {
+        std::cout << v[i] << " ";
+    }
+    std::cout << "\n";
+    return 0;
+}
+--- hint
+The reading loop is `while (std::cin >> n) { v.push_back(n); }`.
+--- hint
+The last element is at index `count - 1`. Count down with `for (int i = count - 1; i >= 0; i--)` and print `v[i]` and a space on each pass. A space at the end of the line does not matter.
+--- check output | Prints the count and the numbers reversed
+6 numbers
+9 5 1 4 1 3
+--- check source | Stores the numbers with push_back
+\.push_back\s*\(
+--- check source | Uses a std::vector
+std::vector<int>
+
++++ practice | The range of a vector
+--- task
+Write `int range_of(const std::vector<int>& v)` that returns the largest element minus the smallest. The vector may be empty, and then the answer is `0`. It may also have one element, or all-negative elements.
+
+So `range_of({2, 9, -4})` is 13, `range_of({-3, -10, -1})` is 9, `range_of({5})` is 0, and `range_of({})` is 0. No `main`.
+--- starter
+#include <vector>
+
+int range_of(const std::vector<int>& v) {
+    int lo = 0;
+    int hi = 0;
+    for (int x : v) {
+        if (x < lo) lo = x;
+        if (x > hi) hi = x;
+    }
+    return hi - lo;
+}
+--- solution
+#include <vector>
+
+int range_of(const std::vector<int>& v) {
+    if (v.size() == 0) {
+        return 0;
+    }
+    int lo = v[0];
+    int hi = v[0];
+    for (int x : v) {
+        if (x < lo) lo = x;
+        if (x > hi) hi = x;
+    }
+    return hi - lo;
+}
+--- hint
+Starting `lo` and `hi` at 0 is wrong when every element is above 0 or every element is below 0. Start both at the first element.
+--- hint
+But `v[0]` does not exist in an empty vector. Check `v.size() == 0` first and return 0 right away.
+--- check case | range_of({2, 9, -4}) is 13
+range_of({2, 9, -4})
+=> 13
+--- check case | All negative: range_of({-3, -10, -1}) is 9
+range_of({-3, -10, -1})
+=> 9
+--- check case | All positive: range_of({4, 6, 5}) is 2
+range_of({4, 6, 5})
+=> 2
+--- check case | One element gives 0
+range_of({5})
+=> 0
+--- check case | Empty gives 0
+range_of({})
+=> 0
+
++++ practice | Fix the match counter
+--- task
+`count_matches(v, target)` should return how many elements of `v` are equal to `target`. So `count_matches({1, 2, 1, 3}, 1)` should be `2`.
+
+Instead it returns `4`, the size of the whole vector. And `count_matches({0, 0, 4}, 0)` returns `0` instead of `2`. The bug is one character on one line. The compiler even warns about it. Fix it. No `main`.
+--- starter
+#include <vector>
+
+int count_matches(const std::vector<int>& v, int target) {
+    int count = 0;
+    for (int x : v) {
+        if (x = target) {
+            count++;
+        }
+    }
+    return count;
+}
+--- solution
+#include <vector>
+
+int count_matches(const std::vector<int>& v, int target) {
+    int count = 0;
+    for (int x : v) {
+        if (x == target) {
+            count++;
+        }
+    }
+    return count;
+}
+--- hint
+Look at the condition in the `if`. Does it ask a question, or does it store a value?
+--- hint
+One `=` assigns: it puts `target` into `x`, and then any non-zero value counts as true. Two, `==`, compare.
+--- check case | count_matches({1, 2, 1, 3}, 1) is 2
+count_matches({1, 2, 1, 3}, 1)
+=> 2
+--- check case | count_matches({0, 0, 4}, 0) is 2
+count_matches({0, 0, 4}, 0)
+=> 2
+--- check case | No matches gives 0
+count_matches({7, 8}, 9)
+=> 0
+--- check case | Empty gives 0
+count_matches({}, 5)
+=> 0
+
++++ practice | The longest climb
+--- task
+A vector holds a rocket's altitude readings, one per second. A **rising run** is a stretch of readings in a row where each one is strictly higher than the one before.
+
+Write `int longest_rise(const std::vector<int>& v)` that returns the number of readings in the longest rising run. A single reading on its own is a run of 1. An empty vector gives 0.
+
+So `longest_rise({1, 2, 3, 1, 2})` is 3 (the readings 1, 2, 3), `longest_rise({5, 4, 3})` is 1, and `longest_rise({1, 1, 1})` is 1, because equal readings do not rise. No `main`.
+--- starter
+#include <vector>
+
+int longest_rise(const std::vector<int>& v) {
+    return 0;
+}
+--- solution
+#include <vector>
+
+int longest_rise(const std::vector<int>& v) {
+    int n = v.size();
+    if (n == 0) {
+        return 0;
+    }
+    int best = 1;
+    int run = 1;
+    for (int i = 1; i < n; i++) {
+        if (v[i] > v[i - 1]) {
+            run++;
+        } else {
+            run = 1;
+        }
+        if (run > best) {
+            best = run;
+        }
+    }
+    return best;
+}
+--- hint
+Keep two counts: `run`, the length of the rising run that ends at the current reading, and `best`, the longest run seen so far. Both start at 1 for the first reading.
+--- hint
+Loop over the indexes from 1, comparing `v[i]` with `v[i - 1]`. If it is higher, the run grows by one; if not, a new run starts at 1. After each step, update `best`.
+--- hint
+Deal with the empty vector first, before you look at any element: `v[0]` does not exist there.
+--- check case | longest_rise({1, 2, 3, 1, 2}) is 3
+longest_rise({1, 2, 3, 1, 2})
+=> 3
+--- check case | The longest run can be at the end
+longest_rise({3, 4, 1, 2, 3, 4, 5})
+=> 5
+--- check case | Always falling gives 1
+longest_rise({5, 4, 3})
+=> 1
+--- check case | Equal readings do not rise
+longest_rise({1, 1, 1})
+=> 1
+--- check case | One reading gives 1, none gives 0
+longest_rise({9}) * 10 + longest_rise({})
+=> 10
 
 === cpp-09 | std::string
 --- teach
@@ -2249,6 +5519,297 @@ initials("  grace  brewster hopper")
 count_char("mississippi", 's')
 => 4
 
++++ practice | Counting vowels
+--- task
+Write `int count_vowels(const std::string& s)` that returns how many vowels are in `s`. The vowels are a, e, i, o and u, in lowercase **or** uppercase.
+
+So `count_vowels("orbit")` is 2, `count_vowels("rhythm")` is 0, `count_vowels("AEIOU aeiou")` is 10, and `count_vowels("")` is 0.
+
+Make each character uppercase with `std::toupper` first, so you only have to compare with five letters. The starter includes `<string>` and `<cctype>`. No `main`.
+--- starter
+#include <string>
+#include <cctype>
+
+int count_vowels(const std::string& s) {
+    int count = 0;
+    for (char c : s) {
+        if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') {
+            count++;
+        }
+    }
+    return count;
+}
+--- solution
+#include <string>
+#include <cctype>
+
+int count_vowels(const std::string& s) {
+    int count = 0;
+    for (char c : s) {
+        char up = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+        if (up == 'A' || up == 'E' || up == 'I' || up == 'O' || up == 'U') {
+            count++;
+        }
+    }
+    return count;
+}
+--- hint
+The starter only knows lowercase vowels, so it misses the capital ones.
+--- hint
+Inside the loop, make an uppercase copy first: `char up = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));`. Then compare `up` with `'A'`, `'E'`, `'I'`, `'O'` and `'U'`.
+--- check case | count_vowels("orbit") is 2
+count_vowels("orbit")
+=> 2
+--- check case | Capitals count too
+count_vowels("AEIOU aeiou")
+=> 10
+--- check case | No vowels gives 0
+count_vowels("rhythm")
+=> 0
+--- check case | An empty string gives 0
+count_vowels("")
+=> 0
+
++++ practice | Shout it
+--- task
+Write `std::string shout(const std::string& s)` that returns a copy of `s` with every lowercase letter turned into uppercase. Everything else (capitals, digits, spaces, punctuation) stays the same.
+
+So `shout("go for launch")` is `"GO FOR LAUNCH"`, `shout("T-10 sec")` is `"T-10 SEC"`, and `shout("")` is `""`. No `main`.
+--- starter
+#include <string>
+#include <cctype>
+
+std::string shout(const std::string& s) {
+    return s;
+}
+--- solution
+#include <string>
+#include <cctype>
+
+std::string shout(const std::string& s) {
+    std::string out;
+    for (char c : s) {
+        out += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+    }
+    return out;
+}
+--- hint
+Build the answer in a new, empty string, one character at a time with `+=`.
+--- hint
+`std::toupper` leaves anything that is not a lowercase letter unchanged, so every character can go through it.
+--- check case | shout("go for launch")
+shout("go for launch")
+=> "GO FOR LAUNCH"
+--- check case | Digits and punctuation stay the same
+shout("T-10 sec")
+=> "T-10 SEC"
+--- check case | An empty string stays empty
+shout("")
+=> ""
+
++++ practice | Join with commas
+--- task
+Write `std::string join(const std::vector<std::string>& words)` that returns all the words in one string, with a comma and a space `", "` between each two of them. There is nothing before the first word and nothing after the last one.
+
+So `join({"ALT", "VEL", "TEMP"})` is `"ALT, VEL, TEMP"`, `join({"solo"})` is `"solo"`, and `join({})` is `""`. A vector can hold strings as well as ints: `std::vector<std::string>`. The starter includes `<string>` and `<vector>`. No `main`.
+--- starter
+#include <string>
+#include <vector>
+
+std::string join(const std::vector<std::string>& words) {
+    std::string out;
+    for (std::string w : words) {
+        out += w + ", ";
+    }
+    return out;
+}
+--- solution
+#include <string>
+#include <vector>
+
+std::string join(const std::vector<std::string>& words) {
+    std::string out;
+    bool first = true;
+    for (std::string w : words) {
+        if (!first) {
+            out += ", ";
+        }
+        out += w;
+        first = false;
+    }
+    return out;
+}
+--- hint
+The starter puts `", "` after every word, including the last one.
+--- hint
+Put the separator **before** each word instead, except the first. A `bool first = true;` that becomes `false` after the first word tells you where you are.
+--- check case | Three words
+join({"ALT", "VEL", "TEMP"})
+=> "ALT, VEL, TEMP"
+--- check case | One word has no comma
+join({"solo"})
+=> "solo"
+--- check case | No words gives ""
+join({})
+=> ""
+
++++ practice | Counting words, whatever the spacing
+--- task
+Write `int count_words(const std::string& s)` that returns how many words are in `s`. A word is a run of characters that are not whitespace. Whitespace means spaces, tabs and new lines, which `std::isspace` recognises. There may be several whitespace characters between words, and some before the first word or after the last.
+
+So `count_words("go for launch")` is 3, `count_words("  two   words  ")` is 2, `count_words("")` is 0, and `count_words("   ")` is 0. No `main`.
+--- starter
+#include <string>
+#include <cctype>
+
+int count_words(const std::string& s) {
+    int spaces = 0;
+    for (char c : s) {
+        if (c == ' ') spaces++;
+    }
+    return spaces + 1;
+}
+--- solution
+#include <string>
+#include <cctype>
+
+int count_words(const std::string& s) {
+    int count = 0;
+    bool in_word = false;
+    for (char c : s) {
+        if (std::isspace(static_cast<unsigned char>(c))) {
+            in_word = false;
+        } else if (!in_word) {
+            count++;
+            in_word = true;
+        }
+    }
+    return count;
+}
+--- hint
+Counting spaces and adding one breaks on an empty string, on double spaces, and on spaces at either end. Count the **starts** of words instead.
+--- hint
+Keep a `bool in_word`. A word starts when you see a character that is not whitespace while `in_word` is `false`: count it and set `in_word` to `true`. Any whitespace sets it back to `false`.
+--- check case | count_words("go for launch") is 3
+count_words("go for launch")
+=> 3
+--- check case | Extra spaces everywhere
+count_words("  two   words  ")
+=> 2
+--- check case | Tabs and new lines are whitespace too
+count_words("one\ttwo\nthree")
+=> 3
+--- check case | Empty and all-space strings have no words
+count_words("") + count_words("   ")
+=> 0
+
++++ practice | Fix the number checker
+--- task
+`is_number(s)` should return `true` only when `s` is made of digits and nothing else, like `"2024"`. An empty string is **not** a number.
+
+Instead, `is_number("12a")` returns `true`: the function gives its answer as soon as it sees the first digit, without looking at the rest. And `is_number("")` should be `false`. Fix it. No `main`.
+--- starter
+#include <string>
+#include <cctype>
+
+bool is_number(const std::string& s) {
+    for (char c : s) {
+        if (std::isdigit(static_cast<unsigned char>(c))) {
+            return true;
+        }
+    }
+    return false;
+}
+--- solution
+#include <string>
+#include <cctype>
+
+bool is_number(const std::string& s) {
+    if (s.size() == 0) {
+        return false;
+    }
+    for (char c : s) {
+        if (!std::isdigit(static_cast<unsigned char>(c))) {
+            return false;
+        }
+    }
+    return true;
+}
+--- hint
+One digit is not enough to say yes, but one non-digit is enough to say no. Flip the test: return `false` as soon as a character is **not** a digit.
+--- hint
+If the loop finishes without finding a non-digit, every character was a digit: return `true` after the loop. Check the empty string before the loop.
+--- check case | "2024" is a number
+is_number("2024")
+=> true
+--- check case | "12a" is not
+is_number("12a")
+=> false
+--- check case | "a12" is not
+is_number("a12")
+=> false
+--- check case | "" is not
+is_number("")
+=> false
+--- check case | "0" is
+is_number("0")
+=> true
+
++++ practice | Palindromes, ignoring spaces and case
+--- task
+A **palindrome** reads the same forwards and backwards, like "level". Write `bool is_palindrome(const std::string& s)` that ignores spaces and the difference between capitals and small letters.
+
+So `is_palindrome("Race car")` is `true`, `is_palindrome("Never odd or even")` is `true`, and `is_palindrome("orbit")` is `false`. An empty string, or a single letter, counts as a palindrome.
+
+First build a cleaned-up copy: every character that is not a space, turned to uppercase. Then compare the cleaned string's first character with its last, the second with the second to last, and so on. No `main`.
+--- starter
+#include <string>
+#include <cctype>
+
+bool is_palindrome(const std::string& s) {
+    return false;
+}
+--- solution
+#include <string>
+#include <cctype>
+
+bool is_palindrome(const std::string& s) {
+    std::string clean;
+    for (char c : s) {
+        if (c != ' ') {
+            clean += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
+        }
+    }
+    int n = clean.size();
+    for (int i = 0; i < n / 2; i++) {
+        if (clean[i] != clean[n - 1 - i]) {
+            return false;
+        }
+    }
+    return true;
+}
+--- hint
+Build `clean` in a range-for loop: skip spaces, and append the uppercase version of everything else.
+--- hint
+Character `i` from the front pairs with character `n - 1 - i` from the back, where `n` is the length. You only need to check the first half: `i < n / 2`.
+--- hint
+Return `false` as soon as a pair differs. If the loop finds no difference, return `true`.
+--- check case | "Race car" is a palindrome
+is_palindrome("Race car")
+=> true
+--- check case | "Never odd or even" is a palindrome
+is_palindrome("Never odd or even")
+=> true
+--- check case | "orbit" is not
+is_palindrome("orbit")
+=> false
+--- check case | Nearly, but not quite
+is_palindrome("abca")
+=> false
+--- check case | Empty and single letters are palindromes
+is_palindrome("") && is_palindrome("x")
+=> true
+
 === cpp-09b | Finding text inside a string
 --- teach
 Last lesson you went through a string one character at a time. Often you want a bigger piece: the part before a colon, or the word that starts at a certain spot. Two member functions of `std::string` do that: `find` searches, and `substr` cuts out a piece.
@@ -2418,6 +5979,310 @@ field_value("NOCOLON")
 => ""
 --- check source | Uses find
 \.find\s*\(
+
++++ practice | The part after the @
+--- task
+Write `std::string domain_of(const std::string& email)` that returns the part of an email address after the first `@` sign. If there is no `@`, return `""`.
+
+So `domain_of("ada@orbit.org")` is `"orbit.org"`, `domain_of("nobody")` is `""`, and `domain_of("@x")` is `"x"`. No `main`.
+--- starter
+#include <string>
+
+std::string domain_of(const std::string& email) {
+    return "";
+}
+--- solution
+#include <string>
+
+std::string domain_of(const std::string& email) {
+    auto at = email.find('@');
+    if (at == std::string::npos) {
+        return "";
+    }
+    return email.substr(at + 1);
+}
+--- hint
+Find the `@` and keep its index. Compare it with `std::string::npos` before you use it.
+--- hint
+The domain starts one place after the `@`, and runs to the end: `substr` with only a start.
+--- check case | domain_of("ada@orbit.org")
+domain_of("ada@orbit.org")
+=> "orbit.org"
+--- check case | No @ gives ""
+domain_of("nobody")
+=> ""
+--- check case | @ at the very start
+domain_of("@x")
+=> "x"
+--- check case | @ at the very end gives ""
+domain_of("ada@")
+=> ""
+
++++ practice | Surname first, turned around
+--- task
+Names on a crew list are written surname first, then a comma and a space, then the given names: `"Lovelace, Ada"`. Write `std::string turn_around(const std::string& listed)` that returns the name the ordinary way round: `"Ada Lovelace"`.
+
+Find the two-character text `", "` (a comma and a space). Everything after it comes first, then a space, then everything before it. If there is no `", "`, return the name unchanged.
+
+So `turn_around("Hopper, Grace Brewster")` is `"Grace Brewster Hopper"`, and `turn_around("Plato")` is `"Plato"`. No `main`.
+--- starter
+#include <string>
+
+std::string turn_around(const std::string& listed) {
+    return listed;
+}
+--- solution
+#include <string>
+
+std::string turn_around(const std::string& listed) {
+    auto pos = listed.find(", ");
+    if (pos == std::string::npos) {
+        return listed;
+    }
+    std::string surname = listed.substr(0, pos);
+    std::string given = listed.substr(pos + 2);
+    return given + " " + surname;
+}
+--- hint
+`find(", ")` gives the index of the comma. The surname is the `pos` characters before it.
+--- hint
+The given names start two places after the comma, because `", "` is two characters long. Join them with `+`: given names, a space, surname.
+--- check case | turn_around("Lovelace, Ada")
+turn_around("Lovelace, Ada")
+=> "Ada Lovelace"
+--- check case | More than one given name
+turn_around("Hopper, Grace Brewster")
+=> "Grace Brewster Hopper"
+--- check case | No comma: unchanged
+turn_around("Plato")
+=> "Plato"
+
++++ practice | Split at every comma
+--- task
+A sensor sends one line of comma-separated fields: `"12,7,-3"`. Write `std::vector<std::string> split_commas(const std::string& line)` that returns the fields, in order, without the commas.
+
+Fields may be empty: `"a,,b"` gives `{"a", "", "b"}`, and `"a,b,"` gives `{"a", "b", ""}`, because there is an empty field after the last comma. A line with no comma is one field: `"solo"` gives `{"solo"}`.
+
+Work in a loop on a copy called `rest`: find the first comma in `rest`, push the part before it, then cut `rest` down to the part after it. When there is no comma left, push what remains and stop. The starter includes `<string>` and `<vector>`. No `main`.
+--- starter
+#include <string>
+#include <vector>
+
+std::vector<std::string> split_commas(const std::string& line) {
+    std::vector<std::string> fields;
+    return fields;
+}
+--- solution
+#include <string>
+#include <vector>
+
+std::vector<std::string> split_commas(const std::string& line) {
+    std::vector<std::string> fields;
+    std::string rest = line;
+    auto pos = rest.find(',');
+    while (pos != std::string::npos) {
+        fields.push_back(rest.substr(0, pos));
+        rest = rest.substr(pos + 1);
+        pos = rest.find(',');
+    }
+    fields.push_back(rest);
+    return fields;
+}
+--- hint
+Start with `std::string rest = line;` and `auto pos = rest.find(',');`. Loop `while (pos != std::string::npos)`.
+--- hint
+Inside the loop: push `rest.substr(0, pos)`, then set `rest = rest.substr(pos + 1);` and find the next comma in the new `rest`.
+--- hint
+After the loop, what is left in `rest` is the last field. Push it too, even when it is empty.
+--- check case | Three fields
+split_commas("12,7,-3")
+=> std::vector<std::string>{"12", "7", "-3"}
+--- check case | An empty field in the middle
+split_commas("a,,b")
+=> std::vector<std::string>{"a", "", "b"}
+--- check case | An empty field at the end
+split_commas("a,b,")
+=> std::vector<std::string>{"a", "b", ""}
+--- check case | No comma: one field
+split_commas("solo")
+=> std::vector<std::string>{"solo"}
+
++++ practice | Between the brackets
+--- task
+Write `std::string between(const std::string& s, char open, char close)` that returns the text between the first `open` character and the first `close` character after it.
+
+- `between("temp[42]C", '[', ']')` is `"42"`.
+- `between("a(b)c(d)", '(', ')')` is `"b"`: only the first pair counts.
+- If there is no `open`, or no `close` after it, return `""`. So `between("x(yz", '(', ')')` is `""`, and so is `between("no brackets", '[', ']')`.
+- `between("[]", '[', ']')` is `""` too, because nothing is between them.
+
+Find `open` first. Then cut everything after it into a new string, and look for `close` in that new string. No `main`.
+--- starter
+#include <string>
+
+std::string between(const std::string& s, char open, char close) {
+    auto a = s.find(open);
+    auto b = s.find(close);
+    return s.substr(a + 1, b - a - 1);
+}
+--- solution
+#include <string>
+
+std::string between(const std::string& s, char open, char close) {
+    auto a = s.find(open);
+    if (a == std::string::npos) {
+        return "";
+    }
+    std::string after = s.substr(a + 1);
+    auto b = after.find(close);
+    if (b == std::string::npos) {
+        return "";
+    }
+    return after.substr(0, b);
+}
+--- hint
+The starter never checks for `npos`, so a missing bracket gives a wrong answer that looks right. Check after each `find`.
+--- hint
+`std::string after = s.substr(a + 1);` is everything after `open`. The first `close` in `after` is the right one, and the answer is the `b` characters before it: `after.substr(0, b)`.
+--- check case | between("temp[42]C", '[', ']') is "42"
+between("temp[42]C", '[', ']')
+=> "42"
+--- check case | Only the first pair counts
+between("a(b)c(d)", '(', ')')
+=> "b"
+--- check case | No close after the open gives ""
+between("x(yz", '(', ')')
+=> ""
+--- check case | No open gives ""
+between("no brackets", '[', ']')
+=> ""
+--- check case | A close before the open does not count
+between("a)b(cd)", '(', ')')
+=> "cd"
+--- check case | Nothing between gives ""
+between("[]", '[', ']')
+=> ""
+
++++ practice | Fix the date splitter
+--- task
+Dates arrive as text like `"2026-09-29"`: four digits of year, a dash, two of month, a dash, two of day. Three functions cut them apart.
+
+`year_of` and `day_of` work. But `month_of("2026-09-29")` returns `"09-29"` instead of `"09"`. The bug is one line. Fix it. No `main`.
+--- starter
+#include <string>
+
+std::string year_of(const std::string& date) {
+    return date.substr(0, 4);
+}
+
+std::string month_of(const std::string& date) {
+    return date.substr(5, 7);
+}
+
+std::string day_of(const std::string& date) {
+    return date.substr(8, 2);
+}
+--- solution
+#include <string>
+
+std::string year_of(const std::string& date) {
+    return date.substr(0, 4);
+}
+
+std::string month_of(const std::string& date) {
+    return date.substr(5, 2);
+}
+
+std::string day_of(const std::string& date) {
+    return date.substr(8, 2);
+}
+--- hint
+What does the second number in `substr(start, …)` mean: an end index, or something else?
+--- hint
+It is a length. The month starts at index 5 and is 2 characters long.
+--- check case | month_of("2026-09-29") is "09"
+month_of("2026-09-29")
+=> "09"
+--- check case | month_of("1969-07-20") is "07"
+month_of("1969-07-20")
+=> "07"
+--- check case | year_of and day_of still work
+year_of("1969-07-20") + "/" + day_of("1969-07-20")
+=> "1969/20"
+
++++ practice | Look up a telemetry field
+--- task
+A spacecraft packs several readings into one line, separated by semicolons, each written `KEY=VALUE`:
+
+```
+ALT=4200;VEL=7.8;MODE=SAFE
+```
+
+Write `std::string lookup(const std::string& line, const std::string& key)` that returns the value for `key`, or `""` if the key is not there.
+
+- `lookup("ALT=4200;VEL=7.8;MODE=SAFE", "VEL")` is `"7.8"`, and with `"MODE"` it is `"SAFE"`.
+- The whole key must match: looking up `"AL"` gives `""`, even though `ALT` starts with `AL`.
+- If a key appears twice, the first one wins. An empty line gives `""`.
+
+Go through the fields one at a time, cutting at each `;` as you did when splitting at commas. Split each field at its `=` and compare the part before it with `key`. No `main`.
+--- starter
+#include <string>
+
+std::string lookup(const std::string& line, const std::string& key) {
+    auto pos = line.find(key);
+    if (pos == std::string::npos) {
+        return "";
+    }
+    return line.substr(pos + key.size() + 1);
+}
+--- solution
+#include <string>
+
+std::string lookup(const std::string& line, const std::string& key) {
+    std::string rest = line;
+    while (rest.size() > 0) {
+        auto semi = rest.find(';');
+        std::string field = rest;
+        if (semi != std::string::npos) {
+            field = rest.substr(0, semi);
+            rest = rest.substr(semi + 1);
+        } else {
+            rest = "";
+        }
+        auto eq = field.find('=');
+        if (eq != std::string::npos && field.substr(0, eq) == key) {
+            return field.substr(eq + 1);
+        }
+    }
+    return "";
+}
+--- hint
+Searching the whole line for the key is not enough: `"AL"` is found inside `ALT`, and the rest of the line comes back too. Take the line apart field by field instead.
+--- hint
+Loop while `rest` is not empty. Each pass cuts one field off the front: up to the next `;`, or all of `rest` when there is no `;` left.
+--- hint
+For each field, find the `=`. The key is `field.substr(0, eq)` and the value is `field.substr(eq + 1)`. Return the value as soon as the key matches exactly, with `==`.
+--- check case | lookup VEL
+lookup("ALT=4200;VEL=7.8;MODE=SAFE", "VEL")
+=> "7.8"
+--- check case | The last field has no ; after it
+lookup("ALT=4200;VEL=7.8;MODE=SAFE", "MODE")
+=> "SAFE"
+--- check case | The first field
+lookup("ALT=4200;VEL=7.8;MODE=SAFE", "ALT")
+=> "4200"
+--- check case | Part of a key is not a match
+lookup("ALT=4200;VEL=7.8;MODE=SAFE", "AL")
+=> ""
+--- check case | A missing key gives ""
+lookup("ALT=4200;VEL=7.8", "TEMP")
+=> ""
+--- check case | The first of two wins
+lookup("A=1;A=2", "A")
+=> "1"
+--- check case | An empty line gives ""
+lookup("", "ALT")
+=> ""
 
 === cpp-10 | References
 --- teach
@@ -2594,6 +6459,234 @@ Swapping needs a temporary: `int tmp = a; a = b; b = tmp;`
 [] { std::vector<int> v{1, 2, 3}; double_all(v); return v == std::vector<int>{2, 4, 6}; }()
 --- check test | swap_values swaps
 [] { int a = 1, b = 2; swap_values(a, b); return a == 2 && b == 1; }()
+
++++ practice | Burn some fuel
+--- task
+Write `void burn(double& fuel, double used)` that takes `used` away from the caller's `fuel`. Fuel can never go below 0: if `used` is more than what is left, `fuel` becomes exactly `0`.
+
+So with `fuel` at 100, `burn(fuel, 30)` leaves it at 70. With `fuel` at 10, `burn(fuel, 25)` leaves it at 0. The function returns nothing: it changes the caller's variable. No `main`.
+--- starter
+void burn(double fuel, double used) {
+    fuel = fuel - used;
+}
+--- solution
+void burn(double& fuel, double used) {
+    fuel = fuel - used;
+    if (fuel < 0) {
+        fuel = 0;
+    }
+}
+--- hint
+The starter changes its own copy of `fuel`. One `&` makes it the caller's variable.
+--- hint
+After taking `used` away, check whether `fuel` went below 0, and if so set it to 0.
+--- check test | 100 minus 30 leaves 70
+[] { double f = 100; burn(f, 30); return f == 70; }()
+--- check test | Burning more than is left leaves 0
+[] { double f = 10; burn(f, 25); return f == 0; }()
+--- check test | Burning 0 changes nothing
+[] { double f = 42.5; burn(f, 0); return f == 42.5; }()
+
++++ practice | Clamp every reading
+--- task
+Write `void clamp_all(std::vector<int>& v, int low, int high)` that changes the caller's vector **in place**: every element below `low` becomes `low`, every element above `high` becomes `high`, and the rest stay as they are.
+
+So `{-5, 3, 12}` clamped to 0 and 10 becomes `{0, 3, 10}`. An empty vector stays empty. No `main`.
+--- starter
+#include <vector>
+
+void clamp_all(std::vector<int>& v, int low, int high) {
+    for (int x : v) {
+        if (x < low) x = low;
+        if (x > high) x = high;
+    }
+}
+--- solution
+#include <vector>
+
+void clamp_all(std::vector<int>& v, int low, int high) {
+    for (int& x : v) {
+        if (x < low) x = low;
+        if (x > high) x = high;
+    }
+}
+--- hint
+The parameter is already a reference. But the loop variable is a copy of each element.
+--- hint
+Make the loop variable a reference too: `for (int& x : v)`.
+--- check test | {-5, 3, 12} clamped to 0..10
+[] { std::vector<int> v{-5, 3, 12}; clamp_all(v, 0, 10); return v == std::vector<int>{0, 3, 10}; }()
+--- check test | The edges themselves stay
+[] { std::vector<int> v{0, 10, 5}; clamp_all(v, 0, 10); return v == std::vector<int>{0, 10, 5}; }()
+--- check test | An empty vector stays empty
+[] { std::vector<int> v; clamp_all(v, 0, 10); return v.size() == 0; }()
+
++++ practice | Two answers at once
+--- task
+A function can only `return` one value. But it can hand back more through reference parameters.
+
+Write `void min_max(const std::vector<int>& v, int& lo, int& hi)` that sets `lo` to the smallest element of `v` and `hi` to the largest. The vector is not empty. The vector is only read, so it stays `const`; `lo` and `hi` are written, so they are plain references. No `main`.
+--- starter
+#include <vector>
+
+void min_max(const std::vector<int>& v, int lo, int hi) {
+    lo = v[0];
+    hi = v[0];
+}
+--- solution
+#include <vector>
+
+void min_max(const std::vector<int>& v, int& lo, int& hi) {
+    lo = v[0];
+    hi = v[0];
+    for (int x : v) {
+        if (x < lo) lo = x;
+        if (x > hi) hi = x;
+    }
+}
+--- hint
+`lo` and `hi` need `&`, or the caller never sees them change.
+--- hint
+Start both at `v[0]`, then visit every element and move `lo` down or `hi` up as needed.
+--- check test | {4, -2, 9} gives -2 and 9
+[] { int lo = 0, hi = 0; min_max({4, -2, 9}, lo, hi); return lo == -2 && hi == 9; }()
+--- check test | One element is both
+[] { int lo = 0, hi = 0; min_max({7}, lo, hi); return lo == 7 && hi == 7; }()
+--- check test | All negative
+[] { int lo = 0, hi = 0; min_max({-8, -3, -5}, lo, hi); return lo == -8 && hi == -3; }()
+
++++ practice | Sort three in place
+--- task
+Write `void sort3(int& a, int& b, int& c)` that rearranges the caller's three variables so that afterwards `a` holds the smallest value, `c` the largest, and `b` the one in between.
+
+Write a helper `void swap_ints(int& x, int& y)` first, above `sort3`, and use it. Then sort with three compare-and-swap steps: put the smaller of `a` and `b` into `a`, then the smaller of `a` and `c` into `a`, then the smaller of `b` and `c` into `b`.
+
+Every order must work, including duplicates, negatives, and three that are already sorted. No `main`.
+--- starter
+void swap_ints(int& x, int& y) {
+}
+
+void sort3(int& a, int& b, int& c) {
+    if (a > b) swap_ints(a, b);
+    if (b > c) swap_ints(b, c);
+}
+--- solution
+void swap_ints(int& x, int& y) {
+    int tmp = x;
+    x = y;
+    y = tmp;
+}
+
+void sort3(int& a, int& b, int& c) {
+    if (a > b) swap_ints(a, b);
+    if (a > c) swap_ints(a, c);
+    if (b > c) swap_ints(b, c);
+}
+--- hint
+`swap_ints` needs a temporary, as in the lesson. Without it, both variables end up with the same value.
+--- hint
+After the first two steps, `a` is the smallest of all three. The last step only has `b` and `c` left to put in order.
+--- check test | 3, 1, 2 becomes 1, 2, 3
+[] { int a = 3, b = 1, c = 2; sort3(a, b, c); return a == 1 && b == 2 && c == 3; }()
+--- check test | Backwards: 9, 5, 1 becomes 1, 5, 9
+[] { int a = 9, b = 5, c = 1; sort3(a, b, c); return a == 1 && b == 5 && c == 9; }()
+--- check test | Already sorted stays sorted
+[] { int a = 1, b = 2, c = 3; sort3(a, b, c); return a == 1 && b == 2 && c == 3; }()
+--- check test | Duplicates: 2, 2, 1 becomes 1, 2, 2
+[] { int a = 2, b = 2, c = 1; sort3(a, b, c); return a == 1 && b == 2 && c == 2; }()
+--- check test | Negatives: -1, -5, -3 becomes -5, -3, -1
+[] { int a = -1, b = -5, c = -3; sort3(a, b, c); return a == -5 && b == -3 && c == -1; }()
+
++++ practice | Fix the in-place changes
+--- task
+Two functions should change the caller's vector in place:
+
+- `add_offset(readings, offset)` should add `offset` to every reading. Instead, the readings do not change at all.
+- `swap_first_last(v)` should swap the first and last elements. `{1, 2, 3}` should become `{3, 2, 1}`, but it becomes `{3, 2, 3}`. A vector with fewer than 2 elements is left alone.
+
+Each function has one wrong line. Fix them. No `main`.
+--- starter
+#include <vector>
+
+void add_offset(std::vector<double>& readings, double offset) {
+    for (double r : readings) {
+        r += offset;
+    }
+}
+
+void swap_first_last(std::vector<int>& v) {
+    if (v.size() < 2) return;
+    int last = v.size() - 1;
+    v[0] = v[last];
+    v[last] = v[0];
+}
+--- solution
+#include <vector>
+
+void add_offset(std::vector<double>& readings, double offset) {
+    for (double& r : readings) {
+        r += offset;
+    }
+}
+
+void swap_first_last(std::vector<int>& v) {
+    if (v.size() < 2) return;
+    int last = v.size() - 1;
+    int tmp = v[0];
+    v[0] = v[last];
+    v[last] = tmp;
+}
+--- hint
+In `add_offset`, the loop changes copies of the readings. Which `&` is missing?
+--- hint
+In `swap_first_last`, `v[0] = v[last];` wipes out the old first element before it was saved anywhere. Keep it in a temporary first.
+--- check test | add_offset changes every reading
+[] { std::vector<double> r{1.5, -2, 0}; add_offset(r, 10); return r == std::vector<double>{11.5, 8, 10}; }()
+--- check test | swap_first_last swaps
+[] { std::vector<int> v{1, 2, 3}; swap_first_last(v); return v == std::vector<int>{3, 2, 1}; }()
+--- check test | Two elements swap too
+[] { std::vector<int> v{8, 9}; swap_first_last(v); return v == std::vector<int>{9, 8}; }()
+--- check test | One element is left alone
+[] { std::vector<int> v{5}; swap_first_last(v); return v == std::vector<int>{5}; }()
+
++++ practice | Smooth the noisy readings
+--- task
+A sensor's readings are noisy. To smooth them, each reading that has a neighbour on both sides is replaced by the average of three: the reading before it, itself, and the reading after it. The first and last readings stay as they are.
+
+Write `void smooth(std::vector<double>& v)` that does this in place. Every average must use the **original** readings, not ones you have already smoothed. So `{0, 3, 0, 3, 0}` becomes `{0, 1, 2, 1, 0}`: the middle 0 becomes (3 + 0 + 3) / 3 = 2, using the original 3s.
+
+A vector with fewer than 3 readings stays as it is. No `main`.
+--- starter
+#include <vector>
+
+void smooth(std::vector<double>& v) {
+    int n = v.size();
+    for (int i = 1; i < n - 1; i++) {
+        v[i] = (v[i - 1] + v[i] + v[i + 1]) / 3;
+    }
+}
+--- solution
+#include <vector>
+
+void smooth(std::vector<double>& v) {
+    std::vector<double> original = v;
+    int n = v.size();
+    for (int i = 1; i < n - 1; i++) {
+        v[i] = (original[i - 1] + original[i] + original[i + 1]) / 3;
+    }
+}
+--- hint
+The starter changes `v[1]` first, and then uses the **new** `v[1]` when it works out `v[2]`. That is not the original reading.
+--- hint
+Make a copy before the loop: `std::vector<double> original = v;` copies the whole vector. Read from `original`, write into `v`.
+--- check test | {0, 3, 0, 3, 0} becomes {0, 1, 2, 1, 0}
+[] { std::vector<double> v{0, 3, 0, 3, 0}; smooth(v); return v == std::vector<double>{0, 1, 2, 1, 0}; }()
+--- check test | A straight line stays the same
+[] { std::vector<double> v{3, 6, 9, 12}; smooth(v); return v == std::vector<double>{3, 6, 9, 12}; }()
+--- check test | Three readings: only the middle changes
+[] { std::vector<double> v{1, 4, 1}; smooth(v); return v == std::vector<double>{1, 2, 1}; }()
+--- check test | Two readings or none stay as they are
+[] { std::vector<double> a{5, 7}; std::vector<double> b; smooth(a); smooth(b); return a == std::vector<double>{5, 7} && b.size() == 0; }()
 
 === cpp-11 | Structs and classes
 --- teach
@@ -2797,6 +6890,328 @@ Counter(5).value()
 --- check test | increment and reset
 [] { Counter c(1); c.increment(); c.increment(); bool three = c.value() == 3; c.reset(); return three && c.value() == 0; }()
 
++++ practice | A rectangle type
+--- task
+Write `struct Rectangle { double width; double height; };` and two functions that take a `Rectangle`:
+
+- `double area(Rectangle r)` returns the width times the height,
+- `double perimeter(Rectangle r)` returns the distance all the way round: two widths plus two heights.
+
+So for `Rectangle{3, 4}`, the area is 12 and the perimeter is 14. No `main`.
+--- starter
+struct Rectangle {
+    double width;
+    double height;
+};
+--- solution
+struct Rectangle {
+    double width;
+    double height;
+};
+
+double area(Rectangle r) {
+    return r.width * r.height;
+}
+
+double perimeter(Rectangle r) {
+    return 2 * (r.width + r.height);
+}
+--- hint
+Inside each function, reach the members with a dot: `r.width` and `r.height`.
+--- hint
+The perimeter is `2 * (r.width + r.height)`.
+--- check case | area of 3 by 4 is 12
+area(Rectangle{3, 4})
+=> 12.0
+--- check case | perimeter of 3 by 4 is 14
+perimeter(Rectangle{3, 4})
+=> 14.0
+--- check case | A flat rectangle has no area
+area(Rectangle{0, 5})
+=> 0.0
+--- check case | perimeter of 2.5 by 1 is 7
+perimeter(Rectangle{2.5, 1})
+=> 7.0
+
++++ practice | Halfway between two points
+--- task
+Write `struct Point { double x; double y; };` and a function `Point midpoint(Point a, Point b)` that returns a **new** `Point` exactly halfway between `a` and `b`. Its `x` is the average of the two x's, and its `y` is the average of the two y's.
+
+So `midpoint(Point{0, 0}, Point{4, 2})` is the point with x 2 and y 1. You can make the answer with braces, as in `Point{mx, my}`. No `main`.
+--- starter
+struct Point {
+    double x;
+    double y;
+};
+
+Point midpoint(Point a, Point b) {
+    return a;
+}
+--- solution
+struct Point {
+    double x;
+    double y;
+};
+
+Point midpoint(Point a, Point b) {
+    double mx = (a.x + b.x) / 2;
+    double my = (a.y + b.y) / 2;
+    return Point{mx, my};
+}
+--- hint
+Work out the new x and the new y as two `double`s: add the two values and divide by 2.
+--- hint
+Hand back a new point built from them: `return Point{mx, my};`.
+--- check test | Between (0, 0) and (4, 2) is (2, 1)
+[] { Point m = midpoint(Point{0, 0}, Point{4, 2}); return m.x == 2 && m.y == 1; }()
+--- check test | Negative coordinates
+[] { Point m = midpoint(Point{-3, 5}, Point{1, -1}); return m.x == -1 && m.y == 2; }()
+--- check test | Halfway between a point and itself is the point
+[] { Point m = midpoint(Point{7.5, 2}, Point{7.5, 2}); return m.x == 7.5 && m.y == 2; }()
+
++++ practice | The hottest sensor
+--- task
+Write `struct Reading { std::string sensor; double value; };` for one sensor reading. Then write `std::string hottest(const std::vector<Reading>& readings)` that returns the name of the sensor with the highest value. If two readings tie for the highest, the first one wins. If the vector is empty, return `""`.
+
+So for `{{"cabin", 21.5}, {"engine", 88}, {"hull", -40}}` the answer is `"engine"`. The starter includes `<string>` and `<vector>`. No `main`.
+--- starter
+#include <string>
+#include <vector>
+
+struct Reading {
+    std::string sensor;
+    double value;
+};
+
+std::string hottest(const std::vector<Reading>& readings) {
+    return "";
+}
+--- solution
+#include <string>
+#include <vector>
+
+struct Reading {
+    std::string sensor;
+    double value;
+};
+
+std::string hottest(const std::vector<Reading>& readings) {
+    if (readings.size() == 0) {
+        return "";
+    }
+    Reading best = readings[0];
+    for (Reading r : readings) {
+        if (r.value > best.value) {
+            best = r;
+        }
+    }
+    return best.sensor;
+}
+--- hint
+It is the "largest so far" pattern, on the `value` member. Keep the whole best `Reading`, not just its value, so you still know its name at the end.
+--- hint
+Start `best` at `readings[0]`, after checking the vector is not empty. Use `>`, not `>=`, so a later tie does not replace the first one.
+--- check case | The engine is hottest
+hottest({{"cabin", 21.5}, {"engine", 88}, {"hull", -40}})
+=> "engine"
+--- check case | All below zero
+hottest({{"a", -10}, {"b", -2}, {"c", -7}})
+=> "b"
+--- check case | A tie: the first one wins
+hottest({{"left", 50}, {"right", 50}})
+=> "left"
+--- check case | No readings gives ""
+hottest({})
+=> ""
+
++++ practice | A tank that cannot overflow
+--- task
+Write a `class Tank` that keeps its level between 0 and its capacity, whatever the caller asks for:
+
+- a constructor that takes the capacity as an `int`. A new tank starts **empty**.
+- `void fill(int amount)` adds `amount`, but never beyond the capacity: any extra spills away.
+- `void drain(int amount)` takes `amount` away, but never below 0.
+- `int level() const` returns the current level.
+- `bool is_full() const` returns `true` when the level equals the capacity.
+
+Keep the capacity and the level private. No `main`.
+--- starter
+class Tank {
+public:
+    explicit Tank(int capacity) : capacity_(capacity), level_(0) {}
+    void fill(int amount) { level_ += amount; }
+    void drain(int amount) { level_ -= amount; }
+    int level() const { return level_; }
+    bool is_full() const { return false; }
+private:
+    int capacity_;
+    int level_;
+};
+--- solution
+class Tank {
+public:
+    explicit Tank(int capacity) : capacity_(capacity), level_(0) {}
+
+    void fill(int amount) {
+        level_ += amount;
+        if (level_ > capacity_) {
+            level_ = capacity_;
+        }
+    }
+
+    void drain(int amount) {
+        level_ -= amount;
+        if (level_ < 0) {
+            level_ = 0;
+        }
+    }
+
+    int level() const { return level_; }
+    bool is_full() const { return level_ == capacity_; }
+
+private:
+    int capacity_;
+    int level_;
+};
+--- hint
+A member initializer list can set more than one member, separated by commas: `: capacity_(capacity), level_(0)`.
+--- hint
+After adding in `fill`, if the level went over the capacity, set it back to the capacity. After taking away in `drain`, if it went below 0, set it to 0.
+--- check case | A new tank is empty
+Tank(100).level()
+=> 0
+--- check test | Filling past the top stops at the capacity
+[] { Tank t(100); t.fill(70); t.fill(50); return t.level() == 100 && t.is_full(); }()
+--- check test | Draining too much stops at 0
+[] { Tank t(100); t.fill(30); t.drain(45); return t.level() == 0 && !t.is_full(); }()
+--- check test | Fill and drain in between
+[] { Tank t(50); t.fill(20); t.drain(5); t.fill(10); return t.level() == 25 && !t.is_full(); }()
+--- check test | Exactly full is full
+[] { Tank t(40); t.fill(40); return t.is_full(); }()
+
++++ practice | Fix the odometer
+--- task
+An `Odometer` counts the kilometres a rover has driven. `Odometer(100)` starts at 100 km, and each `drive(km)` adds to the total. So after `Odometer o(100); o.drive(20); o.drive(5);`, `o.km()` should be `125`.
+
+It has two bugs. `Odometer(100).km()` returns `0`, and after two drives only the last one counts. Each bug is on one line. Fix both. No `main`.
+--- starter
+class Odometer {
+public:
+    explicit Odometer(int start) : km_(0) {}
+    void drive(int km) { km_ = km; }
+    int km() const { return km_; }
+private:
+    int km_;
+};
+--- solution
+class Odometer {
+public:
+    explicit Odometer(int start) : km_(start) {}
+    void drive(int km) { km_ += km; }
+    int km() const { return km_; }
+private:
+    int km_;
+};
+--- hint
+Look at the member initializer list. What does `km_` start as, and what should it start as?
+--- hint
+In `drive`, `=` replaces the total. You want to add to it.
+--- check case | Odometer(100) starts at 100
+Odometer(100).km()
+=> 100
+--- check test | Two drives add up
+[] { Odometer o(100); o.drive(20); o.drive(5); return o.km() == 125; }()
+--- check test | Starting from 0
+[] { Odometer o(0); o.drive(7); return o.km() == 7; }()
+
++++ practice | Drive the rover
+--- task
+A rover sits on a grid. It knows its position, `x` (east is bigger) and `y` (north is bigger), and which way it faces: `'N'`, `'E'`, `'S'` or `'W'`.
+
+Write a `class Rover` with:
+
+- a constructor that takes the starting `x` and `y` as two `int`s. A new rover faces `'N'`.
+- `void turn_left()` and `void turn_right()`, which turn it a quarter turn. Turning right from `'N'` gives `'E'`, then `'S'`, then `'W'`, then `'N'` again. Turning left goes the other way.
+- `void forward(int steps)`, which moves it `steps` squares the way it faces: north adds to `y`, south takes from `y`, east adds to `x`, west takes from `x`.
+- `int x() const`, `int y() const` and `char heading() const`, which report where it is and which way it faces.
+
+No `main`.
+--- starter
+class Rover {
+public:
+    explicit Rover(int x, int y) : x_(x), y_(y), heading_('N') {}
+    void turn_left() {}
+    void turn_right() {}
+    void forward(int steps) {}
+    int x() const { return x_; }
+    int y() const { return y_; }
+    char heading() const { return heading_; }
+private:
+    int x_;
+    int y_;
+    char heading_;
+};
+--- solution
+class Rover {
+public:
+    explicit Rover(int x, int y) : x_(x), y_(y), heading_('N') {}
+
+    void turn_right() {
+        if (heading_ == 'N') {
+            heading_ = 'E';
+        } else if (heading_ == 'E') {
+            heading_ = 'S';
+        } else if (heading_ == 'S') {
+            heading_ = 'W';
+        } else {
+            heading_ = 'N';
+        }
+    }
+
+    void turn_left() {
+        turn_right();
+        turn_right();
+        turn_right();
+    }
+
+    void forward(int steps) {
+        if (heading_ == 'N') {
+            y_ += steps;
+        } else if (heading_ == 'S') {
+            y_ -= steps;
+        } else if (heading_ == 'E') {
+            x_ += steps;
+        } else {
+            x_ -= steps;
+        }
+    }
+
+    int x() const { return x_; }
+    int y() const { return y_; }
+    char heading() const { return heading_; }
+
+private:
+    int x_;
+    int y_;
+    char heading_;
+};
+--- hint
+`turn_right` is an `if` / `else if` chain on `heading_`: each heading gets the next one round the circle.
+--- hint
+Three right turns face the same way as one left turn. A member function can call another member function of the same object.
+--- hint
+`forward` is another chain on `heading_`: `y_ += steps;` for north, `y_ -= steps;` for south, and the same with `x_` for east and west.
+--- check test | A new rover faces north where it was put
+[] { Rover r(2, 3); return r.x() == 2 && r.y() == 3 && r.heading() == 'N'; }()
+--- check test | Four right turns come back to north
+[] { Rover r(0, 0); r.turn_right(); bool e = r.heading() == 'E'; r.turn_right(); r.turn_right(); bool w = r.heading() == 'W'; r.turn_right(); return e && w && r.heading() == 'N'; }()
+--- check test | Turning left from north faces west
+[] { Rover r(0, 0); r.turn_left(); return r.heading() == 'W'; }()
+--- check test | Forward, right, forward
+[] { Rover r(0, 0); r.forward(3); r.turn_right(); r.forward(2); return r.x() == 2 && r.y() == 3 && r.heading() == 'E'; }()
+--- check test | Driving south and west goes negative
+[] { Rover r(1, 1); r.turn_left(); r.forward(4); r.turn_left(); r.forward(6); return r.x() == -3 && r.y() == -5 && r.heading() == 'S'; }()
+
 === cpp-12 | std::map
 --- teach
 Last lesson you built types of your own with `struct` and `class`. This lesson uses a ready-made type from the standard library that you will reach for again and again: the map.
@@ -2972,6 +7387,288 @@ count_words("to be or not to be")
 --- check test | An empty string gives an empty map
 count_words("").empty()
 
++++ practice | Counting letters
+--- task
+Write `std::map<char, int> letter_counts(const std::string& s)` that counts how many times each character appears in `s`, leaving out spaces. The keys are `char`s, and the values are the counts.
+
+So `letter_counts("abca")` holds `'a'` → 2, `'b'` → 1, `'c'` → 1, and `letter_counts("a a")` holds just `'a'` → 2. An empty string gives an empty map. The starter includes `<map>` and `<string>`. No `main`.
+--- starter
+#include <map>
+#include <string>
+
+std::map<char, int> letter_counts(const std::string& s) {
+    std::map<char, int> counts;
+    return counts;
+}
+--- solution
+#include <map>
+#include <string>
+
+std::map<char, int> letter_counts(const std::string& s) {
+    std::map<char, int> counts;
+    for (char c : s) {
+        if (c != ' ') {
+            counts[c]++;
+        }
+    }
+    return counts;
+}
+--- hint
+Go through the string one `char` at a time with a range-for loop.
+--- hint
+For every character that is not a space, `counts[c]++`. A character seen for the first time starts at 0.
+--- check case | letter_counts("abca")
+letter_counts("abca")
+=> std::map<char, int>{{'a', 2}, {'b', 1}, {'c', 1}}
+--- check case | Spaces are left out
+letter_counts("a a")
+=> std::map<char, int>{{'a', 2}}
+--- check test | An empty string gives an empty map
+letter_counts("").empty()
+
++++ practice | Totals from a delivery list
+--- task
+A delivery arrives as two vectors of the same length: the item names, and how many of each came in. The same item can appear more than once.
+
+Write `std::map<std::string, int> totals(const std::vector<std::string>& items, const std::vector<int>& amounts)` that returns the total amount for each item. Element `i` of `amounts` belongs to element `i` of `items`.
+
+So items `{"water", "food", "water"}` with amounts `{10, 4, 5}` give `food` → 4 and `water` → 15. Two empty vectors give an empty map. No `main`.
+--- starter
+#include <map>
+#include <string>
+#include <vector>
+
+std::map<std::string, int> totals(const std::vector<std::string>& items, const std::vector<int>& amounts) {
+    std::map<std::string, int> sum;
+    int n = items.size();
+    for (int i = 0; i < n; i++) {
+        sum[items[i]] = amounts[i];
+    }
+    return sum;
+}
+--- solution
+#include <map>
+#include <string>
+#include <vector>
+
+std::map<std::string, int> totals(const std::vector<std::string>& items, const std::vector<int>& amounts) {
+    std::map<std::string, int> sum;
+    int n = items.size();
+    for (int i = 0; i < n; i++) {
+        sum[items[i]] += amounts[i];
+    }
+    return sum;
+}
+--- hint
+The starter keeps only the last amount for each item: `=` replaces what was there.
+--- hint
+Add each amount on with `+=`. A missing key starts at 0, so the first amount lands correctly too.
+--- check case | Two lots of water add up
+totals({"water", "food", "water"}, {10, 4, 5})
+=> std::map<std::string, int>{{"food", 4}, {"water", 15}}
+--- check case | Each item once
+totals({"o2", "n2"}, {3, 8})
+=> std::map<std::string, int>{{"n2", 8}, {"o2", 3}}
+--- check test | Empty vectors give an empty map
+totals({}, {}).empty()
+
++++ practice | The most common word
+--- task
+Write `std::string most_common(const std::string& text)` that returns the word that appears most often in `text`. Words are separated by spaces. If several words tie, return the one that comes first in alphabetical order. An empty text gives `""`.
+
+So `most_common("go no go")` is `"go"`, `most_common("b a b a")` is `"a"` (a tie, and `a` comes first), and `most_common("solo")` is `"solo"`.
+
+Count the words into a map first, as in the lesson. Then go through the map, which is already in alphabetical order, and keep the word with the highest count. The starter includes `<map>`, `<string>` and `<sstream>`. No `main`.
+--- starter
+#include <map>
+#include <string>
+#include <sstream>
+
+std::string most_common(const std::string& text) {
+    std::istringstream in(text);
+    std::string first;
+    in >> first;
+    return first;
+}
+--- solution
+#include <map>
+#include <string>
+#include <sstream>
+
+std::string most_common(const std::string& text) {
+    std::map<std::string, int> counts;
+    std::istringstream in(text);
+    std::string w;
+    while (in >> w) {
+        counts[w]++;
+    }
+    std::string best;
+    int best_count = 0;
+    for (const auto& [word, n] : counts) {
+        if (n > best_count) {
+            best = word;
+            best_count = n;
+        }
+    }
+    return best;
+}
+--- hint
+Two steps: count every word into a `std::map<std::string, int>`, then look through the map for the biggest count.
+--- hint
+Keep `best` and `best_count`, starting at `""` and 0. Replace them only when a count is strictly bigger, with `>`. Because the map visits words alphabetically, a later word with an equal count never replaces an earlier one.
+--- check case | most_common("go no go") is "go"
+most_common("go no go")
+=> "go"
+--- check case | A tie goes to the alphabetically first word
+most_common("b a b a")
+=> "a"
+--- check case | One word
+most_common("solo")
+=> "solo"
+--- check case | Empty text gives ""
+most_common("")
+=> ""
+--- check case | The winner can come last in the text
+most_common("x y z z")
+=> "z"
+
++++ practice | Add up without adding keys
+--- task
+Write `int total_for(std::map<std::string, int>& stock, const std::vector<std::string>& names)` that returns the sum of the stock for every name in `names`. A name that is not in the map counts as 0.
+
+The catch: the map must not change. Looking up a missing name must **not** add it to the map. So if `stock` holds `water` → 40 and `food` → 12, `total_for(stock, {"water", "fuel", "food"})` returns 52, and afterwards `stock` still has exactly 2 keys. No `main`.
+--- starter
+#include <map>
+#include <string>
+#include <vector>
+
+int total_for(std::map<std::string, int>& stock, const std::vector<std::string>& names) {
+    int total = 0;
+    for (std::string name : names) {
+        total += stock[name];
+    }
+    return total;
+}
+--- solution
+#include <map>
+#include <string>
+#include <vector>
+
+int total_for(std::map<std::string, int>& stock, const std::vector<std::string>& names) {
+    int total = 0;
+    for (std::string name : names) {
+        if (stock.count(name) == 1) {
+            total += stock[name];
+        }
+    }
+    return total;
+}
+--- hint
+The starter gets the right total, but `stock[name]` quietly adds every missing name with a value of 0.
+--- hint
+Check with `stock.count(name)` first. It only looks. Use `stock[name]` only when the name is already there, and then it adds nothing.
+--- check test | The total counts a missing name as 0
+[] { std::map<std::string, int> s{{"water", 40}, {"food", 12}}; return total_for(s, {"water", "fuel", "food"}) == 52; }()
+--- check test | The map does not gain any keys
+[] { std::map<std::string, int> s{{"water", 40}, {"food", 12}}; total_for(s, {"water", "fuel", "air"}); return s.size() == 2; }()
+--- check test | A name listed twice counts twice
+[] { std::map<std::string, int> s{{"water", 40}}; return total_for(s, {"water", "water"}) == 80; }()
+--- check test | No names gives 0
+[] { std::map<std::string, int> s{{"water", 40}}; return total_for(s, {}) == 0; }()
+
++++ practice | Fix the restock
+--- task
+`restock(stock, amount)` should add `amount` to every item in the caller's map. So a map holding `food` → 3 and `water` → 10, restocked by 5, should hold `food` → 8 and `water` → 15.
+
+Instead, nothing changes. The bug is on one line. Fix it. No `main`.
+--- starter
+#include <map>
+#include <string>
+
+void restock(std::map<std::string, int>& stock, int amount) {
+    for (auto [name, qty] : stock) {
+        qty += amount;
+    }
+}
+--- solution
+#include <map>
+#include <string>
+
+void restock(std::map<std::string, int>& stock, int amount) {
+    for (auto& [name, qty] : stock) {
+        qty += amount;
+    }
+}
+--- hint
+The map itself is passed by reference. What about each pair the loop visits?
+--- hint
+Without `&`, each pair is copied, and the loop changes the copy. Make the loop's pair a reference, as in `for (int& x : v)`.
+--- check test | Every item goes up by 5
+[] { std::map<std::string, int> s{{"food", 3}, {"water", 10}}; restock(s, 5); return s == std::map<std::string, int>{{"food", 8}, {"water", 15}}; }()
+--- check test | Restocking by 0 changes nothing
+[] { std::map<std::string, int> s{{"air", 7}}; restock(s, 0); return s == std::map<std::string, int>{{"air", 7}}; }()
+--- check test | An empty map stays empty
+[] { std::map<std::string, int> s; restock(s, 5); return s.empty(); }()
+
++++ practice | Replay the supply log
+--- task
+The station's supply log is one long string of entries. Each entry is three words: `add` or `use`, an item name, and a whole number:
+
+```
+add water 40 add food 12 use water 15 use food 20 add air 3
+```
+
+Write `std::map<std::string, int> replay(const std::string& log)` that starts with nothing and applies each entry in order. `add` puts that many in; `use` takes that many out, but an item can never go below 0. So the log above gives `air` → 3, `food` → 0 and `water` → 25.
+
+A `std::istringstream` reads numbers as well as words, just as `std::cin` does: `in >> action >> item >> amount` reads one whole entry, and is true while there is an entry to read. The starter includes `<map>`, `<string>` and `<sstream>`. No `main`.
+--- starter
+#include <map>
+#include <string>
+#include <sstream>
+
+std::map<std::string, int> replay(const std::string& log) {
+    std::map<std::string, int> stock;
+    return stock;
+}
+--- solution
+#include <map>
+#include <string>
+#include <sstream>
+
+std::map<std::string, int> replay(const std::string& log) {
+    std::map<std::string, int> stock;
+    std::istringstream in(log);
+    std::string action;
+    std::string item;
+    int amount;
+    while (in >> action >> item >> amount) {
+        if (action == "add") {
+            stock[item] += amount;
+        } else {
+            stock[item] -= amount;
+            if (stock[item] < 0) {
+                stock[item] = 0;
+            }
+        }
+    }
+    return stock;
+}
+--- hint
+Declare `std::string action;`, `std::string item;` and `int amount;`, then loop `while (in >> action >> item >> amount)`.
+--- hint
+For `add`, `stock[item] += amount;`. For `use`, take it away, then set it back to 0 if it went below.
+--- check case | The example log
+replay("add water 40 add food 12 use water 15 use food 20 add air 3")
+=> std::map<std::string, int>{{"air", 3}, {"food", 0}, {"water", 25}}
+--- check case | Using something never added leaves it at 0
+replay("use fuel 5")
+=> std::map<std::string, int>{{"fuel", 0}}
+--- check case | Adds pile up
+replay("add o2 1 add o2 2 add o2 3")
+=> std::map<std::string, int>{{"o2", 6}}
+--- check test | An empty log gives an empty map
+replay("").empty()
+
 === cpp-13 | Pointers and ownership
 --- teach
 In the references lesson you gave an existing variable a second name, and last lesson a map let you find a value by its key. This lesson shows the tool that sits underneath both: the pointer, which finds a value by *where it lives* in memory.
@@ -3139,3 +7836,984 @@ For `set_to_zero`, follow the pointer with `*p` to change the value, but only af
 [] { auto p = make_counter(41); *p += 1; return *p == 42; }()
 --- check source absent | Does not use raw new
 \bnew\s+int\b
+
++++ practice | A value or a fallback
+--- task
+Write `int value_or(int* p, int fallback)` that returns the value `p` points at. If `p` is `nullptr`, it points at nothing, so return `fallback` instead.
+
+So with `int x = 7;`, `value_or(&x, 0)` is `7`, and `value_or(nullptr, -1)` is `-1`. No `main`.
+--- starter
+int value_or(int* p, int fallback) {
+    return *p;
+}
+--- solution
+int value_or(int* p, int fallback) {
+    if (p == nullptr) {
+        return fallback;
+    }
+    return *p;
+}
+--- hint
+Following a null pointer is undefined behaviour, so check for `nullptr` before you follow `p`.
+--- hint
+If `p == nullptr`, return `fallback`. Otherwise return `*p`, the value it points at.
+--- check test | Follows a real pointer
+[] { int x = 7; return value_or(&x, 0) == 7; }()
+--- check test | nullptr gives the fallback
+[] { return value_or(nullptr, -1) == -1; }()
+--- check test | A pointed-at 0 is still a real value
+[] { int zero = 0; return value_or(&zero, 99) == 0; }()
+
++++ practice | An owned copy
+--- task
+Write `std::unique_ptr<int> make_copy(int* p)` that returns a newly owned `int` holding the same value that `p` points at. If `p` is `nullptr`, the new `int` holds `0`.
+
+The copy is a separate object: changing the original afterwards must not change the copy. Use `std::make_unique`, not raw `new`. The starter includes `<memory>`. No `main`.
+--- starter
+#include <memory>
+
+std::unique_ptr<int> make_copy(int* p) {
+    return std::make_unique<int>(0);
+}
+--- solution
+#include <memory>
+
+std::unique_ptr<int> make_copy(int* p) {
+    if (p == nullptr) {
+        return std::make_unique<int>(0);
+    }
+    return std::make_unique<int>(*p);
+}
+--- hint
+`std::make_unique<int>(value)` makes a new `int` holding `value` and hands back its owner.
+--- hint
+The value to copy is `*p`, but only when `p` is not `nullptr`.
+--- check test | The copy holds the same value
+[] { int x = 41; auto c = make_copy(&x); return *c == 41; }()
+--- check test | Changing the original leaves the copy alone
+[] { int x = 5; auto c = make_copy(&x); x = 9; return *c == 5; }()
+--- check test | nullptr gives an owned 0
+[] { auto c = make_copy(nullptr); return *c == 0; }()
+--- check source absent | Does not use raw new
+\bnew\s+int\b
+
++++ practice | Point at the first negative
+--- task
+Write `int* first_negative(std::vector<int>& v)` that returns a pointer to the first element of `v` that is below 0, or `nullptr` if there is none.
+
+The pointer points **into** the caller's vector, so the caller can change that element through it. For example, with `v` holding `{3, -1, -4}`, `*first_negative(v) = 0;` makes `v` hold `{3, 0, -4}`.
+
+Go through the vector with a reference loop variable, `for (int& x : v)`. Then `&x`, the address of `x`, is the address of the element itself. No `main`.
+--- starter
+#include <vector>
+
+int* first_negative(std::vector<int>& v) {
+    for (int x : v) {
+        if (x < 0) {
+            return &x;
+        }
+    }
+    return nullptr;
+}
+--- solution
+#include <vector>
+
+int* first_negative(std::vector<int>& v) {
+    for (int& x : v) {
+        if (x < 0) {
+            return &x;
+        }
+    }
+    return nullptr;
+}
+--- hint
+In the starter, `x` is a copy that disappears at the end of each pass. Its address points at nothing useful once the function returns.
+--- hint
+With `for (int& x : v)`, `x` is another name for the element, so `&x` is the element's own address.
+--- check test | Points at the first negative
+[] { std::vector<int> v{3, -1, -4}; int* p = first_negative(v); return p != nullptr && *p == -1; }()
+--- check test | Changing through the pointer changes the vector
+[] { std::vector<int> v{3, -1, -4}; *first_negative(v) = 0; return v == std::vector<int>{3, 0, -4}; }()
+--- check test | No negatives gives nullptr
+[] { std::vector<int> v{1, 0, 2}; return first_negative(v) == nullptr; }()
+--- check test | An empty vector gives nullptr
+[] { std::vector<int> v; return first_negative(v) == nullptr; }()
+
++++ practice | Point at the larger one
+--- task
+Write `int* larger(int* a, int* b)` that returns whichever pointer points at the larger value. Pointers may be `nullptr`:
+
+- if both are real, return the one pointing at the larger value; on a tie, return `a`;
+- if only one is `nullptr`, return the other one;
+- if both are `nullptr`, return `nullptr`.
+
+It returns the pointer itself, not the value, so the caller can change the larger value through it. No `main`.
+--- starter
+int* larger(int* a, int* b) {
+    if (*a >= *b) {
+        return a;
+    }
+    return b;
+}
+--- solution
+int* larger(int* a, int* b) {
+    if (a == nullptr) {
+        return b;
+    }
+    if (b == nullptr) {
+        return a;
+    }
+    if (*a >= *b) {
+        return a;
+    }
+    return b;
+}
+--- hint
+The starter follows both pointers straight away, so a `nullptr` crashes it. Deal with the `nullptr` cases first.
+--- hint
+If `a` is `nullptr`, the answer is `b`, whatever `b` is, even if it is `nullptr` too. Then if `b` is `nullptr`, the answer is `a`. Only after that is it safe to compare `*a` and `*b`.
+--- check test | Points at the larger value
+[] { int x = 3, y = 8; return larger(&x, &y) == &y; }()
+--- check test | A tie returns a
+[] { int x = 5, y = 5; return larger(&x, &y) == &x; }()
+--- check test | One nullptr returns the other
+[] { int x = -2; return larger(nullptr, &x) == &x && larger(&x, nullptr) == &x; }()
+--- check test | Two nullptrs give nullptr
+[] { return larger(nullptr, nullptr) == nullptr; }()
+--- check test | The caller can change the larger value
+[] { int x = 10, y = 4; *larger(&x, &y) = 0; return x == 0 && y == 4; }()
+
++++ practice | Fix the clamp
+--- task
+`clamp_reading(reading, limit)` should make sure the value `reading` points at is not above `limit`: if it is, the value becomes `limit`. If `reading` is `nullptr`, it does nothing.
+
+It never changes anything: after `int r = 150; clamp_reading(&r, 100);`, `r` is still 150. The bug is on one line. Fix it. No `main`.
+--- starter
+void clamp_reading(int* reading, int limit) {
+    if (reading != nullptr && *reading > limit) {
+        reading = &limit;
+    }
+}
+--- solution
+void clamp_reading(int* reading, int limit) {
+    if (reading != nullptr && *reading > limit) {
+        *reading = limit;
+    }
+}
+--- hint
+Does the wrong line change the value the pointer points at, or does it change the pointer?
+--- hint
+`reading = &limit;` makes the function's own copy of the pointer point somewhere else. To change the caller's value, follow the pointer: `*reading = limit;`.
+--- check test | 150 is clamped to 100
+[] { int r = 150; clamp_reading(&r, 100); return r == 100; }()
+--- check test | 50 stays 50
+[] { int r = 50; clamp_reading(&r, 100); return r == 50; }()
+--- check test | Exactly the limit stays
+[] { int r = 100; clamp_reading(&r, 100); return r == 100; }()
+--- check test | nullptr is safe
+[] { clamp_reading(nullptr, 100); return true; }()
+
++++ practice | Draw fuel evenly
+--- task
+A spacecraft has several fuel tanks, stored in a vector of their levels. To keep it balanced, fuel is drawn one unit at a time, always from the tank that is fullest at that moment. On a tie, the first of the fullest tanks is used. An empty tank (level 0) is never drawn from.
+
+Write `int draw_balanced(std::vector<int>& tanks, int amount)` that draws `amount` units this way, changing the caller's vector, and returns how many units it really drew. If every tank runs dry before `amount` is reached, it stops early.
+
+So `{5, 3, 4}` with `amount` 4 becomes `{2, 3, 3}` and returns 4. `{1, 0}` with `amount` 5 becomes `{0, 0}` and returns 1.
+
+For each unit, find the fullest tank with a pointer: start with `int* fullest = nullptr;`, loop with `for (int& t : tanks)`, and point `fullest` at any tank above 0 that beats the one it points at so far. No `main`.
+--- starter
+#include <vector>
+
+int draw_balanced(std::vector<int>& tanks, int amount) {
+    return 0;
+}
+--- solution
+#include <vector>
+
+int draw_balanced(std::vector<int>& tanks, int amount) {
+    int drawn = 0;
+    while (drawn < amount) {
+        int* fullest = nullptr;
+        for (int& t : tanks) {
+            if (t > 0 && (fullest == nullptr || t > *fullest)) {
+                fullest = &t;
+            }
+        }
+        if (fullest == nullptr) {
+            break;
+        }
+        *fullest -= 1;
+        drawn++;
+    }
+    return drawn;
+}
+--- hint
+One unit at a time: an outer loop that runs while fewer than `amount` units are drawn. Inside it, find the fullest tank, take 1 from it, and count the unit.
+--- hint
+A tank beats the current choice when it is above 0 and either nothing is chosen yet (`fullest == nullptr`) or it is strictly fuller (`t > *fullest`). Strictly, so the first tank wins a tie.
+--- hint
+If no tank was chosen, every tank is empty: `break` out of the outer loop. Take the unit with `*fullest -= 1;`.
+--- check test | {5, 3, 4} drawing 4 becomes {2, 3, 3}
+[] { std::vector<int> t{5, 3, 4}; int d = draw_balanced(t, 4); return d == 4 && t == std::vector<int>{2, 3, 3}; }()
+--- check test | Running dry stops early
+[] { std::vector<int> t{1, 0}; int d = draw_balanced(t, 5); return d == 1 && t == std::vector<int>{0, 0}; }()
+--- check test | Drawing 0 changes nothing
+[] { std::vector<int> t{2, 2}; int d = draw_balanced(t, 0); return d == 0 && t == std::vector<int>{2, 2}; }()
+--- check test | No tanks at all
+[] { std::vector<int> t; return draw_balanced(t, 3) == 0; }()
+--- check test | Ties go to the first tank
+[] { std::vector<int> t{4, 4, 1}; draw_balanced(t, 3); return t == std::vector<int>{2, 3, 1}; }()
+
+=== cpp-gate | C++, close to the machine: mastery gate
+--- teach
+This gate covers the whole course: printing and reading input, arithmetic, decisions and loops, functions and recursion, vectors, strings, references, structs and classes, maps and pointers. There are ten problems you have not seen, each mixing several lessons, and twelve questions that check you understand why the code works. You get no hints, so before you start, redo the practice problems of any lesson that felt hard, and make sure you can write each one without looking.
+--- gate
+pass 7
+questions 9
+minutes 112
+
++++ problem | The second-highest reading
+--- task
+Write `bool second_largest(const std::vector<int>& v, int& out)`. It looks for the second-largest **different** value in `v`: the largest value that is strictly smaller than the maximum.
+
+- If there is one, it puts it in `out` and returns `true`. So for `{3, 9, 7}` it sets `out` to 7, and for `{9, 9, 7}` it also sets `out` to 7, because the two 9s are the same value.
+- If there is none (the vector is empty, or every element is equal), it returns `false` and leaves `out` alone.
+
+Values may be negative. No `main`.
+--- starter
+#include <vector>
+
+bool second_largest(const std::vector<int>& v, int& out) {
+    return false;
+}
+--- solution
+#include <vector>
+
+bool second_largest(const std::vector<int>& v, int& out) {
+    if (v.size() == 0) {
+        return false;
+    }
+    int top = v[0];
+    for (int x : v) {
+        if (x > top) top = x;
+    }
+    bool found = false;
+    int second = 0;
+    for (int x : v) {
+        if (x < top && (!found || x > second)) {
+            second = x;
+            found = true;
+        }
+    }
+    if (found) {
+        out = second;
+    }
+    return found;
+}
+--- check test | {3, 9, 7} gives 7
+[] { int out = 0; bool ok = second_largest({3, 9, 7}, out); return ok && out == 7; }()
+--- check test | A repeated maximum is one value: {9, 9, 7} gives 7
+[] { int out = 0; bool ok = second_largest({9, 9, 7}, out); return ok && out == 7; }()
+--- check test | All negative: {-1, -8, -3} gives -3
+[] { int out = 0; bool ok = second_largest({-1, -8, -3}, out); return ok && out == -3; }()
+--- check test | All equal gives false and leaves out alone
+[] { int out = 42; bool ok = second_largest({5, 5, 5}, out); return !ok && out == 42; }()
+--- check test | Empty gives false
+[] { int out = 42; bool ok = second_largest({}, out); return !ok && out == 42; }()
+--- check test | Two values: {1, 2} gives 1
+[] { int out = 0; bool ok = second_largest({1, 2}, out); return ok && out == 1; }()
+
++++ problem | A telemetry summary
+--- task
+The Input tab holds sensor readings, one per line: a sensor name (one word), then a whole number. The same sensor appears several times, in any order:
+
+```
+TEMP 21
+PRES 101
+TEMP -5
+VOLT 28
+TEMP 30
+PRES 99
+VOLT -2
+RAD -7
+```
+
+Write a whole program (with `main`) that reads every line until the input runs out, then prints one line per sensor, in alphabetical order of the names, giving how many readings it had and its largest reading:
+
+```
+PRES: count 2, max 101
+RAD: count 1, max -7
+TEMP: count 3, max 30
+VOLT: count 2, max 28
+```
+
+A sensor's largest reading may be below 0.
+--- stdin
+TEMP 21
+PRES 101
+TEMP -5
+VOLT 28
+TEMP 30
+PRES 99
+VOLT -2
+RAD -7
+--- starter
+#include <iostream>
+#include <map>
+#include <string>
+
+int main() {
+    return 0;
+}
+--- solution
+#include <iostream>
+#include <map>
+#include <string>
+
+int main() {
+    std::map<std::string, int> count;
+    std::map<std::string, int> best;
+    std::string name;
+    int value;
+    while (std::cin >> name >> value) {
+        if (count.count(name) == 0 || value > best[name]) {
+            best[name] = value;
+        }
+        count[name]++;
+    }
+    for (const auto& [sensor, n] : count) {
+        std::cout << sensor << ": count " << n << ", max " << best[sensor] << "\n";
+    }
+    return 0;
+}
+--- check output | One line per sensor, in name order
+PRES: count 2, max 101
+RAD: count 1, max -7
+TEMP: count 3, max 30
+VOLT: count 2, max 28
+--- check source | Reads with std::cin
+std::cin\s*>>
+--- check source | Uses a std::map
+std::map\s*<
+
++++ problem | Balanced brackets
+--- task
+Write `bool balanced(const std::string& s)` that returns `true` when the round brackets in `s` are balanced, and `false` when they are not. Every other character is ignored.
+
+Balanced means every `(` has a matching `)` after it, and no `)` ever comes before its `(`. So `"(a(b)c)"` is balanced, and so are `""` and `"no brackets"`. But `")("`, `"(()"` and `"())("` are not. No `main`.
+--- starter
+#include <string>
+
+bool balanced(const std::string& s) {
+    int open = 0;
+    int close = 0;
+    for (char c : s) {
+        if (c == '(') open++;
+        if (c == ')') close++;
+    }
+    return open == close;
+}
+--- solution
+#include <string>
+
+bool balanced(const std::string& s) {
+    int depth = 0;
+    for (char c : s) {
+        if (c == '(') {
+            depth++;
+        } else if (c == ')') {
+            depth--;
+            if (depth < 0) {
+                return false;
+            }
+        }
+    }
+    return depth == 0;
+}
+--- check case | Nested brackets are balanced
+balanced("(a(b)c)")
+=> true
+--- check case | No brackets at all is balanced
+balanced("") && balanced("no brackets")
+=> true
+--- check case | A close before its open is not
+balanced(")(")
+=> false
+--- check case | One left open is not
+balanced("(()")
+=> false
+--- check case | Equal counts, wrong order, is not
+balanced("())(")
+=> false
+--- check case | Side by side is balanced
+balanced("()()(())")
+=> true
+
++++ problem | Climbing the stairs, fast
+--- task
+You climb a staircase of `n` steps, taking either 1 or 2 steps at a time. Write `long long ways(int n)` that returns how many different ways there are to reach the top.
+
+`ways(0)` is 1 (you are already there), `ways(1)` is 1, `ways(2)` is 2 (1 then 1, or 2 at once), and `ways(5)` is 8. In general, the last move was either 1 step or 2, so `ways(n)` is `ways(n - 1) + ways(n - 2)`.
+
+The checker asks for `ways(90)`, which is over 4 × 10¹⁸. It must answer in well under a second, so work upwards in a loop instead of letting a recursive function call itself twice per step. No `main`.
+--- starter
+long long ways(int n) {
+    if (n < 2) {
+        return 1;
+    }
+    return ways(n - 1) + ways(n - 2);
+}
+--- solution
+long long ways(int n) {
+    long long before = 1;
+    long long current = 1;
+    for (int i = 2; i <= n; i++) {
+        long long next = before + current;
+        before = current;
+        current = next;
+    }
+    return current;
+}
+--- check case | ways(0) is 1
+ways(0)
+=> 1
+--- check case | ways(2) is 2
+ways(2)
+=> 2
+--- check case | ways(5) is 8
+ways(5)
+=> 8
+--- check case | ways(90), quickly
+ways(90)
+=> 4660046610375530309LL
+
++++ problem | Running statistics
+--- task
+Write a `class Stats` that keeps statistics on numbers as they arrive, without storing them all:
+
+- `Stats()`: a constructor that takes nothing. A new `Stats` has seen no numbers.
+- `void add(double x)`: takes in one more number.
+- `int count() const`: how many numbers have been added.
+- `double mean() const`: their average, or `0` if none have been added.
+- `double min() const` and `double max() const`: the smallest and largest added so far, or `0` if none have been added.
+
+Numbers may be negative. Keep the data private. No `main`.
+--- starter
+class Stats {
+public:
+    Stats() {}
+    void add(double x) {}
+    int count() const { return 0; }
+    double mean() const { return 0; }
+    double min() const { return 0; }
+    double max() const { return 0; }
+};
+--- solution
+class Stats {
+public:
+    Stats() : count_(0), sum_(0), min_(0), max_(0) {}
+
+    void add(double x) {
+        if (count_ == 0 || x < min_) min_ = x;
+        if (count_ == 0 || x > max_) max_ = x;
+        count_++;
+        sum_ += x;
+    }
+
+    int count() const { return count_; }
+    double mean() const {
+        if (count_ == 0) {
+            return 0;
+        }
+        return sum_ / count_;
+    }
+    double min() const { return min_; }
+    double max() const { return max_; }
+
+private:
+    int count_;
+    double sum_;
+    double min_;
+    double max_;
+};
+--- check test | A new Stats is all zero
+[] { Stats s; return s.count() == 0 && s.mean() == 0 && s.min() == 0 && s.max() == 0; }()
+--- check test | Three numbers
+[] { Stats s; s.add(4); s.add(10); s.add(1); return s.count() == 3 && s.mean() == 5 && s.min() == 1 && s.max() == 10; }()
+--- check test | All negative: the max is below zero
+[] { Stats s; s.add(-3); s.add(-9); return s.max() == -3 && s.min() == -9 && s.mean() == -6; }()
+--- check test | All positive: the min is above zero
+[] { Stats s; s.add(2.5); s.add(7.5); return s.min() == 2.5 && s.max() == 7.5 && s.mean() == 5; }()
+
++++ problem | Rotate in place
+--- task
+Write `void rotate_left(std::vector<int>& v, int k)` that moves every element of the caller's vector `k` places to the left. Elements that fall off the front come back in at the end.
+
+So `{1, 2, 3, 4, 5}` rotated by 2 becomes `{3, 4, 5, 1, 2}`. Rotating by 0, or by the vector's size, changes nothing, and rotating by 7 is the same as rotating by 2. `k` is never negative. An empty vector stays empty, whatever `k` is. No `main`.
+--- starter
+#include <vector>
+
+void rotate_left(std::vector<int>& v, int k) {
+    int n = v.size();
+    std::vector<int> out;
+    for (int i = k; i < n; i++) {
+        out.push_back(v[i]);
+    }
+    v = out;
+}
+--- solution
+#include <vector>
+
+void rotate_left(std::vector<int>& v, int k) {
+    int n = v.size();
+    if (n == 0) {
+        return;
+    }
+    std::vector<int> original = v;
+    for (int i = 0; i < n; i++) {
+        v[i] = original[(i + k) % n];
+    }
+}
+--- check test | {1, 2, 3, 4, 5} by 2
+[] { std::vector<int> v{1, 2, 3, 4, 5}; rotate_left(v, 2); return v == std::vector<int>{3, 4, 5, 1, 2}; }()
+--- check test | By 0 changes nothing
+[] { std::vector<int> v{1, 2, 3}; rotate_left(v, 0); return v == std::vector<int>{1, 2, 3}; }()
+--- check test | By the size changes nothing
+[] { std::vector<int> v{1, 2, 3}; rotate_left(v, 3); return v == std::vector<int>{1, 2, 3}; }()
+--- check test | By 7 on five elements is the same as by 2
+[] { std::vector<int> v{1, 2, 3, 4, 5}; rotate_left(v, 7); return v == std::vector<int>{3, 4, 5, 1, 2}; }()
+--- check test | An empty vector stays empty
+[] { std::vector<int> v; rotate_left(v, 3); return v.size() == 0; }()
+
++++ problem | Parse a supply line
+--- task
+Supplies arrive as one line of `name=amount` pairs, separated by commas:
+
+```
+water=3,food=12,water=2
+```
+
+Write `std::map<std::string, int> parse_counts(const std::string& line)` that returns the total amount for each name. The same name can appear more than once, and amounts can be negative (a correction). So the line above gives `food` → 12 and `water` → 5, and `"x=-4,x=4"` gives `x` → 0. An empty line gives an empty map.
+
+To turn the text of an amount into an `int`, read it from a string stream: `std::istringstream in(text); in >> amount;`. The starter includes `<map>`, `<string>` and `<sstream>`. No `main`.
+--- starter
+#include <map>
+#include <string>
+#include <sstream>
+
+std::map<std::string, int> parse_counts(const std::string& line) {
+    std::map<std::string, int> totals;
+    return totals;
+}
+--- solution
+#include <map>
+#include <string>
+#include <sstream>
+
+std::map<std::string, int> parse_counts(const std::string& line) {
+    std::map<std::string, int> totals;
+    std::string rest = line;
+    while (rest.size() > 0) {
+        std::string pair = rest;
+        auto comma = rest.find(',');
+        if (comma == std::string::npos) {
+            rest = "";
+        } else {
+            pair = rest.substr(0, comma);
+            rest = rest.substr(comma + 1);
+        }
+        auto eq = pair.find('=');
+        if (eq == std::string::npos) {
+            continue;
+        }
+        std::istringstream in(pair.substr(eq + 1));
+        int amount = 0;
+        in >> amount;
+        totals[pair.substr(0, eq)] += amount;
+    }
+    return totals;
+}
+--- check case | Repeated names add up
+parse_counts("water=3,food=12,water=2")
+=> std::map<std::string, int>{{"food", 12}, {"water", 5}}
+--- check case | One pair
+parse_counts("air=1")
+=> std::map<std::string, int>{{"air", 1}}
+--- check case | Negative amounts
+parse_counts("x=-4,x=4,y=-1")
+=> std::map<std::string, int>{{"x", 0}, {"y", -1}}
+--- check test | An empty line gives an empty map
+parse_counts("").empty()
+
++++ problem | Point at the closest value
+--- task
+Write `int* closest(std::vector<int>& v, int target)` that returns a pointer to the element of the caller's vector whose value is closest to `target`: the smallest distance, where the distance between two numbers is the bigger minus the smaller. On a tie, return the first such element. If the vector is empty, return `nullptr`.
+
+So in `{10, 3, 7}` the element closest to 6 is the 7, and in `{4, 8}` the closest to 6 is the 4 (a tie, and 4 comes first). The caller can change the element through the pointer. No `main`.
+--- starter
+#include <vector>
+
+int* closest(std::vector<int>& v, int target) {
+    return nullptr;
+}
+--- solution
+#include <vector>
+
+int distance(int a, int b) {
+    if (a > b) {
+        return a - b;
+    }
+    return b - a;
+}
+
+int* closest(std::vector<int>& v, int target) {
+    int* best = nullptr;
+    for (int& x : v) {
+        if (best == nullptr || distance(x, target) < distance(*best, target)) {
+            best = &x;
+        }
+    }
+    return best;
+}
+--- check test | Closest to 6 in {10, 3, 7} is the 7
+[] { std::vector<int> v{10, 3, 7}; int* p = closest(v, 6); return p == &v[2]; }()
+--- check test | A tie goes to the first
+[] { std::vector<int> v{4, 8}; return closest(v, 6) == &v[0]; }()
+--- check test | Negative numbers
+[] { std::vector<int> v{-10, -4, 5}; return closest(v, -6) == &v[1]; }()
+--- check test | Changing through the pointer changes the vector
+[] { std::vector<int> v{1, 50, 100}; *closest(v, 60) = 0; return v == std::vector<int>{1, 0, 100}; }()
+--- check test | Empty gives nullptr
+[] { std::vector<int> v; return closest(v, 3) == nullptr; }()
+
++++ problem | Mission clock
+--- task
+The Input tab holds whole numbers of seconds since launch, as many as there are:
+
+```
+0 59 3600 45296
+-5 86399 360000
+```
+
+Write a whole program (with `main`) that prints each one as a clock, `HH:MM:SS`, one per line. Hours, minutes and seconds each have **at least two digits**, with a leading `0` below 10. Hours are not limited to 24, so 360000 seconds is `100:00:00`. A negative number is not a time: print `invalid` for it.
+
+```
+00:00:00
+00:00:59
+01:00:00
+12:34:56
+invalid
+23:59:59
+100:00:00
+```
+--- stdin
+0 59 3600 45296
+-5 86399 360000
+--- starter
+#include <iostream>
+
+int main() {
+    int t;
+    while (std::cin >> t) {
+        std::cout << t / 3600 << ":" << (t / 60) % 60 << ":" << t % 60 << "\n";
+    }
+    return 0;
+}
+--- solution
+#include <iostream>
+
+void print2(int n) {
+    if (n < 10) {
+        std::cout << "0";
+    }
+    std::cout << n;
+}
+
+int main() {
+    int t;
+    while (std::cin >> t) {
+        if (t < 0) {
+            std::cout << "invalid\n";
+            continue;
+        }
+        print2(t / 3600);
+        std::cout << ":";
+        print2((t / 60) % 60);
+        std::cout << ":";
+        print2(t % 60);
+        std::cout << "\n";
+    }
+    return 0;
+}
+--- check output | Prints every time as a clock
+00:00:00
+00:00:59
+01:00:00
+12:34:56
+invalid
+23:59:59
+100:00:00
+--- check source | Reads with std::cin
+std::cin\s*>>
+
++++ problem | Binary, by recursion
+--- task
+Write `std::string to_binary(int n)` that returns `n` written in binary, the base-2 number system that uses only the digits 0 and 1. `n` is never negative.
+
+So `to_binary(5)` is `"101"`, `to_binary(1)` is `"1"`, `to_binary(0)` is `"0"`, and `to_binary(1024)` is `"10000000000"`. Use recursion: the last binary digit of `n` is `n % 2`, and the digits before it are `n / 2` written in binary. No leading zeros, except for 0 itself. No `main`.
+--- starter
+#include <string>
+
+std::string to_binary(int n) {
+    return "";
+}
+--- solution
+#include <string>
+
+std::string to_binary(int n) {
+    std::string last = "0";
+    if (n % 2 == 1) {
+        last = "1";
+    }
+    if (n < 2) {
+        return last;
+    }
+    return to_binary(n / 2) + last;
+}
+--- check case | to_binary(5) is "101"
+to_binary(5)
+=> "101"
+--- check case | to_binary(0) is "0"
+to_binary(0)
+=> "0"
+--- check case | to_binary(1) is "1"
+to_binary(1)
+=> "1"
+--- check case | to_binary(255) is "11111111"
+to_binary(255)
+=> "11111111"
+--- check case | to_binary(1024) is "10000000000"
+to_binary(1024)
+=> "10000000000"
+--- check source | to_binary calls itself
+\bto_binary\s*\([^)]*\)\s*\{[\s\S]*\bto_binary\s*\(
+
++++ question | Two divisions
+--- ask
+What does this print?
+
+```cpp
+int a = 7;
+int b = 2;
+double x = a / b;
+double y = static_cast<double>(a) / b;
+std::cout << x << " " << y << "\n";
+```
+--- answer
+3 3.5
+--- why
+`a / b` divides two ints, so the answer is the whole number 3, and only then is it stored in a `double` as 3.0, which prints as `3`. In the second line `a` is converted to a `double` first, so the division keeps its decimals: 3.5.
+
++++ question | A copy and a reference
+--- ask
+What does this print?
+
+```cpp
+#include <iostream>
+
+void bump(int n) { n = n + 1; }
+void bump_ref(int& n) { n = n + 1; }
+
+int main() {
+    int a = 1;
+    bump(a);
+    bump_ref(a);
+    bump_ref(a);
+    std::cout << a << "\n";
+}
+```
+--- answer
+3
+--- why
+`bump` gets a copy of `a`, so its change is lost when it returns. `bump_ref` takes a reference: `n` is another name for `a`, so both of its calls really add one. 1 + 2 is 3.
+
++++ question | Down and back up
+--- ask
+What does `f(3)` print?
+
+```cpp
+void f(int n) {
+    if (n == 0) {
+        return;
+    }
+    std::cout << n;
+    f(n - 1);
+    std::cout << n;
+}
+```
+--- answer
+321123
+--- why
+Each call prints its `n` on the way down, before the recursive call, and again on the way back up, after the recursive call has finished. So the calls print 3, 2, 1 going down, reach the base case at 0, then print 1, 2, 3 as each waiting call finishes.
+
++++ question | Every pair
+--- ask
+`v` is a vector with `n` elements. How does the running time of this code grow as `n` grows?
+
+```cpp
+int pairs = 0;
+for (int i = 0; i < n; i++) {
+    for (int j = i + 1; j < n; j++) {
+        if (v[i] == v[j]) pairs++;
+    }
+}
+```
+--- choice
+O(n): it goes through the vector once.
+--- choice
+O(n log n): the inner loop gets shorter each time.
+--- choice correct
+O(n²): for each element, it looks at every element after it.
+--- choice
+O(1): it only counts, so it takes the same time for any size.
+--- why
+The inner loop runs n − 1 times, then n − 2, and so on down to 0: about n²/2 comparisons in all. A shrinking inner loop halves the work, but halving does not change how it grows: doubling `n` still makes it about four times slower.
+
++++ question | Recursion that calls itself twice
+--- ask
+How does the number of calls grow for this Fibonacci function, as `n` grows?
+
+```cpp
+long long fib(int n) {
+    if (n < 2) return n;
+    return fib(n - 1) + fib(n - 2);
+}
+```
+--- choice
+O(n): it counts down from n to 0 once.
+--- choice
+O(n²): each call does a loop's worth of work.
+--- choice correct
+Exponential, roughly doubling with each step of n: every call makes two more calls, and the same values are worked out again and again.
+--- choice
+O(log n): each call makes the problem smaller.
+--- why
+`fib(n)` calls `fib(n - 1)` and `fib(n - 2)`, and each of those calls two more. The same small values are recomputed millions of times: `fib(50)` makes billions of calls. Working upwards in a loop, keeping the last two answers, takes only n steps.
+
++++ question | Which line is wrong?
+--- ask
+This function should return the largest element of a non-empty vector. It returns the wrong answer for some vectors. Which line is the bug?
+
+```cpp
+int max_value(const std::vector<int>& v) {
+    int best = 0;                    // line 2
+    for (int x : v) {                // line 3
+        if (x > best) best = x;      // line 4
+    }
+    return best;                     // line 6
+}
+```
+--- choice correct
+Line 2: `best` should start at `v[0]`. If every element is negative, nothing beats 0, and it returns 0, which is not even in the vector.
+--- choice
+Line 3: the loop variable must be `int& x`, or `x` is not the real element.
+--- choice
+Line 4: it should use `>=`, or a tie for the largest is missed.
+--- choice
+Line 6: it should return `v[best]`.
+--- why
+The loop only reads the elements, so a copy in `x` is fine, and a tie gives the same value either way. The real trap is the starting value: "best so far" must start from something that is really in the vector.
+
++++ question | Why const and &
+--- ask
+Why do functions in this course take a vector as `const std::vector<int>& v` when they only read it?
+--- choice
+Because a vector cannot be passed to a function any other way.
+--- choice correct
+The `&` means the function uses the caller's vector instead of copying it, which could be millions of elements, and `const` promises the function will not change it.
+--- choice
+Because the `&` makes the function return the vector to the caller.
+--- choice
+Because `const` makes the loop over the vector run faster.
+--- why
+Passing `std::vector<int> v` does work, but it copies every element on each call. A reference costs almost nothing. Adding `const` keeps the safety of a copy: if the function tries to change the vector, it does not compile.
+
++++ question | Just looking?
+--- ask
+What does this print?
+
+```cpp
+std::map<std::string, int> stock;
+stock["water"] = 40;
+if (stock["fuel"] == 0) {
+    std::cout << "no fuel\n";
+}
+std::cout << stock.size() << "\n";
+```
+--- choice
+`no fuel`, then `1`
+--- choice correct
+`no fuel`, then `2`
+--- choice
+Only `1`: reading a missing key is an error, so the `if` is skipped.
+--- choice
+Nothing: the program stops because `"fuel"` is not in the map.
+--- why
+Reading `stock["fuel"]` with square brackets adds the key `"fuel"` with the value 0 if it is missing. So the test is true, and the map now has two keys. To check without adding, use `stock.count("fuel")`.
+
++++ question | One past the end
+--- ask
+`v` holds 4 elements. What happens when the program reads `v[4]`?
+--- choice
+The program stops with an "index out of range" error that names the line.
+--- choice
+It gives back 0, the default value.
+--- choice correct
+Nothing checks it. It reads whatever memory lies past the end, and the program's behaviour is undefined from then on.
+--- choice
+It wraps round and gives back `v[0]`.
+--- why
+Square brackets on a vector do no checking, to stay fast. Reading past the end is undefined behaviour: it might print garbage, crash, or seem to work today and fail later. The valid indexes are 0 to `size() - 1`.
+
++++ question | Not found
+--- ask
+`s` is a `std::string`. What does `s.find(':')` give back when there is no colon in `s`?
+--- choice
+`-1`
+--- choice
+`0`
+--- choice correct
+`std::string::npos`, a very large unsigned number that means "no position".
+--- choice
+An empty string, `""`.
+--- why
+`find` returns an index, and an index is an unsigned whole number, so it cannot be -1. `npos` is the largest value that type can hold. Always compare with `std::string::npos` before using the result: `npos + 1` wraps round to 0, which quietly gives a wrong answer.
+
++++ question | Why private
+--- ask
+In the `Account` class, `balance_` is private, and the class offers `deposit` and `balance()`. What does making `balance_` private achieve?
+--- choice
+Private members take up less memory.
+--- choice
+Private members can never change once the object is made.
+--- choice correct
+Only the class's own member functions can touch it, so no outside code can put a value in it that breaks the class's rules.
+--- choice
+Private members are faster to read.
+--- why
+`private` controls who may use a member, not how it is stored. Private data still changes, but only through the class's own functions, like `deposit`. So the class can guarantee its rules hold, however the rest of the program uses it.
+
++++ question | Owning with unique_ptr
+--- ask
+Why does modern C++ use `std::make_unique` and `std::unique_ptr` instead of raw `new` and `delete` to own an object?
+--- choice
+`new` and `delete` are no longer allowed in C++20.
+--- choice correct
+The `unique_ptr` frees the object automatically, exactly once, when it goes out of scope, so the memory can be neither forgotten nor freed twice.
+--- choice
+A `unique_ptr` makes a copy of the object, so it is safer to change.
+--- choice
+A `unique_ptr` stores the object in the program's source file, not in memory.
+--- why
+Memory from `new` must be given back with `delete` exactly once, on every way out of the code. Forget and it leaks; do it twice and the program is broken. A `unique_ptr` is the one owner, and its destructor frees the object when the owner's block ends, whichever way it ends.

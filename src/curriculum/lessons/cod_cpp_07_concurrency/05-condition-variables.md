@@ -240,7 +240,7 @@ It needs two conditions, so it has two condition variables:
 It also needs a way to shut down. A consumer asleep on an empty queue must be told "no more samples are coming", or it would never return. That is `close()`, and it uses `notify_all()`, because *every* waiting consumer needs the news, not only one.
 
 ::: example A bounded sample queue, end to end
-```cpp
+```cpp laptop
 #include <condition_variable>
 #include <cstdio>
 #include <deque>
@@ -346,7 +346,7 @@ In lesson 1 you met `std::jthread`, which on destruction asks its thread to stop
 
 C++20 closed that gap with **`std::condition_variable_any`**. "Any" means it works with any lock type, not only `std::unique_lock<std::mutex>` (a `std::shared_lock`, or a lock on your own ranked mutex from lesson 4). It is a little heavier than `std::condition_variable`, and it adds wait overloads that take a stop token:
 
-```cpp
+```cpp laptop
 #include <chrono>
 #include <condition_variable>
 #include <cstdio>

@@ -237,7 +237,7 @@ There are two other ways to hand over a callable, and both are worse here. A raw
 
 **`std::function`** is a wrapper that can hold *any* callable with a given signature behind one fixed type. Hiding the real type like this is called **[[type erasure|type-erasure]]**. It is convenient — a `std::vector` of `std::function` can hold many different lambdas — but every call goes through an indirect jump, and a callable too big for the wrapper's small internal space is copied onto the heap. Counting allocations shows it:
 
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <cstdlib>
 #include <functional>

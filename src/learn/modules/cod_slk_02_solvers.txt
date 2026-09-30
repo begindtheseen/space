@@ -1,0 +1,1020 @@
+@track python
+@course mod-cod_slk_02_solvers
+@module cod_slk_02_solvers
+@title Simulink solvers, sample times and numerical correctness: practice and test
+
+=== slk02-l01 | Practice: How a solver steps
+--- for
+l01-how-a-solver-steps
+
++++ question | What To Workspace keeps
+--- ask
+A model runs with the fixed-step solver `ode4` at $h = 0.01\,\mathrm{s}$ from $t = 0$ to $t = 2\,\mathrm{s}$. A To Workspace block logs the output with no decimation. The solver makes 800 derivative evaluations in total. How many rows of data does To Workspace log?
+--- choice
+800: one row for every derivative evaluation, because the blocks run at each of them.
+--- choice correct
+201: one row for every major time step, $t = 0, 0.01, \ldots, 2$, including the start.
+--- choice
+1601: one row at each major step and one at each midpoint slope sample in between.
+--- choice
+50: the solver only records once every 50 steps unless you shorten the Max step size.
+--- why
+The four slope samples inside each `ode4` step are minor time steps. Simulink runs the blocks there, but only to compute slopes; nothing is recorded. To Workspace, Scopes and discrete blocks act at major time steps only. There are $2 / 0.01 = 200$ steps, and the logged times are their 200 end points plus the starting point at $t = 0$: 201 rows. The 800 evaluations ($4 \times 200$) measure the work, not the output.
+
++++ question | An accepted step, and the next one
+--- ask
+The Python adaptive stepper from the lesson (Euler inside Heun, tolerance $10^{-3}$) tries a step of $0.1\,\mathrm{s}$ and gets an error estimate of $2.5 \times 10^{-4}$. The step is accepted. What step, in seconds, does the step-size rule try next?
+--- answer
+0.18
+0.18 s
+.18
+--- why
+The rule is $h_{\text{new}} = 0.9\,h\,(\text{tol}/\text{err})^{1/(p+1)}$ with $p = 1$ for Euler, so the power is $\tfrac{1}{2}$. Here $\text{tol}/\text{err} = 10^{-3} / (2.5 \times 10^{-4}) = 4$, whose square root is 2. So $h_{\text{new}} = 0.9 \times 0.1 \times 2 = 0.18\,\mathrm{s}$. The error came out four times smaller than allowed, and because the error grows like $h^2$, the step can double before it reaches the limit. The 0.9 aims a little short, so the next step is less likely to be rejected.
+
++++ question | How much of the frame goes to the solver
+--- ask
+A real-time plant model runs with `ode4` at a fixed step of $1\,\mathrm{ms}$ on a computer whose frame is $10\,\mathrm{ms}$. One derivative evaluation, a pass through the whole diagram, takes $20\,\mu\mathrm{s}$. What percentage of each frame does the solver use? Type a number.
+--- answer
+8
+8%
+8 %
+8 percent
+--- why
+Each frame covers $10 / 1 = 10$ steps. Each `ode4` step makes 4 derivative evaluations, so a frame makes 40 of them: $40 \times 20\,\mu\mathrm{s} = 800\,\mu\mathrm{s} = 0.8\,\mathrm{ms}$, which is 8% of $10\,\mathrm{ms}$. Because the step is fixed, this number is the same in every frame, whatever the vehicle is doing. That is exactly the promise a variable-step solver cannot make, and it is why this calculation can be done before the model ever runs.
+
++++ question | An error exactly at the limit
+--- ask
+A variable-step solver using the lesson's step-size rule tries a step of $0.05\,\mathrm{s}$, and the error estimate comes out exactly equal to the tolerance. What happens?
+--- choice
+The step is rejected, because an error equal to the tolerance leaves no safety margin, and the solver retries at $0.045\,\mathrm{s}$.
+--- choice correct
+The step is accepted, and the next step tried is slightly smaller, $0.045\,\mathrm{s}$, because of the 0.9 safety factor.
+--- choice
+The step is accepted, and the next step is the same $0.05\,\mathrm{s}$, because the ratio tol / err is exactly 1.
+--- choice
+The step is accepted, and the next step doubles to $0.1\,\mathrm{s}$, because the solver always tries to grow after an accepted step.
+--- why
+The test is "error at or below the tolerance", so an estimate exactly at the limit is accepted and the clock moves on. The rule then gives $0.9 \times 0.05 \times 1^{1/2} = 0.045\,\mathrm{s}$. The ratio of 1 alone would keep the step the same, but the safety factor pulls it a little below the step that would exactly hit the tolerance, because a rejected step wastes every evaluation it made.
+
++++ question | A stepper whose clock runs away
+--- ask
+Someone edits the lesson's adaptive stepper. Its output ends at $x = 0.9995$ when the exact answer at 5 s is $0.99995$, and a plot shows the true curve shifted about one second late. Which change caused it?
+
+```python
+while t < 5.0:
+    h = min(h, 5.0 - t)
+    k1 = f(t, x)
+    k2 = f(t + h, x + h * k1)
+    x_euler = x + h * k1
+    x_heun = x + h * (k1 + k2) / 2
+    err = abs(x_heun - x_euler)
+    if err <= tol:
+        x = x_heun
+        accepted += 1
+    else:
+        rejected += 1
+    t = t + h
+    h = 0.9 * h * math.sqrt(tol / max(err, 1e-16))
+```
+--- choice
+`h = min(h, 5.0 - t)` should be removed, because it forces the last step to be too short.
+--- choice
+The error estimate should be `abs(x_heun - x)`, the change made by the step, not the gap between the two answers.
+--- choice correct
+`t = t + h` must only run when the step is accepted. Now a rejected step moves the clock forward without changing the state.
+--- choice
+The 0.9 safety factor makes every step too small, so the solution falls behind.
+--- why
+A rejected step must leave both the clock and the state where they were, and retry from the same point with a smaller step. Here the first attempt, a rash 1 s step, is rejected: the state stays at 0 but the clock jumps to 1 s. Everything after that is computed correctly, just one second late, which is exactly the shift in the plot. The fix is to move `t = t + h` inside the `if err <= tol:` branch, next to `x = x_heun`.
+
++++ question | A measured maximum is not a worst case
+--- ask
+A team runs its variable-step attitude model on the flight processor over 500 recorded test scenarios. The busiest frame took $3\,\mathrm{ms}$ of a $10\,\mathrm{ms}$ frame. They propose to fly it, arguing "the worst case has a threefold margin". What is the flaw?
+--- choice
+None. 500 scenarios is enough to call $3\,\mathrm{ms}$ the worst-case execution time, and a threefold margin covers the rest.
+--- choice correct
+$3\,\mathrm{ms}$ is only the largest time seen in those scenarios. The number of steps and rejections depends on the data, so an input they did not try, such as a burst of events or a violent maneuver, can take more; no worst-case bound can be stated.
+--- choice
+The measurement is wrong because a variable-step solver always takes the same time per frame on average, so the $3\,\mathrm{ms}$ frame must be a timer error.
+--- choice
+The flaw is only the processor: on a faster flight computer the variable-step model would be deployable.
+--- why
+A worst-case execution time is a bound over every possible input, not the largest value in a test set. A fixed-step solver's work per frame depends only on the step and the method, so its bound can be written down before any test. A variable-step solver's work grows with what the signals do, and nothing stops some untested input from forcing many more small steps and rejections. A faster processor shrinks the times but does not create a bound. This is also why code generators for embedded targets require a fixed-step solver.
+
+=== slk02-l02 | Practice: ode45, ode23, ode113 and the tolerances
+--- for
+l02-variable-step-solvers-and-tolerances
+
++++ question | When AbsTol takes over
+--- ask
+A vehicle's speed state is about $250\,\mathrm{m/s}$ for most of a run, but at one moment it passes through $0.004\,\mathrm{m/s}$. Its RelTol is $10^{-4}$ and its AbsTol is $10^{-6}$. What error per step does the solver allow at that moment, in m/s?
+--- answer
+1e-6
+1e-06
+0.000001
+10^-6
+1x10^-6
+1 x 10^-6
+1e-6 m/s
+0.000001 m/s
+10^-6 m/s
+--- why
+The test is $e_i \le \max(\text{RelTol} \cdot |x_i|, \text{AbsTol}_i)$. At $0.004\,\mathrm{m/s}$, RelTol gives $10^{-4} \times 0.004 = 4 \times 10^{-7}$, which is smaller than AbsTol, so AbsTol sets the limit: $10^{-6}\,\mathrm{m/s}$. At $250\,\mathrm{m/s}$ the same state is allowed $10^{-4} \times 250 = 0.025\,\mathrm{m/s}$ per step. AbsTol is the floor that stops the solver chasing impossibly small errors when a state passes near zero.
+
++++ question | What an ode45 run really cost
+--- ask
+An `ode45` run finishes with 500 accepted steps and 40 rejected steps. About how many derivative evaluations did it make?
+--- choice
+About 3,000: six per accepted step. A rejected step costs nothing, because its result is thrown away.
+--- choice correct
+About 3,240: six for every attempt, accepted or rejected.
+--- choice
+About 3,780: seven for every attempt, since each Dormand–Prince step has seven slope samples.
+--- choice
+About 1,080: two for every attempt, as in a predict-evaluate-correct-evaluate step.
+--- why
+Dormand–Prince takes seven slope samples per step, but the first is the last sample of the previous accepted step (first same as last), so each attempt costs six new evaluations. A rejected attempt still makes its six evaluations before the error test throws them away; the retry reuses the slope at the unchanged starting point and makes six more. So $6 \times (500 + 40) = 3240$. The lesson's stiff run fits the same count: $6 \times (6039 + 988) = 42{,}162$ against the 42,164 reported. Two evaluations per step is `ode113`, not `ode45`.
+
++++ question | A hundred thousand times tighter
+--- ask
+On a smooth model, `ode45` takes 800 steps at RelTol $10^{-5}$. About how many steps should it take at RelTol $10^{-10}$, with every other setting the same and no step cap in play?
+--- answer
+8000
+8,000
+8000 steps
+8,000 steps
+--- why
+The step error of `ode45`'s method goes like $h^5$, so the step count grows like $\text{tol}^{-1/5}$. The tolerance is $10^5$ times tighter, and $(10^5)^{1/5} = 10$, so about $10 \times 800 = 8000$ steps. `ode23`, whose step error goes like $h^3$, would need $(10^5)^{1/3} \approx 46$ times as many steps as it took at $10^{-5}$. That gap is why high-order methods win at tight tolerances.
+
++++ question | An AbsTol for a tiny state
+--- ask
+A gyro-bias state lives far below 1 rad/s, and biases as small as $2 \times 10^{-6}\,\mathrm{rad/s}$ matter to the navigation engineer. The model uses RelTol $10^{-3}$. By the lesson's rule of thumb, what Absolute tolerance should that Integrator get, in rad/s?
+--- answer
+2e-9
+2e-09
+2*10^-9
+2x10^-9
+2 x 10^-9
+2 * 10^-9
+0.000000002
+2e-9 rad/s
+--- why
+The rule of thumb is AbsTol ≈ RelTol × the smallest size of the state you care about: $10^{-3} \times 2 \times 10^{-6} = 2 \times 10^{-9}$. With a model-wide AbsTol of $10^{-6}$ instead, the solver would allow an error of $10^{-6}\,\mathrm{rad/s}$ per step, half the size of the smallest bias that matters, and would treat those biases as noise. Setting the Integrator's own Absolute tolerance, or rescaling the state to microradians per second, keeps the rest of the model on its usual settings.
+
++++ question | A leash that is still too long
+--- ask
+A 200 s simulation has a valve spike $0.05\,\mathrm{s}$ long, computed from the clock inside a MATLAB Function block at an unknown time. An engineer runs:
+
+```matlab
+set_param(mdl, 'MaxStep', '0.1');
+```
+
+The spike still vanishes from some runs. Why, and what setting would guarantee at least one sample inside it?
+--- choice
+RelTol is too loose; tightening it to $10^{-8}$ makes the solver notice the spike even at a 0.1 s step.
+--- choice correct
+A 0.1 s step can start before the spike and end after it, so no sample lands inside. The Max step size must be shorter than 0.05 s, for example 0.025 s; building the spike from Step blocks with zero-crossing detection would be cheaper.
+--- choice
+The default Max step size of $200/50 = 4\,\mathrm{s}$ overrides the typed value, so `MaxStep` has no effect.
+--- choice
+MATLAB Function blocks run only at major time steps, so no Max step size can make the solver see the spike.
+--- why
+The solver only sees the model at its steps and minor steps. A spike that fits wholly inside one step is invisible: the error estimate sees a smooth, quiet signal and accepts the step, and a tighter tolerance cannot help with something it never samples. A leash shorter than the spike forces a step boundary inside it. Half its length, 0.025 s, gives margin, at the price of at least $200 / 0.025 = 8000$ steps. Blocks such as Step tell the solver where their output jumps, so it can find the edges without a short leash.
+
++++ question | Two states, one setting too many
+--- ask
+One model holds a rocket's altitude, near $10^{5}\,\mathrm{m}$, and its pointing error, near $10^{-4}\,\mathrm{rad}$. RelTol is $10^{-3}$ and AbsTol is $10^{-3}$ for every state. The altitude is fine, but the pointing error looks like noise. Which change fixes the pointing error without making the whole model much slower?
+--- choice
+Tighten RelTol to $10^{-8}$ for the whole model.
+--- choice correct
+Give the pointing-error Integrator its own Absolute tolerance, around $10^{-7}$ to $10^{-8}\,\mathrm{rad}$, or rescale that state to microradians.
+--- choice
+Set the Max step size to 0.001 s so every state is sampled finely.
+--- choice
+Switch to `ode113`, whose high order gives every state more digits.
+--- why
+For the pointing error, $\text{RelTol} \cdot |x| = 10^{-7}$, so the model-wide AbsTol of $10^{-3}$ sets the limit: ten times the whole signal. The solver is not controlling that error at all. Tightening RelTol does nothing for it, because the larger of the two limits still wins; it only makes the altitude, already fine at $100\,\mathrm{m}$ per step, far more expensive. A short Max step size forces small steps everywhere and hides the real mistake. The fix is to match AbsTol to the state's own size, per Integrator.
+
+=== slk02-l03 | Practice: Stiff models and the implicit solvers
+--- for
+l03-stiffness
+
++++ question | The ceiling a fast mode sets
+--- ask
+A model's eigenvalues are $-0.2$, $-1.5 \pm 2j$ and $-5000\,\mathrm{s^{-1}}$. About what is the largest step, in milliseconds, that `ode45`'s stability limit allows?
+--- answer
+0.66
+0.66 ms
+0.66ms
+.66
+0.00066
+0.00066 s
+--- why
+An explicit solver's stable step is set by the fastest eigenvalue: for the Dormand–Prince pair inside `ode45`, $h|\lambda| \lesssim 3.3$, so $h \le 3.3 / 5000 = 0.00066\,\mathrm{s} = 0.66\,\mathrm{ms}$. The complex pair has size $\sqrt{1.5^2 + 2^2} = 2.5$ and the slowest mode is $0.2$, so the stiffness ratio is $5000 / 0.2 = 25{,}000$. A 60 s run would need at least about 91,000 steps, although nothing you care about changes faster than about a second.
+
++++ question | Four forward Euler steps on a fast mode
+--- ask
+Forward Euler is used on the mode $\dot{x} = -500\,x$, starting at $x = 1$, with $h = 0.005\,\mathrm{s}$. What is $x$ after four steps?
+--- answer
+5.0625
+5.06
+5.063
++5.0625
+--- why
+The amplification factor is $1 + h\lambda = 1 + 0.005 \times (-500) = -1.5$. Four steps give $(-1.5)^4 = 5.0625$: the sign flipped every step (to $-1.5$, $2.25$, $-3.375$, $5.0625$) and the size grew by half each time. The true mode, $e^{-10}$ after 0.02 s, is effectively gone. The step is past the limit $2/500 = 0.004\,\mathrm{s}$. Backward Euler at the same step multiplies by $1/(1 + 2.5) = 0.286$ and decays.
+
++++ question | Which run is stiff
+--- ask
+Two models each take 12,040 steps with `ode45` at RelTol $10^{-4}$. At RelTol $10^{-2}$, model A takes 11,980 steps and model B takes 4,800. Which model is stiff?
+--- choice
+Model B, because its step count reacts strongly to the tolerance, which is what an unstable model does.
+--- choice correct
+Model A. A tolerance 100 times looser barely changed its steps, so something other than accuracy, a stability limit, is setting them. Model B's steps fell by about $100^{1/5} \approx 2.5$, as an accuracy-limited `ode45` run should.
+--- choice
+Both, because 12,040 steps is too many for any model that is not stiff.
+--- choice
+Neither can be judged from step counts; only the eigenvalues can show stiffness.
+--- why
+For an accuracy-limited run, `ode45`'s steps grow like $\text{tol}^{-1/5}$, so loosening the tolerance a hundredfold should cut them by about 2.5; model B did exactly that ($12040 / 4800 = 2.5$). Model A's step count ignored the tolerance, the signature of a solver riding a stability limit set by a fast mode. A big step count on its own proves nothing: a long run with a fine output can be expensive and perfectly healthy.
+
++++ question | Stable, but still rattling
+--- ask
+The trapezoidal rule, the method inside `ode23t`, is used on a fast mode with $h\lambda = -8$, starting at $x = 1$. What is $x$ after five steps, to three significant figures?
+--- answer
+-0.0778
+-0.07776
+-0.078
+-0.0777
+--- why
+The trapezoidal factor is $\frac{1 + h\lambda/2}{1 - h\lambda/2} = \frac{1 - 4}{1 + 4} = -0.6$. Five steps give $(-0.6)^5 = -0.07776$: the mode flips sign every step and shrinks only slowly. It is stable, since the factor's size is below 1, but it rings. As $h\lambda$ grows more negative the factor heads to $-1$, so very fast modes are hardly damped at all. Backward Euler at the same $h\lambda$ multiplies by $1/9 = 0.111$ and has shrunk the mode below $2 \times 10^{-5}$ after five steps. That is why `ode23t` is for moderately stiff models.
+
++++ question | The wrong eigenvalue in a stability check
+--- ask
+A colleague's script estimates the largest stable forward Euler step. The fixed-step run at that step blows up at once. Which line is wrong?
+
+```python
+lams = [-0.4, -3.0, -1200.0]          # the model's eigenvalues, 1/s
+fastest = min(abs(l) for l in lams)   # line A
+h_max = 2 / fastest                   # line B
+print(f"largest stable step: {h_max:.4g} s")
+```
+--- choice correct
+Line A. The limit is set by the fastest mode, the largest $|\lambda|$, so it should use `max`; the right answer is $2/1200 \approx 1.67\,\mathrm{ms}$, not 5 s.
+--- choice
+Line B. The constant for forward Euler is 3.3, not 2.
+--- choice
+Line B. It should be `fastest / 2`, because a faster mode allows a bigger step.
+--- choice
+Neither; the blow-up means the model itself is unstable, since every eigenvalue check passed.
+--- why
+Forward Euler keeps a mode decaying only while $h \le 2/|\lambda|$, and the step must satisfy this for every mode at once, so the smallest limit wins: the one from the largest $|\lambda|$. Using the slowest mode gives $2/0.4 = 5\,\mathrm{s}$, a step 3000 times too large for the $-1200$ mode. The constant 3.3 belongs to the Dormand–Prince pair of `ode45`, not to Euler.
+
++++ question | A stiff model full of events
+--- ask
+A propulsion model has very fast valve dynamics (stiffness ratio about $10^5$), and its valve opens and closes about 40 times a second through zero-crossing events. A tolerance of RelTol $10^{-2}$ is good enough for the study. With `ode15s` it is slow, and each event knocks it back to low order with small steps. Which solver should you try next?
+--- choice
+`ode113`, because it varies its order up to 13 and so recovers faster after each event.
+--- choice correct
+`ode23tb`: implicit, so the fast valve mode does not limit the step; one-step, so it restarts cleanly after events; and efficient at crude tolerances.
+--- choice
+`ode23t`, because it adds no numerical damping, so the valve motion stays accurate.
+--- choice
+`ode45` with a small Max step size, because explicit solvers restart instantly after events.
+--- why
+`ode15s` is multistep, and each event throws away its history. `ode23tb` (TR-BDF2) is one-step, so an event costs it little, and it strongly damps very fast modes. `ode113` is explicit and multistep: it would be pinned by the stiff valve mode and reset by every event. `ode23t` is one-step too, but at a stiffness ratio of $10^5$ its factor sits near $-1$ on the fast mode and rings; it is meant for moderately stiff models. `ode45` restarts cleanly, but a stability limit of about $3.3/|\lambda|$ on a very fast mode is the problem you started with.
+
+=== slk02-l04 | Practice: Fixed-step solvers
+--- for
+l04-fixed-step-solvers
+
++++ question | The ode4 limit for a slower actuator
+--- ask
+A model's fastest eigenvalue is $-120\,\mathrm{rad/s}$. What is the largest fixed step that keeps `ode4` stable, in milliseconds, to one decimal place?
+--- answer
+23.2
+23.2 ms
+23.2ms
+23.21
+0.0232
+0.0232 s
+--- why
+RK4 is stable on a real, decaying mode while $h|\lambda| < 2.785$, so $h < 2.785 / 120 = 0.0232\,\mathrm{s} = 23.2\,\mathrm{ms}$. For comparison, `ode1` needs $h < 2/120 = 16.7\,\mathrm{ms}$. Remember the limit is where the floor falls away, not where good results start: for accuracy you want $h|\lambda|$ well below 1 on the modes you care about.
+
++++ question | The largest ode4 step for a 25 Hz loop
+--- ask
+A discrete controller runs at 25 Hz, every $0.04\,\mathrm{s}$. The plant's fastest eigenvalue is $-150\,\mathrm{rad/s}$. The fixed step must divide the controller's period. What is the largest step, in seconds, that keeps `ode4` stable?
+--- answer
+0.0133
+0.01333
+0.013
+0.04/3
+13.3 ms
+13.33 ms
+0.0133 s
+--- why
+The allowed steps are $0.04/n$: 0.04, 0.02, 0.0133, 0.01 s, and so on. RK4's limit is $2.785/150 = 0.0186\,\mathrm{s}$. At $0.02\,\mathrm{s}$, $z = h\lambda = -3$ and $R(-3) = 1 - 3 + 4.5 - 4.5 + 3.375 = 1.375$, above 1, so it grows. At $0.04/3 = 0.0133\,\mathrm{s}$, $z = -2$ and $R(-2) = 1 - 2 + 2 - 1.333 + 0.667 = 0.333$, so it decays. The answer is three solver steps per control cycle, and the limit comes from the plant's fast mode, not from the 25 Hz controller.
+
++++ question | A stiff plant that must keep its beat
+--- ask
+A hardware-in-the-loop rig runs a plant model at a fixed step of $1\,\mathrm{ms}$. The model contains a real actuator mode with a time constant of $0.2\,\mathrm{ms}$, which must stay. Which solver setting fits?
+--- choice
+`ode4`: fourth order is accurate enough for any mode at a 1 ms step.
+--- choice correct
+`ode1be` or `ode14x`: implicit, so the fast mode stays stable at 1 ms, with a fixed number of Newton iterations so every step costs the same.
+--- choice
+`ode15s`: it is the first choice for stiff models.
+--- choice
+`ode5`: it has the longest real-axis stability leash of the explicit family.
+--- why
+The mode has $\lambda = -1/0.0002 = -5000\,\mathrm{s^{-1}}$, so $h|\lambda| = 5$. That is past every explicit limit on the ladder, even `ode5`'s 3.31, so any explicit solver blows up. Backward Euler multiplies the mode by $1/(1 + 5) = 0.167$ per step and stays stable. `ode15s` handles stiffness too, but it is variable-step, so its work per step, and so its timing on the rig, is not bounded. The fixed-step implicit solvers cap their Newton iterations to keep the cost per step fixed.
+
++++ question | A factor of exactly minus one
+--- ask
+Same 25 Hz loop as before, period $0.04\,\mathrm{s}$, fastest eigenvalue $-150\,\mathrm{rad/s}$, but now with `ode1`. At $h = 0.04/3\,\mathrm{s}$, Euler's growth factor is $1 + h\lambda = 1 - 2 = -1$. Counting as stable only a factor whose size is strictly below 1, what is the largest allowed step for `ode1`?
+--- choice
+$0.0133\,\mathrm{s}$: a factor of $-1$ does not grow, so the loop is stable there.
+--- choice correct
+$0.01\,\mathrm{s}$ ($n = 4$), where the factor is $-0.5$.
+--- choice
+$0.008\,\mathrm{s}$ ($n = 5$), because the step must be below $2/150$ with a 50% margin.
+--- choice
+$0.02\,\mathrm{s}$, because $0.02 \times 150 = 3$ is close to Euler's limit of 2.
+--- why
+Euler's limit is $h < 2/150 = 0.0133\,\mathrm{s}$, and the step $0.04/3$ sits exactly on it. A factor of $-1$ never lets an error decay: it flips sign every step and rings forever, so it is not stable. The next allowed step, $0.04/4 = 0.01\,\mathrm{s}$, gives $1 - 1.5 = -0.5$, which decays (still with a sign flip, the first warning of a step near the limit). The strict inequality in $|1 + h\lambda| < 1$ matters exactly at edge cases like this one.
+
++++ question | A stability script that says everything is fine
+--- ask
+A script meant to print each solver's growth factor reports `ode1 +1.000` for every step size, even $h = 0.02\,\mathrm{s}$ with $\lambda = -250$. Which line is wrong?
+
+```python
+from math import factorial
+
+lam = -250.0
+R = lambda z, p: sum(z**k / factorial(k) for k in range(p))   # line A
+for n in [1, 2, 3, 4]:
+    h = 0.02 / n                                                # line B
+    z = h * lam                                                 # line C
+    print(f"h={h:.5f}  ode1 {R(z, 1):+.3f}  ode4 {R(z, 4):+.3f}")
+```
+--- choice correct
+Line A: `range(p)` stops one term short. The factor of an order-$p$ method needs powers up to $z^p$, so it must be `range(p + 1)`; as written, `R(z, 1)` is just 1.
+--- choice
+Line B: it should be `0.02 * n`, because more solver steps per cycle means a longer step.
+--- choice
+Line C: `z` should be `h / lam`, because the limit is $2/|\lambda|$.
+--- choice
+Nothing is wrong: at a step this small, Euler's factor really is 1.
+--- why
+The growth factor is the Taylor series of $e^z$ cut after the $z^p$ term: $1 + z$ for Euler, up to $z^4/24$ for RK4. `range(p)` gives the powers 0 to $p - 1$, so Euler becomes the constant 1, which can never exceed 1 and hides every instability, and "ode4" becomes RK3's polynomial. At $h = 0.02$ the true Euler factor is $1 - 5 = -4$. An off-by-one in a checking script is dangerous exactly because it errs on the reassuring side.
+
++++ question | A step chosen from a flip-flop
+--- ask
+With `ode1`, a model's output flips sign and grows at $h = 0.004\,\mathrm{s}$, and flips sign but shrinks at $h = 0.003\,\mathrm{s}$. The controller runs at 100 Hz, so the fixed step must be $0.01/n$. What is the largest step that is sure to keep `ode4` stable, in seconds?
+--- answer
+0.00333
+0.0033
+0.003333
+0.01/3
+3.33 ms
+3.3 ms
+0.00333 s
+--- why
+Growing with a flip means Euler's factor is below $-1$ at $0.004$: $h|\lambda| > 2$, so $|\lambda| > 500$. Shrinking with a flip means it is between $-1$ and 0 at $0.003$: $1 < h|\lambda| < 2$, so $|\lambda| < 667$. For RK4 to be stable for every $|\lambda|$ in that range, $h < 2.785/667 = 0.00418\,\mathrm{s}$. Of the allowed steps, $0.005\,\mathrm{s}$ could give $h|\lambda|$ up to 3.3 and fail; $0.01/3 = 0.00333\,\mathrm{s}$ gives at most 2.22, where $R(-2.22) = 0.43$. When the eigenvalue is only known within a range, design for the worst end of it.
+
+=== slk02-l05 | Practice: Zero crossings
+--- for
+l05-zero-crossings
+
++++ question | When a Saturation engages
+--- ask
+The input $u = 8\sin(2t)$ feeds a Saturation block with limits $\pm 6$. Its zero-crossing function for the upper limit is $u - 6$. At what time, in seconds, does that function first cross zero? Give three decimal places.
+--- answer
+0.424
+0.4240
+0.424 s
+--- why
+The crossing is where $8\sin(2t) = 6$, so $\sin(2t) = 0.75$ and $2t = \arcsin 0.75 = 0.8481\,\mathrm{rad}$, giving $t = 0.424\,\mathrm{s}$. That is the instant the block switches from passing the input through to clipping it. With detection on, a variable-step solver brackets this moment and ends a step exactly there, so no step integrates across the corner.
+
++++ question | A less bouncy ball
+--- ask
+The lesson's ball is dropped from 10 m with $g = 9.81\,\mathrm{m/s^2}$, but now the coefficient of restitution is $e = 0.5$. At what time, in seconds, does it come to rest? Give two decimal places.
+--- answer
+4.28
+4.284
+4.2835
+4.28 s
+--- why
+The first impact is at $t_1 = \sqrt{2 \times 10 / 9.81} = 1.4278\,\mathrm{s}$. Each flight is $e$ times the one before, and the total is $T = t_1\left(1 + \frac{2e}{1 - e}\right)$. With $e = 0.5$ the bracket is $1 + 1/0.5 = 3$, so $T = 4.28\,\mathrm{s}$. There are still infinitely many bounces, packed ever closer before 4.28 s: a smaller $e$ only shortens the Zeno sum. The model still needs a rule for "it has stopped".
+
++++ question | Halving the step barely helped
+--- ask
+A fixed-step `ode4` model integrates the output of a Saturation block. Halving the step cuts the error by a factor of about 2, not the 16 that fourth order promises. What is the most likely reason?
+--- choice
+`ode4` is only fourth order on linear models; a Saturation makes every model second order.
+--- choice correct
+A corner, where the Saturation starts or stops clipping, falls inside a step. A step that straddles a corner makes an error that shrinks only like $h$, so it dominates. Putting a step boundary on the corner restores fourth-order behavior.
+--- choice
+The step is past the stability limit, so the error only halves.
+--- choice
+Round-off error has taken over, because halving the step doubled the number of additions.
+--- why
+Runge–Kutta formulas assume the model is smooth inside a step. When the slope jumps inside one, the fitted curve is wrong on one side of the jump, and the step's error is proportional to $h$, whatever the method's order. The lesson's example showed the same thing: stepping over the corners, a 3 times smaller step gave only about 6 times less error, while landing on them gave close to the full $3^4 = 81$. Zero-crossing detection does that landing for a variable-step solver.
+
++++ question | Robust with an explicit solver
+--- ask
+An `ode45` model slows down after a touchdown event. A colleague sets Solver reset method to Robust "to recompute everything after the event". Why will this change almost nothing?
+--- choice
+Robust only applies to fixed-step solvers.
+--- choice correct
+Robust recomputes the Jacobian at each reset, and `ode45` is explicit: it never uses a Jacobian, so there is nothing to recompute. The setting matters for the implicit solvers such as `ode15s`, `ode23t` and `ode23tb`.
+--- choice
+Robust is already the default, so selecting it changes nothing.
+--- choice
+Robust only changes how zero crossings are bracketed, and touchdown is already located exactly.
+--- why
+Fast, the default, reuses the Jacobian an implicit solver already has; Robust recomputes it and related quantities at every reset, which costs more per event but helps Newton's method converge after the dynamics change sharply. An explicit one-step solver like `ode45` has neither a Jacobian nor a long history, so a reset is already cheap for it. If an `ode45` model crawls after touchdown, look instead for stiffness from a stiff contact spring (lesson 3) or chattering at the contact.
+
++++ question | A ball that falls through the floor
+--- ask
+This `solve_ivp` script should stop when the ball first reaches the floor. It prints `0 0 -112.6`: status 0, no events found, and a final height of $-112.6\,\mathrm{m}$. Which line is the bug?
+
+```python
+from scipy.integrate import solve_ivp
+
+g = 9.81
+def fall(t, s):
+    return [s[1], -g]
+
+def floor(t, s):
+    return s[0]
+floor.terminal = True
+floor.direction = 1
+
+sol = solve_ivp(fall, (0.0, 5.0), [10.0, 0.0], events=floor, rtol=1e-9, atol=1e-12)
+print(sol.status, sol.t_events[0].size, round(sol.y[0][-1], 1))
+```
+--- choice
+`floor.terminal = True`, which tells the solver to ignore the event.
+--- choice correct
+`floor.direction = 1`, which counts only crossings where the height is increasing. A falling ball crosses downward, so it must be $-1$ (or 0 for both directions).
+--- choice
+`return s[0]`: the zero-crossing function must be the velocity, `s[1]`.
+--- choice
+`rtol=1e-9` is too tight, so the solver steps over the floor.
+--- why
+The height does change sign, from $+10$ to negative, but only downward. With `direction = 1` the event watches for upward crossings only, so it never fires; the integration runs to 5 s and ends at $10 - \tfrac{1}{2} \times 9.81 \times 25 = -112.6\,\mathrm{m}$. With `direction = -1` the same script stops at 1.4278 s with status 1, "stopped by an event". Height is the right zero-crossing function: it is zero exactly at contact.
+
++++ question | The worst case of fixed-step event handling
+--- ask
+A HIL plant model runs at a fixed step of $1\,\mathrm{ms}$ with fixed-step zero-crossing detection. A step with no events takes $0.55\,\mathrm{ms}$. Each bracketing iteration costs $0.03\,\mathrm{ms}$. The solver allows at most 5 bracketing iterations per crossing and at most 2 crossings per step. What is the worst-case time for one step, in milliseconds?
+--- answer
+0.85
+0.85 ms
+0.85ms
+.85
+--- why
+The worst step handles the maximum of 2 crossings with the maximum of 5 iterations each: $2 \times 5 \times 0.03 = 0.3\,\mathrm{ms}$ of extra work, so $0.55 + 0.3 = 0.85\,\mathrm{ms}$, inside the 1 ms slot. Those two caps are the whole point of fixed-step detection: the event cost has a known worst case that can be fit into the slot. A variable-step event search has no such cap; a chattering signal could demand any number of extra steps in one slot.
+
+=== slk02-l06 | Practice: Sample times
+--- for
+l06-sample-times
+
++++ question | A telemetry task after guidance
+--- ask
+A telemetry packer must run at 20 Hz, $10\,\mathrm{ms}$ after each tick of a 20 Hz guidance task that starts at $t = 0$. What sample time do you type in its Sample time parameter, as $[T_s, T_o]$?
+--- answer
+[0.05, 0.01]
+[0.05 0.01]
+[0.05,0.01]
+[.05, .01]
+[.05 .01]
+[0.050, 0.010]
+--- why
+The period is $1/20 = 0.05\,\mathrm{s}$ and the offset is $0.01\,\mathrm{s}$, so the block runs at $t = 0.05\,n + 0.01$: 0.01, 0.06, 0.11 s and so on, always 10 ms after guidance at 0, 0.05, 0.1 s. The offset meets the rule $0 \le T_o < T_s$. Offsets like this spread work across the frame and let a task pick up another task's fresh result.
+
++++ question | A sample time Simulink rejects
+--- ask
+Which of these sample times is not allowed?
+--- choice
+`[0.1, 0.05]`
+--- choice
+`[0.02, 0]`
+--- choice correct
+`[0.01, 0.015]`
+--- choice
+`[0.5, 0.49]`
+--- why
+A discrete sample time $[T_s, T_o]$ needs $0 \le T_o < T_s$: the first run must fall within the first period. An offset of 0.015 s on a 0.01 s period breaks that. Hits at 0.015, 0.025, 0.035 s are what `[0.01, 0.005]` gives, apart from its first hit at 0.005 s, so the intended timing should be written that way. `[0.5, 0.49]` is odd but legal, and `[0.02, 0]` is the same as typing `0.02`.
+
++++ question | Keeping a filter's time constant at a new rate
+--- ask
+A smoothing filter $y_n = 0.8\,y_{n-1} + 0.2\,u_n$ was tuned at 50 Hz. It is reused at 200 Hz, and the team wants the same time constant in seconds. What coefficient should replace 0.8? Give three decimal places.
+--- answer
+0.946
+0.9457
+0.94574
+0.8^(1/4)
+0.8^0.25
+--- why
+At 50 Hz the filter keeps 0.8 per $0.02\,\mathrm{s}$ step, so $\tau = -0.02/\ln 0.8 = 0.0896\,\mathrm{s}$. At 200 Hz a step is $0.005\,\mathrm{s}$, and the same $\tau$ needs $a = e^{-0.005/0.0896} = 0.946$. Equivalently, four 200 Hz steps must keep what one 50 Hz step kept: $a^4 = 0.8$, so $a = 0.8^{1/4}$. Left at 0.8, the filter would respond four times faster. Computing $a$ from the actual sample time inside the subsystem stops an inherited rate from silently retuning it.
+
++++ question | Base steps that do nothing
+--- ask
+A model has discrete blocks at periods $0.003\,\mathrm{s}$ and $0.01\,\mathrm{s}$, both with zero offset, and a fixed step left on `auto`. From $t = 0$ up to but not including $t = 0.03\,\mathrm{s}$, how many of the base steps have no block due?
+--- answer
+18
+--- why
+The fundamental sample time is the greatest common divisor of 0.003 and 0.01: $0.001\,\mathrm{s}$. The window holds 30 base steps, at 0, 1, …, 29 ms. The 3 ms block is due at 10 of them, the 10 ms block at 3 (0, 10 and 20 ms), and both at $t = 0$, so $10 + 3 - 1 = 12$ steps do work and $30 - 12 = 18$ do none. Choosing periods that divide each other, such as 0.002 and 0.01, keeps the base step large and every tick useful.
+
++++ question | A fundamental step that forgot the offset
+--- ask
+This script computes a model's fundamental sample time from periods and offsets in whole microseconds. It prints `fundamental step: 0.01 s`, and the model then fails to run with that fixed step. Which line is the bug?
+
+```python
+from math import gcd
+
+rates = {"nav": (10000, 0), "guidance": (50000, 0), "telemetry": (50000, 5000)}
+
+base = 0
+for period, offset in rates.values():
+    base = gcd(base, period)                # line A
+print("fundamental step:", base / 1e6, "s") # line B
+```
+--- choice
+Line B: dividing by `1e6` should be dividing by `1e3`, since the numbers are in milliseconds.
+--- choice correct
+Line A: the step must also divide every offset. It should be `gcd(base, gcd(period, offset))`, which gives 0.005 s.
+--- choice
+Line A: `gcd` of 0 and a number is undefined, so `base` must start at 1.
+--- choice
+Nothing is wrong: offsets never affect the fixed step, so the model must fail for another reason.
+--- why
+The telemetry block runs at $0.005, 0.055, 0.105\,\mathrm{s}$, and so on. A 0.01 s grid never lands on those times, so it cannot be the step. Every period and every offset must be a whole number of steps, so the offset of 5000 µs goes into the GCD too, giving 5000 µs, $0.005\,\mathrm{s}$. Starting from 0 is correct: $\gcd(0, n) = n$.
+
++++ question | Reading another team's colors
+--- ask
+You turn on sample time colors in another team's flight software model and update the diagram. Which finding is a defect to fix before the controller becomes flight code?
+--- choice
+A subsystem drawn in the hybrid color, where a 100 Hz filter feeds a 10 Hz guidance law.
+--- choice correct
+A black Transfer Fcn block inside the controller subsystem.
+--- choice
+The 400 Hz sensor blocks are red, although the design document calls them "D1, 400 Hz".
+--- choice
+A chain of Gain blocks fed only by Constant blocks is drawn in the constant color.
+--- why
+Black means continuous. A continuous block inside flight software is integrated by the solver in simulation, but the flight computer has no continuous time to give it; it must be replaced by its discrete version at the right rate. A hybrid subsystem is a place where rates meet: it deserves a look at its Rate Transitions but is not wrong in itself. Red for the fastest discrete rate is the documented scheme, and a constant chain costs nothing per step.
+
+=== slk02-l07 | Practice: Multirate models and the Rate Transition block
+--- for
+l07-multirate-and-rate-transitions
+
++++ question | Which guidance output the controller holds
+--- ask
+Guidance runs at 10 Hz and sends a command to a 100 Hz controller through a Rate Transition with both options checked, in multitasking mode. Guidance's run at $t = 0.1k\,\mathrm{s}$ produces output $c_k$: $c_0$ at $t = 0$, $c_1$ at $0.1\,\mathrm{s}$, and so on. Which output does the controller use at $t = 0.37\,\mathrm{s}$? Type its name, such as c5.
+--- answer
+c2
+c_2
+c 2
+--- why
+Slow to fast with deterministic transfer is a unit delay at the slow rate: each guidance output reaches the controller exactly one slow period, $0.1\,\mathrm{s}$, after the instant it was computed for. The controller's ticks from 0.30 to 0.39 s hold the output guidance computed for $t = 0.2\,\mathrm{s}$, which is $c_2$. At $t = 0.3\,\mathrm{s}$ guidance starts computing $c_3$, but the higher-priority controller cannot wait for it.
+
++++ question | Where a fast-to-slow block runs
+--- ask
+A Rate Transition with both options checked carries a signal from a 100 Hz controller to a 10 Hz telemetry task, in multitasking mode. How is it scheduled, and what delay does it add?
+--- choice
+At the fast rate and fast priority, copying every fast sample; the telemetry task sees a value up to 10 ms old.
+--- choice correct
+At the slow rate but with the fast task's priority: at each slow tick it copies the fast task's value for that instant, before the slow task starts. No delay is added.
+--- choice
+At the slow rate and slow priority, so it adds one fast period of delay.
+--- choice
+At the slow rate and slow priority, so it adds one slow period of delay, the same as slow to fast.
+--- why
+Fast to slow is a zero-order hold. At $t = 0.1\,\mathrm{s}$ the fast task runs first, then the block, which runs only at slow ticks but with the fast priority, copies the value the fast task computed at 0.1 s. The slow task then reads that copy for its whole run, and no fast update can change it midway. Only the slow-to-fast direction pays a delay, one slow period, because the fast task cannot wait for a slow task that has not finished.
+
++++ question | The phase a 25 Hz seam costs
+--- ask
+Mode logic at 25 Hz sends a command to a 100 Hz controller through a deterministic Rate Transition. How much phase, in degrees, does the added delay cost at $3\,\mathrm{rad/s}$? Give one decimal place.
+--- answer
+6.9
+6.88
+6.9 degrees
+6.88 degrees
+6.9°
+6.88°
+--- why
+Slow to fast adds one slow period: $T = 1/25 = 0.04\,\mathrm{s}$. A delay of $T$ costs $\omega T = 3 \times 0.04 = 0.12\,\mathrm{rad}$ of phase, and $0.12 \times 180/\pi = 6.9°$. The controller's 100 Hz rate plays no part; the slow side sets the delay. That is a fair price for a slowly changing mode command, and a steep one for anything that closes a fast loop.
+
++++ question | A copy that may go unprotected
+--- ask
+In a multitasking model, which of these rate crossings is the only one where turning off both Rate Transition options could be defended?
+--- choice
+A quaternion command from 10 Hz guidance to a 100 Hz controller, because each element is a single number.
+--- choice
+A three-element position estimate from a 1 kHz filter to 50 Hz guidance, because the fast writer always finishes before the slow reader starts.
+--- choice correct
+A one-byte status flag, written by a single store instruction that cannot be interrupted halfway, shown on a telemetry display where its age does not matter.
+--- choice
+Any crossing, as long as the model simulates correctly on the desktop.
+--- why
+A plain copy is safe only if a reader can never see the value halfway through being written. A quaternion or a position vector is written and read one element at a time. The slow guidance task reading a three-element estimate can be preempted by the fast filter between two elements, so it gets part old and part new: a torn value. A single store of one byte cannot be split, and a display does not need a fixed delay, so there both boxes buy nothing. Desktop simulation imitates priorities in one thread, with no real preemption, so a clean plot proves nothing about the target.
+
++++ question | A fast loop through a slow seam
+--- ask
+A 100 Hz attitude controller has become sluggish and oscillatory. Its rate-gyro feedback passes through a 10 Hz filter subsystem and then back to the controller through a slow-to-fast Rate Transition with both options checked. What is wrong?
+--- choice
+The filter should be continuous so that it can run at every solver step.
+--- choice correct
+The feedback loop crosses a slow seam, so the whole loop carries a delay of one slow period, $0.1\,\mathrm{s}$, and behaves like a 10 Hz controller with extra lag. Keep the loop inside one rate and pass only commands across the seam.
+--- choice
+The Rate Transition's data integrity option adds the delay; unchecking it restores 100 Hz behavior with no other effect.
+--- choice
+Nothing structural; the controller gains need retuning for the filter's frequency response.
+--- why
+A deterministic slow-to-fast transfer always hands the fast side the previous slow output, so every gyro sample reaches the controller up to $0.1\,\mathrm{s}$ late, ten controller periods. In a feedback path that delay eats phase margin at the loop's crossover, which explains the oscillation. It is the determinism option that sets the delay; unchecking it gives a varying delay and loses repeatability. The fix is structural: run the gyro filter at 100 Hz, inside the controller's rate.
+
++++ question | Choosing rates that line up
+--- ask
+A vehicle needs sensor processing near 1 kHz, attitude control near 100 Hz and guidance near 12 Hz. Every pair of rates must be able to exchange data deterministically. Which set of periods should the team choose?
+--- choice correct
+1 ms, 10 ms and 80 ms (guidance at 12.5 Hz).
+--- choice
+1 ms, 10 ms and 85 ms (guidance at 11.8 Hz).
+--- choice
+1 ms, 4 ms and 10 ms, running control faster than asked to keep the numbers small.
+--- choice
+2 ms, 5 ms and 80 ms.
+--- why
+Deterministic transfer needs each slower period to be a whole number of each faster one. $10/1 = 10$, $80/10 = 8$ and $80/1 = 80$ are all whole, so every slow tick is also a fast tick, the base step is 1 ms, and the pattern repeats every 80 ms. $85/10 = 8.5$ is not whole. In the third set, $10/4 = 2.5$; in the fourth, $5/2 = 2.5$. Guidance at 12.5 Hz instead of 12 is the kind of small trade the navigation and guidance engineers accept for fixed, known data ages.
+
+=== slk02-l08 | Practice: Algebraic loops
+--- for
+l08-algebraic-loops
+
++++ question | Which ring is algebraic
+--- ask
+Each ring below is a closed feedback loop with a Sum block. Which one is an algebraic loop?
+--- choice
+Sum, Gain, Transfer Fcn $\frac{s + 2}{s^2 + 3s + 2}$
+--- choice correct
+Sum, Gain, Transfer Fcn $\frac{3s^2 + 1}{s^2 + s + 1}$, Saturation
+--- choice
+Sum, Gain, State-Space block with $D = 0$
+--- choice
+Sum, Gain, Unit Delay
+--- why
+A loop is algebraic only when every block on it has direct feedthrough. Sum, Gain and Saturation all do. $\frac{3s^2 + 1}{s^2 + s + 1}$ has numerator and denominator of the same degree, so a jump in its input shows up in its output at once: it has feedthrough too, and the ring has no place to start. $\frac{s + 2}{s^2 + 3s + 2}$ is strictly proper, a State-Space block with $D = 0$ computes its output from its state, and a Unit Delay outputs last sample's input, so each of those rings has a block that can go first.
+
++++ question | A loop with a feedback gain
+--- ask
+A Sum block computes $e = u - H y$, where a feedback Gain has $H = 0.5$, and a forward Gain computes $y = K e$ with $K = 4$. The loop is solved exactly. What is $y$ when $u = 3$?
+--- answer
+4
+4.0
+--- why
+Substitute: $y = K(u - H y)$. Move the $y$ terms together: $y + KHy = Ku$, so $y = \frac{K}{1 + KH}\,u = \frac{4}{1 + 2} \times 3 = 4$. Check: $e = 3 - 0.5 \times 4 = 1$, and $4 \times 1 = 4$. Doing the algebra by hand, and putting a single Gain of $K/(1 + KH)$ in place of the ring, is fix 1: exact and free.
+
++++ question | The margin left after a 40 Hz Unit Delay
+--- ask
+A loop crosses over at $\omega_c = 6\,\mathrm{rad/s}$ with a phase margin of $42°$. An algebraic loop in it is broken with a Unit Delay at 40 Hz. What phase margin remains, in degrees, to one decimal place?
+--- answer
+33.4
+33.4 degrees
+33.41
+33.41 degrees
+33.4°
+33.41°
+--- why
+At 40 Hz, $T_s = 0.025\,\mathrm{s}$. The delay costs $\omega_c T_s = 6 \times 0.025 = 0.15\,\mathrm{rad} = 8.6°$ and changes no gain, so the crossover stays at $6\,\mathrm{rad/s}$ and the cost comes straight off the margin: $42° - 8.6° = 33.4°$. That passes a $30°$ requirement and fails a $35°$ one. At 200 Hz the same delay would cost only $1.7°$.
+
++++ question | When the delayed loop stays stable
+--- ask
+The loop $y = K(u - 0.5\,y)$, with $K > 0$, is broken with a Unit Delay, so $y_k = K(u - 0.5\,y_{k-1})$. For which values of $K$ does the delayed loop settle?
+--- choice
+Every $K > 0$, because the loop without the delay was stable for every $K > 0$.
+--- choice correct
+$0 < K < 2$. Each step multiplies the error by $-0.5K$, which must have size below 1.
+--- choice
+$0 < K < 1$. The pole is $-K$, as in the lesson's example.
+--- choice
+$K > 2$, because a large gain drives the error to zero faster.
+--- why
+Around the resting value, the error obeys $e_k = -0.5K\,e_{k-1}$: the discrete pole is $-KH$ with $H = 0.5$. It settles only when $|0.5K| < 1$, so $K < 2$; at $K = 4$ it flips sign and doubles every step. The exact loop, $y = \frac{K}{1 + 0.5K}u$, works for every positive $K$. The pole is $-K$ only when the feedback gain is 1. A delay placed in a loop of pure algebra is never automatically harmless.
+
++++ question | A loop through an Integrator
+--- ask
+Simulink reports an algebraic loop through an atomic subsystem. Inside it, the path from In1 to Out1 runs through an Integrator. But In2 reaches Out1 through a Gain, and it is Out1 that is wired back to In1. Why does Simulink see a loop?
+--- choice
+Integrators inside atomic subsystems lose their state, so they get direct feedthrough.
+--- choice correct
+Simulink treats an atomic subsystem as one block. Because some input (In2) reaches an output with direct feedthrough, the whole block is treated as having feedthrough, so the ring through In1 and Out1 has no block without it.
+--- choice
+Algebraic loop detection is only approximate, so the report can be ignored when an Integrator is on the path.
+--- choice
+Wiring an output back to any input of the same block is always an algebraic loop, whatever is inside.
+--- why
+An atomic subsystem runs as a single unit, and Simulink decides its feedthrough for the unit, not path by path: if any input reaches any output directly, the unit counts as having feedthrough. So the loop exists as far as Simulink's ordering is concerned, even though the path you care about has a state. When a loop you cannot see is reported, look for atomic subsystems and model references on the ring. A virtual subsystem is flattened, so its paths are judged block by block.
+
++++ question | The feedthrough inside a lead filter
+--- ask
+A controller's lead filter is $\frac{s + 2}{0.05s + 1}$. Written as a constant plus a strictly proper part, what is its direct-feedthrough gain, the constant term?
+--- answer
+20
+20.0
+--- why
+Divide the numerator by the denominator: $s + 2 = 20(0.05s + 1) - 18$, so the filter is $20 - \frac{18}{0.05s + 1}$. The constant 20 is the path from input to output with no memory in it, the $D$ term in state-space form. Check at $s = 0$: $20 - 18 = 2$, matching $\frac{2}{1}$. That instant path of gain 20 is what can close an algebraic loop with a sensor gain, and it would also set the discrete pole if the loop were broken with a Unit Delay.
+
+=== slk02-l09 | Practice: The Solver Profiler and the golden rule
+--- for
+l09-solver-profiler-and-the-golden-rule
+
++++ question | A flat line at a round number
+--- ask
+A 1 s simulation is profiled. The step size sits flat at exactly $0.02\,\mathrm{s}$ for the whole run, with no rejected steps and no zero crossings. Nobody set a Max step size. What is holding the step?
+--- choice
+Stiffness: a fast mode is pinning an explicit solver at its stability limit.
+--- choice correct
+The default Max step size, `auto`, which is the run length divided by 50: $1/50 = 0.02\,\mathrm{s}$.
+--- choice
+Chattering: zero crossings too close together to be counted.
+--- choice
+Simulink switched to a fixed-step solver because nothing in the model is changing.
+--- why
+A stability limit shows up as a flat line with many rejected steps charged to one state, at a value set by the fast eigenvalue, not a round number. A perfectly flat step with nothing rejected means the solver would like to go further but is not allowed to. With `auto`, the cap is (stop time − start time)/50, so a 1 s run is capped at 0.02 s. Whether that matters depends on the model; for a quiet 1 s run it simply guarantees 50 points on the plot.
+
++++ question | The processor share of three tasks
+--- ask
+A flight computer runs three tasks with periods $1\,\mathrm{ms}$, $5\,\mathrm{ms}$ and $50\,\mathrm{ms}$, and measured worst-case times $0.2\,\mathrm{ms}$, $1.5\,\mathrm{ms}$ and $12\,\mathrm{ms}$. What is the utilization, as a decimal?
+--- answer
+0.74
+.74
+74%
+0.740
+--- why
+Utilization is the sum of each worst-case time over its period: $U = 0.2/1 + 1.5/5 + 12/50 = 0.20 + 0.30 + 0.24 = 0.74$. The tasks use 74% of the processor. That is under 100% and under the three-task rate-monotonic guarantee of about 78%, so with faster tasks at higher priority every deadline is met. The periods also divide each other ($5/1 = 5$, $50/5 = 10$), so every transfer can be made deterministic.
+
++++ question | One finding that fails the rule
+--- ask
+A model is reviewed before code generation. Which finding fails the golden rule?
+--- choice
+The continuous vehicle dynamics in the test harness run on `ode45`.
+--- choice
+A slow-to-fast Rate Transition adds one 20 ms period of delay, and the delay has been counted in the loop's phase margin.
+--- choice correct
+An algebraic loop in the controller has been made explicit with an Algebraic Constraint block.
+--- choice
+A Unit Delay at 10 ms breaks a loop, costing $1.2°$ of phase margin, checked against the requirement.
+--- why
+The rule applies to the deployed path, the controller, not to the harness around it, which is simulated on the desktop and never becomes flight code. Rate Transitions and Unit Delays are allowed when their delays are counted. An Algebraic Constraint block states the loop openly, but every step is still solved by iteration, with a data-dependent count and a chance of not converging. It does not count as broken.
+
++++ question | Just over the guarantee
+--- ask
+Three rate-monotonic tasks have a total utilization of 0.79. What can you conclude?
+--- choice
+Every deadline will be missed eventually, because 0.79 is above the 0.78 limit.
+--- choice correct
+The work fits on average, but 0.79 is slightly above the classic three-task guarantee of about 0.78, so the schedule must be analyzed in detail rather than assumed to meet every deadline.
+--- choice
+Every deadline is met, because any utilization below 1 is guaranteed with fastest-first priorities.
+--- choice
+Nothing, because utilization only applies to single-tasking models.
+--- why
+Below about 0.78 for three tasks, fastest-first priorities are guaranteed to meet every deadline. Above 1, the work cannot fit at all. Between the two, the guarantee is silent: the schedule may well work, but it has to be shown with a detailed timing analysis. Utilization is a multitasking idea: it adds up the processor share of each task.
+
++++ question | A profile of the wrong run
+--- ask
+A model stalls every time a thruster fires at $t = 45\,\mathrm{s}$. An engineer runs the Solver Profiler from 0 to 20 s to keep the recording small. The report shows healthy, climbing steps, few rejections and no chattering, and she concludes the solver is fine. What is wrong?
+--- choice
+Nothing: a healthy profile over 20 s proves the solver settings are right for the whole run.
+--- choice correct
+The profiler only sees the run it was given. The trouble starts at 45 s, so she must profile a window that includes the firing, for example 40 to 50 s.
+--- choice
+The profiler can only record zero crossings, so it cannot show why a thruster makes the model stall.
+--- choice
+She should have profiled with a fixed-step solver, which makes every problem visible.
+--- why
+The profiler records steps, rejections, zero crossings, resets and Jacobian updates, but only for the time span it runs. A problem that starts with an event outside that span never appears. Profile the slow scenario over the time where it is slow, and keep the window short enough that the recording stays manageable: 40 to 50 s here, not 0 to 20.
+
++++ question | The mode behind a flat shelf
+--- ask
+A variable-step Dormand–Prince run is profiled. Its step size sits on a flat shelf at $0.4\,\mathrm{ms}$ for the whole run, and hundreds of rejected steps are charged to one actuator state. Using the lesson's stability constant of 3.3, about how fast is that actuator's mode, $|\lambda|$ in rad/s?
+--- answer
+8250
+8,250
+8250 rad/s
+8,250 rad/s
+--- why
+A flat shelf with rejections charged to one state is an explicit solver riding its stability limit, $h|\lambda| \approx 3.3$. So $|\lambda| \approx 3.3 / 0.0004 = 8250\,\mathrm{rad/s}$, a time constant of about $0.12\,\mathrm{ms}$. That points straight at the block, and the next question is whether a mode that fast matters to the study: if not, simplify it; if it does, switch to an implicit solver such as `ode15s`.
+
+=== slk02-test | Simulink solvers, sample times and numerical correctness: module test
+--- teach
+The test covers the whole module: fixed-step against variable-step, the variable-step and stiff solvers, the tolerances and the step cap, the fixed-step family and its stability limits, zero crossings, sample times and their colors, multirate models and Rate Transitions, algebraic loops, the Solver Profiler and the golden rule. Most questions combine two or more lessons, and many need a short calculation, so keep a calculator at hand. To get ready, redo the practice questions of the lessons that felt hard, and work each lesson's check questions again on paper.
+--- gate
+questions 13
+minutes 30
+
++++ question | The highest order that fits the slot
+--- ask
+A plant model runs on a HIL rig at a fixed step of $1\,\mathrm{ms}$. One derivative evaluation takes $90\,\mu\mathrm{s}$ on the real-time computer, and the solver may use at most half of each slot. Of the explicit fixed-step solvers `ode1`, `ode2`, `ode3`, `ode4`, `ode5` and `ode8`, which is the highest-order one that fits? Type its name.
+--- answer
+ode4
+ode 4
+--- why
+The budget is $500\,\mu\mathrm{s}$, and a fixed-step solver's cost per step is its number of stages times the cost of one. `ode4` needs $4 \times 90 = 360\,\mu\mathrm{s}$ and fits. `ode5` needs 6 stages, $540\,\mu\mathrm{s}$, and `ode8` needs 13, $1170\,\mu\mathrm{s}$, a certain overrun. Because the step is fixed, this can be settled before the rig runs. The step must still be checked for stability against the fastest eigenvalue, and for accuracy against a variable-step reference.
+
++++ question | ode45's next step after a big miss
+--- ask
+`ode45` attempts a step of $0.3\,\mathrm{s}$, and its error estimate comes out 243 times the allowed tolerance. Using the lesson-1 step-size rule with its 0.9 safety factor, what step, in seconds, does it try next?
+--- answer
+0.09
+0.09 s
+.09
+--- why
+In the rule $h_{\text{new}} = 0.9\,h\,(\text{tol}/\text{err})^{1/(p+1)}$, $p$ is the order of the lower method of the pair. `ode45` is Dormand–Prince 4(5), so $p = 4$ and the power is $\tfrac{1}{5}$. Since $243 = 3^5$, the step shrinks by 3: $0.9 \times 0.3 / 3 = 0.09\,\mathrm{s}$. The step is rejected and retried from the same time. With the square root of the Euler–Heun pair it would have shrunk by about 15.6 instead, far more than a fifth-order error needs.
+
++++ question | Two ways to build the same pulse
+--- ask
+A 250 s simulation runs on `ode45` with default settings. A valve opens for $1\,\mathrm{s}$ at a time chosen by the test. In version A the pulse is computed from the clock inside a MATLAB Function block. In version B it is the sum of two Step blocks, one switching on and one switching off. Which version can miss the pulse entirely?
+--- choice
+Both: the default Max step size of 5 s can step over any 1 s pulse.
+--- choice correct
+Only A. The default Max step size is $250/50 = 5\,\mathrm{s}$, and nothing tells the solver where the MATLAB Function's output jumps. The Step blocks have zero-crossing detection, so the solver finds both edges even inside a long step.
+--- choice
+Only B, because Step blocks switch at major time steps only and a 5 s step can skip the switching time.
+--- choice
+Neither: a variable-step solver's error control notices any change that lasts a whole second.
+--- why
+Error control only judges what the solver samples. With a 5 s leash, a quiet stretch lets the solver stride right over a 1 s pulse that no slope sample lands in, and version A's black-box function gives no warning. A Step block registers a zero-crossing function for its switching time, so the solver watches for the sign change and lands on each edge. That is why building events from blocks the solver understands is cheaper than shortening the leash for the whole run.
+
++++ question | Tightening RelTol did nothing
+--- ask
+A pointing model's attitude-error Integrator holds values around $2 \times 10^{-5}\,\mathrm{rad}$. The model uses RelTol $10^{-3}$ and AbsTol $10^{-6}$ for every state. The lightly damped jitter mode grows in the plot, which the physics cannot do. Tightening RelTol to $10^{-6}$ changes nothing. Why, and what fixes it?
+--- choice
+The model is stiff, so the tolerances do not matter; switch to `ode15s`.
+--- choice correct
+The limit is $\max(\text{RelTol} \cdot |x|, \text{AbsTol})$, and AbsTol wins for this state at either RelTol: $10^{-6}$ is about 5% of the whole signal per step. Give that Integrator its own Absolute tolerance, about $10^{-9}\,\mathrm{rad}$, or rescale it to microradians.
+--- choice
+RelTol cannot go below $10^{-3}$ in Simulink, so the typed value was ignored.
+--- choice
+The Max step size is too small; raising it lets the error control work properly.
+--- why
+At RelTol $10^{-3}$, $\text{RelTol} \cdot |x| = 2 \times 10^{-8}$; at $10^{-6}$ it is $2 \times 10^{-11}$. Both are far below the AbsTol of $10^{-6}$, so the error limit for this state stayed at $10^{-6}$ and the solver kept striding. As in the lesson's solar-array example, big steps on a lightly damped mode can make it grow. An AbsTol below the smallest error worth caring about fixes it without slowing the rest of the model, which a global RelTol change never would.
+
++++ question | The cost of a quarter-millisecond actuator
+--- ask
+A 20 s attitude simulation of a loop with a bandwidth of about $1\,\mathrm{rad/s}$ runs on `ode45`. Someone adds an actuator modeled as a first-order lag with a time constant of $0.25\,\mathrm{ms}$. About how many steps must `ode45` now take, at least?
+--- choice
+About 240: the plots look the same, so the step count barely changes.
+--- choice
+About 2,400.
+--- choice correct
+About 24,000.
+--- choice
+About 2,400,000.
+--- why
+The actuator's eigenvalue is $-1/0.00025 = -4000\,\mathrm{s^{-1}}$. An explicit Dormand–Prince step stays stable only while $h|\lambda| \lesssim 3.3$, so $h \le 3.3/4000 = 0.825\,\mathrm{ms}$ for the whole run, even after the actuator's mode has died away. $20 / 0.000825 \approx 24{,}000$ steps. The plot barely changes because the fast mode barely matters, which is the case for removing it; if it must stay, an implicit solver steps over it.
+
++++ question | ode4 on a very fast mode
+--- ask
+A HIL plant model has a fast mode with $\lambda = -4000\,\mathrm{s^{-1}}$ and runs at a fixed step of $1\,\mathrm{ms}$. Under `ode4`, what number multiplies that mode at every step?
+--- answer
+5
+5.0
++5
+--- why
+Here $z = h\lambda = -4$, and RK4's growth factor is $R(z) = 1 + z + z^2/2 + z^3/6 + z^4/24 = 1 - 4 + 8 - 10.667 + 10.667 = 5$. The mode is multiplied by 5 every step, so the run explodes; $h|\lambda| = 4$ is past RK4's limit of 2.785. `ode1be` at the same step multiplies it by $1/(1 + 4) = 0.2$, with a fixed number of Newton iterations per step, so it keeps both the stability and the fixed cost the rig needs.
+
++++ question | A sawtooth on the current
+--- ask
+A stiff electromechanical actuator model runs on `ode23t`. The motor current shows a fine sawtooth that flips sign every step and fades only slowly, riding on an otherwise sensible curve. Which change removes it?
+--- choice correct
+Switch to `ode23tb`, whose TR-BDF2 steps strongly damp very fast modes.
+--- choice
+Switch to `ode45`, because explicit solvers do not ring.
+--- choice
+Switch to `ode113`, whose high order removes numerical artifacts.
+--- choice
+Turn zero-crossing detection off, because the sawtooth is chattering.
+--- why
+This is ringing. The trapezoidal rule is stable, but its factor on a very fast mode is close to $-1$, so the mode flips every step and hardly decays. TR-BDF2 and backward Euler send that factor toward 0, wiping the mode out. An explicit solver would not ring here; it would be pinned to tiny steps or blow up, since the model is stiff. Chattering is a pile-up of zero crossings in a tiny time interval, not a smooth sawtooth over many steps.
+
++++ question | Dry friction and the Adaptive algorithm
+--- ask
+A mechanism model uses dry friction whose force is a hard switch on the sign of the velocity. Once the part should be stuck, the run stops with a consecutive zero-crossings error. A colleague sets the zero-crossing Algorithm to Adaptive, and the run finishes. Which statement is right?
+--- choice
+Adaptive located each crossing more precisely, so the model is now correct.
+--- choice
+Adaptive raised the consecutive-crossing limit, which is the standard fix.
+--- choice correct
+Adaptive stopped bracketing the chattering crossings while the velocity sat within the signal threshold, and stepped through them. The run finishes, but the model still has a friction force flipping infinitely fast; the real fix is a stick region, where below a small speed the part stays stuck until the applied force exceeds breakaway.
+--- choice
+Adaptive switched the solver to a fixed step while the part was stuck.
+--- why
+The Adaptive algorithm notices a signal flip-flopping in a small band around zero and turns bracketing off for it until it moves clear. That rescues a run that chatters for a harmless reason, but the model is still posed badly: the friction sign flips back and forth on a part that should be held still. A deadband or stick band removes the chattering at its source, the same idea as hysteresis on a relay. Raising the crossing limit would only let the stall run longer.
+
++++ question | What fixed-step detection keeps
+--- ask
+You enable zero-crossing detection for a fixed-step real-time plant model. What stays true?
+--- choice
+Nothing changes: fixed-step solvers can only notice an event at the next step.
+--- choice correct
+The major steps stay on the same fixed grid. A crossing inside a step is refined with a capped number of bracketing iterations, with a capped number of crossings per step, so each step's worst-case cost is still known.
+--- choice
+The solver shortens the step to land exactly on the crossing, like a variable-step solver, then returns to the grid.
+--- choice
+Events are located exactly, at the cost of an unbounded search on the rare steps that contain one.
+--- why
+Fixed-step detection is a compromise built for real time. The beat never moves, so every step still starts and ends on its tick. The crossing is located only as well as a few bracketing iterations allow, which is less exact than a variable-step search but far better than handling the event a whole step late. The two caps are what keep the cost bounded and deterministic, the promise a HIL slot depends on.
+
++++ question | Resets at a regular beat
+--- ask
+A smooth orbit plant runs on `ode113` at RelTol $10^{-8}$, closed around a 50 Hz discrete attitude controller that changes the thruster torque every $0.02\,\mathrm{s}$. The Solver Profiler shows a solver reset every 0.02 s, and the step size never climbs above about 2 ms. What is going on, and what is the sensible change?
+--- choice
+The model is stiff; switch to `ode15s`.
+--- choice
+The controller is chattering; add hysteresis to its output.
+--- choice correct
+Each controller update changes the plant's input, which resets the solver. `ode113` is multistep, so every reset throws away its history and restarts it at low order with small steps. A one-step solver such as `ode45` restarts at full strength and suits this model better.
+--- choice
+Set Solver reset method to Robust, which makes each reset cheaper.
+--- why
+Resets at a regular beat are the profiler's sign of a discrete signal feeding a continuous part. They are normal in a hybrid model, but their cost depends on the solver. `ode113` wins on smooth models only after it has built up its history, and a reset every 20 ms never lets it. The Solver reset method applies to the implicit solvers' Jacobians, and Robust makes resets more expensive, not cheaper. Nothing here is stiff or chattering.
+
++++ question | A step that divides and stays stable
+--- ask
+A fixed-step model has a discrete controller with sample time `[0.02, 0.005]`. The plant's fastest eigenvalue is $-300\,\mathrm{rad/s}$, and the solver is `ode4`. What is the largest fixed step, in seconds, that is allowed and stable?
+--- answer
+0.005
+0.005 s
+5 ms
+5ms
+.005
+--- why
+The fixed step must divide both the period and the offset, so it must divide $0.005\,\mathrm{s}$: the candidates are 0.005, 0.0025 s and so on. RK4's limit is $2.785/300 = 0.0093\,\mathrm{s}$, and $0.005 \times 300 = 1.5$ is well inside it. So the offset, not stability, sets the step here. Without the offset, 0.01 s would divide the period but fail stability, since $0.01 \times 300 = 3 > 2.785$.
+
++++ question | Where the colors meet
+--- ask
+A multitasking model is shown with sample time colors after Update Diagram. Which line needs a Rate Transition block?
+--- choice correct
+A red line entering a green block.
+--- choice
+A green line entering a green block inside a subsystem drawn in the hybrid color.
+--- choice
+A line in the constant color entering a red Sum block.
+--- choice
+Every line inside a subsystem drawn in the hybrid color.
+--- why
+Red is the fastest discrete rate and green the second fastest, so a red line into a green block is a seam between two rates: in multitasking, one task writes while another reads, and the transfer needs protection and a chosen delay. A line between two blocks of the same color is inside one rate, even when the subsystem around it holds several. A constant is computed once at the start and never changes, so there is nothing to tear.
+
++++ question | A feedback path through a slow seam
+--- ask
+A 200 Hz attitude loop crosses over at $4\,\mathrm{rad/s}$ with a phase margin of $45°$. Its feedback signal was routed through a 20 Hz subsystem and back through a deterministic Rate Transition. What phase margin is left, in degrees, to one decimal place?
+--- answer
+33.5
+33.5 degrees
+33.54
+33.54 degrees
+33.5°
+33.54°
+--- why
+Slow to fast with deterministic transfer adds one slow period, $T = 1/20 = 0.05\,\mathrm{s}$. A delay leaves the gain, and so the crossover, alone and costs $\omega_c T = 4 \times 0.05 = 0.2\,\mathrm{rad} = 11.5°$. So $45° - 11.5° = 33.5°$. Kept inside the 200 Hz rate, even a Unit Delay would cost only $4 \times 0.005 = 0.02\,\mathrm{rad} = 1.1°$. Feedback loops belong inside one rate.
+
++++ question | What removes an algebraic loop
+--- ask
+A model has a ring of a Sum, a controller Gain, a lead filter $\frac{s + 1}{0.1s + 1}$, an actuator modeled as a Saturation only, and a sensor Gain back to the Sum. Simulink reports an algebraic loop. Which change removes it?
+--- choice
+Switch the solver to `ode15s`, because implicit solvers solve the loop's equation at every step.
+--- choice
+Switch to a fixed-step solver, because fixed-step models have no algebraic loops.
+--- choice correct
+Model the actuator's real response with a first-order lag $\frac{1}{\tau s + 1}$ after the Saturation, which puts a state on the ring.
+--- choice
+Turn off the Saturation's zero-crossing detection.
+--- why
+The loop exists because every block on the ring has direct feedthrough: the Sum, both Gains, the Saturation, and the lead filter, whose numerator and denominator have the same degree. The cure is a block without feedthrough on the ring, and an honest actuator lag is one, making the model more truthful too. The choice of solver has nothing to do with it: the loop is an equation among signals at one instant, and Simulink solves it by iteration whatever the solver. Zero-crossing detection only affects where steps end.
+
++++ question | Fixing the rates, then the budget
+--- ask
+A controller model has tasks at $1\,\mathrm{ms}$, $10\,\mathrm{ms}$ and $25\,\mathrm{ms}$, with worst-case times $0.25\,\mathrm{ms}$, $2.5\,\mathrm{ms}$ and $6\,\mathrm{ms}$. The slowest rate breaks the golden rule, so guidance is moved to $50\,\mathrm{ms}$, keeping its $6\,\mathrm{ms}$ of work. What is the utilization after the change, as a decimal?
+--- answer
+0.62
+.62
+62%
+0.620
+--- why
+$25/10 = 2.5$ is not whole, so the 25 ms and 10 ms rates cannot exchange data deterministically; 50 ms fixes that, since $50/10 = 5$. Then $U = 0.25/1 + 2.5/10 + 6/50 = 0.25 + 0.25 + 0.12 = 0.62$. That is well under the three-task rate-monotonic guarantee of about 0.78, so every deadline is met with fastest-first priorities. The rule's parts support each other: clean rates make fixed data ages, and the utilization shows the rates fit the processor.
+
++++ question | What the halving test says
+--- ask
+A fixed-step `ode4` attitude model is compared with an `ode45` run at RelTol $10^{-10}$. At $h = 5\,\mathrm{ms}$ the largest difference is 2 mrad; at $h = 2.5\,\mathrm{ms}$ it is 0.13 mrad. What does this tell you?
+--- choice
+The fixed-step model is wrong, because it disagrees with the reference at both steps.
+--- choice correct
+The difference fell about 16 times when the step halved, as fourth order predicts, so it is the fixed step's own truncation error and no corner is being stepped over. Pick the step whose error meets the requirement.
+--- choice
+An event is being stepped over, since the error changed with the step.
+--- choice
+The reference is not accurate enough, because a tighter RelTol would have made the two agree.
+--- why
+$2 / 0.13 \approx 15$, close to $2^4 = 16$: the error shrinks like $h^4$, exactly what `ode4` does on a smooth model. Had it only halved, a corner or event falling inside a step would be the suspect, since a straddled corner makes an error that shrinks only like $h$. A fixed-step solver never reports its own error, so this comparison against a tight variable-step reference, with the step halved, is how you verify it.

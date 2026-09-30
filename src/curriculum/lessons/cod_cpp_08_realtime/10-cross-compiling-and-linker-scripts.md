@@ -171,7 +171,7 @@ A linker script's `MEMORY` block names the regions (flash, RAM) with their origi
 
 On a desktop the operating system prepares memory and calls `main`. On bare metal, the first code to run is yours. When a Cortex-M powers on, the hardware reads two words from the start of flash: the first is the initial stack pointer, the second is the address of the **reset handler**. That table of addresses is the **vector table**. The linker script put it first in flash with `.isr_vector`.
 
-```cpp
+```cpp laptop
 #include <cstdint>
 
 // Symbols defined by the linker script.
@@ -207,7 +207,7 @@ The reset handler does two jobs. It copies every word from `_sdata` to `_edata` 
 
 Here is the program that uses it:
 
-```cpp
+```cpp laptop
 #include <cstdint>
 
 volatile std::uint32_t tick_count = 0;        // .bss  (starts at zero)

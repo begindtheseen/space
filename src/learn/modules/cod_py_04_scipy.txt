@@ -1,0 +1,3618 @@
+@track python
+@course mod-cod_py_04_scipy
+@module cod_py_04_scipy
+@title SciPy for engineering: practice and test
+
+=== py04-l01 | Practice: Root finding with brentq, newton, fsolve and root
+--- for
+l01-root-finding
+
++++ practice | The temperature of a radiator panel
+--- task
+A radiator panel on a spacecraft absorbs a steady heat flow `q_in`, in watts per square meter. It loses heat two ways: it radiates, `eps * SIGMA * T**4`, and it leaks heat to its mounting structure, `h * (T - T_env)`. At its steady temperature `T`, in kelvin, what comes in equals what goes out:
+
+`eps * SIGMA * T**4 + h * (T - T_env) = q_in`
+
+Here `SIGMA = 5.670374419e-8`, the Stefan-Boltzmann constant, `eps` is the panel's emissivity (between 0 and 1), `h` is the leak coefficient (always greater than 0) and `T_env` is the structure's temperature in kelvin.
+
+Write a function `radiator_temperature(q_in, eps, h, T_env)` that returns the steady temperature `T` as a float, using `brentq`. It must satisfy the balance to better than `1e-6` watts per square meter. `q_in` can be zero; then the panel settles below `T_env`.
+--- starter
+import numpy as np
+from scipy.optimize import brentq
+
+SIGMA = 5.670374419e-8
+
+
+def radiator_temperature(q_in, eps, h, T_env):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import brentq
+
+SIGMA = 5.670374419e-8
+
+
+def radiator_temperature(q_in, eps, h, T_env):
+    """Steady panel temperature in K: radiation plus leak balances the heat coming in."""
+    def balance(T):
+        return eps * SIGMA * T**4 + h * (T - T_env) - q_in
+
+    # At T = 0 the balance is -h*T_env - q_in < 0. At T_env + q_in/h the leak alone
+    # carries q_in, so radiation makes the balance positive. The root is in between.
+    return brentq(balance, 0.0, T_env + q_in / h, xtol=1e-12)
+--- hint
+Move everything to one side, so the question becomes "where is this function zero?", then look for two temperatures where it has opposite signs.
+--- hint
+At `T = 0` the function is negative. At `T = T_env + q_in / h` the leak term alone already equals `q_in`, and radiation only adds to it.
+--- check test | A sunlit panel with a cold structure balances
+(lambda T: abs(0.85 * 5.670374419e-8 * T**4 + 5.0 * (T - 3.0) - 800.0) < 1e-6 and abs(T - 157.1246) < 1e-3)(radiator_temperature(800.0, 0.85, 5.0, 3.0))
+--- check test | No heat coming in: the panel settles below the structure
+(lambda T: abs(0.9 * 5.670374419e-8 * T**4 + 2.0 * (T - 290.0)) < 1e-6 and 224.8 < T < 290.0)(radiator_temperature(0.0, 0.9, 2.0, 290.0))
+--- check case | A dull panel in full sunlight, to 0.01 K
+round(radiator_temperature(1361.0, 0.3, 0.5, 250.0), 2)
+=> 518.22
+--- check source | Uses brentq
+brentq\(
+
++++ practice | Three beacons, one position
+--- task
+A rover measures its distance to three radio beacons whose positions are known, and wants its own position `(x, y, z)`.
+
+Write a function `locate(beacons, ranges, guess)` that:
+
+- takes `beacons`, a list or array of shape `(3, 3)` (one beacon per row, in meters), `ranges`, the three measured distances in meters, and `guess`, a starting position of three numbers;
+- solves the three equations "distance to beacon `k` minus `ranges[k]` is zero" with `scipy.optimize.root`;
+- returns the position as a NumPy array of shape `(3,)`;
+- raises `ValueError` when `root` reports that it did not succeed, for example when the ranges are impossible.
+
+Three spheres usually meet in two mirror-image points; the starting guess decides which one you get.
+--- starter
+import numpy as np
+from scipy.optimize import root
+
+
+def locate(beacons, ranges, guess):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import root
+
+
+def locate(beacons, ranges, guess):
+    """Position whose distances to the three beacons match the ranges; raises if root fails."""
+    beacons = np.asarray(beacons, dtype=float)
+    ranges = np.asarray(ranges, dtype=float)
+
+    def residual(p):
+        return np.linalg.norm(beacons - p, axis=1) - ranges
+
+    sol = root(residual, guess)
+    if not sol.success:
+        raise ValueError(f"no position found: {sol.message}")
+    return sol.x
+--- hint
+Write one residual function that returns all three "computed distance minus measured distance" numbers as an array. `np.linalg.norm(beacons - p, axis=1)` gives all three distances at once.
+--- hint
+`root` returns a result object. Look at `.success` before you trust `.x`.
+--- check test | A guess above the beacons finds the point above
+(lambda B: np.allclose(locate(B, np.linalg.norm(np.array(B) - [3.0, 4.0, 5.0], axis=1), [1.0, 1.0, 1.0]), [3.0, 4.0, 5.0], atol=1e-8))([[0, 0, 0], [10, 0, 0], [0, 10, 0]])
+--- check test | A guess below finds the mirror point
+(lambda B: np.allclose(locate(B, np.linalg.norm(np.array(B) - [3.0, 4.0, 5.0], axis=1), [1.0, 1.0, -1.0]), [3.0, 4.0, -5.0], atol=1e-8))([[0, 0, 0], [10, 0, 0], [0, 10, 0]])
+--- check test | Beacons in a tilted layout, with a shape-(3,) answer
+(lambda B, p: (lambda x: x.shape == (3,) and np.allclose(x, p, atol=1e-8))(locate(B, np.linalg.norm(B - p, axis=1), p + 2.0)))(np.array([[100.0, -40.0, 5.0], [-60.0, 80.0, 0.0], [20.0, 30.0, 90.0]]), np.array([12.0, -7.0, 33.0]))
+--- check test | Ranges that cannot all be true raise ValueError
+raises(ValueError, lambda: locate([[0, 0, 0], [10, 0, 0], [0, 10, 0]], [2.0, 2.0, 2.0], [1.0, 1.0, 1.0]))
+
++++ practice | Kepler's equation for a flyby
+--- task
+A probe that flies past a planet faster than escape speed follows a hyperbola, not an ellipse. Its version of Kepler's equation uses the hyperbolic sine, `np.sinh`:
+
+`M = e * sinh(H) - H`
+
+Here `e` is the eccentricity, always greater than 1 for a hyperbola, `M` is the mean anomaly (any real number: negative before closest approach, positive after, with no laps to remove) and `H` is the hyperbolic anomaly you want.
+
+Write a function `solve_hyperbolic(M, e)` that returns `H` as a float, using `brentq`, such that `e * sinh(H) - H - M` is smaller in size than `1e-12 * max(1, abs(M))`.
+
+- `M = 0` gives `H = 0.0`.
+- Negative `M` gives the negative of the answer for `abs(M)`.
+- It must work for `e` barely above 1 (such as `1.0001`) and for `M` as large as `10000`, without overflow.
+--- starter
+import numpy as np
+from scipy.optimize import brentq
+
+
+def solve_hyperbolic(M, e):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import brentq
+
+
+def solve_hyperbolic(M, e):
+    """H with e*sinh(H) - H = M, for e > 1 and any real M."""
+    if M == 0:
+        return 0.0
+    m = abs(M)
+    f = lambda H: e * np.sinh(H) - H - m
+    # sinh(H) >= H for H >= 0, so f(H) >= (e - 1) * sinh(H) - m.
+    # At H = arcsinh(m / (e - 1)) that is zero, so f is not negative there, while f(0) = -m < 0.
+    H = brentq(f, 0.0, np.arcsinh(m / (e - 1.0)), xtol=1e-15, rtol=8.9e-16)
+    return float(np.sign(M) * H)
+--- hint
+The function `e * sinh(H) - H` is odd: flipping the sign of `H` flips the sign of the result. So solve for `abs(M)` and put the sign back at the end.
+--- hint
+For `M > 0` the left end `H = 0` gives `-M`, which is negative. For the right end you need an `H` that is surely big enough but not so big that `sinh` overflows. Since `sinh(H) >= H` when `H >= 0`, the function is at least `(e - 1) * sinh(H) - M`.
+--- hint
+Choose the right end where `(e - 1) * sinh(H) = M`, that is `H = arcsinh(M / (e - 1))`. Ask for tight tolerances with `xtol` and `rtol`.
+--- check test | Small and large mean anomalies, three eccentricities
+all(abs(e * np.sinh(solve_hyperbolic(M, e)) - solve_hyperbolic(M, e) - M) < 1e-12 * max(1.0, abs(M)) for e in (1.0001, 1.5, 3.0) for M in (0.5, 5.0, 100.0, 1e4))
+--- check test | Negative M mirrors positive M
+all(abs(solve_hyperbolic(-M, e) + solve_hyperbolic(M, e)) < 1e-12 * max(1.0, M) for e in (1.2, 4.0) for M in (0.3, 2.0, 50.0))
+--- check case | M = 0 is closest approach
+solve_hyperbolic(0.0, 2.0)
+=> 0.0
+--- check case | e = 1.5, M = 5, to eight places
+round(solve_hyperbolic(5.0, 1.5), 8)
+=> 2.2837682
+
++++ practice | Every crossing on an interval
+--- task
+`all_roots(f, a, b, n)` should return every root of `f` on `[a, b]`, in increasing order, as a list of floats. It splits `[a, b]` into `n` equal pieces, and calls `brentq` on each piece whose two ends have opposite signs.
+
+For `all_roots(np.sin, 1.0, 9.5, 17)` it should return the three roots near 3.14, 6.28 and 9.42. Instead it returns only the first two: the root in the last piece is always missed. Fix it. (You may assume no root sits exactly on a piece's end.)
+--- starter
+import numpy as np
+from scipy.optimize import brentq
+
+
+def all_roots(f, a, b, n):
+    """Every root of f on [a, b]: brentq on each of n equal pieces with a sign change."""
+    xs = np.linspace(a, b, n + 1)
+    roots = []
+    for i in range(n - 1):
+        if f(xs[i]) * f(xs[i + 1]) < 0:
+            roots.append(brentq(f, xs[i], xs[i + 1]))
+    return roots
+--- solution
+import numpy as np
+from scipy.optimize import brentq
+
+
+def all_roots(f, a, b, n):
+    """Every root of f on [a, b]: brentq on each of n equal pieces with a sign change."""
+    xs = np.linspace(a, b, n + 1)
+    roots = []
+    for i in range(n):
+        if f(xs[i]) * f(xs[i + 1]) < 0:
+            roots.append(brentq(f, xs[i], xs[i + 1]))
+    return roots
+--- hint
+`np.linspace(a, b, n + 1)` gives `n + 1` points, so there are `n` pieces. How many times does the loop run?
+--- check case | All three roots of sin on [1, 9.5]
+[round(r, 6) for r in all_roots(np.sin, 1.0, 9.5, 17)]
+=> [3.141593, 6.283185, 9.424778]
+--- check case | A root in the very last piece of a cubic
+[round(r, 6) for r in all_roots(lambda x: (x - 0.5) * (x - 2.2) * (x - 3.9), 0.0, 4.0, 4)]
+=> [0.5, 2.2, 3.9]
+--- check case | One piece, one root
+[round(r, 6) for r in all_roots(lambda x: x**2 - 2.0, 0.0, 3.0, 1)]
+=> [1.414214]
+--- check case | No sign change anywhere gives an empty list
+all_roots(lambda x: x**2 + 1.0, -3.0, 3.0, 12)
+=> []
+
++++ practice | The balance point between Earth and Moon
+--- task
+Between a big body of mass `m1` and a small one of mass `m2`, a distance `R` apart, there is a point on the line joining them where a spacecraft can ride along with them without drifting: the first Lagrange point, L1. At a distance `r` from the big body (with `0 < r < R`), it is where
+
+`m1 / r**2 - m2 / (R - r)**2 - (m1 + m2) * (r - c) / R**3 = 0`
+
+and `c = R * m2 / (m1 + m2)` is the distance from the big body to the pair's center of mass. (The constant of gravitation cancels, so it is left out.)
+
+Write a function `l1_distance(m1, m2, R)` that returns `r` in the same units as `R`, using `brentq`. The equation has a division by zero at `r = 0` and at `r = R`, so your bracket must stay strictly inside. Answers must be correct to about 1e-9 of `R`. For Earth and Moon (`5.972e24` kg, `7.342e22` kg, `384400e3` m), `r` is about 326,390 km.
+--- starter
+import numpy as np
+from scipy.optimize import brentq
+
+
+def l1_distance(m1, m2, R):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import brentq
+
+
+def l1_distance(m1, m2, R):
+    """Distance from the big body to the L1 point, in the units of R."""
+    total = m1 + m2
+    c = R * m2 / total
+
+    def balance(r):
+        return m1 / r**2 - m2 / (R - r)**2 - total * (r - c) / R**3
+
+    # Near r = 0 the first term is huge and positive; near r = R the second is huge and negative.
+    eps = 1e-9 * R
+    return brentq(balance, eps, R - eps, xtol=1e-12 * R, rtol=8.9e-16)
+--- hint
+Look at what each term does close to the ends. Just above `r = 0`, `m1 / r**2` is enormous and positive. Just below `r = R`, `m2 / (R - r)**2` is enormous and it is subtracted.
+--- hint
+So a bracket from a tiny fraction of `R` to `R` minus that tiny fraction has a sign change. `brentq`'s default `xtol` is absolute, so for a distance in meters scale it with `R`.
+--- check test | Earth and Moon: about 326,390 km from Earth
+abs(l1_distance(5.972e24, 7.342e22, 384400e3) / 1e3 - 326389.68) < 0.5
+--- check test | Sun and Earth: about 1.49 million km on the Sun side of Earth
+abs((1.496e11 - l1_distance(1.989e30, 5.972e24, 1.496e11)) / 1e3 - 1491411.2) < 2.0
+--- check test | Equal masses meet in the middle
+abs(l1_distance(1.0, 1.0, 2.0) - 1.0) < 1e-9
+--- check test | The same answer in kilometers and in meters
+abs(l1_distance(5.972e24, 7.342e22, 384400e3) - 1000 * l1_distance(5.972e24, 7.342e22, 384400.0)) < 1e-3
+
++++ question | A bracket without a sign change
+--- ask
+What happens when this runs?
+
+```python
+from scipy.optimize import brentq
+
+x = brentq(lambda x: x**2 - 4.0, 0.0, 1.0)
+```
+--- choice
+It returns 2.0, the root of `x**2 - 4`.
+--- choice
+It returns 1.0, the end of the bracket nearest to the root.
+--- choice correct
+It raises `ValueError`: the function is negative at both ends, so there is no sign change to trap a root.
+--- choice
+It returns `nan`, because no root lies between 0 and 1.
+--- why
+`brentq` checks the bracket before anything else. Here f(0) = -4 and f(1) = -3: both negative, so SciPy stops at once with "f(a) and f(b) must have different signs". It never searches outside the interval you gave, and it never returns a made-up value. The fix is to find two points where the signs really differ, such as 0 and 3.
+
+=== py04-l02 | Practice: Minimizing, fitting curves and finding the best valley
+--- for
+l02-minimize-and-curve-fitting
+
++++ practice | A battery tray with no lid
+--- task
+A battery tray is an open box: a rectangular floor `a` by `b` meters and four walls of height `h`, with no lid. It must hold a volume `V` cubic meters, so `h = V / (a * b)`. Its sheet-metal area is the floor plus the four walls:
+
+`area = a * b + 2 * a * h + 2 * b * h`
+
+Write a function `open_box(V)` that finds the `a` and `b` giving the smallest area, using `scipy.optimize.minimize`, and returns the tuple `(a, b, h, area)` as four floats. Each must be within `1e-4` of the true best, relative to its size. `a` and `b` must stay positive.
+--- starter
+import numpy as np
+from scipy.optimize import minimize
+
+
+def open_box(V):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import minimize
+
+
+def open_box(V):
+    """Floor sides, height and area of the open box of volume V with the least metal."""
+    def area(x):
+        a, b = x
+        # With h = V / (a*b), the walls are 2*a*h = 2*V/b and 2*b*h = 2*V/a.
+        return a * b + 2 * V / b + 2 * V / a
+
+    res = minimize(area, x0=[1.0, 1.0], bounds=[(1e-6, None), (1e-6, None)])
+    a, b = res.x
+    return float(a), float(b), float(V / (a * b)), float(res.fun)
+--- hint
+Write the area as a function of the two decision variables only: put `h = V / (a * b)` into each wall term first.
+--- hint
+`minimize` takes a function of one array, `x = [a, b]`, and a starting guess. `bounds` (which switches it to L-BFGS-B) keeps `a` and `b` away from zero.
+--- check test | Four cubic meters: a 2 by 2 floor, 1 m high, 12 square meters
+(lambda r: np.allclose(r, (2.0, 2.0, 1.0, 12.0), rtol=1e-4))(open_box(4.0))
+--- check test | Half a cubic meter: a 1 by 1 floor, half a meter high
+(lambda r: np.allclose(r, (1.0, 1.0, 0.5, 3.0), rtol=1e-4))(open_box(0.5))
+--- check test | 250 cubic meters: the height is always half the floor side
+(lambda r: np.allclose(r, (500.0 ** (1 / 3), 500.0 ** (1 / 3), 500.0 ** (1 / 3) / 2, 3 * 500.0 ** (2 / 3)), rtol=1e-4))(open_box(250.0))
+--- check test | Returns plain floats
+all(type(v) is float for v in open_box(4.0))
+
++++ practice | The burn-rate law of a solid propellant
+--- task
+A solid rocket propellant burns faster at higher chamber pressure. Test motors show the burn rate `r` follows Saint-Robert's law, `r = a * P**n`, where `P` is the pressure and `a` and `n` are properties of the propellant (`n` is usually between 0.2 and 0.7).
+
+Write a function `fit_burn_rate(P, r)` that fits `a` and `n` to the measured arrays `P` and `r` with `least_squares` and returns `(a, n)` as floats.
+
+- Your residual function returns the vector of misses, one per measurement, not their sum.
+- Build the starting guess from the data, not from the answer: start from `n = 0.5`, and pick the `a` that makes `a * P**0.5` match the readings on average.
+- It must work whether `P` is in megapascals (values near 1 to 10) or in pascals (values near a million).
+--- starter
+import numpy as np
+from scipy.optimize import least_squares
+
+
+def fit_burn_rate(P, r):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import least_squares
+
+
+def fit_burn_rate(P, r):
+    """Fit r = a * P**n by least squares; returns (a, n)."""
+    P = np.asarray(P, dtype=float)
+    r = np.asarray(r, dtype=float)
+    n0 = 0.5
+    a0 = float(np.mean(r / P**n0))          # the a that matches the data on average for n = 0.5
+
+    def residuals(x):
+        a, n = x
+        return a * P**n - r
+
+    sol = least_squares(residuals, x0=[a0, n0])
+    return float(sol.x[0]), float(sol.x[1])
+--- hint
+For `n = 0.5`, each reading suggests its own `a`: `r_i / P_i**0.5`. Average them.
+--- hint
+The residual for parameters `x = [a, n]` is `a * P**n - r`: a whole array. `least_squares` squares and sums it itself.
+--- check test | Noiseless data in MPa are fit exactly
+(lambda P: np.allclose(fit_burn_rate(P, 3.5 * P**0.42), (3.5, 0.42), rtol=1e-6))(np.linspace(2.0, 10.0, 9))
+--- check test | Noiseless data in Pa are fit exactly
+(lambda P: np.allclose(fit_burn_rate(P, 0.004 * P**0.35), (0.004, 0.35), rtol=1e-5))(np.array([1e6, 2e6, 4e6, 7e6, 1e7]))
+--- check test | One percent noise: close to the truth
+(lambda P: (lambda a, n: abs(a - 3.46499) < 1e-3 and abs(n - 0.425233) < 1e-4)(*fit_burn_rate(P, 3.5 * P**0.42 * (1 + np.random.default_rng(5).normal(0.0, 0.01, P.size)))))(np.linspace(2.0, 10.0, 9))
+--- check source | Uses least_squares
+least_squares\(
+
++++ practice | A radar track with honest error bars
+--- task
+A ground radar measures the range to a rising rocket once a second. Over a short stretch the range grows at a steady rate, so the model is `y = x0 + v * t`. Every reading has the same known noise: standard deviation `sigma` meters.
+
+Write a function `track_fit(t, y, sigma)` that fits `x0` and `v` with `curve_fit` and returns `(x0, v, sd_x0, sd_v)` as four floats, where `sd_x0` and `sd_v` are the one-sigma uncertainties. Because the noise level is known, tell `curve_fit` so and make it use your numbers as they are, not rescale them from the leftover misses.
+--- starter
+import numpy as np
+from scipy.optimize import curve_fit
+
+
+def track_fit(t, y, sigma):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import curve_fit
+
+
+def track_fit(t, y, sigma):
+    """Straight-line fit y = x0 + v*t with known noise; returns (x0, v, sd_x0, sd_v)."""
+    t = np.asarray(t, dtype=float)
+    y = np.asarray(y, dtype=float)
+
+    def model(t, x0, v):
+        return x0 + v * t
+
+    popt, pcov = curve_fit(model, t, y, p0=[y[0], 0.0],
+                           sigma=np.full(t.size, float(sigma)), absolute_sigma=True)
+    sd = np.sqrt(np.diag(pcov))
+    return float(popt[0]), float(popt[1]), float(sd[0]), float(sd[1])
+--- hint
+`curve_fit(model, t, y, p0=...)` wants a model whose first argument is the time and whose other arguments are the parameters.
+--- hint
+Pass `sigma=` (one number per reading) and `absolute_sigma=True`. The one-sigma uncertainties are the square roots of the diagonal of `pcov`.
+--- check test | Matches the textbook straight-line fit and its error bars
+(lambda t, y: (lambda r, tb, S: np.allclose(r, (np.polyfit(t, y, 1)[1], np.polyfit(t, y, 1)[0], 4.0 * np.sqrt(1 / t.size + tb**2 / S), 4.0 / np.sqrt(S)), rtol=1e-6))(track_fit(t, y, 4.0), t.mean(), np.sum((t - t.mean())**2)))(np.linspace(0.0, 20.0, 21), 1000.0 + 7.5 * np.linspace(0.0, 20.0, 21) + np.random.default_rng(3).normal(0.0, 4.0, 21))
+--- check test | The error bars scale with the stated noise, not with the misses
+(lambda t: abs(track_fit(t, 50.0 + 2.0 * t, 1.0)[3] - 1 / np.sqrt(np.sum((t - t.mean())**2))) < 1e-9 and abs(track_fit(t, 50.0 + 2.0 * t, 3.0)[3] - 3 / np.sqrt(np.sum((t - t.mean())**2))) < 1e-9)(np.arange(10.0))
+--- check test | Returns four floats
+(lambda r: len(r) == 4 and all(type(v) is float for v in r))(track_fit(np.arange(5.0), np.array([1.0, 3.1, 4.9, 7.2, 9.0]), 0.2))
+
++++ practice | Try several starting points
+--- task
+`minimize` stops in whichever valley it lands in. A cheap defense is to start it from several places and keep the best.
+
+Write a function `best_of_starts(f, starts)` that calls `minimize(f, s)` for each starting point `s` in the list `starts`, and returns `(x, fun)`: the answer array and the objective value (as a float) of the best run.
+
+- Only runs whose `success` is `True` and whose `fun` is a finite number count.
+- The best run is the one with the smallest `fun`.
+- If no run counts, raise `ValueError`.
+--- starter
+import numpy as np
+from scipy.optimize import minimize
+
+
+def best_of_starts(f, starts):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import minimize
+
+
+def best_of_starts(f, starts):
+    """Run minimize from every start; return (x, fun) of the lowest successful, finite run."""
+    best = None
+    for s in starts:
+        res = minimize(f, s)
+        if not (res.success and np.isfinite(res.fun)):
+            continue
+        if best is None or res.fun < best.fun:
+            best = res
+    if best is None:
+        raise ValueError("no starting point gave a successful run")
+    return best.x, float(best.fun)
+--- hint
+Keep the best result object seen so far, starting from `None`, and replace it only when a new run counts and is lower.
+--- hint
+`np.isfinite` is `False` for `nan` and for infinity.
+--- check test | Of two valleys, the lower one wins
+(lambda r: abs(r[0][0] + 1.035578) < 1e-4 and abs(r[1] + 0.305428) < 1e-5)(best_of_starts(lambda x: (x[0]**2 - 1)**2 + 0.3 * x[0], [[2.0], [-2.0]]))
+--- check test | With one start you only get the valley you started in
+(lambda r: abs(r[0][0] - 0.960150) < 1e-4)(best_of_starts(lambda x: (x[0]**2 - 1)**2 + 0.3 * x[0], [[2.0]]))
+--- check test | A start that lands on nan is skipped
+(lambda r: abs(r[0][0] - 1.0) < 1e-5)(best_of_starts(lambda x: (x[0] - 1.0)**2 if x[0] < 5 else np.nan, [[10.0], [0.0]]))
+--- check test | No run counts: ValueError
+raises(ValueError, lambda: best_of_starts(lambda x: np.nan, [[1.0], [2.0]]))
+
++++ practice | A thermistor fit that is far off
+--- task
+A thermistor on a propellant line changes its resistance with temperature. Its maker's model is
+
+`R = R0 * exp(B * (1/T - 1/298.15))`
+
+with `T` in kelvin, `R0` the resistance at 298.15 K and `B` a constant in kelvin (a few thousand). `fit_thermistor(T, R)` should fit `R0` and `B` with `least_squares` and return them as the tuple `(R0, B)` of floats.
+
+For perfect data made with `R0 = 10000` and `B = 3950`, it returns about `(95825, 516)` instead. Fix it.
+--- starter
+import numpy as np
+from scipy.optimize import least_squares
+
+
+def fit_thermistor(T, R):
+    """Fit R = R0 * exp(B * (1/T - 1/298.15)); returns (R0, B)."""
+    T = np.asarray(T, dtype=float)
+    R = np.asarray(R, dtype=float)
+
+    def residuals(x):
+        R0, B = x
+        return np.sum((R0 * np.exp(B * (1 / T - 1 / 298.15)) - R)**2)
+
+    sol = least_squares(residuals, x0=[float(np.median(R)), 3000.0])
+    return float(sol.x[0]), float(sol.x[1])
+--- solution
+import numpy as np
+from scipy.optimize import least_squares
+
+
+def fit_thermistor(T, R):
+    """Fit R = R0 * exp(B * (1/T - 1/298.15)); returns (R0, B)."""
+    T = np.asarray(T, dtype=float)
+    R = np.asarray(R, dtype=float)
+
+    def residuals(x):
+        R0, B = x
+        return R0 * np.exp(B * (1 / T - 1 / 298.15)) - R
+
+    sol = least_squares(residuals, x0=[float(np.median(R)), 3000.0])
+    return float(sol.x[0]), float(sol.x[1])
+--- hint
+What shape does `least_squares` expect your function to return, and what shape does this one return?
+--- hint
+`least_squares` squares and adds up the residuals itself. Handed a single number, it only sees one "measurement", and many pairs of `(R0, B)` make that one number zero.
+--- check test | Perfect data give back R0 = 10000 and B = 3950
+(lambda T: np.allclose(fit_thermistor(T, 10000.0 * np.exp(3950.0 * (1 / T - 1 / 298.15))), (10000.0, 3950.0), rtol=1e-6))(np.array([253.15, 273.15, 298.15, 323.15, 348.15]))
+--- check test | A different thermistor, with 0.2 percent noise
+(lambda T: (lambda R0, B: abs(R0 / 4700.0 - 1) < 0.01 and abs(B / 3380.0 - 1) < 0.01)(*fit_thermistor(T, 4700.0 * np.exp(3380.0 * (1 / T - 1 / 298.15)) * (1 + np.random.default_rng(2).normal(0.0, 0.002, T.size)))))(np.linspace(233.15, 373.15, 15))
+--- check test | Returns two floats
+(lambda r: len(r) == 2 and all(type(v) is float for v in r))(fit_thermistor(np.array([260.0, 300.0, 340.0]), np.array([30000.0, 9000.0, 3300.0])))
+
++++ practice | The spin rate of a tumbling satellite
+--- task
+A dead satellite tumbles, and its brightness seen from the ground rises and falls with its spin. A photometer records the brightness `y` at times `t` (seconds), and over a short record it follows
+
+`y = c + A * sin(2 * pi * f * t + phase)`
+
+where `c` is the average brightness, `A` the swing, `f` the frequency in hertz (somewhere between 0.05 and 2) and `phase` an angle in radians. The noise is large, and a local fit started at a wrong frequency gets stuck in a wrong valley.
+
+Write a function `spin_fit(t, y)` that returns `(c, A, f, phase)` as four floats, with `A` positive and `phase` in the range from `-pi` up to, not including, `pi`. The checks use about 30 s of data and need `f` to within 0.001 Hz. Your method must search the whole frequency range, not only one valley.
+--- starter
+import numpy as np
+from scipy.optimize import least_squares
+
+
+def spin_fit(t, y):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import least_squares
+
+
+def spin_fit(t, y):
+    """Fit y = c + A*sin(2*pi*f*t + phase) with f in [0.05, 2] Hz; returns (c, A, f, phase)."""
+    t = np.asarray(t, dtype=float)
+    y = np.asarray(y, dtype=float)
+
+    # Global stage: for a fixed f the model is linear in c and in the sine and cosine weights,
+    # so a straight linear least-squares solve scores each frequency on a fine grid.
+    best = None
+    for f in np.arange(0.05, 2.0 + 1e-9, 0.002):
+        D = np.column_stack([np.ones_like(t), np.sin(2 * np.pi * f * t), np.cos(2 * np.pi * f * t)])
+        coef = np.linalg.lstsq(D, y, rcond=None)[0]
+        ss = np.sum((D @ coef - y)**2)
+        if best is None or ss < best[0]:
+            best = (ss, f, coef)
+    _, f0, (c0, s0, k0) = best
+    # A*sin(w t + phase) = A*cos(phase)*sin(w t) + A*sin(phase)*cos(w t)
+    A0, ph0 = np.hypot(s0, k0), np.arctan2(k0, s0)
+
+    # Local stage: polish all four numbers together.
+    def residuals(x):
+        c, A, f, phase = x
+        return c + A * np.sin(2 * np.pi * f * t + phase) - y
+
+    c, A, f, phase = least_squares(residuals, [c0, A0, f0, ph0]).x
+    if A < 0:
+        A, phase = -A, phase + np.pi
+    phase = (phase + np.pi) % (2 * np.pi) - np.pi
+    return float(c), float(A), float(f), float(phase)
+--- hint
+Split the job in two, as the lesson does: a global search to find the right valley, then `least_squares` from there for the precise answer. `differential_evolution` over bounds is one global search. A fine grid of frequencies is another; the grid must be finer than one over the record length.
+--- hint
+If you scan a grid: for one fixed `f`, the model `c + a * sin(2 pi f t) + b * cos(2 pi f t)` is linear in `c`, `a` and `b`, so `np.linalg.lstsq` scores that frequency in one call. Then `A = hypot(a, b)` and `phase = arctan2(b, a)`.
+--- hint
+At the end, a negative `A` with `phase + pi` is the same curve. `(phase + pi) % (2 * pi) - pi` brings any angle into the range.
+--- check test | A slow tumble: 0.37 Hz
+(lambda t: (lambda c, A, f, ph: abs(f - 0.37) < 1e-3 and abs(A - 1.2) < 0.03 and abs(c - 5.0) < 0.03 and abs(ph + 2.0) < 0.05)(*spin_fit(t, 5.0 + 1.2 * np.sin(2 * np.pi * 0.37 * t - 2.0) + np.random.default_rng(11).normal(0.0, 0.2, t.size))))(np.linspace(0.0, 30.0, 601))
+--- check test | A fast tumble near the top of the range: 1.61 Hz
+(lambda t: (lambda c, A, f, ph: abs(f - 1.61) < 1e-3 and abs(A - 0.4) < 0.01 and abs(ph - 2.87) < 0.05)(*spin_fit(t, 2.0 + 0.4 * np.sin(2 * np.pi * 1.61 * t + 2.9) + np.random.default_rng(12).normal(0.0, 0.05, t.size))))(np.linspace(0.0, 30.0, 601))
+--- check test | A positive swing and a phase inside the range
+(lambda t: (lambda c, A, f, ph: A > 0 and -np.pi <= ph < np.pi and abs(f - 0.08) < 1e-3 and abs(A - 3.0) < 0.05)(*spin_fit(t, -1.0 + 3.0 * np.sin(2 * np.pi * 0.08 * t + 3.1) + np.random.default_rng(13).normal(0.0, 0.3, t.size))))(np.linspace(0.0, 30.0, 601))
+
++++ question | Ten times the noise, the same error bars
+--- ask
+A fit uses `popt, pcov = curve_fit(model, t, y, p0=p0, sigma=s)`, with no other options. A colleague realizes the sensor is ten times noisier than thought and reruns it with `sigma=10 * s`. What happens to `np.sqrt(np.diag(pcov))`?
+--- choice
+It grows ten times, because every reading is now trusted ten times less.
+--- choice
+It shrinks ten times, because the misses are now small next to the stated noise.
+--- choice correct
+It stays the same: without `absolute_sigma=True`, `curve_fit` uses `sigma` only as relative weights and rescales the covariance from the leftover misses.
+--- choice
+It grows a hundred times, because the covariance holds variances, which go as sigma squared.
+--- why
+By default `curve_fit` treats `sigma` as relative: multiplying every entry by the same number changes no weight relative to another, so the fit and its leftover misses are the same, and `pcov` is scaled to match those misses. Only with `absolute_sigma=True` does it take your numbers as the real noise, and then ten times the sigma gives ten times the one-sigma uncertainties.
+
+=== py04-l03 | Practice: Residuals, Jacobians and scaling
+--- for
+l03-residuals-jacobians-scaling
+
++++ practice | The Jacobian of a warming heater
+--- task
+A tank heater switched on at `t = 0` warms a propellant line toward a new steady temperature. The rise above the starting temperature is modeled as
+
+`model(t) = A * (1 - exp(-t / tau))`
+
+with parameters `x = (A, tau)`: `A` the final rise in kelvin and `tau` the time constant in seconds. The residuals are `model(t_i) - y_i`.
+
+Write a function `rise_jacobian(x, t)` that returns the Jacobian of those residuals as a NumPy array of shape `(len(t), 2)`: column 0 is the partial derivative with respect to `A`, column 1 with respect to `tau`. Work the derivatives out by hand; do not use finite differences. (The measurements `y` do not appear: they do not depend on the parameters.)
+--- starter
+import numpy as np
+
+
+def rise_jacobian(x, t):
+    pass
+--- solution
+import numpy as np
+
+
+def rise_jacobian(x, t):
+    """Jacobian of A*(1 - exp(-t/tau)) - y with respect to (A, tau): shape (len(t), 2)."""
+    A, tau = x
+    t = np.asarray(t, dtype=float)
+    e = np.exp(-t / tau)
+    d_A = 1.0 - e
+    d_tau = -A * t / tau**2 * e          # d/dtau of -A*exp(-t/tau) is -A*exp(-t/tau) * t/tau**2
+    return np.column_stack([d_A, d_tau])
+--- hint
+With respect to `A`, the model is `A` times something that does not contain `A`.
+--- hint
+With respect to `tau`, only `-A * exp(-t / tau)` changes. The derivative of `exp(u)` is `exp(u)` times the derivative of `u`, and the derivative of `-t / tau` with respect to `tau` is `t / tau**2`.
+--- check test | Matches a central difference, column by column
+(lambda x, t: np.allclose(rise_jacobian(x, t), np.column_stack([((x[0] + 1e-4) * (1 - np.exp(-t / x[1])) - (x[0] - 1e-4) * (1 - np.exp(-t / x[1]))) / 2e-4, (x[0] * (1 - np.exp(-t / (x[1] + 1e-3))) - x[0] * (1 - np.exp(-t / (x[1] - 1e-3)))) / 2e-3]), rtol=1e-6, atol=1e-12))((35.0, 420.0), np.linspace(0.0, 1800.0, 13))
+--- check test | Shape (m, 2) for m times
+rise_jacobian((10.0, 60.0), np.arange(7.0)).shape == (7, 2)
+--- check case | At t = 0 neither parameter moves the model
+rise_jacobian((12.0, 300.0), np.array([0.0]))[0].tolist()
+=> [0.0, 0.0]
+--- check case | One time constant in, to four places
+np.round(rise_jacobian((12.0, 300.0), np.array([300.0]))[0], 4).tolist()
+=> [0.6321, -0.0147]
+
++++ practice | A Jacobian by finite differences
+--- task
+When you have no formula for the derivatives, you estimate them by nudging. Write a function `fd_jacobian(fun, x, h=1e-6)` that returns the Jacobian of the vector function `fun` at the point `x` by **central differences**, as a NumPy array of shape `(m, n)`, where `m` is the length of `fun(x)` and `n` the length of `x`:
+
+- column `j` is `(fun(x + d * e_j) - fun(x - d * e_j)) / (2 * d)`, where `e_j` is the unit vector along parameter `j`;
+- the nudge is sized to the parameter: `d = h * max(1.0, abs(x[j]))`, so a parameter at zero still gets a nonzero nudge;
+- `x` may be a list or an array, and must not be changed.
+--- starter
+import numpy as np
+
+
+def fd_jacobian(fun, x, h=1e-6):
+    pass
+--- solution
+import numpy as np
+
+
+def fd_jacobian(fun, x, h=1e-6):
+    """Central-difference Jacobian of fun at x, shape (len(fun(x)), len(x))."""
+    x = np.array(x, dtype=float)                  # a copy: the caller's x is never touched
+    m = np.asarray(fun(x)).size
+    J = np.empty((m, x.size))
+    for j in range(x.size):
+        d = h * max(1.0, abs(x[j]))
+        up, down = x.copy(), x.copy()
+        up[j] += d
+        down[j] -= d
+        J[:, j] = (np.asarray(fun(up), dtype=float) - np.asarray(fun(down), dtype=float)) / (2 * d)
+    return J
+--- hint
+Loop over the parameters. For each one, make two copies of `x`, push one up by `d` and the other down by `d`, and fill column `j` with the difference of the two function values over `2 * d`.
+--- hint
+`np.array(x, dtype=float)` makes a fresh float copy, so the caller's `x` is safe and integer inputs still get fractional nudges.
+--- check test | A two-by-two example agrees with the exact derivatives
+np.allclose(fd_jacobian(lambda p: np.array([p[0]**2 * p[1], np.sin(p[1])]), [3.0, 0.5]), [[3.0, 9.0], [0.0, np.cos(0.5)]], atol=1e-7)
+--- check test | Tall shape for three residuals and two parameters, even at zero
+(lambda J: J.shape == (3, 2) and np.allclose(J, [[1.0, 0.0], [0.0, 2.0], [1.0, 1.0]], atol=1e-8))(fd_jacobian(lambda p: np.array([p[0], 2 * p[1], p[0] + p[1]]), np.zeros(2)))
+--- check test | Big parameters get proportionally big nudges
+np.allclose(fd_jacobian(lambda p: np.array([np.exp(p[0] / 1e4)]), [2e4]), [[np.exp(2.0) / 1e4]], rtol=1e-6)
+--- check test | The input is left alone, and integer input works
+(lambda x: (fd_jacobian(lambda p: p**2, x), x == [1, 2])[1] and np.allclose(fd_jacobian(lambda p: p**2, x), np.diag([2.0, 4.0]), atol=1e-6))([1, 2])
+
++++ practice | Which parameters can the data tell apart?
+--- task
+After a fit, the covariance of the parameters is `inv(J.T @ J)`, when `J` is the Jacobian of residuals already divided by their noise. The **correlation** between parameters `i` and `j` is `cov[i, j] / sqrt(cov[i, i] * cov[j, j])`: a number from -1 to 1, near ±1 when the data cannot separate them.
+
+Write two functions:
+
+- `correlation_matrix(J)` returns the `(n, n)` correlation matrix for a weighted Jacobian `J` of shape `(m, n)`.
+- `tangled_pairs(J, limit)` returns a list of the index pairs `(i, j)`, with `i < j`, whose correlation has size greater than `limit`, in increasing order of `i` and then `j`.
+--- starter
+import numpy as np
+
+
+def correlation_matrix(J):
+    pass
+
+
+def tangled_pairs(J, limit):
+    pass
+--- solution
+import numpy as np
+
+
+def correlation_matrix(J):
+    """Correlation of the fitted parameters from a noise-weighted Jacobian J (m by n)."""
+    J = np.asarray(J, dtype=float)
+    cov = np.linalg.inv(J.T @ J)
+    sd = np.sqrt(np.diag(cov))
+    return cov / np.outer(sd, sd)
+
+
+def tangled_pairs(J, limit):
+    """Index pairs (i, j), i < j, whose correlation is bigger than limit in size."""
+    corr = correlation_matrix(J)
+    n = corr.shape[0]
+    return [(i, j) for i in range(n) for j in range(i + 1, n) if abs(corr[i, j]) > limit]
+--- hint
+`np.outer(sd, sd)` builds the table of products `sd[i] * sd[j]`, so one division turns the whole covariance into correlations.
+--- hint
+For the pairs, two nested ranges with `j` starting at `i + 1` give each pair once, already in order.
+--- check test | Columns at right angles are uncorrelated
+np.allclose(correlation_matrix(np.array([[1.0, 0.0], [0.0, 3.0], [0.0, 0.0]])), np.eye(2))
+--- check test | Two nearly equal columns are almost perfectly correlated (negatively)
+(lambda C: C.shape == (2, 2) and np.allclose(np.diag(C), 1.0) and np.allclose(C, C.T) and C[0, 1] < -0.99)(correlation_matrix(np.array([[1.0, 1.0], [1.0, 1.01], [1.0, 0.99], [1.0, 1.0]])))
+--- check case | Five minutes of gyro warm-up: every pair is tangled
+(lambda t: tangled_pairs(np.column_stack([np.exp(-t / 1800), 2e-5 * t / 1800**2 * np.exp(-t / 1800), np.ones_like(t)]) * np.array([1e-5, 1e3, 1e-6]) / 5e-7, 0.99))(np.linspace(0.0, 300.0, 31))
+=> [(0, 1), (0, 2), (1, 2)]
+--- check case | Two hours of the same gyro: only tau and c stay linked
+(lambda t: tangled_pairs(np.column_stack([np.exp(-t / 1800), 2e-5 * t / 1800**2 * np.exp(-t / 1800), np.ones_like(t)]) * np.array([1e-5, 1e3, 1e-6]) / 5e-7, 0.8))(np.linspace(0.0, 7200.0, 721))
+=> [(1, 2)]
+
++++ practice | Bias and drift of a precise gyro
+--- task
+A precise gyro's reading drifts slowly: `y = b + d * t`, with the bias `b` near `1e-6` rad/s and the drift `d` near `1e-9` rad/s per second, over an hour of data. The noise has standard deviation `sigma`, near `1e-7` rad/s.
+
+Write a function `fit_drift(t, y, sigma)` that returns `(b, d)` as floats, found with `scipy.optimize.minimize`. Handed the raw sum of squares, `minimize` gives up at its starting point, because every slope it sees is below its tolerance. Make it work: divide the residuals by `sigma`, and solve for scaled variables of order 1. Your answers must match the exact straight-line fit to 1 part in 10,000.
+--- starter
+import numpy as np
+from scipy.optimize import minimize
+
+
+def fit_drift(t, y, sigma):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import minimize
+
+
+def fit_drift(t, y, sigma):
+    """Bias b and drift d of y = b + d*t, by minimize on a well-scaled problem."""
+    t = np.asarray(t, dtype=float)
+    y = np.asarray(y, dtype=float)
+    s = np.array([1e-6, 1e-9])                  # typical sizes of b and d
+
+    def cost(u):
+        b, d = u * s
+        return np.sum(((b + d * t - y) / sigma)**2)     # dimensionless, about len(t) at the best fit
+
+    res = minimize(cost, np.zeros(2))
+    b, d = res.x * s
+    return float(b), float(d)
+--- hint
+Pick a typical size for each parameter, `s = [1e-6, 1e-9]`, and let `minimize` work on `u = x / s`. Inside the objective, turn `u` back into `x = u * s`.
+--- hint
+Divide each residual by `sigma` before squaring, so a good fit has a cost near the number of readings instead of near `1e-11`.
+--- check test | Matches the exact straight-line fit
+(lambda t, y: np.allclose(fit_drift(t, y, 1e-7), np.polyfit(t, y, 1)[::-1], rtol=1e-4))(np.linspace(0.0, 3600.0, 361), 2.5e-6 + 8e-10 * np.linspace(0.0, 3600.0, 361) + np.random.default_rng(4).normal(0.0, 1e-7, 361))
+--- check test | A negative bias and a noisier gyro
+(lambda t, y: np.allclose(fit_drift(t, y, 2e-7), np.polyfit(t, y, 1)[::-1], rtol=1e-4))(np.linspace(0.0, 3600.0, 361), -4e-6 + 3e-10 * np.linspace(0.0, 3600.0, 361) + np.random.default_rng(8).normal(0.0, 2e-7, 361))
+--- check test | Returns two floats
+(lambda r: len(r) == 2 and all(type(v) is float for v in r))(fit_drift(np.arange(0.0, 100.0, 10.0), 1e-6 + 1e-9 * np.arange(0.0, 100.0, 10.0), 1e-7))
+--- check source | Uses minimize
+minimize\(
+
++++ practice | A Jacobian that sends the fit astray
+--- task
+A reaction-wheel vibration is modeled as `A * sin(w * t + phi)`, with parameters `x = (A, w, phi)`: amplitude, angular frequency in rad/s and phase in radians. `wheel_jac(x, t)` should return the Jacobian of the residuals `A * sin(w * t + phi) - y` with respect to `(A, w, phi)`, shape `(len(t), 3)`, so that `least_squares(..., jac=wheel_jac)` can use it.
+
+It does not match a finite-difference estimate, and fits that use it stop at wrong answers. Find the wrong column and fix it.
+--- starter
+import numpy as np
+
+
+def wheel_jac(x, t):
+    """Jacobian of A*sin(w*t + phi) - y with respect to (A, w, phi)."""
+    A, w, phi = x
+    t = np.asarray(t, dtype=float)
+    s = np.sin(w * t + phi)
+    c = np.cos(w * t + phi)
+    return np.column_stack([s, A * c, A * c])
+--- solution
+import numpy as np
+
+
+def wheel_jac(x, t):
+    """Jacobian of A*sin(w*t + phi) - y with respect to (A, w, phi)."""
+    A, w, phi = x
+    t = np.asarray(t, dtype=float)
+    s = np.sin(w * t + phi)
+    c = np.cos(w * t + phi)
+    return np.column_stack([s, A * t * c, A * c])
+--- hint
+Compare each column with a nudge of one parameter. Which parameter sits inside the sine multiplied by something else?
+--- hint
+The chain rule: the derivative of `sin(w * t + phi)` with respect to `w` is `cos(w * t + phi)` times the derivative of `w * t + phi` with respect to `w`.
+--- check test | Every column matches a central difference
+(lambda x, t: np.allclose(wheel_jac(x, t), np.column_stack([(np.sin(x[1] * t + x[2]) * (x[0] + 1e-6) - np.sin(x[1] * t + x[2]) * (x[0] - 1e-6)) / 2e-6, x[0] * (np.sin((x[1] + 1e-6) * t + x[2]) - np.sin((x[1] - 1e-6) * t + x[2])) / 2e-6, x[0] * (np.sin(x[1] * t + x[2] + 1e-6) - np.sin(x[1] * t + x[2] - 1e-6)) / 2e-6]), atol=1e-6))((0.3, 12.0, 0.7), np.linspace(0.0, 2.0, 41))
+--- check test | A fit that uses it lands on the truth
+(lambda t: (lambda y: np.allclose(__import__("scipy.optimize", fromlist=["least_squares"]).least_squares(lambda x: x[0] * np.sin(x[1] * t + x[2]) - y, [0.4, 11.5, 0.5], jac=lambda x: wheel_jac(x, t)).x, [0.25, 11.8, 0.9], atol=1e-6))(0.25 * np.sin(11.8 * t + 0.9)))(np.linspace(0.0, 3.0, 301))
+--- check test | Shape (m, 3)
+wheel_jac((1.0, 2.0, 0.0), np.arange(5.0)).shape == (5, 3)
+
++++ practice | A valve that opens late
+--- task
+When a valve is commanded open at `t = 0`, the pressure behind it stays at zero for a short delay `d`, then rises toward `P0` with a time constant `tau`:
+
+- `p(t) = 0` for `t <= d`;
+- `p(t) = P0 * (1 - exp(-(t - d) / tau))` for `t > d`.
+
+Typical sizes are `P0` near a few million pascals, `d` near 0.01 s and `tau` near 0.003 s: seven powers of ten apart. The sensor noise has standard deviation `sigma` pascals.
+
+Write a function `fit_valve(t, p, sigma)` that fits `(P0, d, tau)` with `least_squares` and returns them as a tuple of three floats. The checks use 60 ms of data sampled every 0.2 ms, and need `P0` within 0.5 percent, `d` within 0.1 ms and `tau` within 3 percent.
+
+- Build the starting guess from the data: `P0` from the average of the last tenth of the readings, `d` from the first time the pressure passes 5 percent of that, and `tau` from how long after that it takes to pass 63.2 percent.
+- Divide the residuals by `sigma` and solve for variables scaled to order 1.
+--- starter
+import numpy as np
+from scipy.optimize import least_squares
+
+
+def fit_valve(t, p, sigma):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import least_squares
+
+
+def valve_model(x, t):
+    P0, d, tau = x
+    rise = P0 * (1.0 - np.exp(-np.clip(t - d, 0.0, None) / tau))
+    return np.where(t > d, rise, 0.0)
+
+
+def fit_valve(t, p, sigma):
+    """Fit the delayed first-order rise (P0, d, tau) to pressure readings with noise sigma."""
+    t = np.asarray(t, dtype=float)
+    p = np.asarray(p, dtype=float)
+
+    # Starting guess from the data alone.
+    tail = max(1, t.size // 10)
+    P0_0 = float(np.mean(p[-tail:]))
+    d_0 = float(t[np.argmax(p > 0.05 * P0_0)])
+    t63 = float(t[np.argmax(p > 0.632 * P0_0)])
+    tau_0 = max(t63 - d_0, t[1] - t[0])
+
+    # Scaled variables of order 1, and residuals in units of the noise.
+    s = np.array([P0_0, 0.01, 0.001])
+
+    def residuals(u):
+        return (valve_model(u * s, t) - p) / sigma
+
+    sol = least_squares(residuals, np.array([P0_0, d_0, tau_0]) / s)
+    P0, d, tau = sol.x * s
+    return float(P0), float(d), float(tau)
+--- hint
+`np.argmax(p > limit)` gives the index of the first reading above `limit`. Use it twice for the delay and for the 63.2 percent point.
+--- hint
+Clip `t - d` at zero before the exponential, and use `np.where(t > d, rise, 0.0)` so the model is zero before the delay.
+--- hint
+Solve for `u = x / s` with `s` a typical size of each parameter (the guessed `P0`, 0.01 s and 0.001 s work), and convert back inside the residual function and at the end.
+--- check test | A 2 MPa line, opening after 15 ms
+(lambda t: (lambda P0, d, tau: abs(P0 / 2.0e6 - 1) < 0.005 and abs(d - 0.015) < 1e-4 and abs(tau / 0.004 - 1) < 0.03)(*fit_valve(t, np.where(t > 0.015, 2.0e6 * (1 - np.exp(-np.clip(t - 0.015, 0, None) / 0.004)), 0.0) + np.random.default_rng(1).normal(0.0, 2e4, t.size), 2e4)))(np.arange(0.0, 0.06, 0.0002))
+--- check test | A fast 3.5 MPa valve
+(lambda t: (lambda P0, d, tau: abs(P0 / 3.5e6 - 1) < 0.005 and abs(d - 0.008) < 1e-4 and abs(tau / 0.0015 - 1) < 0.03)(*fit_valve(t, np.where(t > 0.008, 3.5e6 * (1 - np.exp(-np.clip(t - 0.008, 0, None) / 0.0015)), 0.0) + np.random.default_rng(2).normal(0.0, 5e4, t.size), 5e4)))(np.arange(0.0, 0.06, 0.0002))
+--- check test | A slow, low-pressure valve
+(lambda t: (lambda P0, d, tau: abs(P0 / 8e5 - 1) < 0.005 and abs(d - 0.022) < 1e-4 and abs(tau / 0.006 - 1) < 0.03)(*fit_valve(t, np.where(t > 0.022, 8e5 * (1 - np.exp(-np.clip(t - 0.022, 0, None) / 0.006)), 0.0) + np.random.default_rng(3).normal(0.0, 1e4, t.size), 1e4)))(np.arange(0.0, 0.06, 0.0002))
+
++++ question | A sum of squares three times too big
+--- ask
+A fit of three parameters to 1,000 readings uses residuals divided by the sensor's stated noise `sigma`. At the best fit, the sum of the squared scaled residuals is 2,900. What does that most likely tell you?
+--- choice
+The fit is excellent: a large sum means the solver used all the data.
+--- choice correct
+The misses are about 1.7 times the stated noise: either `sigma` is too small or the model misses the data in a pattern.
+--- choice
+There are too many parameters; removing one would bring the sum down to about 1,000.
+--- choice
+The solver did not converge, because a converged fit always gives exactly 997.
+--- why
+Each scaled residual should be about one noise size, so a good fit gives a sum near the number of readings, here about 1,000 (997 after the three parameters). A sum of 2,900 means the typical miss is about the square root of 2.9, or 1.7, times `sigma`. Either the noise is bigger than stated, or the model leaves a pattern in the residuals. Plot them before quoting any error bar: the covariance would be too optimistic by that same factor.
+
+=== py04-l04 | Practice: Dense linear algebra: Cholesky, QR, expm and Riccati
+--- for
+l04-dense-linear-algebra
+
++++ practice | Correlated sensor errors for a Monte Carlo run
+--- task
+A navigation filter describes its errors with a standard deviation for each state and a table of correlations between them. Write a function `correlated_samples(sigmas, corr, n, rng)` that draws `n` random error vectors with exactly that spread and linking:
+
+- `sigmas` has length `k`; `corr` is a `k` by `k` correlation matrix (ones on the diagonal);
+- the covariance is `C[i, j] = corr[i, j] * sigmas[i] * sigmas[j]`;
+- factor it with `scipy.linalg.cholesky` into a **lower** triangular `L`;
+- draw `z = rng.standard_normal((k, n))`, exactly like that, and return `L @ z`, shape `(k, n)`, one error vector per column.
+--- starter
+import numpy as np
+from scipy import linalg
+
+
+def correlated_samples(sigmas, corr, n, rng):
+    pass
+--- solution
+import numpy as np
+from scipy import linalg
+
+
+def correlated_samples(sigmas, corr, n, rng):
+    """n error vectors (columns) with standard deviations sigmas and correlations corr."""
+    sigmas = np.asarray(sigmas, dtype=float)
+    C = np.asarray(corr, dtype=float) * np.outer(sigmas, sigmas)
+    L = linalg.cholesky(C, lower=True)
+    z = rng.standard_normal((sigmas.size, n))
+    return L @ z
+--- hint
+`np.outer(sigmas, sigmas)` is the table of products `sigmas[i] * sigmas[j]`; multiply it entry by entry with `corr`.
+--- hint
+`linalg.cholesky` gives the upper factor unless you pass `lower=True`.
+--- check test | The same seed gives exactly these three samples
+np.allclose(correlated_samples([2.0, 1.0], [[1.0, 0.5], [0.5, 1.0]], 3, np.random.default_rng(1)), [[0.691168, 1.643236, 0.660874], [-0.955775, 1.19487, 0.55179]], atol=1e-6)
+--- check test | Two hundred thousand draws have the covariance asked for
+(lambda x: x.shape == (3, 200000) and np.allclose(np.cov(x), [[9.0, 1.2, 0.0], [1.2, 0.25, -3.0], [0.0, -3.0, 400.0]], rtol=0.03, atol=0.1))(correlated_samples([3.0, 0.5, 20.0], [[1.0, 0.8, 0.0], [0.8, 1.0, -0.3], [0.0, -0.3, 1.0]], 200000, np.random.default_rng(0)))
+--- check test | Uncorrelated errors are just scaled draws
+np.allclose(correlated_samples([4.0, 0.1], np.eye(2), 5, np.random.default_rng(9)), np.array([[4.0], [0.1]]) * np.random.default_rng(9).standard_normal((2, 5)))
+
++++ practice | A polynomial fit through QR
+--- task
+Write a function `fit_poly_qr(t, y, degree)` that fits the polynomial `c0 + c1*t + ... + c_degree * t**degree` to the data by least squares, using a QR factorization instead of the normal equations. Return `(coef, misfit)`:
+
+- `coef`: a NumPy array of the `degree + 1` coefficients, lowest power first;
+- `misfit`: the length of the residual vector `A @ coef - y`, as a float, where `A` is the matrix with columns `1, t, t**2, ...`.
+
+Use `scipy.linalg.qr` in its economic mode and `scipy.linalg.solve_triangular`.
+--- starter
+import numpy as np
+from scipy import linalg
+
+
+def fit_poly_qr(t, y, degree):
+    pass
+--- solution
+import numpy as np
+from scipy import linalg
+
+
+def fit_poly_qr(t, y, degree):
+    """Least-squares polynomial coefficients (lowest power first) and the residual length."""
+    t = np.asarray(t, dtype=float)
+    y = np.asarray(y, dtype=float)
+    A = np.vander(t, degree + 1, increasing=True)      # columns 1, t, t^2, ...
+    Q, R = linalg.qr(A, mode="economic")
+    coef = linalg.solve_triangular(R, Q.T @ y)          # R coef = Q^T y, by back substitution
+    return coef, float(np.linalg.norm(A @ coef - y))
+--- hint
+`np.vander(t, degree + 1, increasing=True)` builds the columns `1, t, t**2, ...` in that order.
+--- hint
+With `A = Q R`, the best coefficients solve `R @ coef = Q.T @ y`, and `R` is upper triangular.
+--- check test | A perfect cubic is recovered with no misfit
+(lambda t: (lambda c, m: np.allclose(c, [1.0, -2.0, 0.0, 0.5], atol=1e-10) and m < 1e-10)(*fit_poly_qr(t, 1 - 2 * t + 0.5 * t**3, 3)))(np.linspace(-1.0, 1.0, 21))
+--- check test | cos(3t) with a quartic agrees with NumPy's polynomial fit
+(lambda t: (lambda c, m: np.allclose(c, np.polynomial.polynomial.polyfit(t, np.cos(3 * t), 4), atol=1e-9) and abs(m - 0.077845) < 1e-5)(*fit_poly_qr(t, np.cos(3 * t), 4)))(np.linspace(-1.0, 1.0, 21))
+--- check test | A straight line through three points
+(lambda c, m: np.allclose(c, [2 / 3, 2.0]) and abs(m - np.sqrt(8 / 3)) < 1e-12)(*fit_poly_qr([0.0, 1.0, 2.0], [0.0, 4.0, 4.0], 1))
+--- check source | Uses QR and back substitution
+linalg\.qr\([\s\S]*solve_triangular\(
+
++++ practice | Pushing a cart with a held command
+--- task
+A flight computer holds each command for one time step `dt`. Write two functions:
+
+- `discretize(A, B, dt)` returns the pair `(Ad, Bd)` for the model `xdot = A x + B u` with `u` held over each step, using one `scipy.linalg.expm` of the stacked matrix `[[A, B], [0, 0]] * dt`. `A` is `n` by `n` and `B` is `n` by `m`.
+- `simulate_held(A, B, x0, u, dt)` starts from the state `x0` and applies the commands `u` (a list or array with one row of `m` numbers per step) one step each. It returns an array of shape `(len(u) + 1, n)`: the starting state, then the state after each step.
+--- starter
+import numpy as np
+from scipy import linalg
+
+
+def discretize(A, B, dt):
+    pass
+
+
+def simulate_held(A, B, x0, u, dt):
+    pass
+--- solution
+import numpy as np
+from scipy import linalg
+
+
+def discretize(A, B, dt):
+    """Ad, Bd for xdot = A x + B u with u held over each step of length dt."""
+    A = np.asarray(A, dtype=float)
+    B = np.asarray(B, dtype=float)
+    n, m = B.shape
+    M = np.zeros((n + m, n + m))
+    M[:n, :n] = A
+    M[:n, n:] = B
+    E = linalg.expm(M * dt)
+    return E[:n, :n], E[:n, n:]
+
+
+def simulate_held(A, B, x0, u, dt):
+    """States from x0 through every held command in u: shape (len(u) + 1, n)."""
+    Ad, Bd = discretize(A, B, dt)
+    u = np.asarray(u, dtype=float).reshape(-1, Bd.shape[1])     # one row of m inputs per step
+    xs = [np.asarray(x0, dtype=float)]
+    for uk in u:
+        xs.append(Ad @ xs[-1] + Bd @ uk)
+    return np.array(xs)
+--- hint
+Build a square block of zeros of size `n + m`, put `A` in its top-left corner and `B` in its top-right, and take the exponential of that block times `dt`. The top rows hold `Ad` and `Bd`.
+--- hint
+For the simulation, reshape `u` to `(-1, m)`, with `m` the number of columns of `B`, so a list of plain numbers works for one input, then apply `x = Ad @ x + Bd @ u_k` once per row.
+--- check test | Push for one second, brake for one: the cart ends at rest, one meter on
+(lambda xs: xs.shape == (21, 2) and np.allclose(xs[10], [0.5, 1.0]) and np.allclose(xs[20], [1.0, 0.0], atol=1e-12))(simulate_held([[0.0, 1.0], [0.0, 0.0]], [[0.0], [1.0]], [0.0, 0.0], [1.0] * 10 + [-1.0] * 10, 0.1))
+--- check test | A first-order lag: Ad = exp(-a dt), Bd = b (1 - exp(-a dt)) / a
+(lambda Ad, Bd: np.allclose(Ad, [[np.exp(-1.0)]]) and np.allclose(Bd, [[1.5 * (1 - np.exp(-1.0))]]))(*discretize([[-2.0]], [[3.0]], 0.5))
+--- check test | Two inputs: shapes and the coasting part
+(lambda Ad, Bd: Ad.shape == (2, 2) and Bd.shape == (2, 2) and np.allclose(Ad, [[1.0, 0.2], [0.0, 1.0]]) and np.allclose(Bd, [[0.02, 0.2], [0.2, 0.0]]))(*discretize([[0.0, 1.0], [0.0, 0.0]], [[0.0, 1.0], [1.0, 0.0]], 0.2))
+--- check test | No commands: only the starting state
+simulate_held([[0.0, 1.0], [0.0, 0.0]], [[0.0], [1.0]], [3.0, -1.0], np.zeros((0, 1)), 0.1).tolist() == [[3.0, -1.0]]
+
++++ practice | Is this a real covariance?
+--- task
+A covariance matrix that a filter has updated many times can go bad. Write a function `is_covariance(C)` that returns `True` only when `C` could be the covariance of real errors, and `False` otherwise:
+
+- it must be square and symmetric (use `np.allclose(C, C.T)`);
+- it must be positive definite: `scipy.linalg.cholesky` succeeds on it. Catch the `LinAlgError` it raises otherwise;
+- `C` may be a list of lists.
+
+Watch out: `scipy.linalg.cholesky` only reads one triangle of the matrix, so it can succeed on a matrix that is not symmetric at all.
+--- starter
+import numpy as np
+from scipy import linalg
+
+
+def is_covariance(C):
+    pass
+--- solution
+import numpy as np
+from scipy import linalg
+
+
+def is_covariance(C):
+    """True when C is square, symmetric and positive definite."""
+    C = np.asarray(C, dtype=float)
+    if C.ndim != 2 or C.shape[0] != C.shape[1]:
+        return False
+    if not np.allclose(C, C.T):          # cholesky reads only one triangle, so check the other
+        return False
+    try:
+        linalg.cholesky(C)
+    except linalg.LinAlgError:
+        return False
+    return True
+--- hint
+Check the shape first, then symmetry, and only then try the factorization inside `try`/`except linalg.LinAlgError`.
+--- hint
+A matrix with a zero eigenvalue is only positive semidefinite: its error cloud is flat, and Cholesky refuses it.
+--- check case | A healthy position and velocity covariance
+is_covariance([[9.0, 1.2], [1.2, 0.25]])
+=> True
+--- check case | A correlation above one
+is_covariance([[9.0, 1.6], [1.6, 0.25]])
+=> False
+--- check case | Perfectly correlated: flat, not positive definite
+is_covariance([[1.0, 1.0], [1.0, 1.0]])
+=> False
+--- check case | Not symmetric, even though Cholesky would factor its upper triangle
+is_covariance([[4.0, 5.0], [-3.0, 9.0]])
+=> False
+--- check case | Not square
+is_covariance([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
+=> False
+
++++ practice | A discrete gain that pushes too hard
+--- task
+`dlqr(Ad, Bd, Q, R)` should return the optimal gain `K` for the discrete-time regulator `x[k+1] = Ad x[k] + Bd u[k]` with `u = -K x`, using `scipy.linalg.solve_discrete_are`. The function returns a gain of the right shape, and the closed loop is even stable, but the gain is too large: it is not the optimal one. Fix it.
+--- starter
+import numpy as np
+from scipy import linalg
+
+
+def dlqr(Ad, Bd, Q, R):
+    """Optimal gain K for x[k+1] = Ad x[k] + Bd u[k], u = -K x."""
+    P = linalg.solve_discrete_are(Ad, Bd, Q, R)
+    K = np.linalg.solve(R, Bd.T @ P)
+    return K
+--- solution
+import numpy as np
+from scipy import linalg
+
+
+def dlqr(Ad, Bd, Q, R):
+    """Optimal gain K for x[k+1] = Ad x[k] + Bd u[k], u = -K x."""
+    P = linalg.solve_discrete_are(Ad, Bd, Q, R)
+    K = np.linalg.solve(R + Bd.T @ P @ Bd, Bd.T @ P @ Ad)
+    return K
+--- hint
+Which formula for `K` is this, the continuous one or the discrete one?
+--- hint
+The discrete gain accounts for where the held command carries the state over the step: `K = (R + Bd.T P Bd)^-1 Bd.T P Ad`.
+--- check test | A cart sampled every half second
+(lambda dt: np.allclose(dlqr(np.array([[1.0, dt], [0.0, 1.0]]), np.array([[dt**2 / 2], [dt]]), np.diag([1.0, 0.5]), np.array([[2.0]])), [[0.512933, 1.075833]], atol=1e-6))(0.5)
+--- check test | A one-state plant
+np.allclose(dlqr(np.array([[0.9]]), np.array([[0.5]]), np.array([[1.0]]), np.array([[0.1]])), [[1.36237]], atol=1e-5)
+--- check test | The gain leaves the Riccati equation satisfied
+(lambda Ad, Bd, Q, R: (lambda P, K: np.allclose(Ad.T @ P @ Ad - P - Ad.T @ P @ Bd @ K + Q, 0.0, atol=1e-9))(linalg.solve_discrete_are(Ad, Bd, Q, R), dlqr(Ad, Bd, Q, R)))(np.array([[1.0, 0.1, 0.0], [0.0, 1.0, 0.1], [0.0, 0.0, 0.95]]), np.array([[0.0], [0.0], [0.1]]), np.eye(3), np.array([[0.3]]))
+
++++ practice | Does the cost-to-go keep its promise?
+--- task
+For a continuous LQR design, the Riccati solution `P` promises that, starting from the state `x0` and flying the optimal gain forever, the total cost `integral of (x.T Q x + u.T R u) dt` equals `x0.T P x0`. Check that promise by simulation.
+
+Write a function `lqr_cost_check(A, B, Q, R, x0, dt, steps)` that returns the tuple `(promised, flown)` of floats:
+
+- `promised` is `x0 @ P @ x0`, with `P` from `scipy.linalg.solve_continuous_are` and `K = R^-1 B.T P`;
+- `flown` simulates the closed loop `xdot = (A - B K) x` exactly with the step matrix `expm((A - B @ K) * dt)` from `x0` for `steps` steps, evaluates the cost rate `x @ Q @ x + u @ R @ u` (with `u = -K @ x`) at all `steps + 1` states, and adds it up with the trapezoid rule: `dt` times (the sum of all values minus half the first and half the last).
+
+`x0` is a NumPy array; `R` is 2-D even when it holds one number.
+--- starter
+import numpy as np
+from scipy import linalg
+
+
+def lqr_cost_check(A, B, Q, R, x0, dt, steps):
+    pass
+--- solution
+import numpy as np
+from scipy import linalg
+
+
+def lqr_cost_check(A, B, Q, R, x0, dt, steps):
+    """The cost x0' P x0 that LQR promises, and the cost of the simulated closed loop."""
+    P = linalg.solve_continuous_are(A, B, Q, R)
+    K = np.linalg.solve(R, B.T @ P)
+    step = linalg.expm((A - B @ K) * dt)          # exact state transition over one step
+
+    x = np.asarray(x0, dtype=float)
+    rates = []
+    for _ in range(steps + 1):
+        u = -K @ x
+        rates.append(x @ Q @ x + u @ R @ u)
+        x = step @ x
+    rates = np.array(rates)
+    flown = dt * (rates.sum() - 0.5 * (rates[0] + rates[-1]))
+    return float(x0 @ P @ x0), float(flown)
+--- hint
+Form `K` with `np.linalg.solve(R, B.T @ P)`, then build the one-step matrix of the closed loop once, before the loop.
+--- hint
+Keep a list of the cost rate at each state, stepping the state with `x = step @ x` after each one. The trapezoid rule is `dt * (sum - (first + last) / 2)`.
+--- check test | A damped cart: the simulated cost matches the promise to 0.1 percent
+(lambda p, f: abs(p - 2.543085) < 1e-5 and abs(f / p - 1) < 1e-3)(*lqr_cost_check(np.array([[0.0, 1.0], [0.0, -0.5]]), np.array([[0.0], [2.0]]), np.diag([4.0, 1.0]), np.array([[0.5]]), np.array([1.0, -0.5]), 0.01, 3000))
+--- check test | A one-state unstable plant: P = 1 + sqrt(2), so the promise is 4 P
+(lambda p, f: abs(p - 4 * (1 + np.sqrt(2.0))) < 1e-9 and abs(f / p - 1) < 1e-3)(*lqr_cost_check(np.array([[1.0]]), np.array([[1.0]]), np.array([[1.0]]), np.array([[1.0]]), np.array([2.0]), 0.001, 20000))
+--- check test | Starting at zero costs nothing
+lqr_cost_check(np.array([[0.0, 1.0], [0.0, 0.0]]), np.array([[0.0], [1.0]]), np.eye(2), np.array([[1.0]]), np.zeros(2), 0.1, 10) == (0.0, 0.0)
+
++++ question | SciPy's Cholesky, read by hand
+--- ask
+What does this print?
+
+```python
+import numpy as np
+from scipy import linalg
+
+print(linalg.cholesky(np.array([[9.0, 3.0], [3.0, 5.0]])))
+```
+--- answer
+[[3. 1.] [0. 2.]]
+[[3, 1], [0, 2]]
+[[3.0, 1.0], [0.0, 2.0]]
+3 1 0 2
+--- why
+Without `lower=True`, SciPy returns the upper factor `U` with `C = U.T @ U`. Top left: 3 squared is 9. Then 3 times the top-right entry must be 3, so it is 1. Bottom right: 1 squared plus 2 squared is 5. So `U` is [[3, 1], [0, 2]]: the zero is below the diagonal. NumPy's `np.linalg.cholesky` would print the transpose, [[3, 0], [1, 2]].
+
+=== py04-l05 | Practice: Filters and spectra: butter, lfilter, filtfilt and welch
+--- for
+l05-filters-and-spectra
+
++++ practice | A smoothing filter the flight computer can run
+--- task
+Write a function `causal_lowpass(x, fs, fc, order)` that smooths the samples `x`, taken at `fs` hertz, with a Butterworth low-pass filter of the given `order` and cutoff `fc` hertz, run so that it could work in real time: each output may use only the present and past samples. Return the filtered samples as a NumPy array of the same length as `x`.
+--- starter
+import numpy as np
+from scipy import signal
+
+
+def causal_lowpass(x, fs, fc, order):
+    pass
+--- solution
+import numpy as np
+from scipy import signal
+
+
+def causal_lowpass(x, fs, fc, order):
+    """Butterworth low-pass of the given order and cutoff (Hz), run causally."""
+    b, a = signal.butter(order, fc, btype="low", fs=fs)
+    return signal.lfilter(b, a, np.asarray(x, dtype=float))
+--- hint
+`signal.butter(order, fc, fs=fs)` designs the filter, with the cutoff in hertz because you passed the sample rate.
+--- hint
+Of `lfilter` and `filtfilt`, only one uses nothing but the past.
+--- check test | A steady input comes through unchanged once the filter settles
+(lambda y: len(y) == 2000 and abs(y[-1] - 3.0) < 1e-6)(causal_lowpass(np.full(2000, 3.0), 1000.0, 20.0, 2))
+--- check test | A wave at the cutoff comes out at 0.707 of its size
+(lambda t: abs(np.abs(causal_lowpass(np.sin(2 * np.pi * 20.0 * t), 1000.0, 20.0, 4)[1000:]).max() - 0.7071) < 0.005)(np.arange(0.0, 2.0, 0.001))
+--- check test | A wave at ten times the cutoff is cut to about one percent by a 2nd-order filter
+(lambda t: np.abs(causal_lowpass(np.sin(2 * np.pi * 200.0 * t), 1000.0, 20.0, 2)[1000:]).max() < 0.012)(np.arange(0.0, 2.0, 0.001))
+--- check test | Changing the future does not change the past
+(lambda x: (lambda x2: np.array_equal(causal_lowpass(x, 500.0, 10.0, 3)[:300], causal_lowpass(x2, 500.0, 10.0, 3)[:300]))(np.concatenate([x[:300], -5.0 * x[300:]])))(np.random.default_rng(6).normal(size=600))
+
++++ practice | The difference equation, by hand
+--- task
+Write a function `run_filter(b, a, x)` that does what `scipy.signal.lfilter(b, a, x)` does, with your own loop, starting from rest (all earlier inputs and outputs zero):
+
+`a[0] * y[n] = b[0] * x[n] + b[1] * x[n-1] + ... - a[1] * y[n-1] - a[2] * y[n-2] - ...`
+
+- `b` and `a` are lists or arrays of any lengths, and `a[0]` need not be 1: divide through by it.
+- Return a NumPy float array the same length as `x`.
+--- starter
+import numpy as np
+
+
+def run_filter(b, a, x):
+    pass
+--- solution
+import numpy as np
+
+
+def run_filter(b, a, x):
+    """The causal difference equation that lfilter runs, from rest."""
+    b = np.asarray(b, dtype=float) / a[0]
+    a = np.asarray(a, dtype=float) / a[0]
+    x = np.asarray(x, dtype=float)
+    y = np.zeros(x.size)
+    for n in range(x.size):
+        acc = 0.0
+        for i in range(b.size):
+            if n - i >= 0:
+                acc += b[i] * x[n - i]
+        for i in range(1, a.size):
+            if n - i >= 0:
+                acc -= a[i] * y[n - i]
+        y[n] = acc
+    return y
+--- hint
+Normalize first: divide every `b` and every `a` by `a[0]`, so the equation gives `y[n]` directly.
+--- hint
+For each `n`, add up `b[i] * x[n - i]` and subtract `a[i] * y[n - i]` for `i` from 1, skipping any term whose index `n - i` is negative (the filter starts from rest).
+--- check case | A spike through a first-order filter with a[0] = 2
+run_filter([1.0, 2.0], [2.0, -1.0], [1.0, 0.0, 0.0, 3.0]).tolist()
+=> [0.5, 1.25, 0.625, 1.8125]
+--- check test | Matches lfilter for a 2nd-order Butterworth on random data
+(lambda b, a, x: np.allclose(run_filter(b, a, x), __import__("scipy.signal", fromlist=["lfilter"]).lfilter(b, a, x)))(*__import__("scipy.signal", fromlist=["butter"]).butter(2, 50.0, fs=1000.0), np.random.default_rng(0).normal(size=50))
+--- check test | A pure delay of two samples
+np.allclose(run_filter([0.0, 0.0, 1.0], [1.0], [4.0, 5.0, 6.0, 7.0]), [0.0, 0.0, 4.0, 5.0])
+--- check test | Empty input gives an empty array
+(lambda y: isinstance(y, np.ndarray) and y.size == 0)(run_filter([1.0], [1.0, -0.5], []))
+
++++ practice | How late is the filtered signal?
+--- task
+Write a function `delay_ms(order, fc, fs, f)` that returns, in milliseconds, how late a Butterworth low-pass filter (of that `order`, cutoff `fc` hertz, sample rate `fs`) delivers a steady wave of frequency `f` hertz when run causally, as a float.
+
+- Get the filter's response with `signal.freqz`, and turn its phase lag into a delay: `delay = -phase / (2 * pi * f)`, with the phase in radians.
+- Watch out: `np.angle` only returns angles from -pi to pi. A high-order filter near its cutoff lags by more than half a cycle, and the wrapped angle then looks like a lead. Evaluate the response on a fine grid of frequencies from 0 up to `f` (2001 points is plenty), and use `np.unwrap` on the angles so the phase keeps falling smoothly.
+--- starter
+import numpy as np
+from scipy import signal
+
+
+def delay_ms(order, fc, fs, f):
+    pass
+--- solution
+import numpy as np
+from scipy import signal
+
+
+def delay_ms(order, fc, fs, f):
+    """Delay, in ms, of a wave of f Hz through a causal Butterworth low-pass."""
+    b, a = signal.butter(order, fc, fs=fs)
+    grid = np.linspace(0.0, f, 2001)                 # from 0 Hz, where the phase is 0, up to f
+    _, H = signal.freqz(b, a, worN=grid, fs=fs)
+    phase = np.unwrap(np.angle(H))[-1]              # radians, unwrapped so it keeps falling
+    return float(-phase / (2 * np.pi * f) * 1000.0)
+--- hint
+`signal.freqz(b, a, worN=freqs, fs=fs)` returns the frequencies and the complex response at each. The phase is `np.angle` of the response.
+--- hint
+`np.unwrap` removes the jumps of 2 pi between neighboring angles, which only works if the grid starts where the phase is known (0 Hz) and is fine enough to follow it.
+--- check test | A 4th-order 20 Hz filter delays a 2 Hz wave by about 20.8 ms
+abs(delay_ms(4, 20.0, 1000.0, 2.0) - 20.796) < 0.01
+--- check test | A 2nd-order 10 Hz filter at 500 Hz sampling, for a 1 Hz wave
+abs(delay_ms(2, 10.0, 500.0, 1.0) - 22.553) < 0.01
+--- check test | A 6th-order filter near its cutoff lags by more than half a cycle
+abs(delay_ms(6, 5.0, 200.0, 4.9) - 148.907) < 0.05
+--- check test | A 1st-order filter lags exactly an eighth of a cycle at its cutoff
+abs(delay_ms(1, 50.0, 1000.0, 50.0) - 2.5) < 1e-6
+
++++ practice | The strongest tone in a noisy record
+--- task
+Write a function `dominant_tone(x, fs, df)` that returns the frequency, in hertz, of the highest peak of the Welch power spectral density of the samples `x`, taken at `fs` hertz, as a float.
+
+- Choose `nperseg` as the smallest power of two that gives bins no wider than `df` hertz, that is at least `fs / df`, but never more than the number of samples.
+- Ignore the first bin (0 Hz): a constant offset is not a tone.
+--- starter
+import numpy as np
+from scipy import signal
+
+
+def dominant_tone(x, fs, df):
+    pass
+--- solution
+import numpy as np
+from scipy import signal
+
+
+def dominant_tone(x, fs, df):
+    """Frequency (Hz) of the highest Welch PSD bin above 0 Hz, with bins at most df wide."""
+    x = np.asarray(x, dtype=float)
+    nperseg = 1
+    while nperseg < fs / df:
+        nperseg *= 2
+    nperseg = min(nperseg, x.size)                  # a short record cannot give finer bins
+    f, P = signal.welch(x, fs=fs, nperseg=nperseg)
+    k = 1 + int(np.argmax(P[1:]))                   # skip the 0 Hz bin
+    return float(f[k])
+--- hint
+The bins of `welch` are `fs / nperseg` apart. Double `nperseg` from 1 until `fs / nperseg` is no bigger than `df`, then cap it at `len(x)`.
+--- hint
+Search `P[1:]` and add 1 to the index you find.
+--- check test | Two tones 0.4 Hz apart: the stronger one at 37.5 Hz is found
+(lambda t: abs(dominant_tone(50.0 + 0.5 * np.random.default_rng(4).standard_normal(t.size) + 0.2 * np.sin(2 * np.pi * 37.5 * t) + 0.15 * np.sin(2 * np.pi * 37.9 * t), 1000.0, 0.1) - 37.5) < 0.07)(np.arange(0.0, 20.0, 0.001))
+--- check test | A tone buried in noise at 123 Hz
+(lambda t: abs(dominant_tone(0.3 * np.random.default_rng(5).standard_normal(t.size) + 0.1 * np.sin(2 * np.pi * 123.0 * t), 1000.0, 1.0) - 123.0) < 1.0)(np.arange(0.0, 20.0, 0.001))
+--- check case | A record of only 300 samples: the bins cannot be finer than 1000/300 Hz
+round(dominant_tone(3.0 + np.sin(2 * np.pi * 12.0 * np.arange(300) / 1000.0), 1000.0, 0.25), 4)
+=> 13.3333
+
++++ practice | A cutoff in the wrong place
+--- task
+`design_lowpass(order, fc, fs)` should return the coefficients `(b, a)` of a Butterworth low-pass filter whose gain is 0.7071 (minus 3 dB) at `fc` hertz, for samples taken at `fs` hertz. Instead, its gain at `fc` is far lower: the cutoff has landed at half the frequency it should. Fix it.
+--- starter
+import numpy as np
+from scipy import signal
+
+
+def design_lowpass(order, fc, fs):
+    """Butterworth low-pass with its -3 dB point at fc Hz, for sample rate fs."""
+    b, a = signal.butter(order, fc / fs)
+    return b, a
+--- solution
+import numpy as np
+from scipy import signal
+
+
+def design_lowpass(order, fc, fs):
+    """Butterworth low-pass with its -3 dB point at fc Hz, for sample rate fs."""
+    b, a = signal.butter(order, fc, fs=fs)
+    return b, a
+--- hint
+Without `fs=`, what does `butter` think its second argument is a fraction of?
+--- hint
+Without `fs`, the cutoff is a fraction of the Nyquist frequency, `fs / 2`, not of `fs`. Passing `fs=fs` and the cutoff in hertz avoids the arithmetic altogether.
+--- check test | Gain 0.7071 at the cutoff: 4th order, 20 Hz, 1000 Hz sampling
+abs(abs(__import__("scipy.signal", fromlist=["freqz"]).freqz(*design_lowpass(4, 20.0, 1000.0), worN=[20.0], fs=1000.0)[1][0]) - 0.70711) < 1e-4
+--- check test | Gain 0.7071 at the cutoff: 2nd order, 3 Hz, 50 Hz sampling
+abs(abs(__import__("scipy.signal", fromlist=["freqz"]).freqz(*design_lowpass(2, 3.0, 50.0), worN=[3.0], fs=50.0)[1][0]) - 0.70711) < 1e-4
+--- check test | A slow wave still passes untouched
+abs(abs(__import__("scipy.signal", fromlist=["freqz"]).freqz(*design_lowpass(3, 40.0, 400.0), worN=[1.0], fs=400.0)[1][0]) - 1.0) < 1e-4
+
++++ practice | When did the valve open?
+--- task
+A test-stand pressure trace `y`, sampled at `fs` hertz at times `t`, steps from one level to another when a valve opens, buried in noise. After the test, you want the time of that step, lined up with the other channels to the millisecond.
+
+Write a function `event_time(t, y, fs)` that returns the step time, in seconds, as a float:
+
+- smooth `y` with a 4th-order Butterworth low-pass at 10 Hz, **with no delay** (the whole record is on disk);
+- the starting level is the mean of the first tenth of the smoothed samples, and the final level the mean of the last tenth;
+- return the first time the smoothed trace crosses halfway between the two levels, filling in between the two samples on either side with a straight line;
+- the step may go up or down.
+--- starter
+import numpy as np
+from scipy import signal
+
+
+def event_time(t, y, fs):
+    pass
+--- solution
+import numpy as np
+from scipy import signal
+
+
+def event_time(t, y, fs):
+    """Time of the step in a noisy recorded trace, with zero-phase smoothing."""
+    t = np.asarray(t, dtype=float)
+    b, a = signal.butter(4, 10.0, fs=fs)
+    ys = signal.filtfilt(b, a, np.asarray(y, dtype=float))   # zero phase: no time shift
+
+    n = max(1, ys.size // 10)
+    start, end = ys[:n].mean(), ys[-n:].mean()
+    mid = 0.5 * (start + end)
+    past = ys > mid if end > start else ys < mid
+    i = int(np.argmax(past))                      # first sample past halfway
+    frac = (mid - ys[i - 1]) / (ys[i] - ys[i - 1])
+    return float(t[i - 1] + frac * (t[i] - t[i - 1]))
+--- hint
+A causal filter would make every event look late by its delay, tens of milliseconds here. Which function runs the filter forward and backward so the delays cancel?
+--- hint
+For a step down, "past halfway" means below the midpoint. `np.argmax` of a boolean array finds the first `True`.
+--- hint
+Between samples `i - 1` and `i`, the crossing is the fraction `(mid - ys[i-1]) / (ys[i] - ys[i-1])` of the way along.
+--- check test | A step up at 1.730 s, found within 10 ms
+(lambda t: abs(event_time(t, np.where(t >= 1.73, 15.0, 10.0) + np.random.default_rng(1).normal(0.0, 1.0, t.size), 500.0) - 1.73) < 0.01)(np.arange(0.0, 4.0, 0.002))
+--- check test | A step down at 2.412 s
+(lambda t: abs(event_time(t, np.where(t >= 2.412, 7.0, 10.0) + np.random.default_rng(2).normal(0.0, 1.0, t.size), 500.0) - 2.412) < 0.01)(np.arange(0.0, 4.0, 0.002))
+--- check test | A clean step between samples is placed between them
+(lambda t: abs(event_time(t, np.where(t >= 0.5011, 1.0, 0.0), 1000.0) - 0.5011) < 0.001)(np.arange(0.0, 1.0, 0.001))
+
++++ question | Ten times longer, same segments
+--- ask
+You compute a Welch spectrum of a vibration test with `nperseg=4096`. You then record ten times longer at the same sample rate and run `welch` again with the same `nperseg`. What changes?
+--- choice
+The bins become ten times finer, and each bin is as noisy as before.
+--- choice correct
+The bins stay the same width, and the scatter in each bin shrinks by about the square root of ten, because ten times as many segments are averaged.
+--- choice
+Nothing changes: `welch` only uses the first `nperseg` samples.
+--- choice
+The bins become ten times finer and ten times less noisy.
+--- why
+In Welch's method the bin width is `fs / nperseg`, which depends only on the segment length. A longer record gives more segments, and averaging K independent estimates cuts the scatter by about one over the square root of K. Finer bins with the same scatter is what a single raw periodogram does with more data; Welch turns the extra data into less noise instead.
+
+=== py04-l06 | Practice: Systems and discretization: bode, tf2ss and cont2discrete
+--- for
+l06-systems-and-discretization
+
++++ practice | Crossover and phase margin of a loop
+--- task
+A loop transfer function is given as two lists of polynomial coefficients in `s`, highest power first: `num` and `den`. Write a function `phase_margin(num, den, w_lo, w_hi)` that returns the tuple `(wc, pm)` of floats:
+
+- `wc` is the crossover frequency in rad/s, where the size of `L(jw) = num(jw) / den(jw)` equals 1. Find it with `brentq` between `w_lo` and `w_hi`, where the size is above 1 at `w_lo` and below 1 at `w_hi`;
+- `pm` is the phase margin in degrees, `180 + (phase of L(j wc) in degrees)`.
+
+Evaluate `L(jw)` yourself with `np.polyval(num, 1j * w)`; `np.angle` gives the phase in radians.
+--- starter
+import numpy as np
+from scipy.optimize import brentq
+
+
+def phase_margin(num, den, w_lo, w_hi):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import brentq
+
+
+def phase_margin(num, den, w_lo, w_hi):
+    """Crossover (rad/s) and phase margin (degrees) of the loop num(s)/den(s)."""
+    def L(w):
+        s = 1j * w
+        return np.polyval(num, s) / np.polyval(den, s)
+
+    wc = brentq(lambda w: abs(L(w)) - 1.0, w_lo, w_hi)
+    return float(wc), float(180.0 + np.degrees(np.angle(L(wc))))
+--- hint
+The crossover is a root: of the function `abs(L(w)) - 1`, which is positive at `w_lo` and negative at `w_hi`.
+--- hint
+`np.degrees(np.angle(L(wc)))` is the phase in degrees; add 180 to it.
+--- check test | 10 / (s (s + 1)): crossover 3.084 rad/s, margin 18.0 degrees
+(lambda wc, pm: abs(wc - 3.08423) < 1e-4 and abs(pm - 17.9642) < 1e-3)(*phase_margin([10.0], [1.0, 1.0, 0.0], 0.1, 100.0))
+--- check test | A PD attitude loop with a smoothing filter
+(lambda wc, pm: abs(wc - 5.18716) < 1e-4 and abs(pm - 54.3752) < 1e-3)(*phase_margin([5.0, 10.0], [0.05, 1.0, 0.0, 0.0], 0.1, 100.0))
+--- check test | Three lags in a row: 2 / (s + 1)^3
+(lambda wc, pm: abs(wc - 0.76642) < 1e-4 and abs(pm - 67.5981) < 1e-3)(*phase_margin([2.0], [1.0, 3.0, 3.0, 1.0], 0.01, 10.0))
+
++++ practice | The same loop behind a transport delay
+--- task
+A transport delay of `T` seconds multiplies a loop by `exp(-s T)`: its size is 1 at every frequency, and its phase at `w` is `-w T` radians. Write a function `margin_with_delay(num, den, T, w_lo, w_hi)` that returns `(wc, pm)` for the loop `num(s) / den(s) * exp(-s T)`, as floats:
+
+- find `wc` with `brentq` on the size of the whole loop, between `w_lo` and `w_hi`;
+- compute the phase at `wc` as the phase of `num / den` (from `np.angle`) **plus** the delay's own `-wc * T`, both converted to degrees, and return `pm = 180 +` that phase. Do not take `np.angle` of the product: once the delay lag is large, that angle wraps round and a negative margin would look positive.
+
+A negative `pm` is a real answer: that loop is unstable.
+--- starter
+import numpy as np
+from scipy.optimize import brentq
+
+
+def margin_with_delay(num, den, T, w_lo, w_hi):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import brentq
+
+
+def margin_with_delay(num, den, T, w_lo, w_hi):
+    """Crossover and phase margin of num(s)/den(s) behind a delay of T seconds."""
+    def G(w):
+        s = 1j * w
+        return np.polyval(num, s) / np.polyval(den, s)
+
+    # The delay has size 1, so it cannot move the crossover; include it anyway, it costs nothing.
+    wc = brentq(lambda w: abs(G(w) * np.exp(-1j * w * T)) - 1.0, w_lo, w_hi)
+    phase = np.degrees(np.angle(G(wc))) - np.degrees(wc * T)
+    return float(wc), float(180.0 + phase)
+--- hint
+The delay's size is exactly 1, so the crossover is the same as without it. Only the phase changes.
+--- hint
+Keep the two phases apart: `np.degrees(np.angle(G(wc)))` for the rational part and `np.degrees(wc * T)` for the delay's lag, then subtract.
+--- check test | 30 ms behind the PD loop: the crossover stays, 8.9 degrees are lost
+(lambda wc, pm: abs(wc - 5.18716) < 1e-4 and abs(pm - 45.4592) < 1e-3)(*margin_with_delay([5.0, 10.0], [0.05, 1.0, 0.0, 0.0], 0.03, 0.1, 100.0))
+--- check test | 50 ms behind 10 / (s (s + 1))
+(lambda wc, pm: abs(wc - 3.08423) < 1e-4 and abs(pm - 9.1286) < 1e-3)(*margin_with_delay([10.0], [1.0, 1.0, 0.0], 0.05, 0.1, 100.0))
+--- check test | 300 ms is too much: the margin goes negative instead of wrapping round
+(lambda wc, pm: abs(pm + 34.7855) < 1e-3)(*margin_with_delay([5.0, 10.0], [0.05, 1.0, 0.0, 0.0], 0.3, 0.1, 100.0))
+--- check test | No delay gives the plain phase margin
+(lambda wc, pm: abs(pm - 17.9642) < 1e-3)(*margin_with_delay([10.0], [1.0, 1.0, 0.0], 0.0, 0.1, 100.0))
+
++++ practice | Step response through state space
+--- task
+Write a function `step_response(num, den, dt, n)` that returns the response of the transfer function `num(s) / den(s)` to a unit step applied at `t = 0`, sampled at `t = 0, dt, 2*dt, ..., n*dt`, as a NumPy array of length `n + 1`. The system starts at rest.
+
+- Convert it to state space with `signal.tf2ss`.
+- Discretize the four matrices with `signal.cont2discrete((A, B, C, D), dt, method="zoh")`. The step is held constant, so the hold is exact here.
+- Step it forward: the output at each sample is `C x + D u`, then `x` becomes `Ad x + Bd u`, with `u = 1`.
+
+The transfer function may have a numerator of the same degree as its denominator; then `D` is not zero and the output jumps at `t = 0`.
+--- starter
+import numpy as np
+from scipy import signal
+
+
+def step_response(num, den, dt, n):
+    pass
+--- solution
+import numpy as np
+from scipy import signal
+
+
+def step_response(num, den, dt, n):
+    """Unit-step response of num(s)/den(s) at t = 0, dt, ..., n*dt, from rest."""
+    A, B, C, D = signal.tf2ss(num, den)
+    Ad, Bd, Cd, Dd, _ = signal.cont2discrete((A, B, C, D), dt, method="zoh")
+    x = np.zeros(Ad.shape[0])
+    u = np.array([1.0])
+    ys = []
+    for _ in range(n + 1):
+        ys.append((Cd @ x + Dd @ u).item())
+        x = Ad @ x + Bd @ u
+    return np.array(ys)
+--- hint
+`cont2discrete` on a state-space tuple returns five things: `Ad, Bd, Cd, Dd` and the time step.
+--- hint
+Record the output before stepping the state, so the first entry is the output at `t = 0`. `.item()` turns a one-element array into a plain number.
+--- check test | 1 / (s + 1): exactly 1 - exp(-t) at the samples
+(lambda t: np.allclose(step_response([1.0], [1.0, 1.0], 0.1, 50), 1 - np.exp(-t)))(np.arange(51) * 0.1)
+--- check test | A lightly damped mode matches the textbook formula
+(lambda t, wn, z: np.allclose(step_response([wn**2], [1.0, 2 * z * wn, wn**2], 0.1, 50), 1 - np.exp(-z * wn * t) * (np.cos(wn * np.sqrt(1 - z * z) * t) + z / np.sqrt(1 - z * z) * np.sin(wn * np.sqrt(1 - z * z) * t))))(np.arange(51) * 0.1, 4.0, 0.3)
+--- check test | (s + 3) / (s + 1) jumps to 1 at once, then settles at 3
+(lambda y: len(y) == 51 and np.allclose(y, 3 - 2 * np.exp(-np.arange(51) * 0.1)))(step_response([1.0, 3.0], [1.0, 1.0], 0.1, 50))
+--- check test | n = 0: only the value at t = 0
+step_response([1.0], [1.0, 1.0], 0.1, 0).tolist() == [0.0]
+
++++ practice | Where Tustin moves a frequency
+--- task
+Tustin's method squeezes the whole continuous frequency axis below the Nyquist frequency. Write two functions:
+
+- `tustin_hz(f, fs)` returns the discrete frequency, in hertz, where a continuous frequency `f` hertz lands after plain Tustin at sample rate `fs`: with `T = 1 / fs` and `w = 2 * pi * f`, it lands at `(2 / T) * arctan(w * T / 2)` rad/s. `f` may be one number or an array; return a float or an array to match.
+- `prewarp_dt(f0, fs)` returns the time step `T'` to hand to `cont2discrete(..., method="bilinear")` so that the frequency `f0` hertz lands exactly on itself: `T' = 2 * tan(w0 * T / 2) / w0`, with `w0 = 2 * pi * f0`. It must be above `T`.
+--- starter
+import numpy as np
+
+
+def tustin_hz(f, fs):
+    pass
+
+
+def prewarp_dt(f0, fs):
+    pass
+--- solution
+import numpy as np
+
+
+def tustin_hz(f, fs):
+    """Where a continuous frequency f (Hz) lands after plain Tustin at sample rate fs."""
+    T = 1.0 / fs
+    w = 2 * np.pi * np.asarray(f, dtype=float)
+    wd = (2 / T) * np.arctan(w * T / 2)
+    out = wd / (2 * np.pi)
+    return float(out) if out.ndim == 0 else out
+
+
+def prewarp_dt(f0, fs):
+    """The time step that makes Tustin map f0 (Hz) exactly onto itself."""
+    T = 1.0 / fs
+    w0 = 2 * np.pi * f0
+    return float(2 * np.tan(w0 * T / 2) / w0)
+--- hint
+Work in rad/s inside the formula and convert back to hertz at the end by dividing by `2 * pi`.
+--- hint
+`np.asarray(f, dtype=float)` lets one formula handle both a number and an array; a 0-dimensional result can be turned back into a float.
+--- check test | An 8 Hz notch at 50 Hz sampling lands near 7.41 Hz
+abs(tustin_hz(8.0, 50.0) - 7.41295) < 1e-4
+--- check test | Zero stays zero, and nothing passes Nyquist
+(lambda f: f[0] == 0.0 and abs(f[1] - 0.999671) < 1e-5 and abs(f[2] - 17.8566) < 1e-3 and f[3] < 50.0 and f[3] > 49.99)(tustin_hz(np.array([0.0, 1.0, 20.0, 1e6]), 100.0))
+--- check test | The prewarped step puts the notch back on 8 Hz
+(lambda Tp: abs(Tp - 0.0218740) < 1e-6 and abs(2 * np.arctan(2 * np.pi * 8.0 * Tp / 2) * 50.0 / (2 * np.pi) - 8.0) < 1e-9 and Tp > 0.02)(prewarp_dt(8.0, 50.0))
+--- check test | The prewarped notch really lands on 8 Hz in a discrete filter
+(lambda sg, w0: (lambda nd, dd: abs(sg.freqz(nd.ravel(), dd, worN=[8.0], fs=50.0)[1][0]) < 1e-9)(*sg.cont2discrete(([1.0, 0.0, w0**2], [1.0, 2 * 0.3 * w0, w0**2]), prewarp_dt(8.0, 50.0), method="bilinear")[:2]))(__import__("scipy.signal", fromlist=["cont2discrete"]), 2 * np.pi * 8.0)
+
++++ practice | A delay margin in the wrong units
+--- task
+`delay_margin(num, den, w_lo, w_hi)` should return how many seconds of transport delay the loop `num(s) / den(s)` can take before its phase margin reaches zero: the phase margin, in radians, divided by the crossover frequency in rad/s. For `10 / (s (s + 1))`, whose margin is about 18 degrees at 3.08 rad/s, the answer is about 0.102 s. The function returns about 5.8 instead. Fix it.
+--- starter
+import numpy as np
+from scipy.optimize import brentq
+
+
+def delay_margin(num, den, w_lo, w_hi):
+    """Seconds of pure delay the loop num/den can take before its phase margin is gone."""
+    L = lambda w: np.polyval(num, 1j * w) / np.polyval(den, 1j * w)
+    wc = brentq(lambda w: abs(L(w)) - 1.0, w_lo, w_hi)
+    pm_deg = 180.0 + np.degrees(np.angle(L(wc)))
+    return float(pm_deg / wc)
+--- solution
+import numpy as np
+from scipy.optimize import brentq
+
+
+def delay_margin(num, den, w_lo, w_hi):
+    """Seconds of pure delay the loop num/den can take before its phase margin is gone."""
+    L = lambda w: np.polyval(num, 1j * w) / np.polyval(den, 1j * w)
+    wc = brentq(lambda w: abs(L(w)) - 1.0, w_lo, w_hi)
+    pm_deg = 180.0 + np.degrees(np.angle(L(wc)))
+    return float(np.radians(pm_deg) / wc)
+--- hint
+A delay of `T` costs `wc * T` of phase. In which unit is that product?
+--- hint
+`wc * T` is in radians, so the margin must be in radians too before you divide.
+--- check test | 10 / (s (s + 1)): about 0.102 s
+abs(delay_margin([10.0], [1.0, 1.0, 0.0], 0.1, 100.0) - 0.101656) < 1e-5
+--- check test | The PD attitude loop: about 0.183 s
+abs(delay_margin([5.0, 10.0], [0.05, 1.0, 0.0, 0.0], 0.1, 100.0) - np.radians(54.37523) / 5.187161) < 1e-5
+--- check test | Adding exactly that delay leaves no margin
+(lambda T: abs(180.0 + np.degrees(np.angle(10.0 / ((1j * 3.0842328) * (1j * 3.0842328 + 1.0)))) - np.degrees(3.0842328 * T)) < 1e-3)(delay_margin([10.0], [1.0, 1.0, 0.0], 0.1, 100.0))
+
++++ practice | How slow can the flight computer run?
+--- task
+A continuous design has a plant `plant = (num, den)` and a controller `ctrl = (num, den)`, each a pair of coefficient lists in `s`. On a flight computer at sample rate `fs`, the plant is discretized with `zoh` and the controller with `bilinear`, both with `T = 1 / fs`, and the loop is their product.
+
+Write a function `slowest_rate(plant, ctrl, rates, pm_min, w_lo)` that returns the smallest sample rate in the list `rates` (in any order) whose discrete loop keeps a phase margin of at least `pm_min` degrees, or `None` if none does.
+
+- Evaluate the discrete loop at `z = exp(1j * w * T)`, with `np.polyval` on the product of the numerators and of the denominators (flatten the 2-D numerators that `cont2discrete` returns with `.ravel()`).
+- Find its crossover with `brentq` between `w_lo` and `0.99 * pi / T`, and take the phase margin as `180 +` the phase in degrees there.
+--- starter
+import numpy as np
+from scipy import signal
+from scipy.optimize import brentq
+
+
+def slowest_rate(plant, ctrl, rates, pm_min, w_lo):
+    pass
+--- solution
+import numpy as np
+from scipy import signal
+from scipy.optimize import brentq
+
+
+def discrete_margin(plant, ctrl, fs, w_lo):
+    """Phase margin (degrees) of the sampled loop: plant with zoh, controller with Tustin."""
+    T = 1.0 / fs
+    pn, pd, _ = signal.cont2discrete(plant, T, method="zoh")
+    cn, cd, _ = signal.cont2discrete(ctrl, T, method="bilinear")
+    num = np.polymul(pn.ravel(), cn.ravel())
+    den = np.polymul(pd, cd)
+
+    def L(w):
+        z = np.exp(1j * w * T)
+        return np.polyval(num, z) / np.polyval(den, z)
+
+    wc = brentq(lambda w: abs(L(w)) - 1.0, w_lo, 0.99 * np.pi / T)
+    return 180.0 + np.degrees(np.angle(L(wc)))
+
+
+def slowest_rate(plant, ctrl, rates, pm_min, w_lo):
+    """Smallest rate in rates whose sampled loop keeps at least pm_min degrees, or None."""
+    good = [fs for fs in rates if discrete_margin(plant, ctrl, fs, w_lo) >= pm_min]
+    return min(good) if good else None
+--- hint
+Write a helper that, for one rate, builds the discrete loop and returns its phase margin. Then keep the rates that pass and take the smallest.
+--- hint
+`cont2discrete((num, den), T, method=...)` returns a 2-D numerator, a denominator and the step. `np.polymul` multiplies two polynomials given as coefficient lists.
+--- check case | Keeping 60 degrees needs 40 Hz
+slowest_rate(([1.0], [1.0, 0.0, 0.0]), ([4.0, 4.0], [0.05, 1.0]), [10.0, 20.0, 40.0, 80.0, 160.0], 60.0, 0.1)
+=> 40.0
+--- check case | Keeping 63 degrees needs 80 Hz, whatever the order of the list
+slowest_rate(([1.0], [1.0, 0.0, 0.0]), ([4.0, 4.0], [0.05, 1.0]), [160.0, 20.0, 80.0, 40.0], 63.0, 0.1)
+=> 80.0
+--- check case | 65 degrees is more than even the continuous design has
+slowest_rate(([1.0], [1.0, 0.0, 0.0]), ([4.0, 4.0], [0.05, 1.0]), [100.0, 200.0, 400.0], 65.0, 0.1)
+=> None
+--- check case | A modest demand is met by the slowest rate offered
+slowest_rate(([1.0], [1.0, 0.0, 0.0]), ([4.0, 4.0], [0.05, 1.0]), [100.0, 12.0, 25.0], 40.0, 0.1)
+=> 12.0
+
++++ question | The price of 25 milliseconds
+--- ask
+A loop crosses over at 12 rad/s. A new data bus adds 25 ms of delay. About how many degrees of phase margin does it cost? Give the number of degrees.
+--- answer
+17.2
+17
+17.19
+17.2 degrees
+17 degrees
+--- why
+A delay's lag is `w T` radians: 12 times 0.025 is 0.3 rad at the crossover, and 0.3 times 180 over pi is about 17.2 degrees. The delay does not change the gain, so the crossover stays at 12 rad/s and the whole 17.2 degrees comes straight off the margin.
+
+=== py04-l07 | Practice: Interpolation and aero tables
+--- for
+l07-interpolation-and-aero-tables
+
++++ practice | Drag from a table of coefficients
+--- task
+Write a function `drag_force(mach, rho, a_sound, diameter, mach_table, cd_table)` that returns the drag force in newtons on a rocket, as a float:
+
+- read the drag coefficient `cd` at `mach` from the table (`mach_table`, increasing, and `cd_table`) by straight-line interpolation with `np.interp`;
+- the speed is `v = mach * a_sound` (m/s), the dynamic pressure `q = 0.5 * rho * v**2`, the area `A = pi * diameter**2 / 4`, and the drag `q * cd * A`;
+- `np.interp` would quietly hold the end values outside the table. Raise `ValueError` instead when `mach` is below the first or above the last table entry. The two end entries themselves are fine.
+--- starter
+import numpy as np
+
+
+def drag_force(mach, rho, a_sound, diameter, mach_table, cd_table):
+    pass
+--- solution
+import numpy as np
+
+
+def drag_force(mach, rho, a_sound, diameter, mach_table, cd_table):
+    """Drag in N from a Mach table of drag coefficients; refuses to leave the table."""
+    if not (mach_table[0] <= mach <= mach_table[-1]):
+        raise ValueError(f"Mach {mach} is outside the table")
+    cd = np.interp(mach, mach_table, cd_table)
+    v = mach * a_sound
+    q = 0.5 * rho * v**2
+    area = np.pi * diameter**2 / 4
+    return float(q * cd * area)
+--- hint
+Check the range first, then call `np.interp(mach, mach_table, cd_table)`: query first, then the table's inputs, then its outputs.
+--- check test | Mach 1.1, between two rows
+abs(drag_force(1.1, 0.3, 300.0, 1.2, [0.0, 0.5, 0.9, 1.0, 1.2, 2.0, 4.0], [0.25, 0.26, 0.34, 0.50, 0.58, 0.44, 0.30]) - 9976.2029) < 1e-3
+--- check test | The last row itself is allowed
+abs(drag_force(4.0, 0.01, 290.0, 1.2, [0.0, 0.5, 0.9, 1.0, 1.2, 2.0, 4.0], [0.25, 0.26, 0.34, 0.50, 0.58, 0.44, 0.30]) - 2282.7566) < 1e-3
+--- check test | Beyond the table raises ValueError, on either side
+raises(ValueError, lambda: drag_force(4.5, 0.01, 290.0, 1.2, [0.0, 0.5, 0.9, 1.0, 1.2, 2.0, 4.0], [0.25, 0.26, 0.34, 0.50, 0.58, 0.44, 0.30])) and raises(ValueError, lambda: drag_force(0.2, 1.0, 340.0, 1.0, [0.3, 1.0], [0.3, 0.5]))
+--- check case | Standing still: no drag
+drag_force(0.0, 1.2, 340.0, 1.0, [0.0, 0.5, 0.9, 1.0, 1.2, 2.0, 4.0], [0.25, 0.26, 0.34, 0.50, 0.58, 0.44, 0.30])
+=> 0.0
+
++++ practice | Density between the rows
+--- task
+Air density falls off roughly exponentially with height, so a straight line between table rows is poor, but a straight line between the **logarithms** of the rows is good. Write a function `density_at(h, h_table, rho_table)` that:
+
+- interpolates `ln(rho)` linearly in height and converts back with `np.exp`;
+- accepts one height (return a float) or an array of heights (return an array);
+- raises `ValueError` if any height is outside the table.
+--- starter
+import numpy as np
+
+
+def density_at(h, h_table, rho_table):
+    pass
+--- solution
+import numpy as np
+
+
+def density_at(h, h_table, rho_table):
+    """Density at height h by straight lines on ln(rho); h may be a number or an array."""
+    h = np.asarray(h, dtype=float)
+    if np.any(h < h_table[0]) or np.any(h > h_table[-1]):
+        raise ValueError("height outside the table")
+    rho = np.exp(np.interp(h, h_table, np.log(rho_table)))
+    return float(rho) if rho.ndim == 0 else rho
+--- hint
+Take `np.log` of the density column, interpolate that with `np.interp`, then undo it with `np.exp`.
+--- hint
+`np.asarray(h)` turns a single number into a 0-dimensional array; its `ndim` is 0, and `float()` turns the answer back into a number.
+--- check test | A truly exponential table is reproduced exactly between rows
+(lambda ht: abs(density_at(5000.0, ht, 1.225 * np.exp(-ht / 8500.0)) - 1.225 * np.exp(-5000.0 / 8500.0)) < 1e-12)(np.array([0.0, 10e3, 20e3, 30e3]))
+--- check test | An array of heights, including both ends
+(lambda ht: np.allclose(density_at(np.array([0.0, 12.5e3, 30e3]), ht, 1.225 * np.exp(-ht / 8500.0)), 1.225 * np.exp(-np.array([0.0, 12.5e3, 30e3]) / 8500.0), rtol=1e-12))(np.array([0.0, 10e3, 20e3, 30e3]))
+--- check test | Half way between 1.225 and 0.4135 in the logarithm
+abs(density_at(5000.0, [0.0, 10000.0], [1.225, 0.4135]) - 0.711716) < 1e-5
+--- check test | Above or below the table raises ValueError
+raises(ValueError, lambda: density_at(31e3, [0.0, 10e3, 30e3], [1.2, 0.4, 0.02])) and raises(ValueError, lambda: density_at(np.array([100.0, -5.0]), [0.0, 10e3, 30e3], [1.2, 0.4, 0.02]))
+--- check test | One height gives a plain float
+type(density_at(2500.0, [0.0, 10000.0], [1.225, 0.4135])) is float
+
++++ practice | Total impulse and burnout from a thrust table
+--- task
+A solid motor's thrust was measured at a few times. Between the rows, use a `PchipInterpolator`: it is smooth and, unlike a cubic spline, never swings below zero after burnout. Write a function `motor_summary(t, F)` that returns `(impulse, burnout)` as floats:
+
+- `impulse`: the total impulse in newton-seconds, the area under the interpolated thrust from `t[0]` to `t[-1]`;
+- `burnout`: the first time **after the peak row** at which the interpolated thrust falls to 5 percent of the peak row's thrust. Find the first row after the peak that is below that level, then use `brentq` on the interpolated thrust between that row and the one before it.
+--- starter
+import numpy as np
+from scipy.interpolate import PchipInterpolator
+from scipy.optimize import brentq
+
+
+def motor_summary(t, F):
+    pass
+--- solution
+import numpy as np
+from scipy.interpolate import PchipInterpolator
+from scipy.optimize import brentq
+
+
+def motor_summary(t, F):
+    """Total impulse (N s) and the 5 %-of-peak burnout time of a thrust table."""
+    t = np.asarray(t, dtype=float)
+    F = np.asarray(F, dtype=float)
+    thrust = PchipInterpolator(t, F)
+    impulse = float(thrust.integrate(t[0], t[-1]))
+
+    k = int(np.argmax(F))                          # the peak row
+    level = 0.05 * F[k]
+    j = k + int(np.argmax(F[k:] < level))          # first row after the peak below the level
+    burnout = brentq(lambda x: thrust(x) - level, t[j - 1], t[j])
+    return impulse, float(burnout)
+--- hint
+The interpolator has an `.integrate(a, b)` method for the area.
+--- hint
+`np.argmax(F[k:] < level)` finds the first row at or after the peak that is below the level; add `k` back to get its index in the whole table.
+--- hint
+Between that row and the one before it, `thrust(x) - level` changes sign, so it is a bracket.
+--- check test | A motor with a start-up spike
+(lambda I, tb: abs(I - 2629.8132) < 1e-3 and abs(tb - 2.941767) < 1e-5)(*motor_summary([0.0, 0.1, 0.3, 1.5, 2.5, 2.8, 3.0, 3.5], [0.0, 1200.0, 1000.0, 950.0, 900.0, 400.0, 0.0, 0.0]))
+--- check test | A symmetric motor with a flat top
+(lambda I, tb: abs(I - 225.0) < 1e-9 and abs(tb - 2.966654) < 1e-5)(*motor_summary([0.0, 1.0, 2.0, 3.0], [0.0, 100.0, 100.0, 0.0]))
+--- check test | Returns two floats
+(lambda r: len(r) == 2 and all(type(v) is float for v in r))(motor_summary([0.0, 1.0, 2.0], [0.0, 50.0, 0.0]))
+
++++ practice | Bilinear interpolation by hand
+--- task
+Write a function `bilinear(xs, ys, table, x, y)` that interpolates a two-input table by hand, as a float, with no SciPy:
+
+- `xs` (length `nx`) and `ys` (length `ny`) are strictly increasing; `table[i][j]` is the value at `(xs[i], ys[j])`;
+- find the cell that holds `(x, y)`, the fractions `s` and `u` along it, and blend the four corners with the weights `(1 - s)(1 - u)`, `s(1 - u)`, `(1 - s) u` and `s u`;
+- a point exactly on the last grid line, or at the far corner, is inside the table and must work;
+- raise `ValueError` for a point outside the table.
+--- starter
+import numpy as np
+
+
+def bilinear(xs, ys, table, x, y):
+    pass
+--- solution
+import numpy as np
+
+
+def bilinear(xs, ys, table, x, y):
+    """Bilinear interpolation of table[i][j] = f(xs[i], ys[j]) at (x, y)."""
+    xs = np.asarray(xs, dtype=float)
+    ys = np.asarray(ys, dtype=float)
+    table = np.asarray(table, dtype=float)
+    if not (xs[0] <= x <= xs[-1] and ys[0] <= y <= ys[-1]):
+        raise ValueError("point outside the table")
+    # The cell's lower corner; on the last grid line, use the last cell.
+    i = min(int(np.searchsorted(xs, x, side="right")) - 1, xs.size - 2)
+    j = min(int(np.searchsorted(ys, y, side="right")) - 1, ys.size - 2)
+    s = (x - xs[i]) / (xs[i + 1] - xs[i])
+    u = (y - ys[j]) / (ys[j + 1] - ys[j])
+    return float((1 - s) * (1 - u) * table[i, j] + s * (1 - u) * table[i + 1, j]
+                 + (1 - s) * u * table[i, j + 1] + s * u * table[i + 1, j + 1])
+--- hint
+`np.searchsorted(xs, x, side="right") - 1` is the index of the last grid value at or below `x`. On the very last grid line that index has no cell to its right, so step back one.
+--- hint
+`s = (x - xs[i]) / (xs[i + 1] - xs[i])`, and the same for `u` along `ys`.
+--- check test | Agrees with RegularGridInterpolator inside, on edges and at corners
+(lambda xs, ys, tab: all(abs(bilinear(xs, ys, tab, x, y) - float(__import__("scipy.interpolate", fromlist=["RegularGridInterpolator"]).RegularGridInterpolator((xs, ys), tab)([[x, y]])[0])) < 1e-12 for x, y in [(0.5, -4.0), (2.0, 12.0), (1.0, 5.0), (2.0, 1.0), (0.8, 12.0), (1.9, -3.5)]))(np.array([0.5, 0.8, 1.2, 2.0]), np.array([-4.0, 0.0, 4.0, 8.0, 12.0]), np.random.default_rng(3).normal(size=(4, 5)))
+--- check case | One cell, by hand
+round(bilinear([0.8, 1.2], [4.0, 8.0], [[0.30, 0.70], [0.50, 1.10]], 0.9, 7.0), 6)
+=> 0.6875
+--- check test | Outside the table raises ValueError
+raises(ValueError, lambda: bilinear([0.0, 1.0], [0.0, 1.0], [[0.0, 1.0], [1.0, 2.0]], 1.01, 0.5)) and raises(ValueError, lambda: bilinear([0.0, 1.0], [0.0, 1.0], [[0.0, 1.0], [1.0, 2.0]], 0.5, -0.1))
+
++++ practice | A table read sideways
+--- task
+`cn_table(mach, alpha)` builds a `RegularGridInterpolator` over the axes `(mach, alpha)` for the normal-force coefficient `cn = 0.1 * alpha * (1 + 0.5 * mach)`, evaluated on every grid point. That formula is exactly bilinear in the two inputs, so the interpolator should reproduce it exactly between grid points. With four Mach values and four angles, asking for Mach 1.0 at 6 degrees gives about 0.983 instead of 0.9, and with a different number of Mach values and angles it crashes. Fix it.
+--- starter
+import numpy as np
+from scipy.interpolate import RegularGridInterpolator
+
+
+def cn_table(mach, alpha):
+    """Interpolator over (mach, alpha) for cn = 0.1 * alpha * (1 + 0.5 * mach)."""
+    M, A = np.meshgrid(mach, alpha)
+    cn = 0.1 * A * (1 + 0.5 * M)
+    return RegularGridInterpolator((mach, alpha), cn)
+--- solution
+import numpy as np
+from scipy.interpolate import RegularGridInterpolator
+
+
+def cn_table(mach, alpha):
+    """Interpolator over (mach, alpha) for cn = 0.1 * alpha * (1 + 0.5 * mach)."""
+    M, A = np.meshgrid(mach, alpha, indexing="ij")
+    cn = 0.1 * A * (1 + 0.5 * M)
+    return RegularGridInterpolator((mach, alpha), cn)
+--- hint
+Print `cn.shape`. `RegularGridInterpolator((mach, alpha), cn)` wants the first index of `cn` to run over Mach and the second over alpha. Which does `np.meshgrid` put first by default?
+--- check test | Mach 1.0 at 6 degrees: 0.9, with a square grid
+abs(float(cn_table(np.array([0.5, 0.8, 1.1, 1.5]), np.array([0.0, 4.0, 8.0, 12.0]))([[1.0, 6.0]])[0]) - 0.9) < 1e-12
+--- check test | A grid with 5 Mach values and 3 angles
+(lambda f: np.allclose(f([[0.7, 2.0], [2.5, 9.0], [0.6, 10.0]]), [0.1 * 2.0 * 1.35, 0.1 * 9.0 * 2.25, 0.1 * 10.0 * 1.3]))(cn_table(np.array([0.4, 0.9, 1.2, 2.0, 3.0]), np.array([0.0, 5.0, 10.0])))
+--- check test | Exact at every grid point too
+(lambda m, a: np.allclose(cn_table(m, a)([[1.5, 12.0], [0.5, 4.0]]), [0.1 * 12.0 * 1.75, 0.1 * 4.0 * 1.25]))(np.array([0.5, 0.8, 1.1, 1.5]), np.array([0.0, 4.0, 8.0, 12.0]))
+
++++ practice | One table lookup for a whole fleet
+--- task
+A simulation steps many vehicles at once. For each vehicle you know its velocity in the body frame, forward `u` and downward `w` in m/s (arrays of the same length), and its altitude `h` in meters. Write a function `fleet_cn(u, w, h, h_tab, a_tab, mach_axis, alpha_axis, cn_grid)` that returns the normal-force coefficient of every vehicle as a NumPy array, in one interpolator call:
+
+- the speed is `hypot(u, w)` and the angle of attack, in degrees, is `degrees(arctan2(w, u))`;
+- the speed of sound at each altitude comes from the table `h_tab`, `a_tab` by straight lines (`np.interp`), and the Mach number is speed over speed of sound;
+- `cn_grid[i, j]` is the coefficient at `(mach_axis[i], alpha_axis[j])`: read it with a linear `RegularGridInterpolator`;
+- a vehicle whose Mach number or angle falls outside the table gets `nan`, not an error.
+--- starter
+import numpy as np
+from scipy.interpolate import RegularGridInterpolator
+
+
+def fleet_cn(u, w, h, h_tab, a_tab, mach_axis, alpha_axis, cn_grid):
+    pass
+--- solution
+import numpy as np
+from scipy.interpolate import RegularGridInterpolator
+
+
+def fleet_cn(u, w, h, h_tab, a_tab, mach_axis, alpha_axis, cn_grid):
+    """Normal-force coefficient of every vehicle, from body velocities and altitudes."""
+    u = np.asarray(u, dtype=float)
+    w = np.asarray(w, dtype=float)
+    speed = np.hypot(u, w)
+    alpha_deg = np.degrees(np.arctan2(w, u))
+    mach = speed / np.interp(h, h_tab, a_tab)
+    table = RegularGridInterpolator((mach_axis, alpha_axis), cn_grid,
+                                    bounds_error=False, fill_value=np.nan)
+    return table(np.column_stack([mach, alpha_deg]))      # one call for the whole fleet
+--- hint
+Build all the Mach numbers and all the angles as arrays first, then stack them into one array of points with `np.column_stack`, one row per vehicle.
+--- hint
+`RegularGridInterpolator(..., bounds_error=False, fill_value=np.nan)` returns `nan` instead of raising for points off the table.
+--- check test | Three vehicles inside the table match the bilinear formula
+(lambda ma, al, ht, at: (lambda u, w, h: np.allclose(fleet_cn(u, w, h, ht, at, ma, al, 0.02 * al[None, :] * (1 + 0.3 * ma[:, None])), 0.02 * np.degrees(np.arctan2(w, u)) * (1 + 0.3 * np.hypot(u, w) / np.interp(h, ht, at))))(np.array([250.0, 400.0, 600.0]), np.array([10.0, -20.0, 45.0]), np.array([1000.0, 8000.0, 15000.0])))(np.array([0.3, 0.8, 1.2, 2.0, 3.0]), np.linspace(-10.0, 10.0, 11), np.array([0.0, 11000.0, 20000.0]), np.array([340.3, 295.1, 295.1]))
+--- check test | A vehicle too fast for the table gets nan, the others do not
+(lambda r: np.isnan(r[1]) and not np.isnan(r[0]) and not np.isnan(r[2]))(fleet_cn(np.array([300.0, 1500.0, 200.0]), np.array([5.0, 5.0, -5.0]), np.array([0.0, 0.0, 0.0]), np.array([0.0, 11000.0]), np.array([340.3, 295.1]), np.array([0.3, 0.8, 1.2, 2.0, 3.0]), np.linspace(-10.0, 10.0, 11), np.ones((5, 11))))
+--- check test | A steep angle of attack is off the table too
+np.isnan(fleet_cn(np.array([200.0]), np.array([100.0]), np.array([0.0]), np.array([0.0, 11000.0]), np.array([340.3, 295.1]), np.array([0.3, 0.8, 1.2, 2.0, 3.0]), np.linspace(-10.0, 10.0, 11), np.ones((5, 11))))[0]
+--- check test | One result per vehicle
+fleet_cn(np.full(7, 300.0), np.zeros(7), np.linspace(0.0, 10000.0, 7), np.array([0.0, 11000.0]), np.array([340.3, 295.1]), np.array([0.3, 3.0]), np.array([-10.0, 10.0]), np.ones((2, 2))).shape == (7,)
+
++++ question | The one that can overshoot
+--- ask
+A thrust table is queried at a time between two of its rows. Which of these can return a value larger than every thrust in the table?
+--- choice
+`np.interp(t, t_table, F_table)`
+--- choice
+`PchipInterpolator(t_table, F_table)(t)`
+--- choice correct
+`CubicSpline(t_table, F_table)(t)`
+--- choice
+`RegularGridInterpolator((t_table,), F_table)([[t]])`, with its default linear method
+--- why
+A cubic spline makes the value, slope and second derivative match at every row, and to stay that smooth it can swing above the highest row or below the lowest. Straight lines, and the multilinear interpolator, are weighted averages of neighboring rows, so they stay between them. PCHIP chooses its slopes so each piece stays within the range of the two rows around it, giving up the matched second derivative to do so.
+
+=== py04-l08 | Practice: Rotations with SciPy
+--- for
+l08-rotations
+
++++ practice | The wind as the aircraft feels it
+--- task
+An aircraft's air data sensors measure the air flowing past it in the **body frame**: `x` out the nose, `y` out the right wing, `z` out the belly. Its navigation system knows its velocity over the ground and the wind, both in NED components (north, east, down), and its attitude as yaw, pitch and roll in degrees (the aerospace `"ZYX"` order).
+
+Write a function `air_body(v_ned, wind_ned, yaw, pitch, roll)` that returns the velocity of the aircraft relative to the air, `v_ned - wind_ned`, expressed in body components, as a NumPy array of shape `(3,)`. Use `scipy.spatial.transform.Rotation`; the attitude turns NED axes into body axes.
+--- starter
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def air_body(v_ned, wind_ned, yaw, pitch, roll):
+    pass
+--- solution
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def air_body(v_ned, wind_ned, yaw, pitch, roll):
+    """Air-relative velocity in body components, from NED ground velocity and NED wind."""
+    att = R.from_euler("ZYX", [yaw, pitch, roll], degrees=True)       # NED to body
+    v_air_ned = np.asarray(v_ned, dtype=float) - np.asarray(wind_ned, dtype=float)
+    return att.apply(v_air_ned, inverse=True)                          # NED components -> body components
+--- hint
+`att.apply(v)` takes body components to NED components. You need the other direction.
+--- hint
+`att.apply(v, inverse=True)` converts NED components into body components.
+--- check test | Flying east with the nose east: all the air comes over the nose
+np.allclose(air_body([0.0, 100.0, 0.0], [0.0, 0.0, 0.0], 90.0, 0.0, 0.0), [100.0, 0.0, 0.0], atol=1e-9)
+--- check test | A wind from the west, nose north: the aircraft slides left through the air
+np.allclose(air_body([100.0, 0.0, 0.0], [0.0, 20.0, 0.0], 0.0, 0.0, 0.0), [100.0, -20.0, 0.0])
+--- check test | Climbing with the nose along the path: no angle of attack
+np.allclose(air_body([80.0, 0.0, -10.0], [0.0, 0.0, 0.0], 0.0, np.degrees(np.arctan2(10.0, 80.0)), 0.0), [np.hypot(80.0, 10.0), 0.0, 0.0], atol=1e-9)
+--- check test | Yaw 30, pitch 10, roll 5, flying north with no wind
+np.allclose(air_body([100.0, 0.0, 0.0], [0.0, 0.0, 0.0], 30.0, 10.0, 5.0), [85.2869, -48.4991, 19.3389], atol=1e-4)
+
++++ practice | Angles from where the axes point
+--- task
+A motion-capture system reports where a vehicle's nose (body `x` axis) and right wing (body `y` axis) point, as unit vectors in NED components. Write a function `euler_from_axes(nose, right)` that returns the vehicle's yaw, pitch and roll in degrees, in the `"ZYX"` order, as a NumPy array of three numbers:
+
+- the attitude matrix (body to NED) has as its columns where each body axis points: the nose, the right wing, and the belly, which is `nose` cross `right`;
+- build a `Rotation` from that matrix and read its Euler angles.
+
+(At a pitch of exactly ±90 degrees SciPy warns about gimbal lock and sets the roll to zero; that is expected.)
+--- starter
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def euler_from_axes(nose, right):
+    pass
+--- solution
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def euler_from_axes(nose, right):
+    """Yaw, pitch, roll (degrees, "ZYX") from the NED directions of the nose and right wing."""
+    x = np.asarray(nose, dtype=float)
+    y = np.asarray(right, dtype=float)
+    C = np.column_stack([x, y, np.cross(x, y)])      # each column: where a body axis points
+    return R.from_matrix(C).as_euler("ZYX", degrees=True)
+--- hint
+Each column of a rotation matrix is where one axis ends up. `np.column_stack` puts three vectors side by side as columns.
+--- hint
+The third body axis follows from the right-hand rule: `np.cross(nose, right)`.
+--- check test | Round trip from a known attitude
+(lambda M: np.allclose(euler_from_axes(M[:, 0], M[:, 1]), [40.0, -15.0, 25.0]))(R.from_euler("ZYX", [40.0, -15.0, 25.0], degrees=True).as_matrix())
+--- check test | Nose east, right wing south: yaw 90, level
+np.allclose(euler_from_axes([0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]), [90.0, 0.0, 0.0], atol=1e-9)
+--- check test | Nose north, right wing pointing down: rolled 90 degrees right
+np.allclose(euler_from_axes([1.0, 0.0, 0.0], [0.0, 0.0, 1.0]), [0.0, 0.0, 90.0], atol=1e-9)
+
++++ practice | Resampling attitude telemetry
+--- task
+Attitude telemetry arrives as quaternions in SciPy's order `[x, y, z, w]` at a few key times. Write a function `resample(t_keys, q_keys, t_new)` that returns the attitude at each time in `t_new` as an array of shape `(len(t_new), 4)` of quaternions in `[x, y, z, w]` order:
+
+- blend between key attitudes with `Slerp`;
+- return each quaternion in canonical form (scalar part not negative), so results can be compared number by number;
+- times outside the key times must raise `ValueError` (Slerp already does).
+--- starter
+import numpy as np
+from scipy.spatial.transform import Rotation as R, Slerp
+
+
+def resample(t_keys, q_keys, t_new):
+    pass
+--- solution
+import numpy as np
+from scipy.spatial.transform import Rotation as R, Slerp
+
+
+def resample(t_keys, q_keys, t_new):
+    """Slerp the key attitudes (quaternions x, y, z, w) to the new times; canonical output."""
+    blend = Slerp(t_keys, R.from_quat(q_keys))
+    return blend(t_new).as_quat(canonical=True)
+--- hint
+`Slerp(times, rotations)` takes a `Rotation` holding all the key attitudes: build it with one `R.from_quat` on the `(N, 4)` array.
+--- hint
+`as_quat(canonical=True)` picks, of `q` and `-q`, the one whose scalar part is not negative.
+--- check test | Halfway through a yaw of 90 degrees, then halfway through a pitch
+(lambda q: np.allclose(resample([0.0, 2.0, 4.0], q, [0.0, 1.0, 3.0, 4.0]), [[0.0, 0.0, 0.0, 1.0], [0.0, 0.0, 0.382683, 0.92388], [-0.092296, 0.092296, 0.701057, 0.701057], [-0.183013, 0.183013, 0.683013, 0.683013]], atol=1e-6))(R.from_euler("ZYX", [[0.0, 0.0, 0.0], [90.0, 0.0, 0.0], [90.0, 30.0, 0.0]], degrees=True).as_quat())
+--- check test | Keys given as -q come back canonical
+(lambda q: np.all(resample([0.0, 1.0], -q, [0.0, 0.5, 1.0])[:, 3] >= 0))(R.from_euler("x", [[10.0], [50.0]], degrees=True).as_quat())
+--- check test | A steady rate: a quarter of the time, a quarter of the angle
+(lambda q: np.allclose(np.degrees(R.from_quat(resample([10.0, 14.0], q, [11.0])).magnitude()), [15.0]))(R.from_euler("y", [[0.0], [60.0]], degrees=True).as_quat())
+--- check test | Outside the key times raises ValueError
+raises(ValueError, lambda: resample([0.0, 1.0], R.from_euler("z", [[0.0], [30.0]], degrees=True).as_quat(), [1.5]))
+
++++ practice | How far apart are two attitudes?
+--- task
+Write a function `angle_between(q1, q2)` that returns, in degrees, the angle of the single turn that takes the attitude `q1` to the attitude `q2`, as a float. Both are quaternions in SciPy's order `[x, y, z, w]`, not necessarily of unit length.
+
+- The answer is between 0 and 180: two attitudes are never more than a half-turn apart.
+- `q` and `-q` are the same attitude: 0 degrees apart.
+- Headings of 350 and 10 degrees are 20 degrees apart, not 340.
+--- starter
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def angle_between(q1, q2):
+    pass
+--- solution
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def angle_between(q1, q2):
+    """Angle in degrees of the single turn from attitude q1 to attitude q2."""
+    r1 = R.from_quat(q1)          # from_quat normalizes
+    r2 = R.from_quat(q2)
+    return float(np.degrees((r2 * r1.inv()).magnitude()))
+--- hint
+The turn that takes `r1` to `r2` is "undo `r1`, then do `r2`". In SciPy's right-to-left order, that is `r2 * r1.inv()`.
+--- hint
+`magnitude()` returns the angle of a rotation in radians, already between 0 and pi.
+--- check test | Headings 350 and 10 are 20 degrees apart
+abs(angle_between(R.from_euler("z", 350.0, degrees=True).as_quat(), R.from_euler("z", 10.0, degrees=True).as_quat()) - 20.0) < 1e-9
+--- check test | q and -q are the same attitude
+abs(angle_between([0.1, -0.2, 0.3, 0.9], [-0.1, 0.2, -0.3, -0.9])) < 1e-6
+--- check test | Unnormalized input, a quarter turn apart
+abs(angle_between([0.0, 0.0, 0.0, 2.0], [0.0, 0.0, 5.0, 5.0]) - 90.0) < 1e-9
+--- check test | Never more than 180
+abs(angle_between([0.0, 0.0, 0.0, 1.0], R.from_euler("x", 250.0, degrees=True).as_quat()) - 110.0) < 1e-9
+
++++ practice | Maneuvers in the wrong order
+--- task
+`combine_turns(turns)` takes a list of `Rotation` objects, the turns a spacecraft made one after another in time order, each about the fixed inertial axes, and should return the single `Rotation` that equals doing all of them in that order. An empty list means no turn at all.
+
+For the turns "90 degrees about `y`, then 90 degrees about `z`", the vector `[1, 0, 0]` should end at `[0, 0, -1]`, but the function sends it to `[0, 1, 0]`. Fix it.
+--- starter
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def combine_turns(turns):
+    """The single rotation equal to doing the turns in list order, about fixed axes."""
+    total = R.identity()
+    for turn in turns:
+        total = total * turn
+    return total
+--- solution
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def combine_turns(turns):
+    """The single rotation equal to doing the turns in list order, about fixed axes."""
+    total = R.identity()
+    for turn in turns:
+        total = turn * total          # b * a means: first a, then b
+    return total
+--- hint
+In SciPy, `b * a` means "first `a`, then `b`": the right-hand turn happens first. Each new turn happens after everything so far.
+--- check test | 90 about y, then 90 about z
+np.allclose(combine_turns([R.from_euler("y", 90.0, degrees=True), R.from_euler("z", 90.0, degrees=True)]).apply([1.0, 0.0, 0.0]), [0.0, 0.0, -1.0], atol=1e-12)
+--- check test | Three turns match the matrices multiplied in the right order
+(lambda a, b, c: np.allclose(combine_turns([a, b, c]).as_matrix(), c.as_matrix() @ b.as_matrix() @ a.as_matrix()))(R.from_euler("x", 30.0, degrees=True), R.from_euler("y", -45.0, degrees=True), R.from_euler("z", 120.0, degrees=True))
+--- check test | No turns: the identity
+np.allclose(combine_turns([]).as_matrix(), np.eye(3))
+
++++ practice | Attitude from the Sun and the magnetic field
+--- task
+A small satellite has a sun sensor and a magnetometer. Each gives a direction in body components (`b1` for the Sun, `b2` for the field), and a model gives the same two directions in the reference frame (`n1`, `n2`). Two directions are enough to fix the attitude, by the **TRIAD** method:
+
+- from any two vectors `a` and `b`, build three orthonormal axes: `t1 = a / |a|`, `t2 = (a × b) / |a × b|`, `t3 = t1 × t2`, stacked as the columns of a matrix `T = [t1 t2 t3]`;
+- build `T_body` from `(b1, b2)` and `T_ref` from `(n1, n2)`;
+- the attitude matrix that turns body components into reference components is `T_ref @ T_body.T`.
+
+Write a function `triad(b1, b2, n1, n2)` that returns that attitude as a `Rotation`, so that `triad(...).apply(b1)` points along `n1`. The first vector is trusted fully: it is matched exactly even when the second is slightly off. The inputs need not be unit vectors.
+--- starter
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def triad(b1, b2, n1, n2):
+    pass
+--- solution
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def triad_frame(a, b):
+    """Orthonormal axes built from a (trusted) and b, as the columns of a matrix."""
+    t1 = a / np.linalg.norm(a)
+    t2 = np.cross(a, b)
+    t2 = t2 / np.linalg.norm(t2)
+    return np.column_stack([t1, t2, np.cross(t1, t2)])
+
+
+def triad(b1, b2, n1, n2):
+    """Attitude (body to reference) from two directions seen in both frames."""
+    T_body = triad_frame(np.asarray(b1, dtype=float), np.asarray(b2, dtype=float))
+    T_ref = triad_frame(np.asarray(n1, dtype=float), np.asarray(n2, dtype=float))
+    return R.from_matrix(T_ref @ T_body.T)
+--- hint
+Write a small helper that turns two vectors into the matrix `[t1 t2 t3]`, and call it twice.
+--- hint
+`T_body.T` takes body components into "triad components", and `T_ref` takes those into reference components. `R.from_matrix` turns the product into a `Rotation`.
+--- check test | Perfect measurements give back the true attitude
+(lambda att, s, m: (att.inv() * triad(att.apply(s, inverse=True), att.apply(m, inverse=True), s, m)).magnitude() < 1e-9)(R.from_euler("ZYX", [123.0, -20.0, 60.0], degrees=True), np.array([0.3, -0.5, -0.8]), np.array([0.6, 0.1, 0.79]))
+--- check test | A slightly wrong field direction: the Sun is still matched exactly
+(lambda att, s, m: (lambda est: np.allclose(est.apply(att.apply(s, inverse=True)) / np.linalg.norm(s), s / np.linalg.norm(s), atol=1e-12) and 0 < np.degrees((att.inv() * est).magnitude()) < 3.0)(triad(att.apply(s, inverse=True), att.apply(m, inverse=True) + np.array([0.0, 0.02, 0.0]), s, m)))(R.from_euler("ZYX", [-50.0, 5.0, 170.0], degrees=True), np.array([1.0, 2.0, 2.0]), np.array([0.0, 0.0, 1.0]))
+--- check test | Returns a Rotation
+isinstance(triad([1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]), R)
+
++++ question | A quarter turn about y
+--- ask
+What does this print?
+
+```python
+from scipy.spatial.transform import Rotation as R
+
+print(R.from_euler("y", 90, degrees=True).apply([1.0, 0.0, 0.0]).round(3))
+```
+--- answer
+[ 0.  0. -1.]
+[0, 0, -1]
+[0. 0. -1.]
+0 0 -1
+[0.0, 0.0, -1.0]
+--- why
+By the right-hand rule, a positive turn about `y` carries `z` toward `x`, and so carries `x` toward `-z`. Point your right thumb along `y` and curl your fingers: they sweep from `z` to `x`, then on to `-z`. So the `x` axis ends up at `[0, 0, -1]`. It is not `[0, 0, 1]`, the answer you get by assuming the turn carries `x` toward `z`: in the cyclic order x, y, z, x, a turn about `y` carries `z` toward `x`, and `x` toward `-z`.
+
+=== py04-l09 | Practice: Scalar-first and scalar-last quaternions
+--- for
+l09-quaternion-conventions
+
++++ practice | Moving the scalar from one end to the other
+--- task
+Write two functions that change a quaternion's order, for one quaternion of shape `(4,)` or a stack of shape `(N, 4)`, returning a NumPy array of the same shape:
+
+- `to_scalar_first(q_xyzw)` turns `[x, y, z, w]` into `[w, x, y, z]`;
+- `to_scalar_last(q_wxyz)` turns `[w, x, y, z]` into `[x, y, z, w]`.
+
+Each row must be reordered on its own. The input may be a list, and must not be changed.
+--- starter
+import numpy as np
+
+
+def to_scalar_first(q_xyzw):
+    pass
+
+
+def to_scalar_last(q_wxyz):
+    pass
+--- solution
+import numpy as np
+
+
+def to_scalar_first(q_xyzw):
+    """[x, y, z, w] -> [w, x, y, z], for one quaternion or a stack of them."""
+    return np.asarray(q_xyzw, dtype=float)[..., [3, 0, 1, 2]]
+
+
+def to_scalar_last(q_wxyz):
+    """[w, x, y, z] -> [x, y, z, w], for one quaternion or a stack of them."""
+    return np.asarray(q_wxyz, dtype=float)[..., [1, 2, 3, 0]]
+--- hint
+Indexing with a list of positions along the last axis, `q[..., [3, 0, 1, 2]]`, picks the entries in that order and makes a new array. The `...` means "every earlier axis".
+--- hint
+`np.roll(q, 1, axis=-1)` does the same job; without `axis=-1` it would roll across rows.
+--- check case | One quaternion
+to_scalar_first([0.1, 0.2, 0.3, 0.9]).tolist()
+=> [0.9, 0.1, 0.2, 0.3]
+--- check case | A stack of two, each row on its own
+to_scalar_first(np.array([[0.0, 0.0, 0.7071, 0.7071], [0.0436, 0.0, 0.0, 0.999]])).tolist()
+=> [[0.7071, 0.0, 0.0, 0.7071], [0.999, 0.0436, 0.0, 0.0]]
+--- check test | Back and forth gives the start again, and the input is untouched
+(lambda Q: np.array_equal(to_scalar_last(to_scalar_first(Q)), Q) and np.array_equal(Q, np.arange(12.0).reshape(3, 4)))(np.arange(12.0).reshape(3, 4))
+--- check case | To scalar-last
+to_scalar_last([[0.9659, 0.2588, 0.0, 0.0]]).tolist()
+=> [[0.2588, 0.0, 0.0, 0.9659]]
+
++++ practice | Which order is this file in?
+--- task
+A partner's log file holds quaternions taken while the vehicle sat close to its reference attitude, so each one is nearly "no turn": the scalar is near ±1 and the three vector parts are small. Write a function `guess_order(Q)` that looks at the `(N, 4)` array `Q` and returns the string `"wxyz"` or `"xyzw"`:
+
+- work out the mean of the absolute values of column 0 and of column 3;
+- if column 0's mean is above 0.9 and column 3's is below 0.9, return `"wxyz"`; if it is the other way round, return `"xyzw"`;
+- otherwise the data do not say, so raise `ValueError`.
+--- starter
+import numpy as np
+
+
+def guess_order(Q):
+    pass
+--- solution
+import numpy as np
+
+
+def guess_order(Q):
+    """"wxyz" or "xyzw" for near-identity quaternions, from where the near-1 column sits."""
+    Q = np.asarray(Q, dtype=float)
+    first = np.mean(np.abs(Q[:, 0]))
+    last = np.mean(np.abs(Q[:, 3]))
+    if first > 0.9 and last < 0.9:
+        return "wxyz"
+    if last > 0.9 and first < 0.9:
+        return "xyzw"
+    raise ValueError("these quaternions do not show which end holds the scalar")
+--- hint
+The scalar of a small turn is `cos(angle / 2)`, very close to 1 in size; the vector parts are close to 0. Only one of the two end columns should be near 1.
+--- check case | Scalar first, on the pad
+guess_order([[0.99996, 0.0041, -0.0078, 0.0012], [0.99996, 0.00412, -0.00781, 0.00119]])
+=> 'wxyz'
+--- check case | Scalar last, with some rows of negative sign
+guess_order([[0.0012, -0.0030, 0.0005, 0.99999], [-0.0011, 0.0031, -0.0004, -0.99999]])
+=> 'xyzw'
+--- check test | A half-turn log says nothing: ValueError
+raises(ValueError, lambda: guess_order([[0.0, 0.7071, 0.7071, 0.0], [0.0, 0.7071, 0.7071, 0.0]]))
+--- check test | Big turns in both end columns: ValueError
+raises(ValueError, lambda: guess_order([[0.5, 0.5, 0.5, 0.5]]))
+
++++ practice | Let the matrix decide
+--- task
+A partner library gives you four raw quaternion numbers `q_raw` and, for the same attitude, a 3 by 3 rotation matrix `C` in the same sense as SciPy's `as_matrix()`. Write a function `order_from_dcm(q_raw, C)` that returns `"xyzw"` if reading `q_raw` as scalar-last gives a rotation whose matrix matches `C`, or `"wxyz"` if reading it as scalar-first does (use `np.allclose` with `atol=1e-6`).
+
+If neither order matches, or both do, the numbers cannot settle it: raise `ValueError`. (Neither can happen when the matrix is the transpose, turning frames instead of vectors. Both can happen for a few special quaternions such as `[0.5, 0.5, 0.5, 0.5]`.)
+--- starter
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def order_from_dcm(q_raw, C):
+    pass
+--- solution
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def order_from_dcm(q_raw, C):
+    """Which order of q_raw reproduces the rotation matrix C: "xyzw" or "wxyz"."""
+    q = np.asarray(q_raw, dtype=float)
+    C = np.asarray(C, dtype=float)
+    matches = []
+    if np.allclose(R.from_quat(q).as_matrix(), C, atol=1e-6):
+        matches.append("xyzw")
+    if np.allclose(R.from_quat(q, scalar_first=True).as_matrix(), C, atol=1e-6):
+        matches.append("wxyz")
+    if len(matches) != 1:
+        raise ValueError(f"the matrix does not pick one order (matches: {matches})")
+    return matches[0]
+--- hint
+Build the rotation both ways, `R.from_quat(q)` and `R.from_quat(q, scalar_first=True)`, and compare each `as_matrix()` with `C`.
+--- check case | Scalar-last numbers
+(lambda att: order_from_dcm(att.as_quat(), att.as_matrix()))(R.from_euler("ZYX", [30.0, 10.0, 5.0], degrees=True))
+=> 'xyzw'
+--- check case | Scalar-first numbers, negated for good measure
+(lambda att: order_from_dcm(-att.as_quat(scalar_first=True), att.as_matrix()))(R.from_euler("ZYX", [-70.0, 40.0, 12.0], degrees=True))
+=> 'wxyz'
+--- check test | A transposed matrix matches neither: ValueError
+(lambda att: raises(ValueError, lambda: order_from_dcm(att.as_quat(), att.as_matrix().T)))(R.from_euler("ZYX", [30.0, 10.0, 5.0], degrees=True))
+--- check test | [0.5, 0.5, 0.5, 0.5] matches both: ValueError
+raises(ValueError, lambda: order_from_dcm([0.5, 0.5, 0.5, 0.5], R.from_quat([0.5, 0.5, 0.5, 0.5]).as_matrix()))
+
++++ practice | The same attitude, written two ways
+--- task
+Write a function `same_attitude(q_xyzw, q_wxyz, tol_deg)` that returns `True` when the scalar-last quaternion `q_xyzw` and the scalar-first quaternion `q_wxyz` describe attitudes less than `tol_deg` degrees apart, and `False` otherwise, as a plain `bool`.
+
+- `q` and `-q` are the same attitude.
+- Neither input need have length exactly 1.
+- Compare rotations, not raw numbers.
+--- starter
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def same_attitude(q_xyzw, q_wxyz, tol_deg):
+    pass
+--- solution
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def same_attitude(q_xyzw, q_wxyz, tol_deg):
+    """True when the two quaternions (different orders) are within tol_deg degrees."""
+    a = R.from_quat(q_xyzw)
+    b = R.from_quat(q_wxyz, scalar_first=True)
+    return bool(np.degrees((b * a.inv()).magnitude()) < tol_deg)
+--- hint
+Build both rotations, each with its own order, then measure the angle of the turn from one to the other.
+--- check case | The same 30-degree roll in both orders
+same_attitude([0.2588, 0.0, 0.0, 0.9659], [0.9659, 0.2588, 0.0, 0.0], 0.01)
+=> True
+--- check case | Opposite signs are still the same attitude
+same_attitude([0.0, 0.0, 0.3827, 0.9239], [-0.9239, 0.0, 0.0, -0.3827], 0.01)
+=> True
+--- check case | Numbers copied without reordering are a different attitude
+same_attitude([0.2588, 0.0, 0.0, 0.9659], [0.2588, 0.0, 0.0, 0.9659], 1.0)
+=> False
+--- check case | Unnormalized, and 2 degrees apart against a 1-degree tolerance
+same_attitude([0.0, 0.0, 0.0, 3.0], [2.0 * np.cos(np.radians(1.0)), 2.0 * np.sin(np.radians(1.0)), 0.0, 0.0], 1.0)
+=> False
+
++++ practice | A converter that mixes up rows
+--- task
+`stack_to_scipy(Q_wxyz)` should take an `(N, 4)` table of scalar-first quaternions, one per row, and return the same table in SciPy's scalar-last order. For a single row it works. For a table of several rows, the numbers still look like quaternions, but each row's scalar has moved into the row below. Fix it.
+--- starter
+import numpy as np
+
+
+def stack_to_scipy(Q_wxyz):
+    """(N, 4) scalar-first rows -> (N, 4) scalar-last rows."""
+    return np.roll(np.asarray(Q_wxyz, dtype=float), -1)
+--- solution
+import numpy as np
+
+
+def stack_to_scipy(Q_wxyz):
+    """(N, 4) scalar-first rows -> (N, 4) scalar-last rows."""
+    return np.roll(np.asarray(Q_wxyz, dtype=float), -1, axis=-1)
+--- hint
+Without an `axis`, what does `np.roll` do to a 2-D array before it shifts?
+--- check case | Two rows, each reordered on its own
+stack_to_scipy([[0.7071, 0.0, 0.0, 0.7071], [0.999, 0.0436, 0.0, 0.0]]).tolist()
+=> [[0.0, 0.0, 0.7071, 0.7071], [0.0436, 0.0, 0.0, 0.999]]
+--- check test | Three rows give the same attitudes as reading them scalar-first
+(lambda R: (lambda Q: np.allclose(R.from_quat(stack_to_scipy(Q)).as_matrix(), R.from_quat(Q, scalar_first=True).as_matrix()))(R.from_euler("ZYX", [[10.0, 0.0, 0.0], [20.0, 5.0, 0.0], [30.0, 5.0, -8.0]], degrees=True).as_quat(scalar_first=True)))(__import__("scipy.spatial.transform", fromlist=["Rotation"]).Rotation)
+--- check case | One row still works
+stack_to_scipy([[1.0, 0.0, 0.0, 0.0]]).tolist()
+=> [[0.0, 0.0, 0.0, 1.0]]
+
++++ practice | Loading a scalar-first attitude log
+--- task
+A ground station writes attitude logs as text, one sample per line: the time in seconds, then the quaternion **scalar first**, separated by spaces, like `12.5 0.9990 0.0436 0.0 0.0`. Blank lines and lines starting with `#` are comments.
+
+Write a function `load_attitude_log(lines)` that takes the list of lines and returns `(t, q_xyzw)`:
+
+- `t`: a NumPy array of the times;
+- `q_xyzw`: an `(N, 4)` array of unit quaternions in SciPy's order, normalized (use `Rotation`);
+- the signs made **continuous** for plotting: the first row has a scalar part that is not negative, and every following row is flipped to its negative if that makes its dot product with the row before it positive. (`q` and `-q` are the same attitude, but a plot that jumps between them looks like a wild maneuver.)
+--- starter
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def load_attitude_log(lines):
+    pass
+--- solution
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+
+
+def load_attitude_log(lines):
+    """Times and sign-continuous scalar-last unit quaternions from a scalar-first text log."""
+    times, rows = [], []
+    for line in lines:
+        text = line.strip()
+        if not text or text.startswith("#"):
+            continue
+        values = [float(v) for v in text.split()]
+        times.append(values[0])
+        rows.append(values[1:5])
+    q = R.from_quat(np.array(rows), scalar_first=True).as_quat()      # convert once, at the edge
+    if q[0, 3] < 0:
+        q[0] = -q[0]
+    for k in range(1, len(q)):
+        if np.dot(q[k], q[k - 1]) < 0:
+            q[k] = -q[k]
+    return np.array(times), q
+--- hint
+Parse every line into numbers first, then convert the whole table in one call: `R.from_quat(rows, scalar_first=True).as_quat()` both reorders and normalizes.
+--- hint
+Then walk down the rows: compare each with the row before it using `np.dot`, and flip it if the dot product is negative.
+--- check test | Comments skipped, order changed, signs made continuous
+(lambda t, q: np.allclose(t, [0.0, 0.5, 1.0]) and np.allclose(q, [[0.0, 0.0, 0.0995, 0.995], [0.0, 0.0, 0.1987, 0.980], [0.0, 0.0, 0.2955, 0.9553]], atol=1e-3))(*load_attitude_log(["# t w x y z", "0.0 0.995 0.0 0.0 0.0995", "", "0.5 -0.980 0.0 0.0 -0.1987", "1.0 0.9553 0.0 0.0 0.2955"]))
+--- check test | Rows come out with unit length
+np.allclose(np.linalg.norm(load_attitude_log(["0 2.0 0.0 0.0 0.0", "1 1.0 1.0 0.0 0.0"])[1], axis=1), 1.0)
+--- check test | A first row with a negative scalar is flipped
+np.allclose(load_attitude_log(["3.0 -0.5 0.5 0.5 0.5"])[1], [[-0.5, -0.5, -0.5, 0.5]])
+--- check test | A long, slow spin never jumps sign
+(lambda q: np.all(np.sum(q[1:] * q[:-1], axis=1) > 0))(load_attitude_log([f"{k} {np.cos(np.radians(10 * k) / 2)} 0 0 {np.sin(np.radians(10 * k) / 2)}" for k in range(80)])[1])
+
++++ question | A SPICE quaternion handed straight to SciPy
+--- ask
+NASA's SPICE toolkit reports an attitude as the scalar-first quaternion `[0.9659, 0.0, 0.2588, 0.0]`, a 30-degree turn about `y`. A script passes those four numbers straight to `R.from_quat`. What angle, in degrees, does `np.degrees(R.from_quat([0.9659, 0.0, 0.2588, 0.0]).magnitude())` print, to the nearest degree?
+--- answer
+180
+180.0
+180 degrees
+--- why
+`from_quat` reads the numbers as `[x, y, z, w]`, so it sees a scalar part `w = 0`. The angle is twice the arccos of the scalar, and `2 * arccos(0)` is 180 degrees: a half-turn about the axis `[0.9659, 0, 0.2588]`. A gentle 30-degree turn became a half-turn about a different axis, and no check on the length of the quaternion could notice. `R.from_quat(q, scalar_first=True)` reads it correctly.
+
+=== py04-l10 | Practice: Statistics for Monte Carlo runs
+--- for
+l10-statistics-for-monte-carlo
+
++++ practice | How many engines miss the spec?
+--- task
+An engine's thrust is normally distributed with mean `mean` and standard deviation `sd`. The customer accepts engines from `lo` to `hi`, both inclusive. Write a function `fraction_out_of_spec(mean, sd, lo, hi)` that returns, as a float, the fraction of engines below `lo` or above `hi`, using a frozen `scipy.stats.norm`. Use the method that stays accurate far out in the upper tail for the part above `hi`.
+--- starter
+from scipy import stats
+
+
+def fraction_out_of_spec(mean, sd, lo, hi):
+    pass
+--- solution
+from scipy import stats
+
+
+def fraction_out_of_spec(mean, sd, lo, hi):
+    """Chance that a normal(mean, sd) value falls below lo or above hi."""
+    thrust = stats.norm(loc=mean, scale=sd)
+    return float(thrust.cdf(lo) + thrust.sf(hi))
+--- hint
+Below `lo` is a `cdf` question. Above `hi` is an `sf` question. The two cannot both happen, so add them.
+--- check test | 845 kN engines, accepted from 830 to 860 kN
+abs(fraction_out_of_spec(845.0, 8.45, 830.0, 860.0) - 0.0758735) < 1e-6
+--- check test | A sensor error within 2.5 sigma on each side
+abs(fraction_out_of_spec(0.0, 2.0, -5.0, 5.0) - 0.0124193) < 1e-6
+--- check test | Thirty sigma out on the high side is tiny but not zero
+(lambda f: 0.0 < f < 1e-190)(fraction_out_of_spec(0.0, 1.0, -1e9, 30.0))
+
++++ practice | A uniform band that means what it says
+--- task
+`stats.uniform(loc, scale)` runs from `loc` to `loc + scale`, which trips up almost everyone. Write a function `make_uniform(lo, hi)` that returns a frozen `scipy.stats.uniform` distribution running from `lo` to `hi`. Raise `ValueError` if `hi` is not greater than `lo`.
+--- starter
+from scipy import stats
+
+
+def make_uniform(lo, hi):
+    pass
+--- solution
+from scipy import stats
+
+
+def make_uniform(lo, hi):
+    """Frozen uniform distribution from lo to hi."""
+    if not hi > lo:
+        raise ValueError("the upper edge must be above the lower edge")
+    return stats.uniform(loc=lo, scale=hi - lo)          # scale is the width, not the top
+--- hint
+`scale` is the width of the band: `hi - lo`.
+--- check test | A mixture-ratio band from 0.98 to 1.02
+(lambda d: [float(v) for v in d.support()] == [0.98, 1.02] and abs(d.mean() - 1.0) < 1e-12)(make_uniform(0.98, 1.02))
+--- check test | A timing error from -0.5 to +0.5 ms: a quarter of it is below -0.25
+(lambda d: abs(d.cdf(-0.25) - 0.25) < 1e-12 and [float(v) for v in d.support()] == [-0.5, 0.5])(make_uniform(-0.5, 0.5))
+--- check test | An empty or backwards band raises ValueError
+raises(ValueError, lambda: make_uniform(3.0, 3.0)) and raises(ValueError, lambda: make_uniform(2.0, 1.0))
+
++++ practice | The P99 miss of a landing campaign
+--- task
+A booster's landing error is normal in each horizontal direction: east with standard deviation `sx` meters and north with `sy`, both with mean 0. Write a function `landing_p99(n, sx, sy, seed)` that simulates `n` landings and returns the 99th percentile of the miss distance from the pad center, in meters, as a float:
+
+- make `rng = np.random.default_rng(seed)`;
+- draw the `n` east errors first, then the `n` north errors, each with `.rvs(size=n, random_state=rng)` on a frozen `stats.norm`;
+- the miss is `np.hypot(east, north)`; take its percentile with `np.percentile`.
+--- starter
+import numpy as np
+from scipy import stats
+
+
+def landing_p99(n, sx, sy, seed):
+    pass
+--- solution
+import numpy as np
+from scipy import stats
+
+
+def landing_p99(n, sx, sy, seed):
+    """99th percentile of the miss distance over n simulated landings."""
+    rng = np.random.default_rng(seed)
+    east = stats.norm(loc=0.0, scale=sx).rvs(size=n, random_state=rng)
+    north = stats.norm(loc=0.0, scale=sy).rvs(size=n, random_state=rng)
+    return float(np.percentile(np.hypot(east, north), 99))
+--- hint
+Make the generator once and pass the same one to both `rvs` calls, east first, so the draws are exactly repeatable.
+--- check test | A thousand landings, 30 m each way, seed 3
+abs(landing_p99(1000, 30.0, 30.0, 3) - 89.747068) < 1e-5
+--- check test | Very many landings approach the Rayleigh distribution's P99
+abs(landing_p99(200000, 50.0, 50.0, 1) - __import__("scipy.stats", fromlist=["rayleigh"]).rayleigh(scale=50.0).ppf(0.99)) < 1.0
+--- check test | A long, thin error ellipse
+abs(landing_p99(500, 80.0, 10.0, 7) - 181.157795) < 1e-5
+
++++ practice | A P99 you can defend
+--- task
+The plain 99th percentile of 1,000 runs is a safe upper bound on the true P99 less than half the time. Write a function `safe_upper_bound(results, p, conf)` that returns an order statistic you can defend:
+
+- sort the `N` results; the `k`-th smallest (counting from 1) is at or above the true `p`-quantile with confidence `stats.binom.cdf(k - 1, N, p)`;
+- return, as a float, the `k`-th smallest result for the smallest `k` whose confidence is at least `conf`;
+- if even the largest result (`k = N`) does not reach `conf`, there are too few runs: raise `ValueError`.
+--- starter
+import numpy as np
+from scipy import stats
+
+
+def safe_upper_bound(results, p, conf):
+    pass
+--- solution
+import numpy as np
+from scipy import stats
+
+
+def safe_upper_bound(results, p, conf):
+    """Smallest order statistic that bounds the true p-quantile with confidence conf."""
+    x = np.sort(np.asarray(results, dtype=float))
+    N = x.size
+    for k in range(1, N + 1):
+        if stats.binom.cdf(k - 1, N, p) >= conf:
+            return float(x[k - 1])
+    raise ValueError(f"{N} runs cannot bound the {p} quantile with confidence {conf}")
+--- hint
+Walk `k` up from 1 and stop at the first `k` whose `stats.binom.cdf(k - 1, N, p)` reaches `conf`. The `k`-th smallest value is `sorted[k - 1]`.
+--- check case | 59 runs: the largest bounds P95 with 95 percent confidence
+safe_upper_bound(np.arange(59.0), 0.95, 0.95)
+=> 58.0
+--- check test | 58 runs are not enough: ValueError
+raises(ValueError, lambda: safe_upper_bound(np.arange(58.0), 0.95, 0.95))
+--- check case | 1,000 runs, P99 at 95 percent: the fifth-largest result
+safe_upper_bound(np.random.default_rng(0).permutation(np.arange(1.0, 1001.0)), 0.99, 0.95)
+=> 996.0
+--- check case | 299 runs bound P99 with their largest result
+safe_upper_bound(np.arange(1.0, 300.0), 0.99, 0.95)
+=> 299.0
+
++++ practice | A failure bound that fails on a clean campaign
+--- task
+`failure_rate_bound(k, n)` should return the one-sided 95 percent upper bound on the true failure rate when `k` of `n` Monte Carlo runs failed, as a float. For 3 failures in 2,000 runs it returns about 0.0031, below the right bound of about 0.0039, and for a campaign with no failures at all it returns `nan`. Fix it.
+--- starter
+from scipy import stats
+
+
+def failure_rate_bound(k, n):
+    """One-sided 95 % upper bound on the failure rate after k failures in n runs."""
+    return float(stats.beta.ppf(0.95, k, n - k))
+--- solution
+from scipy import stats
+
+
+def failure_rate_bound(k, n):
+    """One-sided 95 % upper bound on the failure rate after k failures in n runs."""
+    return float(stats.beta.ppf(0.95, k + 1, n - k))
+--- hint
+With `k = 0`, the first shape argument of the beta distribution is 0, which is not allowed. What should it be?
+--- check test | No failures in 500 runs: about 3 / 500
+abs(failure_rate_bound(0, 500) - 0.0059736) < 1e-6
+--- check test | 3 failures in 2,000 runs
+abs(failure_rate_bound(3, 2000) - 0.0038722) < 1e-6
+--- check test | More failures never give a smaller bound
+all(failure_rate_bound(k, 1000) < failure_rate_bound(k + 1, 1000) for k in range(10))
+
++++ practice | The spread of a stage's velocity change
+--- task
+A booster stage's ideal velocity change is `dv = isp * g0 * ln(m0 / m_dry)`, with `g0 = 9.80665` m/s², `m0 = m_dry + m_prop`, and three dispersed inputs:
+
+- specific impulse `isp`: normal, mean 311 s, standard deviation 1.5 s;
+- propellant mass `m_prop`: uniform from 395,000 to 405,000 kg;
+- dry mass `m_dry`: normal, mean 150,000 kg, standard deviation 1,000 kg.
+
+Write a function `dv_dispersion(n, seed)` that runs `n` cases and returns the tuple `(p1, p50, p99)` of floats: the 1st, 50th and 99th percentiles of `dv` in m/s. Make `rng = np.random.default_rng(seed)` and draw, in this order, all `n` values of `isp`, then of `m_prop`, then of `m_dry`, each with `.rvs(size=n, random_state=rng)` on a frozen distribution.
+--- starter
+import numpy as np
+from scipy import stats
+
+
+def dv_dispersion(n, seed):
+    pass
+--- solution
+import numpy as np
+from scipy import stats
+
+G0 = 9.80665    # m/s^2
+
+
+def dv_dispersion(n, seed):
+    """1st, 50th and 99th percentiles of the stage's ideal delta-v over n dispersed cases."""
+    rng = np.random.default_rng(seed)
+    isp = stats.norm(loc=311.0, scale=1.5).rvs(size=n, random_state=rng)                  # s
+    m_prop = stats.uniform(loc=395_000.0, scale=10_000.0).rvs(size=n, random_state=rng)   # kg
+    m_dry = stats.norm(loc=150_000.0, scale=1_000.0).rvs(size=n, random_state=rng)        # kg
+    dv = isp * G0 * np.log((m_dry + m_prop) / m_dry)
+    p1, p50, p99 = np.percentile(dv, [1, 50, 99])
+    return float(p1), float(p50), float(p99)
+--- hint
+The uniform band from 395,000 to 405,000 kg has `loc=395000` and `scale=10000`.
+--- hint
+`np.percentile(dv, [1, 50, 99])` returns all three at once.
+--- check test | 5,000 cases, seed 42
+np.allclose(dv_dispersion(5000, 42), (3896.130692, 3962.037020, 4026.568007), atol=1e-5)
+--- check test | 2,000 cases, seed 1
+np.allclose(dv_dispersion(2000, 1), (3898.179796, 3962.546665, 4029.486146), atol=1e-5)
+--- check test | The middle sits near the nominal stage
+(lambda r: r[0] < r[1] < r[2] and abs(r[1] - 311.0 * 9.80665 * np.log(550000.0 / 150000.0)) < 5.0)(dv_dispersion(3000, 9))
+
++++ question | Far out in the tail
+--- ask
+What does this print?
+
+```python
+from scipy import stats
+
+d = stats.norm()
+print(1 - d.cdf(10) == 0.0, d.sf(10) > 0)
+```
+--- answer
+True True
+true true
+True, True
+--- why
+Ten standard deviations out, the true tail probability is about 7.6e-24. `d.cdf(10)` is 1 minus that, which rounds to exactly 1.0 in double precision, so `1 - d.cdf(10)` is exactly 0.0. `sf` computes the tail directly, without going through a number near 1, so it returns the tiny positive value. For "chance of being above", far out, always use `sf`.
+
+=== py04-l11 | Practice: Units you can trust, and picking the right solver
+--- for
+l11-constants-and-choosing-a-solver
+
++++ practice | A spec sheet into SI
+--- task
+Write a function `to_si(value, unit)` that converts a number from the named unit into SI units and returns it as a float, using the factors in `scipy.constants`:
+
+| `unit` | meaning | into |
+|---|---|---|
+| `"lbf"` | pound-force | newtons |
+| `"lb"` | pound (mass) | kilograms |
+| `"psi"` | pound per square inch | pascals |
+| `"atm"` | standard atmosphere | pascals |
+| `"ft"` | foot | meters |
+| `"nmi"` | nautical mile | meters |
+| `"deg"` | degree | radians |
+
+Raise `ValueError` for any other unit name.
+--- starter
+from scipy import constants
+
+
+def to_si(value, unit):
+    pass
+--- solution
+from scipy import constants
+
+FACTORS = {
+    "lbf": constants.pound_force,
+    "lb": constants.pound,
+    "psi": constants.psi,
+    "atm": constants.atm,
+    "ft": constants.foot,
+    "nmi": constants.nautical_mile,
+    "deg": constants.degree,
+}
+
+
+def to_si(value, unit):
+    """value in the named unit, converted into SI."""
+    if unit not in FACTORS:
+        raise ValueError(f"unknown unit {unit!r}")
+    return float(value * FACTORS[unit])          # each factor is the unit's size in SI: multiply to go in
+--- hint
+Each factor in `scipy.constants` is the size of that unit in SI, so going into SI means multiplying by it. A dictionary from unit names to factors keeps the code short.
+--- check test | 190,000 lbf of thrust is about 845.2 kN
+abs(to_si(190000.0, "lbf") - 845162.1069) < 1e-3
+--- check test | Pressures, masses and lengths
+abs(to_si(1410.0, "psi") - 9721607.783) < 1e-2 and to_si(1.0, "atm") == 101325.0 and abs(to_si(1000.0, "lb") - 453.59237) < 1e-9 and abs(to_si(40000.0, "ft") - 12192.0) < 1e-9 and to_si(2.0, "nmi") == 3704.0
+--- check test | 180 degrees is pi radians
+abs(to_si(180.0, "deg") - 3.141592653589793) < 1e-12
+--- check test | An unknown unit raises ValueError
+raises(ValueError, lambda: to_si(1.0, "furlong"))
+
++++ practice | A converter that refuses nonsense
+--- task
+Write a function `convert(value, from_unit, to_unit)` that converts `value` from one unit to another and returns a float, but refuses to convert between different kinds of quantity. Use `scipy.constants` for the factors:
+
+| kind | units |
+|---|---|
+| length | `"m"`, `"km"` (1000 m), `"ft"`, `"nmi"` |
+| force | `"N"`, `"kN"` (1000 N), `"lbf"` |
+| pressure | `"Pa"`, `"bar"`, `"psi"`, `"atm"` |
+| angle | `"rad"`, `"deg"` |
+
+Go into SI by multiplying by the first unit's factor, then out of SI by dividing by the second's. Raise `ValueError` if either unit is unknown or if the two are of different kinds (feet into newtons, say).
+--- starter
+from scipy import constants
+
+
+def convert(value, from_unit, to_unit):
+    pass
+--- solution
+from scipy import constants
+
+UNITS = {
+    "m": ("length", 1.0),
+    "km": ("length", 1000.0),
+    "ft": ("length", constants.foot),
+    "nmi": ("length", constants.nautical_mile),
+    "N": ("force", 1.0),
+    "kN": ("force", 1000.0),
+    "lbf": ("force", constants.pound_force),
+    "Pa": ("pressure", 1.0),
+    "bar": ("pressure", constants.bar),
+    "psi": ("pressure", constants.psi),
+    "atm": ("pressure", constants.atm),
+    "rad": ("angle", 1.0),
+    "deg": ("angle", constants.degree),
+}
+
+
+def convert(value, from_unit, to_unit):
+    """value from one unit to another of the same kind; raises on unknown units or mixed kinds."""
+    if from_unit not in UNITS or to_unit not in UNITS:
+        raise ValueError(f"unknown unit in {from_unit!r} -> {to_unit!r}")
+    kind_a, size_a = UNITS[from_unit]
+    kind_b, size_b = UNITS[to_unit]
+    if kind_a != kind_b:
+        raise ValueError(f"cannot turn {kind_a} into {kind_b}")
+    return float(value * size_a / size_b)        # into SI, then out of it
+--- hint
+Store each unit as a pair: its kind and its size in SI. Then one comparison of kinds catches every mixed-up conversion.
+--- check test | 12,192 m is 40,000 ft, and 1,852 m is one nautical mile
+abs(convert(12192.0, "m", "ft") - 40000.0) < 1e-9 and abs(convert(1852.0, "m", "nmi") - 1.0) < 1e-12
+--- check test | 1,410 psi in bar, and 845.2 kN in lbf
+abs(convert(1410.0, "psi", "bar") - 97.21607783) < 1e-6 and abs(convert(845.2, "kN", "lbf") - 190008.5) < 0.1
+--- check test | Degrees to radians and back
+abs(convert(convert(33.0, "deg", "rad"), "rad", "deg") - 33.0) < 1e-12 and abs(convert(90.0, "deg", "rad") - 1.5707963267948966) < 1e-15
+--- check test | Mixing kinds, or an unknown unit, raises ValueError
+raises(ValueError, lambda: convert(3.0, "ft", "N")) and raises(ValueError, lambda: convert(1.0, "psi", "deg")) and raises(ValueError, lambda: convert(1.0, "m", "yard"))
+
++++ practice | Orbit speed from an altitude in any unit
+--- task
+Write a function `circular_orbit(alt, unit)` that returns `(speed, period)` for a circular orbit around Earth at altitude `alt`, given in `unit` (one of `"m"`, `"km"`, `"ft"` or `"nmi"`; raise `ValueError` for any other):
+
+- use `MU = 3.986004418e14` m³/s² and `R_EARTH = 6378137.0` m, and `scipy.constants` for feet and nautical miles;
+- the radius is `R_EARTH` plus the altitude in meters; the speed is `sqrt(MU / r)` in m/s, and the period `2 * pi * r / speed`, returned in **minutes**;
+- both as floats.
+
+A low orbit should come out near 7.7 km/s and about 90 minutes: check your answer against that.
+--- starter
+import numpy as np
+from scipy import constants
+
+MU = 3.986004418e14        # m^3/s^2
+R_EARTH = 6378137.0        # m
+
+
+def circular_orbit(alt, unit):
+    pass
+--- solution
+import numpy as np
+from scipy import constants
+
+MU = 3.986004418e14        # m^3/s^2
+R_EARTH = 6378137.0        # m
+TO_M = {"m": 1.0, "km": 1000.0, "ft": constants.foot, "nmi": constants.nautical_mile}
+
+
+def circular_orbit(alt, unit):
+    """Speed (m/s) and period (minutes) of a circular Earth orbit at altitude alt, in unit."""
+    if unit not in TO_M:
+        raise ValueError(f"unknown length unit {unit!r}")
+    r_m = R_EARTH + alt * TO_M[unit]
+    speed_m_s = np.sqrt(MU / r_m)
+    period_min = 2 * np.pi * r_m / speed_m_s / 60.0
+    return float(speed_m_s), float(period_min)
+--- hint
+Convert the altitude into meters first, and only then add Earth's radius, which is in meters.
+--- hint
+The period comes out in seconds from `2 * pi * r / speed`; divide by 60.
+--- check test | 400 km: 7.67 km/s, 92.6 minutes
+(lambda v, P: abs(v - 7668.5582) < 1e-3 and abs(P - 92.56040) < 1e-4)(*circular_orbit(400.0, "km"))
+--- check test | The same orbit given in feet
+(lambda v, P: abs(v - 7668.5582) < 1e-3)(*circular_orbit(400000.0 / 0.3048, "ft"))
+--- check test | 220 nautical miles
+(lambda v, P: abs(v - 7664.3530) < 1e-3 and abs(P - 92.71284) < 1e-4)(*circular_orbit(220.0, "nmi"))
+--- check test | An unknown unit raises ValueError
+raises(ValueError, lambda: circular_orbit(400.0, "miles"))
+
++++ practice | Solve by structure
+--- task
+Write a function `solve_structured(A, b)` that solves the linear problem `A x = b` with the tool its structure calls for, and returns `(x, method)`, where `method` is the name of the tool used:
+
+- `A` not square (more rows than columns): least squares with `scipy.linalg.lstsq`, method `"lstsq"`;
+- `A` square and symmetric (`np.allclose(A, A.T)`): try Cholesky with `cho_factor` and `cho_solve`, method `"cholesky"`. A symmetric matrix that is not positive definite makes `cho_factor` raise `LinAlgError`; then fall back to the general solve;
+- otherwise: `scipy.linalg.solve`, method `"solve"`.
+
+Never form an inverse. `A` and `b` may be lists.
+--- starter
+import numpy as np
+from scipy import linalg
+
+
+def solve_structured(A, b):
+    pass
+--- solution
+import numpy as np
+from scipy import linalg
+
+
+def solve_structured(A, b):
+    """Solve A x = b with the tool the structure of A calls for; returns (x, method)."""
+    A = np.asarray(A, dtype=float)
+    b = np.asarray(b, dtype=float)
+    if A.shape[0] != A.shape[1]:
+        return linalg.lstsq(A, b)[0], "lstsq"
+    if np.allclose(A, A.T):
+        try:
+            return linalg.cho_solve(linalg.cho_factor(A), b), "cholesky"
+        except linalg.LinAlgError:
+            pass                        # symmetric but not positive definite
+    return linalg.solve(A, b), "solve"
+--- hint
+Check the shape first, then symmetry. Put the Cholesky attempt inside `try` and catch `linalg.LinAlgError`.
+--- hint
+`linalg.lstsq(A, b)` returns several things; the solution is the first.
+--- check test | A covariance-like system uses Cholesky
+(lambda x, m: m == "cholesky" and np.allclose(x, [1 / 11, 7 / 11]))(*solve_structured([[4.0, 1.0], [1.0, 3.0]], [1.0, 2.0]))
+--- check test | Symmetric but indefinite falls back to the general solve
+(lambda x, m: m == "solve" and np.allclose(x, [1.0, 1.0]))(*solve_structured([[1.0, 2.0], [2.0, 1.0]], [3.0, 3.0]))
+--- check test | Not symmetric: the general solve
+(lambda x, m: m == "solve" and np.allclose(x, [-4.0, 4.5]))(*solve_structured([[1.0, 2.0], [3.0, 4.0]], [5.0, 6.0]))
+--- check test | Three equations, two unknowns: least squares
+(lambda x, m: m == "lstsq" and np.allclose(x, [1.1, 2.1]))(*solve_structured([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]], [1.0, 2.0, 3.3]))
+--- check source absent | Never forms an inverse
+\binv\(
+
++++ practice | Climb angles in the wrong unit
+--- task
+`velocity_components(speed, gamma_deg)` should split a rocket's speed (m/s) into its horizontal and vertical parts, given the flight-path angle `gamma_deg` in **degrees** above the horizon, and return `(horizontal, vertical)` as floats. At 30 degrees, a speed of 1000 m/s should give about `(866.03, 500.0)`. It gives about `(154.25, -988.03)` instead. Fix it.
+--- starter
+import numpy as np
+
+
+def velocity_components(speed, gamma_deg):
+    """Horizontal and vertical speed (m/s) for a flight-path angle given in degrees."""
+    horizontal = speed * np.cos(gamma_deg)
+    vertical = speed * np.sin(gamma_deg)
+    return float(horizontal), float(vertical)
+--- solution
+import numpy as np
+
+
+def velocity_components(speed, gamma_deg):
+    """Horizontal and vertical speed (m/s) for a flight-path angle given in degrees."""
+    gamma = np.deg2rad(gamma_deg)
+    horizontal = speed * np.cos(gamma)
+    vertical = speed * np.sin(gamma)
+    return float(horizontal), float(vertical)
+--- hint
+What unit does `np.sin` expect its argument in?
+--- check test | 30 degrees
+np.allclose(velocity_components(1000.0, 30.0), (866.0254038, 500.0))
+--- check test | Straight up: all vertical
+np.allclose(velocity_components(250.0, 90.0), (0.0, 250.0), atol=1e-9)
+--- check test | Level flight: all horizontal
+velocity_components(7800.0, 0.0) == (7800.0, 0.0)
+
++++ practice | When does the rocket pass 10 km?
+--- task
+A simulation saves altitude only every few seconds. Write a function `crossing_time(t, h, level)` that returns the first time the altitude goes from below `level` to `level` or above, as a float, or `None` if it never does:
+
+- `t` is increasing and `h` holds the altitudes at those times;
+- find the first pair of neighboring samples with `h[i] < level <= h[i + 1]`. If `h[i + 1]` equals `level` exactly, return `t[i + 1]`;
+- otherwise put a `CubicSpline` through all the samples and use `brentq` on `spline(x) - level` between `t[i]` and `t[i + 1]`.
+
+A trajectory that starts above the level only counts when it comes back up through it.
+--- starter
+import numpy as np
+from scipy.interpolate import CubicSpline
+from scipy.optimize import brentq
+
+
+def crossing_time(t, h, level):
+    pass
+--- solution
+import numpy as np
+from scipy.interpolate import CubicSpline
+from scipy.optimize import brentq
+
+
+def crossing_time(t, h, level):
+    """First time h passes level going up, from a spline through the samples; None if never."""
+    t = np.asarray(t, dtype=float)
+    h = np.asarray(h, dtype=float)
+    for i in range(len(t) - 1):
+        if h[i] < level <= h[i + 1]:
+            if h[i + 1] == level:
+                return float(t[i + 1])
+            spline = CubicSpline(t, h)
+            return float(brentq(lambda x: spline(x) - level, t[i], t[i + 1]))
+    return None
+--- hint
+The structure is "make it zero, one unknown, with a bracket": the two samples on either side of the crossing are the bracket. The spline supplies values in between.
+--- hint
+Loop over neighboring pairs and stop at the first one that goes from below to at-or-above. Return `None` after the loop.
+--- check test | A cubic climb: the spline is exact, so the time is too
+abs(crossing_time(np.arange(0.0, 81.0, 4.0), 50.0 + 2.0 * np.arange(0.0, 81.0, 4.0)**2 + 0.01 * np.arange(0.0, 81.0, 4.0)**3, 10000.0) - 61.664998302) < 1e-6
+--- check test | Up and back down: the way up counts
+abs(crossing_time(np.arange(0.0, 81.0, 4.0), 1000.0 + 300.0 * np.arange(0.0, 81.0, 4.0) - 4.0 * np.arange(0.0, 81.0, 4.0)**2, 5000.0) - 17.344355629) < 1e-6
+--- check test | Starting above the level, dipping and climbing back
+abs(crossing_time(np.arange(0.0, 81.0, 4.0), 500.0 - 40.0 * np.arange(0.0, 81.0, 4.0) + np.arange(0.0, 81.0, 4.0)**2, 300.0) - 34.142135624) < 1e-6
+--- check case | A sample exactly at the level
+crossing_time([0.0, 1.0, 2.0, 3.0], [0.0, 5.0, 10.0, 15.0], 10.0)
+=> 2.0
+--- check case | Never reaching the level
+crossing_time(np.arange(0.0, 81.0, 4.0), 1000.0 + 300.0 * np.arange(0.0, 81.0, 4.0) - 4.0 * np.arange(0.0, 81.0, 4.0)**2, 7000.0)
+=> None
+
++++ question | A root found by minimizing
+--- ask
+To find where `f(x) = 0`, a script calls `minimize` on `f(x)**2` instead of using a root finder. For a simple root near `x = 1`, about how many correct significant digits of the root should you expect, at best?
+--- choice
+About 16, the full precision of a double.
+--- choice correct
+About 8: near the root, `f(x)**2` is so flat that points within about 1e-8 of the root give squares below 1e-16 and cannot be told apart.
+--- choice
+About 4, because squaring the function squares its error.
+--- choice
+None: `minimize` cannot find a point where the objective is zero.
+--- why
+Near a simple root, `f(x)` is about a slope times the distance to the root, so `f(x)**2` grows only with the distance squared. A distance of 1e-8 gives a square near 1e-16, the limit of double precision, so the minimizer sees a flat floor about 1e-8 wide and stops somewhere on it. A bracketing root finder such as `brentq` works on `f(x)` itself, which changes sign cleanly, and pins the root to the last bit.
+
+=== py04-test | SciPy for engineering: module test
+--- teach
+The test covers the whole module: root finding with a bracket you can defend, fitting a model with honest error bars and well-scaled variables, Cholesky and the matrix exponential, discrete LQR, Welch spectra, phase margins with delay and gain, interpolated tables, rotations and quaternion order, and percentile reporting for Monte Carlo runs, all with units kept straight. Its ten problems are new, most of them combine several lessons, and there are no hints; twelve questions after them check that you can predict what SciPy code does and say why. To get ready, redo the practice problems of the lessons that felt hardest without their hints, and before every solver call, say why its structure fits the problem: zero or small, bracket or guess, sum of squares or not.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | Mach number from a nozzle's area ratio
+--- task
+In a rocket nozzle, the ratio of the flow area `A` to the throat area `A*` fixes the Mach number `M` through
+
+`A / A* = (1 / M) * ((2 / (g + 1)) * (1 + (g - 1) / 2 * M**2)) ** ((g + 1) / (2 * (g - 1)))`
+
+where `g` is the ratio of specific heats (1.4 for air, about 1.2 for rocket exhaust). The ratio is 1 at `M = 1` and grows without limit both as `M` falls toward 0 and as `M` grows, so every ratio above 1 has two answers: one below Mach 1 and one above.
+
+Write a function `mach_from_area_ratio(ratio, g, supersonic)` that returns the Mach number as a float, using `brentq`:
+
+- `supersonic=True` gives the answer above 1, `False` the answer below 1;
+- a ratio of exactly 1 gives 1.0 for both;
+- a ratio below 1 is impossible: raise `ValueError`;
+- it must work for ratios up to at least 1000, and be correct to 1e-9 relative.
+--- starter
+import numpy as np
+from scipy.optimize import brentq
+
+
+def mach_from_area_ratio(ratio, g, supersonic):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import brentq
+
+
+def area_ratio(M, g):
+    return (1.0 / M) * ((2.0 / (g + 1)) * (1 + (g - 1) / 2 * M * M)) ** ((g + 1) / (2 * (g - 1)))
+
+
+def mach_from_area_ratio(ratio, g, supersonic):
+    """Mach number with A/A* = ratio, on the supersonic or the subsonic branch."""
+    if ratio < 1:
+        raise ValueError("an area ratio below 1 is impossible")
+    if ratio == 1:
+        return 1.0
+    f = lambda M: area_ratio(M, g) - ratio
+    # f(1) = 1 - ratio < 0. Walk outward from Mach 1 until f turns positive: that is the bracket.
+    if supersonic:
+        hi = 2.0
+        while f(hi) < 0:
+            hi *= 2.0
+        return float(brentq(f, 1.0, hi, xtol=1e-14, rtol=8.9e-16))
+    lo = 0.5
+    while f(lo) < 0:
+        lo /= 2.0
+    return float(brentq(f, lo, 1.0, xtol=1e-14, rtol=8.9e-16))
+--- check test | A ratio of 25 at g = 1.4 is exactly Mach 5
+abs(mach_from_area_ratio(25.0, 1.4, True) - 5.0) < 1e-9
+--- check test | Both branches for several ratios satisfy the relation
+all(abs((1 / M) * ((2 / 2.4) * (1 + 0.2 * M * M)) ** 3.0 / r - 1) < 1e-9 for r in (1.5, 4.0, 1000.0) for M in (mach_from_area_ratio(r, 1.4, True), mach_from_area_ratio(r, 1.4, False)))
+--- check test | The branches are on the right sides of Mach 1
+(lambda hi, lo: abs(hi - 2.6194468) < 1e-6 and abs(lo - 0.1465482) < 1e-6)(mach_from_area_ratio(4.0, 1.2, True), mach_from_area_ratio(4.0, 1.4, False))
+--- check test | A ratio of 1 is Mach 1, and below 1 raises ValueError
+mach_from_area_ratio(1.0, 1.4, True) == 1.0 and mach_from_area_ratio(1.0, 1.4, False) == 1.0 and raises(ValueError, lambda: mach_from_area_ratio(0.8, 1.4, True))
+--- check test | A huge expansion ratio on the supersonic side
+abs(mach_from_area_ratio(1000.0, 1.2, True) - 6.674025138) < 1e-7
+
++++ problem | A battery's discharge, with honest error bars
+--- task
+A satellite battery's voltage after a load is switched on follows
+
+`v(t) = V0 + k * t - A * exp(-t / tau)`
+
+with a steady voltage `V0` near 30 V, a slow drift `k` near `-1e-4` V/s, a quick sag `A` near 2 V and its time constant `tau` of a few minutes: four parameters spread over seven powers of ten. The voltmeter's noise has a known standard deviation `sigma`.
+
+Write a function `discharge_fit(t, v, sigma)` that returns `(params, sd)`, two NumPy arrays of length 4 in the order `(V0, k, A, tau)`: the least-squares fit and its one-sigma uncertainties.
+
+- Fit with `least_squares` on residuals divided by `sigma`, solving for variables scaled to order 1.
+- Build the starting guess from the data (the readings over the last third of the record are nearly a straight line), not from the numbers above.
+- Compute the covariance as `inv(J.T @ J)`, where `J` is the Jacobian of the noise-divided residuals **with respect to the real parameters**, using the known noise as it is, not rescaled. If you solved for scaled variables `u = x / s`, remember that `sol.jac` is with respect to `u`.
+- The checks use an hour of readings every 5 s and compare with `curve_fit(..., absolute_sigma=True)`: each parameter within a hundredth of its uncertainty, and each uncertainty within 0.1 percent.
+--- starter
+import numpy as np
+from scipy.optimize import least_squares
+
+
+def discharge_fit(t, v, sigma):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import least_squares
+
+
+def discharge_fit(t, v, sigma):
+    """Fit v = V0 + k t - A exp(-t/tau); returns the parameters and their one-sigma errors."""
+    t = np.asarray(t, dtype=float)
+    v = np.asarray(v, dtype=float)
+
+    # Starting guess from the data: the last 30 % is nearly the straight line V0 + k t.
+    tail = max(3, int(0.3 * t.size))
+    k0, V00 = np.polyfit(t[-tail:], v[-tail:], 1)
+    A0 = V00 + k0 * t[0] - v[0]                  # how far the first reading sags below that line
+    tau0 = (t[-1] - t[0]) / 20.0
+    x0 = np.array([V00, k0, A0, tau0])
+
+    s = np.abs(x0) + 1e-12                        # typical sizes: solve for u = x / s, all near 1
+
+    def residuals(u):
+        V0, k, A, tau = u * s
+        return (V0 + k * t - A * np.exp(-t / tau) - v) / sigma
+
+    sol = least_squares(residuals, x0 / s)
+    params = sol.x * s
+    J = sol.jac / s                               # dr/dx = dr/du * du/dx, and du/dx = 1/s
+    cov = np.linalg.inv(J.T @ J)                  # residuals are already in units of the noise
+    return params, np.sqrt(np.diag(cov))
+--- check test | Matches curve_fit with the known noise: parameters and error bars
+(lambda t: (lambda v: (lambda got, ref: np.all(np.abs(got[0] - ref[0]) < 0.01 * np.sqrt(np.diag(ref[1]))) and np.allclose(got[1], np.sqrt(np.diag(ref[1])), rtol=1e-3))(discharge_fit(t, v, 0.01), __import__("scipy.optimize", fromlist=["curve_fit"]).curve_fit(lambda t, V0, k, A, tau: V0 + k * t - A * np.exp(-t / tau), t, v, p0=[28.0, -2e-4, 1.5, 120.0], sigma=np.full(t.size, 0.01), absolute_sigma=True)))(28.0 - 2e-4 * t - 1.5 * np.exp(-t / 120.0) + np.random.default_rng(5).normal(0.0, 0.01, t.size)))(np.linspace(0.0, 3600.0, 721))
+--- check test | A different battery, noisier, sagging more slowly
+(lambda t: (lambda v: (lambda got, ref: np.all(np.abs(got[0] - ref[0]) < 0.01 * np.sqrt(np.diag(ref[1]))) and np.allclose(got[1], np.sqrt(np.diag(ref[1])), rtol=1e-3))(discharge_fit(t, v, 0.03), __import__("scipy.optimize", fromlist=["curve_fit"]).curve_fit(lambda t, V0, k, A, tau: V0 + k * t - A * np.exp(-t / tau), t, v, p0=[32.5, -5e-5, 2.2, 300.0], sigma=np.full(t.size, 0.03), absolute_sigma=True)))(32.5 - 5e-5 * t - 2.2 * np.exp(-t / 300.0) + np.random.default_rng(6).normal(0.0, 0.03, t.size)))(np.linspace(0.0, 3600.0, 721))
+--- check test | Doubling the stated noise doubles every error bar
+(lambda t: (lambda v: np.allclose(discharge_fit(t, v, 0.02)[1], 2 * discharge_fit(t, v, 0.01)[1], rtol=1e-3))(28.0 - 2e-4 * t - 1.5 * np.exp(-t / 120.0) + np.random.default_rng(7).normal(0.0, 0.01, t.size)))(np.linspace(0.0, 3600.0, 721))
+
++++ problem | How often does the error leave the box?
+--- task
+A navigation error vector has covariance `C` (a `k` by `k` matrix). Write a function `exceed_probability(C, limit, n, seed)` that estimates, by Monte Carlo, how often the length of the error vector is greater than `limit`, and how bad that rate could really be:
+
+- raise `ValueError` if `C` is not symmetric or not positive definite;
+- factor `C` into a lower-triangular `L` with Cholesky, draw `z = np.random.default_rng(seed).standard_normal((k, n))`, exactly like that, and form the `n` error vectors as the columns of `L @ z`;
+- count the columns whose length is greater than `limit`: `count` of `n`;
+- return `(count / n, upper)`, two floats, where `upper` is the one-sided 95 percent upper bound on the true rate: `stats.beta.ppf(0.95, count + 1, n - count)`.
+--- starter
+import numpy as np
+from scipy import linalg, stats
+
+
+def exceed_probability(C, limit, n, seed):
+    pass
+--- solution
+import numpy as np
+from scipy import linalg, stats
+
+
+def exceed_probability(C, limit, n, seed):
+    """Monte Carlo rate at which |error| > limit for covariance C, and its 95 % upper bound."""
+    C = np.asarray(C, dtype=float)
+    if not np.allclose(C, C.T):
+        raise ValueError("a covariance must be symmetric")
+    try:
+        L = linalg.cholesky(C, lower=True)
+    except linalg.LinAlgError:
+        raise ValueError("a covariance must be positive definite")
+    z = np.random.default_rng(seed).standard_normal((C.shape[0], n))
+    errors = L @ z                                            # one error vector per column
+    count = int(np.sum(np.linalg.norm(errors, axis=0) > limit))
+    return count / n, float(stats.beta.ppf(0.95, count + 1, n - count))
+--- check test | Two equal, independent axes: the Rayleigh tail exp(-r^2 / 2 sigma^2)
+(lambda p, u: abs(p - 0.043945) < 1e-12 and abs(p - np.exp(-25.0 / 8.0)) < 0.002 and abs(u - 0.0447063) < 1e-6)(*exceed_probability(np.diag([4.0, 4.0]), 5.0, 200000, 1))
+--- check test | A correlated three-axis error
+(lambda p, u: abs(p - 0.0114) < 1e-12 and abs(u - 0.0122123) < 1e-6)(*exceed_probability([[9.0, 1.2, 0.3], [1.2, 0.25, 0.0], [0.3, 0.0, 4.0]], 8.0, 50000, 2))
+--- check test | Never exceeded: the bound is still about 3 / n
+(lambda p, u: p == 0.0 and abs(u - 0.0029912) < 1e-6)(*exceed_probability(np.eye(2), 10.0, 1000, 0))
+--- check test | Not symmetric, or not positive definite: ValueError
+raises(ValueError, lambda: exceed_probability([[4.0, 5.0], [-3.0, 9.0]], 1.0, 10, 0)) and raises(ValueError, lambda: exceed_probability([[9.0, 1.6], [1.6, 0.25]], 1.0, 10, 0))
+
++++ problem | A digital regulator from a continuous plant
+--- task
+A plant `xdot = A x + B u` will be controlled by a computer that holds each command for `dt` seconds. Write a function `digital_lqr(A, B, Q, R, dt)` that returns `(K, radius)`:
+
+- discretize the plant exactly for a held input (zero-order hold) into `Ad`, `Bd`;
+- solve the discrete Riccati equation with weights `Q * dt` and `R * dt` (a sum over steps then approximates the continuous cost's integral);
+- form the optimal discrete gain `K` for `u = -K x`, a 2-D array;
+- `radius` is the largest size of any eigenvalue of `Ad - Bd @ K`, as a float: below 1 means every error dies out.
+
+For very small `dt`, `K` should approach the continuous LQR gain.
+--- starter
+import numpy as np
+from scipy import linalg, signal
+
+
+def digital_lqr(A, B, Q, R, dt):
+    pass
+--- solution
+import numpy as np
+from scipy import linalg, signal
+
+
+def digital_lqr(A, B, Q, R, dt):
+    """Discrete LQR gain for the zero-order-hold model of xdot = A x + B u, and its spectral radius."""
+    A = np.asarray(A, dtype=float)
+    B = np.asarray(B, dtype=float)
+    n, m = B.shape
+    M = np.zeros((n + m, n + m))
+    M[:n, :n] = A
+    M[:n, n:] = B
+    E = linalg.expm(M * dt)                       # the same Ad, Bd as cont2discrete with "zoh"
+    Ad, Bd = E[:n, :n], E[:n, n:]
+    Qd, Rd = Q * dt, R * dt
+    P = linalg.solve_discrete_are(Ad, Bd, Qd, Rd)
+    K = np.linalg.solve(Rd + Bd.T @ P @ Bd, Bd.T @ P @ Ad)
+    radius = float(np.max(np.abs(np.linalg.eigvals(Ad - Bd @ K))))
+    return K, radius
+--- check test | A damped cart sampled every half second
+(lambda K, r: K.shape == (1, 2) and np.allclose(K, [[1.713559, 2.549434]], atol=1e-5) and abs(r - 0.631291) < 1e-5)(*digital_lqr(np.array([[0.0, 1.0], [0.0, -0.2]]), np.array([[0.0], [0.5]]), np.diag([2.0, 1.0]), np.array([[0.3]]), 0.5))
+--- check test | A fast computer gives nearly the continuous gain
+(lambda K, r: np.allclose(K, np.linalg.solve(np.array([[0.3]]), np.array([[0.0, 0.5]]) @ linalg.solve_continuous_are(np.array([[0.0, 1.0], [0.0, -0.2]]), np.array([[0.0], [0.5]]), np.diag([2.0, 1.0]), np.array([[0.3]]))), rtol=2e-3) and r < 1)(*digital_lqr(np.array([[0.0, 1.0], [0.0, -0.2]]), np.array([[0.0], [0.5]]), np.diag([2.0, 1.0]), np.array([[0.3]]), 0.001))
+--- check test | An unstable one-state plant is stabilized with the scalar discrete gain
+(lambda K, r, a, b, P: r < 1 and np.allclose(K, [[b * P * a / (0.2 + b * b * P)]]))(*digital_lqr(np.array([[1.0]]), np.array([[1.0]]), np.array([[1.0]]), np.array([[1.0]]), 0.2), np.exp(0.2), np.exp(0.2) - 1.0, linalg.solve_discrete_are(np.array([[np.exp(0.2)]]), np.array([[np.exp(0.2) - 1.0]]), np.array([[0.2]]), np.array([[0.2]]))[0, 0])
+
++++ problem | How big is the hidden tone?
+--- task
+A tone of amplitude `a` (a sine wave `a * sin(2 pi f0 t + phase)`) carries power `a**2 / 2`, and in a power spectral density that power shows up as a narrow hump on top of the noise floor. Write a function `tone_amplitude(x, fs, f0, nperseg)` that estimates `a` from the samples `x` taken at `fs` hertz, as a float:
+
+- compute the Welch PSD with the given `nperseg`; let `df` be its bin spacing;
+- the noise floor is the median of the whole PSD;
+- the tone's power is the sum, over the bins within `4 * df` of `f0` (inclusive), of the PSD minus the floor, times `df`;
+- the amplitude is `sqrt(2 * power)`; if the power comes out zero or negative (no tone at all), return 0.0.
+
+The checks use a minute of data with tones two to five times smaller than the noise's standard deviation, and need the amplitude within 5 percent.
+--- starter
+import numpy as np
+from scipy import signal
+
+
+def tone_amplitude(x, fs, f0, nperseg):
+    pass
+--- solution
+import numpy as np
+from scipy import signal
+
+
+def tone_amplitude(x, fs, f0, nperseg):
+    """Amplitude of the tone at f0 Hz, from the area of its hump above the Welch noise floor."""
+    f, P = signal.welch(np.asarray(x, dtype=float), fs=fs, nperseg=nperseg)
+    df = f[1] - f[0]
+    band = np.abs(f - f0) <= 4 * df
+    floor = np.median(P)
+    power = np.sum(P[band] - floor) * df          # the PSD's area is variance: a**2 / 2 for a tone
+    return float(np.sqrt(2 * power)) if power > 0 else 0.0
+--- check test | A pump tone five times smaller than the noise
+(lambda t: abs(tone_amplitude(0.5 * np.random.default_rng(11).standard_normal(t.size) + 0.1 * np.sin(2 * np.pi * 37.5 * t + 0.3), 1000.0, 37.5, 4096) / 0.1 - 1) < 0.05)(np.arange(0.0, 60.0, 0.001))
+--- check test | A stronger tone at 120 Hz with shorter segments
+(lambda t: abs(tone_amplitude(np.random.default_rng(3).standard_normal(t.size) + 0.3 * np.sin(2 * np.pi * 120.0 * t + 0.3), 1000.0, 120.0, 2048) / 0.3 - 1) < 0.05)(np.arange(0.0, 60.0, 0.001))
+--- check test | A slow tone with long segments
+(lambda t: abs(tone_amplitude(0.1 * np.random.default_rng(4).standard_normal(t.size) + 0.05 * np.sin(2 * np.pi * 8.2 * t + 0.3), 1000.0, 8.2, 8192) / 0.05 - 1) < 0.05)(np.arange(0.0, 60.0, 0.001))
+--- check test | No tone: close to zero
+(lambda t: tone_amplitude(0.3 * np.random.default_rng(5).standard_normal(t.size), 1000.0, 50.0, 4096) < 0.02)(np.arange(0.0, 60.0, 0.001))
+
++++ problem | The most gain the loop can take
+--- task
+A controller gain `k` multiplies a loop: `k * num(s) / den(s)`. Raising `k` makes the loop faster, but moves the crossover out to where the plant lags more, so the phase margin shrinks. Write a function `max_gain(num, den, pm_req, k_lo, k_hi, w_lo, w_hi)` that returns, as a float, the gain between `k_lo` and `k_hi` at which the phase margin is exactly `pm_req` degrees (the largest gain that still keeps that margin):
+
+- for a given `k`, find the crossover `wc` between `w_lo` and `w_hi` with `brentq` on the loop's size minus 1;
+- the phase at `wc` can pass -180 degrees, and `np.angle` would then wrap it round to a positive angle. Evaluate the loop on 2000 frequencies spaced evenly on a log scale from `w_lo` to `wc` (`np.geomspace`) and use `np.unwrap` on their angles; the last one is the phase at `wc`. The margin is `180 +` that phase in degrees;
+- find the gain with `brentq` on the margin minus `pm_req`, between `k_lo` (margin above `pm_req`) and `k_hi` (margin below it, possibly negative).
+--- starter
+import numpy as np
+from scipy.optimize import brentq
+
+
+def max_gain(num, den, pm_req, k_lo, k_hi, w_lo, w_hi):
+    pass
+--- solution
+import numpy as np
+from scipy.optimize import brentq
+
+
+def margin(k, num, den, w_lo, w_hi):
+    """Phase margin in degrees of k*num/den, with the phase unwrapped from w_lo up to crossover."""
+    def L(w):
+        s = 1j * w
+        return k * np.polyval(num, s) / np.polyval(den, s)
+
+    wc = brentq(lambda w: abs(L(w)) - 1.0, w_lo, w_hi)
+    grid = np.geomspace(w_lo, wc, 2000)
+    phase = np.unwrap(np.angle(L(grid)))[-1]
+    return 180.0 + np.degrees(phase)
+
+
+def max_gain(num, den, pm_req, k_lo, k_hi, w_lo, w_hi):
+    """Gain at which the loop k*num/den has exactly pm_req degrees of phase margin."""
+    return float(brentq(lambda k: margin(k, num, den, w_lo, w_hi) - pm_req, k_lo, k_hi))
+--- check test | 1 / (s (s + 1) (0.1 s + 1)) keeps 45 degrees up to k = 1.109
+abs(max_gain([1.0], [0.1, 1.1, 1.0, 0.0], 45.0, 0.1, 50.0, 1e-3, 1e3) - 1.108893) < 1e-5
+--- check test | The same plant for 30 and 60 degrees
+abs(max_gain([1.0], [0.1, 1.1, 1.0, 0.0], 30.0, 0.1, 50.0, 1e-3, 1e3) - 2.166504) < 1e-5 and abs(max_gain([1.0], [0.1, 1.1, 1.0, 0.0], 60.0, 0.1, 50.0, 1e-3, 1e3) - 0.574805) < 1e-5
+--- check test | Zero margin at exactly k = 11, where the phase reaches -180 degrees
+abs(max_gain([1.0], [0.1, 1.1, 1.0, 0.0], 0.0, 0.1, 50.0, 1e-3, 1e3) - 11.0) < 1e-6
+--- check test | A second plant, 1 / (s (0.5 s + 1) (0.02 s + 1)), for 40 degrees
+abs(max_gain([1.0], [0.01, 0.52, 1.0, 0.0], 40.0, 0.1, 200.0, 1e-3, 1e4) - 3.233838) < 1e-5
+
++++ problem | The normal force in the navigation frame
+--- task
+A rocket's aerodynamic table gives its normal-force coefficient `cn_grid[i, j]` at Mach `mach_axis[i]` and angle of attack `alpha_axis[j]` (degrees). Write a function `normal_force_ned(v_ned, ypr_deg, rho, area, a_sound, mach_axis, alpha_axis, cn_grid)` that returns the normal force as a NumPy array of three NED components, in newtons:
+
+- the attitude is yaw, pitch and roll in degrees (`ypr_deg`, the `"ZYX"` order), turning NED axes into body axes (`x` nose, `y` right, `z` belly);
+- `v_ned` is the velocity relative to the air, in NED. Turn it into body components `(u, v, w)`; the angle of attack is `degrees(arctan2(w, u))`, the speed is the length of the vector and the Mach number is speed over `a_sound`;
+- read `cn` with a linear `RegularGridInterpolator` (a point off the table must raise, as it does by default);
+- the force's size is `q * area * cn` with `q = 0.5 * rho * speed**2`, and it points along the body's `-z` axis (out of the top, for a positive angle of attack). Return it in NED components.
+--- starter
+import numpy as np
+from scipy.interpolate import RegularGridInterpolator
+from scipy.spatial.transform import Rotation as R
+
+
+def normal_force_ned(v_ned, ypr_deg, rho, area, a_sound, mach_axis, alpha_axis, cn_grid):
+    pass
+--- solution
+import numpy as np
+from scipy.interpolate import RegularGridInterpolator
+from scipy.spatial.transform import Rotation as R
+
+
+def normal_force_ned(v_ned, ypr_deg, rho, area, a_sound, mach_axis, alpha_axis, cn_grid):
+    """Aerodynamic normal force, in NED components, from the air velocity, attitude and CN table."""
+    att = R.from_euler("ZYX", ypr_deg, degrees=True)             # NED axes -> body axes
+    u, _, w = att.apply(np.asarray(v_ned, dtype=float), inverse=True)
+    speed = float(np.linalg.norm(v_ned))
+    alpha_deg = np.degrees(np.arctan2(w, u))
+    table = RegularGridInterpolator((mach_axis, alpha_axis), cn_grid)
+    cn = table([[speed / a_sound, alpha_deg]])[0]
+    q = 0.5 * rho * speed**2
+    force_body = np.array([0.0, 0.0, -q * area * cn])
+    return att.apply(force_body)                                  # body components -> NED
+--- check test | Level flight north, nose up 5 degrees: the force tilts back by 5 degrees
+(lambda ma, al: np.allclose(normal_force_ned([300.0, 0.0, 0.0], [0.0, 5.0, 0.0], 0.4, 2.0, 300.0, ma, al, 0.05 * al[None, :] * (1 + 0.1 * ma[:, None])), 0.5 * 0.4 * 300.0**2 * 2.0 * 0.05 * 5.0 * 1.1 * np.array([-np.sin(np.radians(5.0)), 0.0, -np.cos(np.radians(5.0))])))(np.array([0.5, 1.0, 2.0, 4.0]), np.linspace(-15.0, 15.0, 7))
+--- check test | Flying east with yaw 90 and a 30-degree bank, while sinking
+(lambda ma, al: np.allclose(normal_force_ned([0.0, 250.0, 20.0], [90.0, 0.0, 30.0], 0.9, 1.5, 320.0, ma, al, 0.05 * al[None, :] * (1 + 0.1 * ma[:, None])), [-4536.42671, 0.0, -7857.32154], atol=1e-3))(np.array([0.5, 1.0, 2.0, 4.0]), np.linspace(-15.0, 15.0, 7))
+--- check test | Zero angle of attack: no normal force
+(lambda ma, al: np.allclose(normal_force_ned([0.0, -400.0, 0.0], [-90.0, 0.0, 0.0], 0.3, 1.0, 300.0, ma, al, 0.05 * al[None, :] * (1 + 0.1 * ma[:, None])), 0.0, atol=1e-9))(np.array([0.5, 1.0, 2.0, 4.0]), np.linspace(-15.0, 15.0, 7))
+--- check test | Too fast for the table raises ValueError
+raises(ValueError, lambda: normal_force_ned([1500.0, 0.0, 0.0], [0.0, 2.0, 0.0], 0.3, 1.0, 300.0, np.array([0.5, 1.0, 2.0, 4.0]), np.linspace(-15.0, 15.0, 7), np.ones((4, 7))))
+
++++ problem | Where did the telescope point?
+--- task
+A space telescope's attitude log gives, at key times `t_keys`, quaternions **scalar first**: `(N, 4)` rows `[w, x, y, z]`, each turning the inertial axes into the telescope's body axes. Its camera looks along the fixed body direction `boresight` (three numbers).
+
+Write a function `pointing(t_keys, q_wxyz, t_query, boresight)` that returns the camera's pointing direction in inertial components at each time in `t_query`, as an array of shape `(len(t_query), 3)`:
+
+- load the log with its order handled correctly;
+- blend between key attitudes with `Slerp`;
+- the direction in inertial components is the attitude applied to the body vector.
+
+Times outside the log must raise `ValueError`.
+--- starter
+import numpy as np
+from scipy.spatial.transform import Rotation as R, Slerp
+
+
+def pointing(t_keys, q_wxyz, t_query, boresight):
+    pass
+--- solution
+import numpy as np
+from scipy.spatial.transform import Rotation as R, Slerp
+
+
+def pointing(t_keys, q_wxyz, t_query, boresight):
+    """Inertial pointing of a body-fixed boresight at the query times, from a scalar-first log."""
+    attitudes = R.from_quat(np.asarray(q_wxyz, dtype=float), scalar_first=True)   # convert at the edge
+    return Slerp(t_keys, attitudes)(t_query).apply(np.asarray(boresight, dtype=float))
+--- check test | A steady slew of 180 degrees about z
+(lambda q: np.allclose(pointing([0.0, 10.0, 20.0], q, [0.0, 5.0, 15.0, 20.0], [1.0, 0.0, 0.0]), [[1.0, 0.0, 0.0], [0.707107, 0.707107, 0.0], [-0.707107, 0.707107, 0.0], [-1.0, 0.0, 0.0]], atol=1e-6))(R.from_euler("z", [[0.0], [90.0], [180.0]], degrees=True).as_quat(scalar_first=True))
+--- check test | A small slew logged scalar first: reading it scalar last would point far off
+(lambda q: np.allclose(pointing([0.0, 60.0], q, [30.0], [0.0, 0.0, 1.0]), [[np.sin(np.radians(1.0)), 0.0, np.cos(np.radians(1.0))]], atol=1e-9))(R.from_euler("y", [[0.0], [2.0]], degrees=True).as_quat(scalar_first=True))
+--- check test | Negated rows in the log change nothing
+(lambda q: np.allclose(pointing([0.0, 1.0, 2.0], q * np.array([[1.0], [-1.0], [1.0]]), [0.5, 1.5], [0.0, 1.0, 0.0]), pointing([0.0, 1.0, 2.0], q, [0.5, 1.5], [0.0, 1.0, 0.0])))(R.from_euler("ZYX", [[0.0, 0.0, 0.0], [20.0, 10.0, 5.0], [40.0, 15.0, 0.0]], degrees=True).as_quat(scalar_first=True))
+--- check test | Outside the log raises ValueError
+raises(ValueError, lambda: pointing([0.0, 1.0], R.from_euler("z", [[0.0], [10.0]], degrees=True).as_quat(scalar_first=True), [2.0], [1.0, 0.0, 0.0]))
+
++++ problem | The landing report for the review board
+--- task
+A landing campaign produced one miss distance per run. Write a function `mc_report(miss, limit)` that returns a dictionary with these keys:
+
+- `"n"`: the number of runs, an `int`;
+- `"p99"`: `np.percentile(miss, 99)`, a float;
+- `"p99_bound"`: the smallest sorted result that bounds the true P99 with at least 95 percent confidence, that is the `k`-th smallest for the smallest `k` with `stats.binom.cdf(k - 1, n, 0.99) >= 0.95`, as a float; `None` if even the largest result is not enough;
+- `"failures"`: how many runs missed by more than `limit`, an `int`;
+- `"rate_bound"`: the one-sided 95 percent upper bound on the true failure rate, `stats.beta.ppf(0.95, failures + 1, n - failures)`, a float.
+--- starter
+import numpy as np
+from scipy import stats
+
+
+def mc_report(miss, limit):
+    pass
+--- solution
+import numpy as np
+from scipy import stats
+
+
+def mc_report(miss, limit):
+    """Percentile, defensible P99 bound, failure count and failure-rate bound of a campaign."""
+    x = np.sort(np.asarray(miss, dtype=float))
+    n = int(x.size)
+    bound = None
+    for k in range(1, n + 1):
+        if stats.binom.cdf(k - 1, n, 0.99) >= 0.95:
+            bound = float(x[k - 1])
+            break
+    failures = int(np.sum(x > limit))
+    return {
+        "n": n,
+        "p99": float(np.percentile(x, 99)),
+        "p99_bound": bound,
+        "failures": failures,
+        "rate_bound": float(stats.beta.ppf(0.95, failures + 1, n - failures)),
+    }
+--- check test | A thousand simulated landings
+(lambda r: r["n"] == 1000 and abs(r["p99"] - 154.534786) < 1e-5 and abs(r["p99_bound"] - 169.910383) < 1e-5 and r["failures"] == 1 and abs(r["rate_bound"] - 0.00473499) < 1e-7)(mc_report((lambda g: np.hypot(g.normal(0.0, 50.0, 1000), g.normal(0.0, 50.0, 1000)))(np.random.default_rng(1)), 200.0))
+--- check test | A hundred runs cannot bound P99
+(lambda r: r["p99_bound"] is None and r["failures"] == 5 and abs(r["p99"] - 99.01) < 1e-9 and abs(r["rate_bound"] - 0.1022534) < 1e-6)(mc_report(np.arange(1.0, 101.0), 95.5))
+--- check test | The right types
+(lambda r: type(r["n"]) is int and type(r["failures"]) is int and type(r["p99"]) is float and type(r["rate_bound"]) is float and type(r["p99_bound"]) is float)(mc_report(np.random.default_rng(2).random(400), 0.999))
+
++++ problem | Burn time from a thrust curve in US units
+--- task
+A small kick motor's test report is in US units: its thrust table `F_lbf` (pounds-force) at the times `t_tab` (seconds), its specific impulse `isp_s` (seconds), and the stage's starting mass `m0_lb` (pounds). You need the time at which the stage has gained a velocity change of `dv_ft_s` feet per second.
+
+Write a function `burn_time_for_dv(t_tab, F_lbf, isp_s, m0_lb, dv_ft_s)` that returns that time, in seconds, as a float:
+
+- work in SI inside, with `scipy.constants` for pounds-force, pounds, feet and standard gravity `g`;
+- the thrust between the rows is a `PchipInterpolator` through the table;
+- by time `t`, the propellant burned is the impulse so far (the integral of the thrust from `t_tab[0]` to `t`) divided by `isp_s * g`, and the velocity change so far is `isp_s * g * ln(m0 / (m0 - burned))`;
+- find the time with `brentq` between `t_tab[0]` and `t_tab[-1]`; if the whole burn falls short of the target, raise `ValueError`.
+--- starter
+import numpy as np
+from scipy import constants
+from scipy.interpolate import PchipInterpolator
+from scipy.optimize import brentq
+
+
+def burn_time_for_dv(t_tab, F_lbf, isp_s, m0_lb, dv_ft_s):
+    pass
+--- solution
+import numpy as np
+from scipy import constants
+from scipy.interpolate import PchipInterpolator
+from scipy.optimize import brentq
+
+
+def burn_time_for_dv(t_tab, F_lbf, isp_s, m0_lb, dv_ft_s):
+    """Time at which the stage reaches dv_ft_s, from a thrust table in lbf; SI inside."""
+    t_tab = np.asarray(t_tab, dtype=float)
+    g0 = constants.g
+    thrust_N = PchipInterpolator(t_tab, np.asarray(F_lbf, dtype=float) * constants.pound_force)
+    m0_kg = m0_lb * constants.pound
+    target_m_s = dv_ft_s * constants.foot
+
+    def dv_m_s(t):
+        burned_kg = thrust_N.integrate(t_tab[0], t) / (isp_s * g0)
+        return isp_s * g0 * np.log(m0_kg / (m0_kg - burned_kg))
+
+    if dv_m_s(t_tab[-1]) < target_m_s:
+        raise ValueError("the whole burn falls short of the target")
+    return float(brentq(lambda t: dv_m_s(t) - target_m_s, t_tab[0], t_tab[-1]))
+--- check test | A kick motor reaches 300 ft/s after about 2.05 s
+abs(burn_time_for_dv([0.0, 0.2, 1.0, 3.0, 4.0, 4.5], [0.0, 600.0, 550.0, 500.0, 150.0, 0.0], 230.0, 120.0, 300.0) - 2.0476872) < 1e-6
+--- check test | Constant thrust matches the closed form
+abs(burn_time_for_dv([0.0, 10.0], [1000.0, 1000.0], 230.0, 2000.0, 100.0) - 6.1743775) < 1e-6
+--- check test | Asking for more than the whole burn raises ValueError
+raises(ValueError, lambda: burn_time_for_dv([0.0, 0.2, 1.0, 3.0, 4.0, 4.5], [0.0, 600.0, 550.0, 500.0, 150.0, 0.0], 230.0, 120.0, 600.0))
+--- check test | Almost the whole burn: near the end of the table
+(lambda tb: 4.0 < tb < 4.5)(burn_time_for_dv([0.0, 0.2, 1.0, 3.0, 4.0, 4.5], [0.0, 600.0, 550.0, 500.0, 150.0, 0.0], 230.0, 120.0, 548.0))
+
++++ question | Newton's first step on a thin orbit
+--- ask
+Newton's method solves Kepler's equation `E - e sin E = M` with `e = 0.95` and `M = 0.1`, starting from `E0 = 0`. What is the first new guess `E1`? Give the number.
+--- answer
+2
+2.0
+--- why
+The step is `f(E0) / f'(E0)`. Here `f(0) = 0 - 0 - 0.1 = -0.1` and `f'(0) = 1 - 0.95 cos 0 = 0.05`, so `E1 = 0 - (-0.1 / 0.05) = 2.0`. The root is near 1, so a guess 20 times the size of `M` is the nearly flat tangent at work: near periapsis a high eccentricity makes the slope tiny, and dividing by it throws the guess far away. A bracketing method cannot do this.
+
++++ question | Not in the table of constants
+--- ask
+Which of these does `scipy.constants` **not** provide, and why should you define it yourself instead of computing it?
+--- choice
+Standard gravity `g`, because it changes with latitude.
+--- choice
+The pascals in one psi, because pressure units are left to each program.
+--- choice correct
+Earth's gravitational parameter, GM: it belongs to a planet, not to physics, and it is known about ten thousand times better than `G` times Earth's mass.
+--- choice
+The meters in a nautical mile, because it is not an SI unit.
+--- why
+`scipy.constants` holds physical constants and unit factors: `g` (9.80665, exact by agreement), `psi` and `nautical_mile` are all there. Planet data are not. Satellite tracking pins Earth's GM to a few parts in a billion, but `G` alone is known only to a few parts in 100,000, so multiplying `constants.G` by a textbook Earth mass throws that accuracy away. Define `MU_EARTH_M3_S2` once, with its unit in the name.
+
++++ question | Why the fitting tool wins
+--- ask
+The same model is fit two ways from the same start: `least_squares` on the residual vector, and `minimize` on the sum of their squares. `least_squares` finishes in a handful of evaluations. What is the real reason?
+--- choice
+`least_squares` is written in faster compiled code.
+--- choice correct
+It sees every residual, so it builds the Jacobian and from it the Gauss-Newton picture of the valley's curvature, J transpose J, without second derivatives; `minimize` sees one number per call and must learn the curvature slowly.
+--- choice
+`minimize` uses finite differences and `least_squares` does not.
+--- choice
+`least_squares` uses bounds, which shrink the search space.
+--- why
+The structure of the cost is the whole story. A sum of squared residuals has a curvature that is almost exactly J transpose J near a good fit, and the Jacobian comes free from the residuals. Both tools estimate derivatives by finite differences when you give none, and bounds are optional. Handing the problem to `minimize` as one scalar throws the structure away.
+
++++ question | Noise from the leftovers
+--- ask
+A fit of 3 parameters to 103 readings ends with `least_squares` reporting `cost = 4.5`. Estimate the standard deviation of the measurement noise. Give the number.
+--- answer
+0.3
+.3
+0.30
+--- why
+SciPy's cost is half the sum of squared residuals, so the sum is 9. Divide by the readings left over after the fit used up 3 numbers, 103 - 3 = 100: the variance estimate is 0.09. Its square root is 0.3, in the units of the readings.
+
++++ question | Two parameters the data cannot separate
+--- ask
+After a fit, two parameters have a correlation of 0.999, huge individual error bars, and a fit to the data that looks excellent. Their typical sizes are 1e-6 and 1e3. Which change can actually fix the error bars?
+--- choice
+Scale both to order 1, since conditioning trouble always comes from units.
+--- choice
+Tighten the solver's tolerances so it stops at the true minimum.
+--- choice correct
+Collect data that tells them apart, such as a longer record, or fit the combination the data does see, or fix one from an independent measurement.
+--- choice
+Start from a better initial guess.
+--- why
+There are two causes of a large condition number. Bad scaling is a ruler problem, and rescaling cures it. Near-degeneracy is an information problem: the two Jacobian columns have almost the same fingerprint, so any change in one parameter can be canceled by the other, and no rescaling, tolerance or starting guess adds information. A correlation of 0.999 says it is the second kind.
+
++++ question | expm against exp, on zeros
+--- ask
+What does this print?
+
+```python
+import numpy as np
+from scipy import linalg
+
+Z = np.zeros((2, 2))
+print(linalg.expm(Z) - np.exp(Z))
+```
+--- answer
+[[ 0. -1.] [-1.  0.]]
+[[0, -1], [-1, 0]]
+[[0. -1.] [-1. 0.]]
+0 -1 -1 0
+[[0.0, -1.0], [-1.0, 0.0]]
+--- why
+The matrix exponential of the zero matrix is the identity: no dynamics means the state stays put. `np.exp` takes e to the power of each entry, and e to the 0 is 1, so it gives a matrix of ones. Their difference is 0 on the diagonal and -1 off it. The off-diagonal ones are exactly the "motion from nothing" that makes `np.exp` wrong as a state transition matrix.
+
++++ question | Is the digital loop stable?
+--- ask
+A discrete LQR design gives closed-loop eigenvalues of `Ad - Bd @ K` equal to `0.95 + 0.2j` and `0.95 - 0.2j`. What do you conclude?
+--- choice
+Unstable: the real parts are positive.
+--- choice correct
+Stable but slow: each eigenvalue has size about 0.971, below 1, so errors shrink by about 3 percent per step while circling.
+--- choice
+Unstable: complex eigenvalues always oscillate forever.
+--- choice
+It cannot be told without the continuous poles.
+--- why
+For a discrete system the test is the size of each eigenvalue, not the sign of its real part: `abs(0.95 + 0.2j)` is the square root of 0.9025 + 0.04, about 0.971. Below 1, each step multiplies the error's size by that, so it decays. The positive real part only says the decay is slow compared with the step; the imaginary part makes it spiral in rather than creep.
+
++++ question | Segments fine enough for two tones
+--- ask
+A vibration record is sampled at 2048 Hz. Two tones may be 0.25 Hz apart, so the Welch bins must be no wider than that. What is the smallest `nperseg` that does it? Give the number.
+--- answer
+8192
+--- why
+Welch's bins are `fs / nperseg` apart. For bins of at most 0.25 Hz you need `nperseg` of at least 2048 / 0.25 = 8192 samples, which happens to be a power of two, 2 to the 13th. Longer segments mean fewer of them in the record, so the estimate is noisier: finer bins cost averaging.
+
++++ question | The hold's toll at 100 Hz
+--- ask
+A loop crosses over at 1.5 Hz and runs on a flight computer at 100 Hz with a zero-order hold. About how many degrees of phase margin does the hold cost? Give the number.
+--- answer
+2.7
+2.7 degrees
+2.70
+--- why
+Well below the sample rate a zero-order hold acts like a delay of half a sample, which costs `180 * fc / fs` degrees at crossover: 180 times 1.5 over 100 is 2.7 degrees. Sampling ten times slower, at 10 Hz, would cost 27 degrees, most of a typical margin.
+
++++ question | A straight line through falling air
+--- ask
+An atmosphere table lists density every 10 km. You read the density at 5 km with a straight line between the 0 km and 10 km rows. Compared with the true density there, the answer is:
+--- choice correct
+Too high: density falls off like an exponential, a curve that sags below the straight line between two of its points.
+--- choice
+Too low: the straight line cuts under the curve.
+--- choice
+Exactly right, since the table rows are exact.
+--- choice
+Too high or too low at random, depending on rounding in the table.
+--- why
+An exponential decay bends upward (it is convex), so between any two points it lies below the chord joining them, and the straight-line reading comes out high, about 11 percent at 5 km. Taking the logarithm turns an exponential into a straight line, which is why interpolating `ln(rho)` and converting back does far better with the same table.
+
++++ question | Two turns, applied to y
+--- ask
+What direction does this print, as three whole numbers?
+
+```python
+from scipy.spatial.transform import Rotation as R
+
+r = R.from_euler("z", 90, degrees=True) * R.from_euler("x", 90, degrees=True)
+print(r.apply([0.0, 1.0, 0.0]).round(3))
+```
+--- answer
+[0, 0, 1]
+0 0 1
+[0. 0. 1.]
+[-0. 0. 1.]
+[0.0, 0.0, 1.0]
+--- why
+`b * a` means "first `a`, then `b`", so the turn about `x` happens first. A quarter turn about `x` carries `y` to `z`. The quarter turn about `z` then leaves `z` where it is, since `z` is its axis. So `[0, 1, 0]` ends at `[0, 0, 1]`. Doing the `z` turn first would have sent `y` to `-x` and then left it there.
+
++++ question | A clean campaign is not a zero failure rate
+--- ask
+A thousand Monte Carlo landings all land on the pad. Can the report promise a failure rate below 0.1 percent with 95 percent confidence?
+--- choice
+Yes: zero failures in 1,000 runs is a measured rate of zero.
+--- choice
+Yes, as long as the runs were seeded.
+--- choice correct
+No: with no failures in 1,000 runs, the 95 percent upper bound is about 3 in 1,000, 0.3 percent; promising 0.1 percent takes about 3,000 clean runs.
+--- choice
+No: a bound can only be computed once at least one run has failed.
+--- why
+With zero failures the one-sided 95 percent upper bound is `stats.beta.ppf(0.95, 1, 1000)`, about 0.003: the rule of three, 3 over N. The true rate could be as high as that and still give a clean campaign one time in twenty. To promise 0.1 percent you need N near 3,000 clean runs. A bound exists with zero failures; it is just not zero.

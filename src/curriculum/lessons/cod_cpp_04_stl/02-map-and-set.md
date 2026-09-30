@@ -74,7 +74,7 @@ The name, and the idea, come from a **[[1978 paper|rb-history]]**; the tree for 
 ::: example Opening up a map's nodes
 This program counts the heap allocations a `std::map` and a `std::set` make, using the same replaced `operator new` trick as a test harness would, and then uses the ordering:
 
-```cpp
+```cpp laptop
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>

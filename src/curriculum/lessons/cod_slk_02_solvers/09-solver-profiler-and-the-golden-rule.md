@@ -45,9 +45,9 @@ A few shapes cover most slow models.
 | Step size capped exactly at one value, nothing rejected | The max step size setting is the limit | Lesson 2: is the cap needed? |
 
 ::: example A model that got 260 times slower
-A pitch-attitude model has a closed loop with natural frequency $2\,\mathrm{rad/s}$ and damping ratio 0.7. It is simulated for 10 s with a variable-step Dormand–Prince solver (the method inside `ode45`), relative tolerance $10^{-3}$. Then a colleague adds an actuator model: a first-order lag with a time constant of 0.5 ms, so its eigenvalue is $-1/0.0005 = -2000\,\mathrm{rad/s}$. The numbers below were computed in Python with `solve_ivp`, which uses the same method.
+A pitch-attitude model has a closed loop with natural frequency $2\,\mathrm{rad/s}$ and damping ratio 0.7. It is simulated for 10 s with a variable-step Dormand–Prince solver (the method inside `ode45`), relative tolerance $10^{-3}$, absolute tolerance $10^{-6}$ and no cap on the step size. Then a colleague adds an actuator model: a first-order lag with a time constant of 0.5 ms, so its eigenvalue is $-1/0.0005 = -2000\,\mathrm{rad/s}$. The numbers below were computed in Python with `solve_ivp`, which uses the same method.
 
-**Before the actuator.** 23 steps, 170 derivative evaluations, average step 0.43 s.
+**Before the actuator.** 23 steps, 170 derivative evaluations, average step 0.43 s. (Lesson 3 ran the same model with a 0.2 s step cap and counted 54 steps and 326 evaluations: the cap holds back the quiet ideal model. The stiff run below takes the same 6039 steps with or without it.)
 
 **After the actuator.** 6039 steps, 42,164 derivative evaluations, and 988 rejected steps. The average step is 1.66 ms.
 
@@ -120,7 +120,7 @@ $$
 U = \frac{0.3}{1} + \frac{2}{10} + \frac{15}{50} = 0.30 + 0.20 + 0.30 = 0.80.
 $$
 
-**Sanity check.** 80% is below 100%, so the work fits on average. It is slightly above the classic guarantee for three rate-monotonic tasks, about 78%, so the schedule must be checked in detail rather than assumed. Moving guidance to 100 ms would give $0.30 + 0.20 + 0.15 = 0.65$, comfortably below both.
+**Sanity check.** 80% is below 100%, so the work fits on average. It is slightly above the classic guarantee for three rate-monotonic tasks, about 78%, but that guarantee is for periods of any length. These periods are **harmonic**: each divides the next ($10/1 = 10$, $50/10 = 5$), and with harmonic periods rate-monotonic scheduling meets every deadline all the way up to 100%. So the schedule is guaranteed, with 20% to spare. Moving guidance to 100 ms would give $0.30 + 0.20 + 0.15 = 0.65$, for more margin.
 :::
 
 ::: warning "It generates code" is not the same as "it meets the rule"

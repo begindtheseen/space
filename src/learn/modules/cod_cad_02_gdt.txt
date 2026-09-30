@@ -1,0 +1,1176 @@
+@track python
+@course mod-cod_cad_02_gdt
+@module cod_cad_02_gdt
+@title Geometric dimensioning and tolerancing: practice and test
+
+=== cad02-l01 | Practice: Why GD&T exists, and how to read a feature control frame
+--- for
+l01-why-gdt-exists
+
++++ question | A miss reported as a diameter
+--- ask
+A coordinate measuring machine finds a hole's center $0.07\,\mathrm{mm}$ to the right of its true position and $0.05\,\mathrm{mm}$ below it. GD&T reports the miss as the diameter of the smallest round zone, centered on true position, that still holds the center. What is that diameter, in millimeters? Round to three decimal places.
+--- answer
+0.172
+0.172 mm
+0.172mm
+⌀0.172
+⌀ 0.172
+--- why
+The straight-line miss comes from Pythagoras: $\sqrt{0.07^2 + 0.05^2} = \sqrt{0.0049 + 0.0025} = \sqrt{0.0074} = 0.0860\,\mathrm{mm}$. The zone is centered on true position, so its *radius* must reach the hole's center, and its diameter is twice that: $2 \times 0.0860 = 0.172\,\mathrm{mm}$. "Below" does not matter: the minus sign disappears when the miss is squared, because a round zone treats every direction alike. Two common slips: reporting $0.086$ (the radius, half the right number) or adding the two misses, $0.07 + 0.05 = 0.12$, which is the distance along two sides of a triangle instead of across it.
+
++++ question | The corners the circle trims off
+--- ask
+A drawing locates a hole $\pm 0.1\,\mathrm{mm}$ in $x$ and $\pm 0.1\,\mathrm{mm}$ in $y$. A new revision replaces that with position $\varnothing\,0.2$ at the same true position. Which hole, given as its miss from true position, passed the old drawing but fails the new one?
+--- choice
+$0.10$ to the right, $0.00$ up.
+--- choice correct
+$0.08$ to the right, $0.08$ up.
+--- choice
+$0.12$ to the right, $0.00$ up.
+--- choice
+$0.05$ to the right, $0.05$ up.
+--- why
+A round zone of diameter $0.2$ fits *inside* the old $0.2 \times 0.2$ square: it touches the middle of each side and cuts off the four corners. The hole at $(0.08, 0.08)$ sits in a corner region. It is inside the square, since $0.08 < 0.1$ both ways, but its straight-line miss is $\sqrt{0.08^2 + 0.08^2} = 0.113$, which needs a zone of $\varnothing\,0.226$. The hole at $(0.10, 0)$ needs exactly $\varnothing\,0.2$ and sits on both boundaries, so it passes both. $(0.12, 0)$ fails both. $(0.05, 0.05)$ needs only $\varnothing\,0.141$ and passes both. To keep every part the square accepted, the circle must pass through the corners: $\varnothing\,0.283$.
+
++++ question | A frame read box by box
+--- ask
+A hole carries this feature control frame:
+
+`| ⌖ | 0.3 | A | C | B |`
+
+Which reading is right?
+--- choice correct
+Position, within a zone of two parallel planes $0.3\,\mathrm{mm}$ apart ($0.15$ each side of true position), regardless of feature size, with A primary, C secondary and B tertiary.
+--- choice
+Position, within a round zone of diameter $0.3$ at maximum material condition, relative to A, B and C in alphabetical order.
+--- choice
+The letters are out of order, so the drawing has a mistake; the inspector should build the frame in the order A, B, C.
+--- choice
+Position, within a round zone $0.3$ across, because a position zone is always a cylinder around the true axis.
+--- why
+Read the second box first for its shape: there is no diameter sign ⌀, so the zone is the space between two parallel planes (or lines), and $0.3$ is their distance apart. There is no circled M or L, so the tolerance is regardless of feature size (RFS): the number stays fixed. The datum boxes are read in the order they are written, and that order is precedence: A is seated first, C second, B third. Nothing requires alphabetical order, and quietly "fixing" it would build a different datum reference frame and measure a different requirement.
+
++++ question | Band or circle
+--- ask
+A hole's center is found $0.09\,\mathrm{mm}$ off true position in $x$ and $0.15\,\mathrm{mm}$ off in $y$. Compare two ways of controlling its position.
+
+- Drawing 1: position $\varnothing\,0.2$.
+- Drawing 2: position $0.2$ with no diameter sign, drawn so that its two planes are square to $x$. It limits the $x$ direction only.
+
+Which verdicts are right?
+--- choice correct
+It fails drawing 1, which needs a round zone of about $\varnothing\,0.35$, and passes drawing 2, because $0.09$ is within the $0.1$ each side of the band's middle.
+--- choice
+It passes both, because $0.09$ and $0.15$ are each smaller than $0.2$.
+--- choice
+It fails both, because $0.15$ is more than half of $0.2$.
+--- choice
+It passes drawing 1 and fails drawing 2, because a band is always stricter than a round zone.
+--- why
+With the ⌀, the zone is a circle: the center may be at most $0.1$ from true position in *any* direction. The straight-line miss is $\sqrt{0.09^2 + 0.15^2} = \sqrt{0.0306} = 0.175$, which needs $\varnothing\,0.35$, so drawing 1 fails. Without the ⌀, the zone is a band $0.2$ wide, $0.1$ each side of true position, and this band only looks at $x$. The $0.15$ in $y$ is not its business (a real drawing would control $y$ with another requirement). Read the ⌀ before you read the number: the same digits mean a different shape.
+
++++ question | A conversion that throws parts away
+--- ask
+An engineer redraws an old hole callout of $\pm 0.08\,\mathrm{mm}$ in $x$ and $\pm 0.08\,\mathrm{mm}$ in $y$. He writes position $\varnothing\,0.16$ and adds a note: "Same numbers, so every part the old drawing accepted still passes." What is wrong?
+--- choice correct
+$\varnothing\,0.16$ is the circle that fits inside the old square. A hole $0.08$ off in both $x$ and $y$ passed before and now needs about $\varnothing\,0.226$. Keeping every old part needs the circle through the corners, about $\varnothing\,0.226$.
+--- choice
+A position tolerance is a radius, so $\varnothing\,0.16$ is twice too loose; he should write $\varnothing\,0.08$.
+--- choice
+He should add the two bands together and write $\varnothing\,0.32$.
+--- choice
+Nothing: $\pm 0.08$ both ways and $\varnothing\,0.16$ describe the same zone.
+--- why
+The corner of the old square is $0.08$ across and $0.08$ up, a straight-line distance of $\sqrt{0.08^2 + 0.08^2} = 0.113$. The round zone that keeps every part the square accepted must reach that far: diameter $2 \times 0.113 = 0.226$. A circle of $\varnothing\,0.16$ only touches the middles of the square's sides. Choosing $\varnothing\,0.16$ can still be a sound design decision, but then the note is false: it rejects corner parts that used to pass. The number in a position frame is a diameter, not a radius, and adding the two bands has no geometric meaning.
+
++++ question | How much lean the fence can take
+--- ask
+A plate's left edge is $90\,\mathrm{mm}$ tall and leans: its top corner sits farther left than its bottom corner. A hole is dimensioned $45 \pm 0.05\,\mathrm{mm}$ from the left edge and $70\,\mathrm{mm}$ up from the bottom. It was machined exactly $45.02\,\mathrm{mm}$ from the bottom corner.
+
+One inspector stands the plate on a table and slides the left edge against an upright fence, which touches the edge's leftmost point, the top corner. What is the largest lean of the top corner, in millimeters, for which this inspector still passes the hole?
+--- answer
+0.03
+0.030
+0.03 mm
+0.03mm
+--- why
+The fence touches the top corner, which sits "lean" millimeters left of the bottom corner. So this inspector reads $45.02 + \text{lean}$. The upper limit is $45.05$, so the lean may be at most $45.05 - 45.02 = 0.03\,\mathrm{mm}$. An inspector measuring from the bottom corner reads $45.02$ whatever the lean, and one measuring straight across at the hole's height reads $45.02 + \frac{70}{90} \times \text{lean}$. Past a lean of $0.03$ the three honest inspectors start to disagree about the same part. A plus-or-minus dimension never said which of them was right. A datum reference frame does: it names the surface and how it is contacted.
+
+=== cad02-l02 | Practice: Datums, six degrees of freedom and the 3-2-1 rule
+--- for
+l02-datums-and-the-3-2-1-rule
+
++++ question | Naming the three things
+--- ask
+A gimbal housing is set with its machined base down on a granite surface plate for inspection. The drawing tags the base with the datum feature symbol A. Which description is right?
+--- choice correct
+The base is datum feature A. The plate's surface is the datum feature simulator. Datum A is the perfect plane the plate stands in for, resting on the base's high points.
+--- choice
+The base is datum A. The plate is datum feature A. The base's high points are the simulator.
+--- choice
+The base is both the datum feature and the datum, because a machined face is flat enough to count as perfect.
+--- choice
+Datum A is found by averaging many probe readings taken all over the base; the plate only holds the part.
+--- why
+The **datum feature** is the real, imperfect surface: you can touch it, and under a microscope it has hills and valleys. The **datum** is the perfect plane derived from it, which nobody can touch. The **datum feature simulator**, here the surface plate, is the hardware that makes the idea real: much flatter than the part, it touches the base's highest points, and its surface stands in for the datum. No machined face is perfect, so the two words must stay apart. An average plane through probe readings runs through the middle of the bumps, which is not where the plate sits, so it is not datum A.
+
++++ question | Skipping the secondary
+--- ask
+A rectangular bracket is seated on its large face, datum A, with three points of contact. The inspector then skips datum B and pushes the bracket's short end against a single stop, touching at one point. How many degrees of freedom are still free?
+--- answer
+2
+two
+2 dof
+--- why
+Seated on A, the bracket has lost three degrees of freedom: moving down, and tipping about the two directions in the plate. Three are left: two slides and a spin in the plane. The single stop on the end removes one slide, the one straight into the stop. Two remain: sliding along the end face, and spinning about the contact point like a door on a hinge. That spin is exactly what the secondary datum's *two* points are for. Skip B and the part is not located, so every measurement can drift.
+
++++ question | What two points take away
+--- ask
+Primary datum A is a plane lying in the $x$ and $y$ directions; the part rests on it. Secondary datum B is a long edge running along $x$, touched by an angle plate at two points spread along the edge. Which two degrees of freedom does B remove?
+--- choice correct
+Translation along $y$, and rotation about $z$.
+--- choice
+Translation along $x$, and translation along $y$.
+--- choice
+Rotation about $x$, and rotation about $y$.
+--- choice
+Translation along $z$, and rotation about $z$.
+--- why
+The angle plate faces the edge across $y$, so pushing into it stops sliding along $y$. Because its two points are spread along the edge, the part can no longer turn flat on the plate, so rotation about $z$ is gone too. Sliding along $x$, along the plate, is still free: that is the tertiary datum's job. Moving along $z$ and tipping about $x$ and $y$ were already removed by the primary plane, so B cannot take them again. Each datum only takes freedoms that are still left.
+
++++ question | Contacts squeezed together
+--- ask
+Secondary datum B is touched at two points only $20\,\mathrm{mm}$ apart, because the angle plate is short. A chip $0.01\,\mathrm{mm}$ thick sits under one of the two contacts, so the part turns a little in the plane. About how far does a hole $80\,\mathrm{mm}$ from the contacts move? Answer in millimeters.
+--- answer
+0.04
+0.040
+0.04 mm
+0.04mm
+--- why
+For a small turn, the turn is the chip's height divided by the distance between the contacts: $0.01 / 20 = 0.0005$. A point a distance $d$ away moves about $d$ times that: $80 \times 0.0005 = 0.04\,\mathrm{mm}$. With the two contacts spread $100\,\mathrm{mm}$ apart, the turn would be $0.01 / 100 = 0.0001$ and the hole would move only $0.008$, five times less. That is why the secondary's two points go far apart, along the longest suitable edge: the same speck of dirt then turns the part far less.
+
++++ question | Measuring from wherever the probe lands
+--- ask
+Datum A is a bracket's machined bottom face. To report a hole's height above datum A, an inspector touches the probe once on the bottom face right next to the hole, and subtracts. The face has a shallow dip, $0.03\,\mathrm{mm}$ deep, exactly where she touched. What is wrong with her method?
+--- choice correct
+Datum A is the plane a surface plate makes on the face's high points, not the spot she touched. Her single touch measures from the bottom of the dip, so her number is off by the dip's depth, and another inspector touching elsewhere would get a different number.
+--- choice
+Nothing: she touched the real surface of datum feature A, and that surface is the datum.
+--- choice
+She should have probed many points and used the average plane through them; the average plane is datum A.
+--- choice
+She should have measured from the top face instead, because it is farther from the dip.
+--- why
+"Measure from datum A" means from the perfect plane the simulator forms by resting on the face's high points. A single touch at a random spot brings back exactly the ambiguity GD&T removes: every inspector picks a different spot and gets a different number. An average plane is a real misconception too: it runs through the middle of the bumps, while a plate rests on the highest ones, so it sits in a different place. The top face is a different feature altogether and is not named as the datum.
+
++++ question | A datum scheme for a tracker bracket
+--- ask
+A star tracker bracket bolts to a panel through its $110 \times 70\,\mathrm{mm}$ base face. On the panel it is located by a dowel pin in hole H1 near one end of the base, and by a second pin in slot S at the far end, $90\,\mathrm{mm}$ away. A $6\,\mathrm{mm}$ tall side edge runs along the base. Which datum scheme best copies how the bracket really sits?
+--- choice correct
+A: the base face (primary). B: hole H1 (secondary). C: slot S (tertiary).
+--- choice
+A: the $6\,\mathrm{mm}$ side edge (primary). B: the base face. C: hole H1.
+--- choice
+A: hole H1 (primary). B: the base face. C: slot S.
+--- choice
+A: the base face. B: hole H1. C: the side edge, touched at one point near H1.
+--- why
+A good scheme imitates the assembly. The bracket is clamped flat on its base, so the large base face is primary: three well-spread contacts, and the same high points the panel will touch. Hole H1, square to the base, stops both slides in the plane, which is the secondary's two degrees of freedom taken by a pin instead of an edge. Slot S stops the last spin about H1, and $90\,\mathrm{mm}$ is a long lever, so it stops the spin well. A $6\,\mathrm{mm}$ edge as primary multiplies any burr by the long distance to the features. The side edge touched near H1 would stop the spin with a very short lever, and it is not how the bracket is located on the panel.
+
+=== cad02-l03 | Practice: Datum targets and datum precedence
+--- for
+l03-datum-targets-and-precedence
+
++++ question | A symbol with an empty top half
+--- ask
+A datum target symbol has an empty top half and C1 in its bottom half. Its leader points to an X on a casting's end face, and the other view of that face shows only an X as well, with no phantom line. What does it call for?
+--- choice correct
+A point target, the one target of datum C. The fixture touches the end face with a single round-tipped pin, placed at the target's basic location.
+--- choice
+An area target $1\,\mathrm{mm}$ across, because the number 1 gives its size.
+--- choice
+The first of three targets that together make datum C a plane.
+--- choice
+A line target, because an empty top half means the contact runs along a line.
+--- why
+The top half of the symbol gives the size of an **area** target, so an empty top half means a point or a line. An X that shows as an X in both views is a **point** target; a line target would show as a phantom line in the view that sees it lying along the surface. The bottom half names the datum and numbers its targets: C1 is the first target of datum C. A tertiary datum needs one contact in the 3-2-1 rule, so C1 alone is expected. In the fixture a point target becomes a pin with a rounded tip, placed by basic dimensions.
+
++++ question | A line target
+--- ask
+A thin sheet-metal part must be seated along its straight bottom edge, touching along a line. How does the drawing show that target, and what does the fixture use for it?
+--- choice correct
+An X in the view that sees the edge end-on, and a phantom line (a long dash and two short dashes) in the view that sees it lying along the surface. The fixture uses a pin with a knife edge or a round side.
+--- choice
+A hatched patch with its size in the top half of the symbol. The fixture uses a pin with a flat end of that size.
+--- choice
+A single X in every view. The fixture uses a ball-tipped pin.
+--- choice
+A thick solid line along the edge. The fixture uses the whole surface plate.
+--- why
+Each kind of target has its own drawing and its own hardware. A **point** target is an X, and a pin with a rounded tip. A **line** target is an X where the line is seen end-on and a phantom line where it is seen lying along the surface, and a pin with a knife edge or a round side, so it touches along a line. An **area** target is a hatched patch with its size in the symbol's top half, and a pin with a flat end of that size. Using the whole surface plate would bring back the problem targets solve: a floppy part touching wherever it happens to sag.
+
++++ question | Targets bunched in a corner
+--- ask
+Three targets make primary datum A on a casting. Design 1 bunches them in one corner, with the two farthest apart only $10\,\mathrm{mm}$ apart. Design 2 spreads them so the same two are $150\,\mathrm{mm}$ apart. A speck $0.05\,\mathrm{mm}$ high lifts one of those two targets. For a boss $100\,\mathrm{mm}$ away, how many times farther does the boss move with design 1 than with design 2?
+--- answer
+15
+15 times
+15x
+15 x
+15×
+fifteen
+--- why
+The tilt is about the speck's height divided by the distance between the contacts. Design 1: $0.05 / 10 = 0.005$, so the boss moves about $100 \times 0.005 = 0.5\,\mathrm{mm}$. Design 2: $0.05 / 150 = 0.000333$, so it moves about $0.033\,\mathrm{mm}$. The ratio is $0.5 / 0.033 = 15$, which is also just $150 / 10$: the boss distance cancels. Datum targets fix *where* the part touches, but they must still be spread far apart, or the plane they define wobbles with every tiny bump under them. It is the short-base problem again.
+
++++ question | Seating B first can help
+--- ask
+A block's bottom face, datum feature A, is straight and $80\,\mathrm{mm}$ long. Its left face, datum feature B, is $40\,\mathrm{mm}$ tall and leans outward: its top sits $0.1\,\mathrm{mm}$ farther left than the bottom corner. A hole was drilled exactly $60.00\,\mathrm{mm}$ to the right of the bottom corner and $10.00\,\mathrm{mm}$ up. Its basic location is $60$ from B and $10$ from A, and it carries position $\varnothing\,0.15$.
+
+Seated A primary and B secondary, the wall touches B's top corner, so the hole reads $60.10$ across and $10.00$ up: a position error of $\varnothing\,0.20$, a fail.
+
+Now seat it B primary and A secondary. Using the small-tilt shortcut, what position error does the hole show, as a diameter in millimeters? Round to three decimal places.
+--- answer
+0.112
+0.112 mm
+⌀0.112
+0.1118
+--- why
+Standing B upright tips the block by $0.1 / 40 = 0.0025$ about the bottom-left corner. The hole, $10\,\mathrm{mm}$ up, slides right by $10 \times 0.0025 = 0.025$, so it reads $60.025$ across. Being $60\,\mathrm{mm}$ to the right, it drops by $60 \times 0.0025 = 0.15$, to $9.85$ above the corner's height. The bottom face now slopes down to the right; its far end, $80\,\mathrm{mm}$ out, drops $80 \times 0.0025 = 0.20$, and the table rises to touch that lowest point. So the hole is $9.85 + 0.20 = 10.05$ above the table. The miss is $(0.025, 0.05)$: $2\sqrt{0.025^2 + 0.05^2} = 2 \times 0.0559 = 0.112$, which passes. The same part fails one way and passes the other. Precedence does not always make things worse; it decides *which* requirement you are measuring, which is why the order belongs to the drawing.
+
++++ question | The order the probe happened to take
+--- ask
+A bracket's holes carry `| ⌖ | ⌀0.2 | A | B | C |`. The CMM programmer probes datum feature B first, because it faces the probe, and the software builds the frame in the order the features were probed: B, then A, then C. Several brackets fail. What is the right conclusion?
+--- choice correct
+The program measured a different requirement. The frame must be fitted A first, then B constrained to it, then C, as the drawing says. Rerun before judging the parts.
+--- choice
+The parts are bad. The order in which datums are fitted does not change a position result.
+--- choice
+It is fine as long as all three datums were used; the letters define the frame, not their order.
+--- choice
+Change the drawing to B, A, C so that it matches the program.
+--- why
+Real datum features are never exactly square to each other, so only the first one fitted gets full contact; the later ones touch where the first allows. Fitting B first builds a different frame, and the same holes then measure differently. Those parts may be good or bad; the run cannot tell. If the drawing's order ever looks wrong, the fix is to ask the designer, and the designer chooses the order by copying how the part is held in the assembly, not by what suits a program or a fixture.
+
++++ question | One pin where two belong
+--- ask
+A casting's drawing uses targets A1, A2 and A3 on its base, B1 and B2 on its long side, and C1 on its end. The fixture builder, short of room, puts one pin on the long side and two pins on the end. The part still sits firmly and cannot move. What has gone wrong?
+--- choice correct
+The end face now stops the part turning, so it acts as the secondary datum and the long side as the tertiary. The fixture builds the frame A, C, B instead of A, B, C, and parts measure differently from what the drawing requires.
+--- choice
+Nothing. Six pins still remove all six degrees of freedom, so the frame is the same.
+--- choice
+The part is under-constrained and can still spin about the vertical axis.
+--- choice
+The part is over-constrained and will rock like a four-legged table.
+--- why
+Counting is not enough. Three, two and one contacts still remove six degrees of freedom, so the part is held. But the face with two contacts is the one that sets the part's rotation in the plane, and that is exactly what makes a datum secondary. With two pins on the end, the end face dominates and the long side only stops the last slide. That is a different precedence, so a different frame and different results. The target labels on the drawing (B1, B2, C1) say how many contacts each datum gets, and the fixture must follow them.
+
+=== cad02-l04 | Practice: Form: flat, straight, round and cylindrical
+--- for
+l04-form-controls
+
++++ question | Flatness from nine readings
+--- ask
+A reaction wheel's mounting face is called out flat within $0.025\,\mathrm{mm}$. The inspector levels it and reads nine heights, in millimeters:
+
+$0.006,\ -0.004,\ 0.011,\ 0.002,\ -0.009,\ 0.005,\ 0.013,\ -0.001,\ 0.000$
+
+What flatness do these readings show, in millimeters?
+--- answer
+0.022
+0.022 mm
+0.022mm
+--- why
+On a leveled face, flatness from indicator readings is the highest reading minus the lowest. Highest: $0.013$. Lowest: $-0.009$. Subtracting a negative adds it: $0.013 - (-0.009) = 0.022\,\mathrm{mm}$. That is under $0.025$, so on these readings the face passes. Two cautions from the lesson: the face must be leveled first, because the zone may tip, and nine points can miss a high spot between them.
+
++++ question | A diameter sign beside the size
+--- ask
+A pin is dimensioned $\varnothing\,12.00$ to $12.05\,\mathrm{mm}$. Right next to that size dimension sits the frame `| ⏤ | ⌀0.03 |`. What does the frame control?
+--- choice correct
+The derived median line, the line joining the centers of every cross-section, must lie inside a cylinder $0.03\,\mathrm{mm}$ in diameter.
+--- choice
+Each straight line along the pin's surface must lie between two parallel lines $0.03\,\mathrm{mm}$ apart.
+--- choice
+The pin's diameter may change by no more than $0.03\,\mathrm{mm}$ along its length.
+--- choice
+The pin's axis must lie within $0.03\,\mathrm{mm}$ of a datum axis.
+--- why
+Straightness comes in two flavors, and the frame's placement and its ⌀ tell them apart. Pointing at a surface line, with no ⌀, it checks each surface line element between two parallel lines. Placed beside the size dimension, with ⌀, it checks the axis: the derived median line must fit in a cylinder of that diameter, so a banana-shaped pin fails. It says nothing about diameter changes, which are size. And like every form control it has no datum: a straight pin can lie at any angle.
+
++++ question | A form control that adds nothing yet
+--- ask
+A pin is dimensioned $\varnothing\,10.00$ to $10.06\,\mathrm{mm}$, and it carries straightness $0.02\,\mathrm{mm}$ on its surface line elements (no diameter sign). It is made at $10.05\,\mathrm{mm}$ all along its length, and it is slightly bowed. What is the most its axis may bow? Answer in millimeters.
+--- answer
+0.01
+0.010
+0.01 mm
+0.01mm
+--- why
+Two limits apply, and the tighter one wins. **Rule #1**: the pin must fit inside a perfect tube at its MMC size, $10.06$. At $10.05$ the room left is $10.06 - 10.05 = 0.01$, so the bow may be at most $0.01$. **Straightness**: a pin of constant diameter bowed by $b$ has every surface line bowed by $b$, so $b \le 0.02$. The answer is $0.01$. At this size the straightness frame adds nothing; it only starts to bite for pins made at $10.04$ or thinner, where Rule #1 would allow $0.02$ or more.
+
++++ question | A tilted face that is perfectly flat
+--- ask
+An inspector forgets to level a face before reading heights on a 3 by 3 grid of points, $20\,\mathrm{mm}$ apart. The rows, in millimeters, are:
+
+- row 1: $0.000,\ 0.010,\ 0.020$
+- row 2: $0.005,\ 0.015,\ 0.025$
+- row 3: $0.010,\ 0.020,\ 0.030$
+
+Highest minus lowest is $0.030$. What flatness do these points actually show, in millimeters?
+--- answer
+0
+0.0
+0.00
+0.000
+zero
+0 mm
+--- why
+Every step to the right adds exactly $0.010$, and every step down adds exactly $0.005$. All nine points lie on one tilted plane. A flatness zone may tip any way it likes, so two parallel planes tilted with the face hold every point with no gap at all: the flatness is $0$. The $0.030$ is tilt, not unflatness. Tilt would matter to parallelism or perpendicularity, which lock the zone's angle to a datum; flatness has no datum. A CMM avoids this slip by fitting the minimum-zone planes in software.
+
++++ question | A diameter spread against circularity
+--- ask
+A $\varnothing\,20$ journal carries circularity $0.01\,\mathrm{mm}$. An inspector measures one cross-section with a micrometer in six directions. The readings run from $20.004$ to $20.016$, a spread of $0.012$, and he rejects the part "because $0.012$ is more than $0.01$". What is wrong with his check?
+--- choice correct
+Circularity is the radial gap between two concentric circles, judged by radius about a center. A two-point spread says little: on a plain oval, $0.012$ across is only about $0.006$ of radial gap, and a micrometer cannot see odd lobes at all. The slice has to be measured by radius as it turns about a center.
+--- choice
+Nothing. Circularity is the largest diameter minus the smallest diameter in one slice.
+--- choice
+He should compare the spread with twice the tolerance, $0.02$, and pass the part; that fixes the check.
+--- choice
+Circularity needs a datum axis, so no measurement of this journal can judge it.
+--- why
+The circularity zone is two concentric circles whose *radii* differ by $t$. For an oval, the long and short radii differ by half the difference of the diameters, so a $0.012$ spread is a radial gap of about $0.006$, which would pass. Doubling the tolerance fixes that one case but not the deeper problem: on a three-lobed part every bump faces a dip, so a micrometer reads the same number in every direction while the radius swings up and down. Only a radius-based measurement about a center, as on a precision spindle or a CMM, judges circularity. And circularity takes no datum.
+
++++ question | Rule #1 on a plate's thickness
+--- ask
+A plate is dimensioned $5.00$ to $5.10\,\mathrm{mm}$ thick, with no flatness frame. It is machined to $5.03\,\mathrm{mm}$ thick everywhere, then bows a little when it comes off the machine. Under Rule #1, how far may the plate bow? Answer in millimeters.
+--- answer
+0.07
+0.070
+0.07 mm
+0.07mm
+--- why
+A plate's thickness is a feature of size: two opposed faces you can measure across. So Rule #1 applies: both faces must fit between two perfect parallel planes $5.10$ apart, the envelope at MMC. A plate $5.03$ thick bowed by $b$ needs a gap of $5.03 + b$ between those planes, so $b \le 5.10 - 5.03 = 0.07\,\mathrm{mm}$. If one face is a seat that must be flat within, say, $0.02$, the drawing must say so with a flatness frame; the size limits alone allow $0.07$ here. On a part where a face has no opposite face to measure to, Rule #1 gives no protection at all.
+
+=== cad02-l05 | Practice: Orientation: square, parallel and at an angle
+--- for
+l05-orientation-controls
+
++++ question | Parallel across a shim
+--- ask
+The top face of a shim $75\,\mathrm{mm}$ across must be parallel to datum A, its bottom face, within $0.015\,\mathrm{mm}$. What is the largest tilt of the top face this allows, in degrees? Give three significant figures.
+--- answer
+0.0115
+0.0115°
+0.0115 degrees
+0.0115 deg
+0.01146
+--- why
+The zone is two planes $0.015$ apart, parallel to A. Across $75\,\mathrm{mm}$ the face can rise by at most $0.015$, so the tilt is $\theta \approx t/L = 0.015 / 75 = 0.0002$ radians. To get degrees, multiply by $57.3$: $0.0002 \times 57.3 = 0.0115^\circ$. The ratio $t/L$ is in radians; calling $0.0002$ "degrees" would be 57 times too small.
+
++++ question | An angle limit becomes a zone
+--- ask
+A seat $40\,\mathrm{mm}$ across may tilt no more than $0.05^\circ$ from square to datum A. What is the widest perpendicularity zone $t$ the drawing may give it?
+--- choice correct
+About $0.035\,\mathrm{mm}$: $0.05^\circ$ is $0.00087$ radians, times $40\,\mathrm{mm}$.
+--- choice
+About $2.0\,\mathrm{mm}$: $0.05$ times $40$.
+--- choice
+About $0.00087\,\mathrm{mm}$: the angle in radians.
+--- choice
+About $0.0013\,\mathrm{mm}$: $0.05$ divided by $40$.
+--- why
+Going from an angle to a zone uses $t \approx L\,\theta$ with $\theta$ in radians. First convert: $0.05 / 57.3 = 0.000873\,\mathrm{rad}$. Then $t \approx 40 \times 0.000873 = 0.0349\,\mathrm{mm}$, so about $0.035$ (a drawing protecting a budget would round down, to $0.03$). Multiplying degrees by $L$ gives an answer 57 times too big. Stopping at the radians forgets that the zone is a length. Dividing by $L$ turns the formula upside down.
+
++++ question | A flatness frame that adds something
+--- ask
+A seat carries `| ⊥ | 0.04 | A |`. The designer considers adding one flatness frame to the same seat. Which one adds a real requirement?
+--- choice correct
+`| ▱ | 0.01 |`
+--- choice
+`| ▱ | 0.06 |`
+--- choice
+`| ▱ | 0.04 | A |`
+--- choice
+None of them: the perpendicularity already makes the seat perfectly flat.
+--- why
+To pass perpendicularity $0.04$, the seat must fit between two parallel planes $0.04$ apart. Any surface that does that is also flat within $0.04$. So flatness $0.06$ adds nothing, and flatness $0.04$ repeats what is already true. A flatness frame never carries a datum letter, because flatness is shape alone. Flatness $0.01$ is a real **refinement**: tighter than the form the orientation already allows, so the seat rests the same way every time. Orientation limits form; it does not make a surface perfect.
+
++++ question | A cylinder, not two bands
+--- ask
+A hole $16\,\mathrm{mm}$ deep carries `| ⊥ | ⌀0.02 | A |`. From the top of the hole to the bottom, its axis drifts $0.015\,\mathrm{mm}$ in $x$ and $0.015\,\mathrm{mm}$ in $y$, in a straight line. Does it pass?
+--- choice correct
+No. The axis drifts $\sqrt{0.015^2 + 0.015^2} \approx 0.021\,\mathrm{mm}$ in all, more than the cylinder's $0.02$ diameter, so it cannot stay inside.
+--- choice
+Yes. Each drift, $0.015$, is smaller than $0.02$.
+--- choice
+Yes. Perpendicularity only limits tilt in one direction at a time.
+--- choice
+No. The two drifts add to $0.015 + 0.015 = 0.030$, more than $0.02$.
+--- why
+With the ⌀, the zone is a cylinder $0.02$ across, standing at exactly $90^\circ$ to A. It may slide sideways but not tip, and the axis must stay inside it through the whole depth. A straight axis that drifts $0.015$ in $x$ and $0.015$ in $y$ has drifted diagonally by $\sqrt{0.015^2 + 0.015^2} = 0.0212$, so it pokes out of any cylinder only $0.02$ across. Checking $x$ and $y$ separately treats the round zone as a square. Adding them treats the diagonal as if it were two sides of the triangle.
+
++++ question | Radians called degrees
+--- ask
+An analyst checks a $10\,\mathrm{N}$ thruster, $2\,\mathrm{m}$ from the center of mass, on a seat $50\,\mathrm{mm}$ across with perpendicularity $0.04\,\mathrm{mm}$. Her work:
+
+1. $\theta \approx 0.04 / 50 = 0.0008$.
+2. So the tilt is $0.0008^\circ$.
+3. $0.0008^\circ$ is $0.0008 / 57.3 = 0.000014\,\mathrm{rad}$.
+4. $\tau = 10 \times 2 \times 0.000014 = 0.00028\,\mathrm{N \cdot m}$.
+
+Which line is wrong, and what is the right torque?
+--- choice correct
+Line 2. $t/L$ is already in radians, so the tilt is $0.0008\,\mathrm{rad}$ (about $0.046^\circ$), and the torque is $10 \times 2 \times 0.0008 = 0.016\,\mathrm{N \cdot m}$, 57 times more.
+--- choice
+Line 1. The length should be the lever arm, $2000\,\mathrm{mm}$, not the seat's width.
+--- choice
+Line 4. Torque uses $\cos\theta$, not $\sin\theta$, so it is nearly $20\,\mathrm{N \cdot m}$.
+--- choice
+None; the work is correct.
+--- why
+The ratio of two lengths, $t/L$, is an angle in radians. Line 2 relabels it as degrees, and line 3 then divides by $57.3$ a second time, shrinking the torque 57 times. The seat's width is the right $L$: it is the span the zone applies over, while the lever arm only enters the torque. The miss distance is $\ell \sin\theta$, and for tiny angles $\sin\theta \approx \theta$, so $\tau \approx F \ell \theta = 0.016\,\mathrm{N \cdot m}$. A cosine would describe the thrust along the intended line, not the twist.
+
++++ question | Sizing a seat for a torque limit
+--- ask
+A $90\,\mathrm{N}$ thruster sits $0.8\,\mathrm{m}$ from the spacecraft's center of mass, along its intended thrust line. The attitude team allows at most $0.01\,\mathrm{N \cdot m}$ of disturbance torque from tilt of its seat. The seat is $60\,\mathrm{mm}$ across. What is the largest perpendicularity tolerance the seat may carry, in millimeters? Give two significant figures.
+--- answer
+0.0083
+0.0083 mm
+0.00833
+--- why
+Work the chain backward. The torque is $\tau \approx F \ell \theta$, so the allowed tilt is $\theta \le \frac{0.01}{90 \times 0.8} = \frac{0.01}{72} = 0.000139\,\mathrm{rad}$. The zone over the seat's span is $t \approx L\,\theta = 60 \times 0.000139 = 0.0083\,\mathrm{mm}$. That is a tight tolerance. A wider seat would allow a proportionally wider zone for the same torque, which is often cheaper than holding a few thousandths of a millimeter.
+
+=== cad02-l06 | Practice: Location: position, concentricity and symmetry
+--- for
+l06-position-and-location
+
++++ question | One hole, one number
+--- ask
+A hole's true position is at basic $(35, 20)\,\mathrm{mm}$ in the A, B, C frame. The CMM finds its axis at $(35.06, 20.05)$. What is its position error, as a diameter in millimeters? Round to three decimal places.
+--- answer
+0.156
+0.156 mm
+⌀0.156
+0.1562
+--- why
+The misses are $\Delta x = 0.06$ and $\Delta y = 0.05$. The straight-line miss is $\sqrt{0.06^2 + 0.05^2} = \sqrt{0.0036 + 0.0025} = \sqrt{0.0061} = 0.0781$. Position is reported as the diameter of the zone that holds the axis, twice the miss: $2 \times 0.0781 = 0.156\,\mathrm{mm}$. It would pass $\varnothing\,0.2$ and fail $\varnothing\,0.15$.
+
++++ question | The square inside a round zone
+--- ask
+A new drawing gives a hole position $\varnothing\,0.14$. A supplier's old software can only check a plus-or-minus square around true position, the same amount in $x$ and in $y$. What is the largest plus-or-minus amount, in millimeters, that guarantees every hole inside the square also passes $\varnothing\,0.14$? Give three decimal places, rounded so that no hole inside the square can fail.
+--- answer
+0.049
+±0.049
+0.049 mm
+--- why
+The biggest square that fits inside a circle has its corners on the circle. A corner is the half-width $h$ across and $h$ up, so it lies $\sqrt{2}\,h$ from the center, and that must be at most the radius, $0.07$. So $h \le \frac{0.14}{2\sqrt{2}} = 0.0495$, which rounds *down* to $0.049$. Rounding up to $0.05$ would accept a hole at $(0.05, 0.05)$, which needs $\varnothing\,0.141$ and fails. The square loses the round zone's generous edges: a hole $0.07$ straight to the right passes position but falls outside this square.
+
++++ question | A tube that still lets the hole lean
+--- ask
+A hole $8\,\mathrm{mm}$ deep carries position $\varnothing\,0.1$ to A, B, C, with no modifier. The designer needs the hole within $0.2^\circ$ of square to datum A. What should the drawing do?
+--- choice correct
+Position alone lets the axis lean about $0.72^\circ$, so add a perpendicularity frame on the hole, such as `| ⊥ | ⌀0.025 | A |`.
+--- choice
+Nothing more: a position zone is a tube, so it already holds the hole within $0.2^\circ$.
+--- choice
+Add `| ⊥ | ⌀0.2 | A |`, since a $0.2^\circ$ requirement becomes a $0.2$ zone.
+--- choice
+Add a flatness frame of $0.025$ on the hole, since the lean is a form error.
+--- why
+The position zone is a tube through the depth, so it does limit lean, but only to crossing the tube's diameter over the depth: $0.1 / 8 = 0.0125\,\mathrm{rad}$, about $0.72^\circ$. For $0.2^\circ$, which is $0.00349\,\mathrm{rad}$, the zone over $8\,\mathrm{mm}$ must be at most $8 \times 0.00349 = 0.028$. A perpendicularity frame with ⌀ is the refinement: a cylinder at exactly $90^\circ$ to A that may slide but not tip. A zone of $0.2$ confuses degrees with millimeters. Flatness applies to surfaces, not to a hole's axis.
+
++++ question | Four holes near the limit
+--- ask
+Four holes carry "4X position $\varnothing\,0.2$ to A, B, C", with no modifier. The CMM reports each axis's miss from true position, in millimeters ($\Delta x$, $\Delta y$):
+
+- hole 1: $(0.05,\ 0.02)$
+- hole 2: $(0.00,\ 0.10)$
+- hole 3: $(-0.07,\ -0.07)$
+- hole 4: $(0.03,\ -0.04)$
+
+How many of the four holes pass?
+--- answer
+4
+four
+all 4
+all four
+--- why
+Each hole gets its own zone and is judged on its own, with $2\sqrt{\Delta x^2 + \Delta y^2} \le 0.2$. Hole 1: $2\sqrt{0.0029} = 0.108$. Hole 2: $2 \times 0.10 = 0.200$, exactly at the limit, which passes: the tolerance is the largest value allowed. Hole 3: $2\sqrt{0.0049 + 0.0049} = 2 \times 0.0990 = 0.198$, just inside, even though both misses look large. Hole 4: $2\sqrt{0.0009 + 0.0016} = 2 \times 0.05 = 0.100$. All four pass. Hole 3 is the trap in the other direction: its misses, $0.07$ each way, are well under $0.1$ separately, but together they almost reach the edge.
+
++++ question | Adding the misses
+--- ask
+An inspector's spreadsheet computes position error as $2(|\Delta x| + |\Delta y|)$. For a hole with misses $\Delta x = 0.05$ and $\Delta y = -0.07$, it reports $0.24$ and fails the hole against $\varnothing\,0.2$. What is wrong?
+--- choice correct
+The misses were added instead of combined with Pythagoras. The straight-line miss is $\sqrt{0.05^2 + 0.07^2} \approx 0.086$, so the position error is $\varnothing\,0.172$ and the hole passes.
+--- choice
+The doubling is wrong. The error is $0.12$, and the hole passes.
+--- choice
+The minus sign should have been kept: $2(0.05 - 0.07) = -0.04$, so the hole passes easily.
+--- choice
+Nothing is wrong. The hole fails.
+--- why
+The round zone cares about the straight-line distance from true position, the diagonal, not the path along $x$ and then along $y$. Adding the two sides of a triangle always gives more than the diagonal, so this spreadsheet rejects good holes: $2\sqrt{0.0025 + 0.0049} = 2\sqrt{0.0074} = 0.172 \le 0.2$. The doubling is right, because the tolerance is a diameter. Signs vanish when the misses are squared: a miss downward is as bad as a miss upward.
+
++++ question | Redrawing the legacy controls
+--- ask
+You redraw an old gimbal drawing to Y14.5-2018. It carries concentricity $\varnothing\,0.02$ on a bearing journal, to datum axis A, and symmetry $0.1$ on a keyway, to a datum center plane. Which redraw follows the current advice?
+--- choice correct
+Runout on the journal to its datum axis, and position of the keyway's center plane (a width zone, no ⌀) to the datum. Both state what the mating parts feel, and both are cheap to check.
+--- choice
+Keep both symbols; old drawings stay valid, so a new revision may use them too.
+--- choice
+Replace the concentricity with position $\varnothing\,0.02$ of the journal and treat it as the same requirement; leave the symmetry.
+--- choice
+Replace both with flatness, since median points are a kind of form.
+--- why
+The 2018 revision removed the concentricity and symmetry symbols; old drawings stay valid for the parts they define, but a new revision cannot use them. Both controls act on **median points**, pairs of opposite points, which is costly to measure and rarely the function. A spinning journal cares how its surface wobbles as it turns, which runout measures with a dial indicator. A keyway cares where its center plane is for the mating key, which position with a width zone states. Position of the journal is not the same number with a new symbol: it controls the axis found from the whole surface, not median points. Flatness has nothing to do with centering.
+
+=== cad02-l07 | Practice: MMC, LMC, RFS and bonus tolerance
+--- for
+l07-material-condition-and-bonus
+
++++ question | A bigger hole earns a bigger zone
+--- ask
+A clearance hole is $\varnothing\,12.2$ to $12.5\,\mathrm{mm}$, with position $\varnothing\,0.3$ at MMC. Its actual mating size is $12.38\,\mathrm{mm}$. What positional tolerance does it get, as a diameter in millimeters?
+--- answer
+0.48
+0.480
+⌀0.48
+0.48 mm
+--- why
+A hole's MMC is its *smallest* size, $12.2$, because the least metal has been cut away. This hole departs from MMC by $12.38 - 12.2 = 0.18$, and with Ⓜ that departure is the bonus. Allowed zone: $0.3 + 0.18 = 0.48\,\mathrm{mm}$ diameter. The extra hole size is extra room around the bolt, so the hole may sit that much farther off and the bolt still goes in. Made at $12.5$, its LMC, it would get $0.3 + 0.3 = 0.6$.
+
++++ question | A thinner pin earns a bigger zone
+--- ask
+A locating pin is $\varnothing\,7.90$ to $8.00\,\mathrm{mm}$, with position $\varnothing\,0.04$ at MMC. It is made at $7.93\,\mathrm{mm}$. What positional tolerance does it get, as a diameter in millimeters?
+--- answer
+0.11
+0.110
+⌀0.11
+0.11 mm
+--- why
+For a pin, the most metal is at the *largest* size, so MMC is $8.00$. The pin is $8.00 - 7.93 = 0.07$ smaller than MMC, so the bonus is $0.07$ and the zone is $0.04 + 0.07 = 0.11\,\mathrm{mm}$. A thinner pin has more room inside the hole it enters. The bonus formula takes the size of the difference, $|\text{actual} - \text{MMC}|$, so the same rule works for holes that grow and pins that shrink away from MMC.
+
++++ question | Bonus, and still a fail
+--- ask
+A hole is $\varnothing\,9.0$ to $9.2\,\mathrm{mm}$, with position $\varnothing\,0.2$ at MMC to A, B, C. Its actual mating size is $9.08$. Its axis is $0.12\,\mathrm{mm}$ off true position in $x$ and $0.09\,\mathrm{mm}$ off in $y$. What is the verdict?
+--- choice correct
+It fails: the hole needs a zone of $\varnothing\,0.30$ and has earned only $\varnothing\,0.28$.
+--- choice
+It passes: the allowed zone is $0.2 + 0.2 = 0.4$, the stated tolerance plus the whole size tolerance.
+--- choice
+It passes: the straight-line miss, $0.15$, is less than the $0.28$ allowed.
+--- choice
+It fails: with Ⓜ the zone shrinks as the hole grows, to $0.2 - 0.08 = 0.12$.
+--- why
+Size first: $9.08$ is inside $9.0$ to $9.2$. Bonus: $9.08 - 9.0 = 0.08$, so the zone is $0.2 + 0.08 = 0.28$. The miss: $\sqrt{0.12^2 + 0.09^2} = \sqrt{0.0225} = 0.15$, which as a zone diameter is $0.30$. Since $0.30 > 0.28$, it fails by $0.02$. The bonus is what *this* hole earned by *its* size, never the whole size tolerance. Comparing the miss $0.15$ with the diameter $0.28$ mixes a radius with a diameter. And Ⓜ only ever grows the zone.
+
++++ question | The wrong modifier near an edge
+--- ask
+A hole is $\varnothing\,10.0$ to $10.4\,\mathrm{mm}$, with its true position $8.0\,\mathrm{mm}$ from the edge of a plate. The drawing gives it position $\varnothing\,0.2$ at **MMC**. Over every size the hole may be made, what is the thinnest possible wall between the hole and the edge, in millimeters?
+--- answer
+2.5
+2.50
+2.5 mm
+2.5mm
+--- why
+The wall is the edge distance, minus the hole's radius, minus how far the axis may shift toward the edge (half the zone). With Ⓜ the zone grows as the hole grows. At MMC, $10.0$: zone $0.2$, wall $8.0 - 5.0 - 0.1 = 2.9$. At LMC, $10.4$: bonus $0.4$, zone $0.6$, wall $8.0 - 5.2 - 0.3 = 2.5$. The thinnest wall, $2.5$, comes when the hole is largest *and* has the most bonus: Ⓜ hands out extra shift exactly when the metal is thinnest. Written at LMC instead, $\varnothing\,0.2$ Ⓛ gives $8.0 - 5.2 - 0.1 = 2.7$ at every size. Wall thickness wants Ⓛ.
+
++++ question | The pin's MMC upside down
+--- ask
+A pin is $\varnothing\,5.80$ to $6.00\,\mathrm{mm}$, with position $\varnothing\,0.05$ at MMC. It is made at $5.86$. An inspector writes: "MMC is $5.80$, so the bonus is $5.86 - 5.80 = 0.06$ and the zone is $\varnothing\,0.11$." What is right?
+--- choice correct
+For a pin, MMC is the largest size, $6.00$. The bonus is $6.00 - 5.86 = 0.14$, and the zone is $\varnothing\,0.19$.
+--- choice
+A pin never earns a bonus; the zone stays $\varnothing\,0.05$.
+--- choice
+The bonus is always the whole size tolerance, $0.20$, so the zone is $\varnothing\,0.25$.
+--- choice
+The inspector is right.
+--- why
+"Maximum material" means the most metal left on the part. For a pin that is its biggest diameter, $6.00$; the inspector used the hole rule on a pin. This pin is $0.14$ thinner than MMC, so it has $0.14$ more room in its mating hole, and the zone grows to $0.05 + 0.14 = 0.19$. Pins earn bonus just as holes do, in the other direction. The bonus is what this part earned by its actual size, not the whole size tolerance.
+
++++ question | A modifier for each job
+--- ask
+A reaction wheel housing has three features that carry position:
+
+1. four clearance holes for the screws that fasten it to a panel;
+2. a bearing bore, a press fit that centers the rotor;
+3. a small hole drilled $1.5\,\mathrm{mm}$ from the edge of a thin flange, where the wall must not get too thin.
+
+Which modifiers fit their functions?
+--- choice correct
+1: Ⓜ (MMC). 2: no modifier (RFS). 3: Ⓛ (LMC).
+--- choice
+1: Ⓛ. 2: Ⓜ. 3: no modifier.
+--- choice
+Ⓜ on all three, since it always lets the shop keep more parts.
+--- choice
+1: Ⓜ. 2: Ⓜ, because a bigger bore takes the bearing more easily. 3: Ⓛ.
+--- why
+Choose the modifier by what can go wrong. Clearance holes fail when the smallest hole meets the screw, so the worst case is MMC, and extra size really does buy extra position: Ⓜ. A press-fit bearing has no clearance to trade, and a bigger bore does not bring the rotor any closer to its true axis, so a bonus would let the rotor run off center with nothing paying for it: RFS. A hole near a thin edge fails when it is largest, so the tolerance belongs at LMC, and bonus is earned only as the hole shrinks and leaves more metal: Ⓛ.
+
+=== cad02-l08 | Practice: Virtual condition, composite position and projected zones
+--- for
+l08-virtual-condition-composite-projected
+
++++ question | The space always clear
+--- ask
+A hole is $\varnothing\,14.0$ to $14.3\,\mathrm{mm}$, with position $\varnothing\,0.2$ at MMC. What is its virtual condition, in millimeters?
+--- answer
+13.8
+13.80
+13.8 mm
+⌀13.8
+--- why
+For a hole, the virtual condition is its MMC size minus the geometric tolerance: $14.0 - 0.2 = 13.8\,\mathrm{mm}$. It is the perfect cylinder at true position that stays clear whatever size the hole is made and wherever it sits in its allowed zone. Check the other end: at $14.3$ the bonus is $0.3$, the zone $0.5$, and $14.3 - 0.5 = 13.8$ again. Bonus trades extra size for extra drift exactly, so the boundary never moves.
+
++++ question | Reading a gauge backward
+--- ask
+A functional gauge for a hole pattern has fixed pins of $\varnothing\,11.75\,\mathrm{mm}$ at the holes' true positions. The holes are $\varnothing\,12.00$ to $12.20$. The gauge was built exactly at the holes' virtual condition. What position tolerance at MMC does the drawing give the holes, in millimeters?
+--- answer
+0.25
+0.250
+⌀0.25
+0.25 mm
+--- why
+The gauge pins are the virtual condition, and for a hole that is $\text{MMC} - t$. MMC is the smallest hole, $12.00$, so $12.00 - t = 11.75$, and $t = 0.25$. Whatever size a good hole is made, a pin that size at true position fits inside it: a hole at $12.20$ may drift within $\varnothing\,0.45$, and $12.20 - 0.45 = 11.75$ too.
+
++++ question | How loose may the holes be
+--- ask
+Pins on a mounting plate are $\varnothing\,7.95$ to $8.00\,\mathrm{mm}$, with position $\varnothing\,0.1$ at MMC. They must enter holes in a bracket that are $\varnothing\,8.4$ to $8.6$, at the same basic spacing, with position at MMC. What is the largest position tolerance the holes may carry so that every good pin enters every good hole? Answer in millimeters.
+--- answer
+0.3
+0.30
+⌀0.3
+0.3 mm
+--- why
+Each part's worst case is its virtual condition. The pins stay inside sleeves of $8.00 + 0.1 = 8.10$ at true position (for a shaft, add). The holes always leave clear cylinders of $8.4 - t$ (for a hole, subtract). Every good pair assembles when $8.4 - t \ge 8.10$, so $t \le 0.3$. The two virtual conditions are the whole fit calculation: no need to try every combination of sizes and positions.
+
++++ question | The average is not the only slide
+--- ask
+Four holes carry composite position: upper row $\varnothing\,0.8$ to A, B, C; lower row $\varnothing\,0.2$ to A. Every hole is at MMC, so there is no bonus. The CMM reports each axis's miss from true position, in millimeters:
+
+- holes 1, 2 and 3: $(0.30,\ 0.00)$
+- hole 4: $(0.30,\ 0.16)$
+
+An inspector slides the lower tier's zones by the average miss, $(0.30,\ 0.04)$. Hole 4 then needs $\varnothing\,0.24$, so he rejects the part. Is he right?
+--- choice correct
+No. Any one placement of the floating group that works is enough. Slide it by $(0.30,\ 0.08)$ instead: every hole is then $0.08$ from its small zone's center and needs $\varnothing\,0.16$, so the lower tier passes. The upper tier passes too; hole 4 needs $\varnothing\,0.68$.
+--- choice
+Yes. The lower tier must be judged with the group slid by the average miss.
+--- choice
+Yes, and the upper tier fails as well, because every hole is at least $0.30$ off.
+--- choice
+It does not matter: once the upper tier passes, the lower tier is only advice.
+--- why
+The lower row's zones keep their basic spacing and stay square to A, but the whole group may slide (and turn) on the part; the part passes if *some* placement puts every axis in its small zone. The average is a handy first try, not the rule. Here holes 1 to 3 sit at $y = 0$ and hole 4 at $y = 0.16$, so the best slide puts the group halfway, at $0.08$, leaving each hole $0.08$ from center. Upper tier: holes 1 to 3 need $2 \times 0.30 = 0.60$, and hole 4 needs $2\sqrt{0.30^2 + 0.16^2} = 2 \times 0.34 = 0.68$, both inside $\varnothing\,0.8$. Every row of a composite frame is a real requirement, so the lower tier is not advice.
+
++++ question | Gauge pins on the wrong side
+--- ask
+A hole pattern is $\varnothing\,6.0$ to $6.2\,\mathrm{mm}$, with position $\varnothing\,0.1$ at MMC. The toolroom builds the functional gauge with pins of $\varnothing\,6.1$, "MMC plus the tolerance, since the hole gets $0.1$ more room". What happens?
+--- choice correct
+The pins should be the hole's virtual condition, $6.0 - 0.1 = 5.9$. With $6.1$ pins, a hole made at $6.0$ cannot go on even if it is perfectly placed, so the gauge rejects good parts.
+--- choice
+Nothing: for holes the tolerance is added and for shafts it is subtracted, so $6.1$ is right.
+--- choice
+The pins should be $6.2$, the hole's LMC size, so that the biggest good hole fits.
+--- choice
+Pin size does not matter as long as the pins sit at true position.
+--- why
+A hole's worst case closes *in* on the mating part: at MMC it may drift half its zone in any direction, so the space always clear is smaller than the hole, $\text{MMC} - t$. A pin's worst case swells *out*, so for shafts the tolerance is added. Here the rule was flipped. A $6.1$ pin is bigger than the smallest good hole, so even a perfect hole at $6.0$ is rejected. A $6.2$ pin would reject almost everything. Pin size is the whole point of a functional gauge: it is the worst-case mating part.
+
++++ question | A stud through a thick flange
+--- ask
+A tapped hole has $10\,\mathrm{mm}$ of thread and position $\varnothing\,0.15$, controlled in the usual way, inside the part. A stud screwed into it passes up through a mating flange $16\,\mathrm{mm}$ thick. At the top of the flange, how big a zone could the stud's axis need, as a diameter in millimeters?
+--- answer
+0.63
+0.630
+⌀0.63
+0.63 mm
+--- why
+The worst tilt allowed inside the part runs from one side of the zone at the bottom of the thread to the other side at the surface: $0.15$ across in $10\,\mathrm{mm}$, a slope of $0.015$. The stud keeps going at that slope. Over another $16\,\mathrm{mm}$ it moves a further $16 \times 0.015 = 0.24$, on top of the $0.075$ it was already off at the surface: $0.315$ from true position, a zone diameter of $0.63$. The formula agrees: $0.15 \times \left(1 + \frac{2 \times 16}{10}\right) = 0.15 \times 4.2 = 0.63$, more than four times the frame's number. The fix is a projected tolerance zone, Ⓟ $16$, which puts the $\varnothing\,0.15$ zone above the surface, over the flange's thickness.
+
+=== cad02-l09 | Practice: Profile and runout
+--- for
+l09-profile-and-runout
+
++++ question | Points against a profile band
+--- ask
+A fairing skin carries profile of a surface $0.6$, equal-bilateral, to A, B, C. The CMM reports these deviations from the model, perpendicular to the surface, in millimeters (plus means proud):
+
+$0.21,\ -0.28,\ 0.33,\ -0.12,\ 0.05,\ -0.31,\ 0.18$
+
+How many of the points are outside the zone?
+--- answer
+2
+two
+--- why
+An equal-bilateral zone of $0.6$ is split evenly: $0.3$ outside the model and $0.3$ inside. Every deviation must lie from $-0.3$ to $+0.3$. Two points break it: $+0.33$ and $-0.31$. Reading the $0.6$ as $\pm 0.6$ would pass all seven, doubling the tolerance. With datums A, B and C the zone is fixed on the part, so the points cannot be rescued by sliding the band.
+
++++ question | The largest offset a runout allows
+--- ask
+A gear seat carries circular runout $0.02\,\mathrm{mm}$ to the shaft's datum axis. If the seat were perfectly round, what is the largest amount its center could be off the datum axis and still pass? Answer in millimeters.
+--- answer
+0.01
+0.010
+0.01 mm
+--- why
+A round seat whose center is a distance $e$ off the axis swings the indicator from $+e$ on one side to $-e$ half a turn later, so the full indicator movement is $\text{FIM} = 2e$. Passing means $2e \le 0.02$, so $e \le 0.01$. Going the other way, an allowed offset turns into a runout tolerance twice as big. A real seat is never perfectly round, and out-of-round also moves the needle, so a real seat gets less offset than this.
+
++++ question | A flatness frame under a profile
+--- ask
+A flat seat, nominally parallel to datum A, carries profile of a surface $0.3$ to A, B, C. The designer considers adding one more frame to it. Which one adds a real requirement?
+--- choice correct
+`| ▱ | 0.05 |`
+--- choice
+`| ▱ | 0.4 |`
+--- choice
+`| ∥ | 0.3 | A |`
+--- choice
+`| ⌓ | 0.3 |`, the same profile with no datums
+--- why
+With a full datum reference frame, profile $0.3$ controls the seat's form, orientation and location at once: the seat must lie in a band $0.3$ wide locked to the part. So it is already flat within $0.3$ and parallel to A within $0.3$, which makes flatness $0.4$ and parallelism $0.3$ add nothing. The same profile with no datums controls only shape, which the located one already does. Flatness $0.05$ is a genuine refinement, tighter than the form the profile allows. Profile can stand in for several controls, and the smaller ones are only worth adding when they are tighter.
+
++++ question | A deviation measured straight up
+--- ask
+A curved skin carries profile of a surface $0.6$, equal-bilateral. At one point, where the skin slopes at $60^\circ$ from horizontal, an old program measured the gap between the real and the model surface straight up, in $z$: $0.5\,\mathrm{mm}$ proud. Is that point in the zone?
+--- choice correct
+Yes. The zone is measured perpendicular to the surface. On a $60^\circ$ slope, a vertical gap of $0.5$ is only about $0.5 \times \cos 60^\circ = 0.25$ perpendicular to the skin, inside $\pm 0.3$.
+--- choice
+No. $0.5$ is more than $0.3$.
+--- choice
+Yes. $0.5$ is less than the zone's total width, $0.6$.
+--- choice
+No. Perpendicular to a slope the gap is bigger than the vertical one, $0.5 / \cos 60^\circ = 1.0$.
+--- why
+The profile zone is a shell of constant thickness measured perpendicular to the true surface at every point. On a steep slope, a vertical line crosses that thin shell on a long slant, so vertical gaps exaggerate the deviation. Picture a right triangle: the vertical gap is its long side, and the perpendicular distance is the side next to the $60^\circ$ angle, $0.5 \times \cos 60^\circ = 0.25$. The total width $0.6$ is not the limit either: an equal-bilateral zone allows $0.3$ each way.
+
++++ question | Reading FIM as the offset
+--- ask
+A gear mesh analysis needs a seat's center within $0.02\,\mathrm{mm}$ of the shaft's bearing axis. The seat is known to be very round. An inspector spins the shaft on its bearing journals and reports a full indicator movement of $0.03\,\mathrm{mm}$ on the seat. The engineer writes: "Seat is $0.03$ off center, over the $0.02$ limit. Reject." What is right?
+--- choice correct
+FIM is twice the offset. A round seat showing $0.03$ is only $0.015$ off center, inside the limit. On the drawing, the $0.02$ offset limit should appear as a runout of $0.04$.
+--- choice
+The engineer is right: FIM is the offset.
+--- choice
+FIM is half the offset, so the seat is $0.06$ off center and fails badly.
+--- choice
+Runout says nothing about centering; only a CMM can tell.
+--- why
+As the shaft turns, the side that sticks out $e$ reads $+e$ and, half a turn later, the side that sinks $e$ reads $-e$. The needle's full swing is $2e$. So divide FIM by two to get the offset: $0.015$. And multiply an allowed offset by two to write the runout tolerance: $0.04$. Runout does see centering, together with out-of-round, which is exactly what the gear's mesh feels as the shaft spins.
+
++++ question | Four stations and a trend
+--- ask
+A gimbal journal is checked for runout at four stations along its length, with one shared zero. Each row is the lowest and highest reading in one turn, in millimeters:
+
+- station 1: $-0.002$ to $0.007$
+- station 2: $0.001$ to $0.011$
+- station 3: $0.004$ to $0.013$
+- station 4: $0.006$ to $0.016$
+
+What total runout does the journal show, in millimeters?
+--- answer
+0.018
+0.018 mm
+--- why
+Total runout is one number for the whole surface: the highest reading anywhere minus the lowest anywhere, $0.016 - (-0.002) = 0.018$. Circular runout judges each circle alone: $0.009$, $0.010$, $0.009$ and $0.010$, so a circular runout of $0.015$ passes while a total runout of $0.015$ fails. Look at the pattern: each station's readings sit a little higher than the one before, so the surface creeps away from the axis along the journal, as a taper or a tilted axis would. Only total runout, with the indicator traversed along the length while the part turns, sees that.
+
+=== cad02-l10 | Practice: Free state, geometric stack-ups and the error budget
+--- for
+l10-free-state-and-geometric-stack-ups
+
++++ question | Three zones in one column
+--- ask
+A sensor's side-to-side location passes through three contributors along one direction: a position $\varnothing\,0.16$, a position $\varnothing\,0.07$, and a profile of a surface $0.12$, equal-bilateral. What is the worst-case stack, in plus-or-minus millimeters?
+--- answer
+0.175
+±0.175
+0.175 mm
+--- why
+First turn each zone into a plus-or-minus number along the one direction. A round position zone lets the axis reach its edge, half the diameter away: $\pm 0.08$ and $\pm 0.035$. An equal-bilateral profile of $0.12$ lets the surface sit $0.06$ out or $0.06$ in: $\pm 0.06$. Worst case adds them straight: $0.08 + 0.035 + 0.06 = 0.175$. Putting the diameters in the column would double the answer, the most common mistake in geometric stack-ups.
+
++++ question | A hole with a bonus in the stack
+--- ask
+A hole's MMC is $4.00\,\mathrm{mm}$ and its LMC is $4.10$. It carries position $\varnothing\,0.05$ at MMC. What is its worst-case contribution to a one-direction stack, in plus-or-minus millimeters?
+--- answer
+0.075
+±0.075
+0.075 mm
+--- why
+With Ⓜ, the zone a real part can reach grows with its size. At LMC the bonus is the full size tolerance, $4.10 - 4.00 = 0.10$, so the zone can be $\varnothing\,(0.05 + 0.10) = \varnothing\,0.15$. Along one direction the axis can move half of that: $\pm 0.075$. Using only the stated $0.05$, which is $\pm 0.025$, would understate the worst case by a factor of three.
+
++++ question | A ring that sags in its cradle
+--- ask
+A thin ring carries circularity $1.0\,\mathrm{mm}$ marked Ⓕ, free state. Standing on edge in its cradle, it takes a smooth oval shape: its longest diameter measures $901.2\,\mathrm{mm}$ and its shortest $898.9\,\mathrm{mm}$. What radial gap does the free-state check show, in millimeters?
+--- answer
+1.15
+1.15 mm
+1.150
+--- why
+For an oval, the two concentric circles that just hold the outline have radii equal to the long and short half-diameters. Their gap is half the difference of the diameters: $(901.2 - 898.9) / 2 = 2.3 / 2 = 1.15\,\mathrm{mm}$. That is more than $1.0$, so the Ⓕ tolerance fails: the ring is too floppy in the free state, even if it would be round once bolted down. Comparing the whole $2.3$ with the tolerance mixes diameter with radius, the other way round.
+
++++ question | Clamped harder than the note says
+--- ask
+A thin panel's drawing has a restraint note: datum feature A bolted to a flat fixture with 12 bolts torqued to $5\,\mathrm{N \cdot m}$, panel horizontal. To hold it steadier, the inspector uses 24 bolts at $10\,\mathrm{N \cdot m}$. The panel passes. What does the result show?
+--- choice correct
+Nothing reliable. Extra force can pull a warped panel into its zones, and it springs back when the bolts come out. Remeasure with exactly the restraint the note gives.
+--- choice
+The panel is good: more restraint only makes a measurement more repeatable.
+--- choice
+The tolerances now apply in the free state instead, so the panel must be remeasured unbolted.
+--- choice
+The panel is good, provided the Ⓕ tolerances are also checked with the 24 bolts.
+--- why
+The restraint note defines the condition each tolerance (without Ⓕ) applies in. It copies how the part is held in the assembly, so the measurement predicts the part's real shape there. Clamping harder or in more places can force almost any warped part into its zones, which hides the defect. The note does not switch anything to the free state; it overrides the free-state default. Tolerances marked Ⓕ apply with nothing holding the part, never under bolts.
+
++++ question | The wrong span in a trace
+--- ask
+An engineer traces a $0.04^\circ$ clocking allocation to two dowel-pin holes $50\,\mathrm{mm}$ apart, on a bracket $180\,\mathrm{mm}$ long. The pins float $0.008\,\mathrm{mm}$ in total. The work:
+
+1. $0.04^\circ \times \pi / 180 = 0.000698\,\mathrm{rad}$.
+2. Allowed opposite motion at the pins: $0.000698 \times 180 = 0.126\,\mathrm{mm}$.
+3. Subtract the float: $0.126 - 0.008 = 0.118\,\mathrm{mm}$.
+4. So the pin holes get position $\varnothing\,0.1$ to A, B, C.
+
+Which line is wrong?
+--- choice correct
+Line 2. The span must be the pin spacing, $50\,\mathrm{mm}$: $0.000698 \times 50 = 0.035$, minus $0.008$ leaves $0.027$, so about $\varnothing\,0.025$. The $\varnothing\,0.1$ would allow about $0.12^\circ$, three times the budget.
+--- choice
+Line 1. Degrees become radians by multiplying by $180 / \pi$.
+--- choice
+Line 3. The float should be added to what is left for position, not subtracted.
+--- choice
+None; the trace is correct.
+--- why
+Clocking is the turn of the line between the two pins, so the lever is the distance between them, $50\,\mathrm{mm}$. Using the bracket's whole length credits the design with a lever arm it does not have. Check the result: $(0.1 + 0.008) / 50 = 0.00216\,\mathrm{rad}$, about $0.124^\circ$, far over $0.04^\circ$. Line 1 is right: degrees times $\pi/180$ give radians. The pin float uses up part of the allowance, so it is subtracted before position gets the rest.
+
++++ question | A tight budget in three frames
+--- ask
+An attitude-knowledge budget allows a star tracker seat $0.015^\circ$ of tilt and $0.015^\circ$ of clocking. The seat's contact points span $50\,\mathrm{mm}$ and sit at a basic $30^\circ$ to datum A. The two dowel-pin holes are $60\,\mathrm{mm}$ apart, and the pins float $0.006\,\mathrm{mm}$ in total. Which set of frames meets the budget?
+--- choice correct
+On the seat, `| ∠ | 0.013 | A | B |` and `| ▱ | 0.005 |`. On each pin hole, `| ⌖ | ⌀0.008 | A | B | C |`.
+--- choice
+On the seat, `| ∠ | 0.013 | A | B |` and `| ▱ | 0.005 |`. On each pin hole, `| ⌖ | ⌀0.008 Ⓜ | A | B | C |`.
+--- choice
+On the seat, `| ∠ | 0.013 | A |` and `| ▱ | 0.005 |`. On each pin hole, `| ⌖ | ⌀0.008 | A | B | C |`.
+--- choice
+On the seat, `| ∠ | 0.75 | A | B |` and `| ▱ | 0.005 |`. On each pin hole, `| ⌖ | ⌀0.9 | A | B | C |`.
+--- why
+$0.015^\circ$ is $0.015 \times \pi/180 = 0.000262\,\mathrm{rad}$. Tilt: $t \le 50 \times 0.000262 = 0.0131$, so angularity $0.013$ gives $0.00026\,\mathrm{rad}$, just inside. Clocking: $60 \times 0.000262 = 0.0157$ of opposite motion, minus the $0.006$ float, leaves $0.0097$ for position, so $\varnothing\,0.008$ gives $(0.008 + 0.006)/60 = 0.00023\,\mathrm{rad}$, inside. An Ⓜ on the pin holes would let bigger holes take bigger zones, and both add straight into clocking. Angularity to A alone lets the seat spin about A's normal like a weathervane while staying at $30^\circ$, so it needs B. The $0.75$ and $0.9$ come from multiplying degrees by millimeters. The flatness is a refinement inside the angularity.
+
+=== cad02-l11 | Practice: Measuring GD&T: CMMs, gauges and PMI
+--- for
+l11-cmm-inspection-and-pmi
+
++++ question | A CMM's position number
+--- ask
+A hole's true position is at basic $(25, 40)\,\mathrm{mm}$ in the A, B, C frame. After building the frame, the CMM reports the hole's axis at $(25.018, 39.976)$. What position deviation does it report, as a diameter in millimeters?
+--- answer
+0.06
+0.060
+⌀0.06
+0.06 mm
+--- why
+The misses are $\Delta x = 0.018$ and $\Delta y = -0.024$. Squared and added: $0.000324 + 0.000576 = 0.0009$, and $\sqrt{0.0009} = 0.030$ (a 3-4-5 triangle, scaled down). The position deviation is twice that, $\varnothing\,0.060$, reported as a diameter so it compares directly with the frame. Against $\varnothing\,0.05$ at RFS it would fail, even though each miss alone is under $0.03$.
+
++++ question | Which results a machine can back
+--- ask
+A shop's CMM has an uncertainty of about $0.004\,\mathrm{mm}$ for a bracket. The bracket carries a profile of $0.1$, a position of $\varnothing\,0.04$ and a flatness of $0.015$. By the ten-to-one rule of thumb, which of them can this machine check well?
+--- choice correct
+The profile and the position, at $25$ to $1$ and $10$ to $1$. The flatness, at under $4$ to $1$, needs a better instrument.
+--- choice
+All three, since $0.004$ is smaller than every one of the tolerances.
+--- choice
+Only the profile; a position needs at least $20$ to $1$.
+--- choice
+None. The machine must be ten times better than the tightest tolerance on the part before any of its results count.
+--- why
+The rule of thumb asks the measuring system to be about ten times finer than each tolerance it checks: $0.1 / 0.004 = 25$, $0.04 / 0.004 = 10$, $0.015 / 0.004 = 3.75$. Being merely smaller than the tolerance is not enough: at under four to one, a large share of the band is doubt, so results near the limit prove nothing. The ratio is judged tolerance by tolerance, so one tight feature does not disqualify the machine for the others; it sends that one feature to a better instrument.
+
++++ question | A hole exactly at its limit
+--- ask
+A hole has MMC $5.00\,\mathrm{mm}$ and LMC $5.12$, with `| ⌖ | ⌀0.08 Ⓜ | A | B | C |`. The CMM reports its actual mating size as $5.07$ and its axis $0.045$ off in $x$ and $0.060$ off in $y$. What is the verdict, and what size are the pins on a functional gauge for this hole?
+--- choice correct
+It passes, exactly at the limit: it needs $\varnothing\,0.15$ and has earned $\varnothing\,0.15$. The gauge pins are $\varnothing\,4.92$.
+--- choice
+It fails: it needs $\varnothing\,0.15$, which is more than the stated $0.08$. The gauge pins are $\varnothing\,4.92$.
+--- choice
+It passes easily: the miss, $0.075$, is under the stated $0.08$. The gauge pins are $\varnothing\,5.00$.
+--- choice
+It passes, exactly at the limit. The gauge pins are $\varnothing\,5.08$, MMC plus the tolerance.
+--- why
+The miss is $\sqrt{0.045^2 + 0.060^2} = \sqrt{0.005625} = 0.075$, so the position deviation is $\varnothing\,0.15$. The bonus is $5.07 - 5.00 = 0.07$, so the zone is $0.08 + 0.07 = 0.15$: a pass with nothing to spare. Comparing $0.075$ with $0.08$ compares a radius with a diameter. The gauge pin is the hole's virtual condition, $5.00 - 0.08 = 4.92$ (less a small gauge-maker's tolerance), and this hole would just drop over it. A result this close to the limit is only as good as the measurement's uncertainty.
+
++++ question | A guard band
+--- ask
+A hole carries position $\varnothing\,0.05$. The CMM's uncertainty for this measurement is $0.004\,\mathrm{mm}$. What is the largest reported position deviation, in millimeters, that still proves the hole is in tolerance?
+--- answer
+0.046
+⌀0.046
+0.046 mm
+--- why
+The true value can be anywhere within the uncertainty of the reading, so a reading $r$ proves a pass only if $r + 0.004 \le 0.05$, that is $r \le 0.046$. A reading of $0.048$ is "probably in, not proven in". Setting the internal acceptance limit at $0.046$ is a **guard band**: a part the shop accepts is in tolerance even after the doubt. Readings between $0.046$ and $0.05$ get remeasured with more care, measured on a better instrument, or reviewed.
+
++++ question | A report that looks fine
+--- ask
+A CMM report shows a tracker seat's perpendicularity to datum A as $0.018$, against a limit of $0.02$. Reviewing the program, you find that datum A, the bracket's base, was fit by least squares through five points bunched near the middle of the base. What should you conclude?
+--- choice correct
+The number cannot be trusted. A least-squares plane runs through the middle of the bumps instead of resting on the high points as a surface plate would, and five bunched points may miss the high points altogether. Refit A on its high points, with points spread out to the edges, and remeasure.
+--- choice
+The report is fine: least squares is the most accurate fit because it uses every point.
+--- choice
+The only problem is that five points is more than the three a plane needs; extra points add noise.
+--- choice
+The result errs on the safe side, because few points always make results look worse.
+--- why
+A datum must copy its physical simulator. The surface plate touches the base's highest points; a least-squares plane sits between the bumps, shifted and tilted, and every orientation result measured from it moves too. Bunched points make it worse: a tilt found from points close together is poorly determined, the short-base problem again, and the real high points near the edges may never be touched. Few points bias *form* results toward passing, not toward failing, and they make a datum fit less reliable, not more.
+
++++ question | A model with nothing inside
+--- ask
+A supplier receives a flight bracket's model as a STEP AP242 file. On screen every datum and feature control frame appears. But when the supplier's CMM software imports it, it creates no datums and no checks at all. What is the likely cause, and the right response?
+--- choice correct
+The PMI is graphic only: lines and text drawn for human eyes. Ask for the model with semantic PMI attached to the faces, or build the program by hand from it with a careful review. Either way, an inspection programmer still reviews the fits, point density and probe angles.
+--- choice
+The CMM software is faulty: semantic and graphic PMI look the same, so both should generate a program.
+--- choice
+STEP files can never carry PMI; ask for the 2D drawing instead.
+--- choice
+It makes no difference: CMM programs are always written by hand, so PMI is only decoration.
+--- why
+Graphic PMI and semantic PMI look identical on screen. Only semantic PMI stores the tolerance type, value, modifiers, datum order and the faces each applies to as data the software can read. STEP AP242 can carry semantic PMI between CAD systems, so the file format is not the problem. With semantic PMI the CMM software can build the datum fits and zone checks automatically, which removes retyping errors. It still makes default choices, like least-squares fits or thin rings of points, so a person who understands the GD&T reviews the program before it runs.
+
+=== cad02-test | Geometric dimensioning and tolerancing: module test
+--- teach
+The test covers the whole module: reading feature control frames, datums and precedence, datum targets, form, orientation, position, material condition and bonus, virtual condition, composite and projected zones, profile and runout, free state, geometric stack-ups and error budgets, and measurement with CMMs, gauges and PMI. Most questions combine two or more lessons, and many need a short calculation, so keep a calculator and paper at hand. To get ready, redo the practice questions of the lessons that felt hard, and work each number yourself before you look at the choices.
+--- gate
+questions 13
+minutes 26
+
++++ question | A clearance hole on the CMM
+--- ask
+A clearance hole is $\varnothing\,7.0$ to $7.3\,\mathrm{mm}$ and carries `| ⌖ | ⌀0.15 Ⓜ | A | B | C |`. After building the frame A, then B, then C, the CMM reports its actual mating size as $7.18$ and its axis $0.12\,\mathrm{mm}$ off true position in $x$ and $0.16\,\mathrm{mm}$ off in $y$. What is the verdict?
+--- choice correct
+It fails: the hole needs a zone of $\varnothing\,0.40$ and has earned only $\varnothing\,0.33$.
+--- choice
+It passes: the miss, $0.20$, is under the $0.33$ the hole has earned.
+--- choice
+It passes: with Ⓜ the whole size tolerance is added, giving $\varnothing\,0.45$.
+--- choice
+It fails: it needs $\varnothing\,0.40$ against the stated $0.15$, since a bonus only counts on a functional gauge.
+--- why
+The miss is $\sqrt{0.12^2 + 0.16^2} = \sqrt{0.04} = 0.20$, so the position deviation is $\varnothing\,0.40$. The hole's MMC is its smallest size, $7.0$, so its bonus is $7.18 - 7.0 = 0.18$ and its zone is $0.15 + 0.18 = 0.33$. Since $0.40 > 0.33$, it fails. The bonus is what this hole's size earned, not the whole size tolerance; comparing the $0.20$ miss with a diameter mixes radius and diameter; and a CMM credits bonus just as a gauge does, only with numbers.
+
++++ question | Sizing the pins' tolerance
+--- ask
+Pins on a base plate are $\varnothing\,9.90$ to $10.00\,\mathrm{mm}$. They must enter holes in a bracket that are $\varnothing\,10.5$ to $10.7$ with position $\varnothing\,0.3$ at MMC, at the same basic spacing. What is the largest position tolerance at MMC the pins may carry so that every good pin enters every good hole? Answer in millimeters.
+--- answer
+0.2
+0.20
+⌀0.2
+0.2 mm
+--- why
+Compare the two virtual conditions. The holes always leave a clear cylinder of $\text{MMC} - t = 10.5 - 0.3 = 10.2$ at true position. The pins always stay inside a sleeve of $\text{MMC} + t = 10.00 + t$, since a pin's MMC is its largest size and its worst case swells outward. Assembly is guaranteed when $10.00 + t \le 10.2$, so $t \le 0.2$. Because bonus trades size for drift exactly, these fixed boundaries cover every combination of sizes and positions at once.
+
++++ question | Two runs, two answers
+--- ask
+A bracket's holes carry `| ⌖ | ⌀0.3 | A | B | C |`. Its mounting face A and its side B are $0.15\,\mathrm{mm}$ out of square over B's height. A first CMM run fits B first, then A, then C, and every hole passes. A second run fits A first, then B, then C, and two holes fail. Which statement is right?
+--- choice correct
+The second run measures the drawing's requirement, so the part fails. Because A and B are not square, only the first datum fitted gets full contact, and fitting B first builds a different frame.
+--- choice
+The first run is right: fitting first the datum that happens to seat best gives the more accurate frame.
+--- choice
+Neither run is right on its own; the true result is the average of the two.
+--- choice
+Both runs are valid because each used all three datums, and since one passed, the part passes.
+--- why
+Datum precedence is part of the requirement. The primary datum is seated first and gets its full three points of contact; the secondary touches only where the primary lets it. With A and B out of square, the two orders put the part in two different poses, so the same holes are measured from different planes. The drawing says A, B, C, so the second run is the requirement, and the part fails it. If A, B, C does not match how the part is held in the assembly, the designer changes the drawing; the inspector does not choose the order that passes.
+
++++ question | A stud without a projected zone
+--- ask
+A stud is screwed into a tapped hole with $8\,\mathrm{mm}$ of thread. The hole carries position $\varnothing\,0.1$ in the usual way, inside the part, with no Ⓟ. The stud passes up through a mating plate $14\,\mathrm{mm}$ thick. At the top of the plate, how big a zone could the stud's axis need, as a diameter in millimeters?
+--- answer
+0.45
+0.450
+⌀0.45
+0.45 mm
+--- why
+The worst tilt inside the part runs from one side of the $\varnothing\,0.1$ zone at the bottom of the thread to the other side at the surface: $0.1$ across in $8\,\mathrm{mm}$, a slope of $0.0125$. Over another $14\,\mathrm{mm}$ the stud moves a further $14 \times 0.0125 = 0.175$, on top of the $0.05$ it was already off at the surface: $0.225$ from true position, a zone of $\varnothing\,0.45$. By the formula, $0.1 \times \left(1 + \frac{28}{8}\right) = 0.45$, four and a half times the frame's number. A projected zone, Ⓟ $14$, would hold the stud to $\varnothing\,0.1$ over the plate's thickness, where it really meets the mating part.
+
++++ question | One frame too many
+--- ask
+A seat face carries three frames: flatness $0.03$; perpendicularity $0.02$ to A; and profile of a surface $0.05$ to A, B, C. Which one adds nothing to the others?
+--- choice correct
+The flatness $0.03$: the perpendicularity $0.02$ already holds the face flat within $0.02$.
+--- choice
+The perpendicularity $0.02$: the profile already controls the face's orientation.
+--- choice
+The profile $0.05$: with flatness and perpendicularity, the face's location is already controlled.
+--- choice
+None; each frame controls something the others do not.
+--- why
+Controls nest. Profile $0.05$ to A, B, C holds form, orientation and location within $0.05$; it is the only one of the three that says *where* the face is. Perpendicularity $0.02$ refines orientation, and so form, to $0.02$, which is tighter than the profile allows, so it adds a real limit. Flatness is then already guaranteed within $0.02$, and a flatness of $0.03$ is looser still, so it says nothing new. A form control only earns its place when it is tighter than the orientation or profile above it.
+
++++ question | A thruster seat's torque
+--- ask
+A $40\,\mathrm{N}$ thruster mounts on a seat $50\,\mathrm{mm}$ across with perpendicularity $0.03\,\mathrm{mm}$ to the datum its thrust line should be square to. The thruster sits $1.25\,\mathrm{m}$ from the center of mass along its intended thrust line. What worst-case disturbance torque does the tolerance allow, in newton-meters?
+--- answer
+0.03
+0.030
+0.03 N·m
+0.03 Nm
+0.03 N m
+0.030 N·m
+--- why
+The worst lean across the seat's span is $\theta \approx t/L = 0.03/50 = 0.0006\,\mathrm{rad}$ (about $0.034^\circ$). The tilted thrust line misses the center of mass by $\ell \sin\theta \approx 1.25 \times 0.0006 = 0.00075\,\mathrm{m}$. The torque is thrust times that miss: $40 \times 0.00075 = 0.03\,\mathrm{N \cdot m}$. Every quantity is in meters and radians; using degrees in $t/L$, or mixing millimeters and meters, would be off by a factor of $57$ or $1000$.
+
++++ question | Composite, after the best slide
+--- ask
+Four holes, all at MMC so there is no bonus, carry composite position: upper row $\varnothing\,0.6$ to A, B, C; lower row $\varnothing\,0.1$ to A. They sit at the corners of a square. The CMM reports each axis's miss from true position, in millimeters:
+
+- holes 1, 2 and 4: $(-0.25,\ 0.10)$
+- hole 3: $(-0.13,\ 0.10)$
+
+What is the verdict?
+--- choice correct
+The upper tier passes and the lower tier fails. Whatever slide the group takes, hole 3 and the others stay $0.12$ apart in $x$, so some hole is at least $0.06$ from its small zone's center and needs $\varnothing\,0.12$.
+--- choice
+Both tiers pass: the upper tier locates the pattern, and the lower tier only applies if the upper one fails.
+--- choice
+Both tiers fail: every hole is about $0.27$ from true position, far more than the lower tier's $0.1$.
+--- choice
+Both tiers pass: sliding the group by the average miss leaves every hole within $\varnothing\,0.1$.
+--- why
+Upper tier, fixed to A, B, C: holes 1, 2 and 4 need $2\sqrt{0.25^2 + 0.10^2} = 0.539$ and hole 3 needs $2\sqrt{0.13^2 + 0.10^2} = 0.328$, all within $\varnothing\,0.6$. Lower tier: the small zones keep their basic spacing but float as a group. The $y$ misses are all $0.10$ and slide away. In $x$ the best slide puts the group halfway between $-0.25$ and $-0.13$, leaving each hole $0.06$ off center, which needs $\varnothing\,0.12$, over $0.1$. Turning the group cannot help here: a turn moves the corner zones in different directions, and it cannot close the $0.12$ gap in $x$ between hole 3 and the others. The average slide, $-0.22$, is worse still: hole 3 needs $\varnothing\,0.18$. The holes do not agree with each other closely enough.
+
++++ question | Runout from the shape of a seat
+--- ask
+A shaft seat is checked for runout at three stations. Every cross-section is a perfect circle, and the indicator is zeroed at the nominal radius.
+
+- Station 1: the circle has the nominal radius, and its center is $0.004\,\mathrm{mm}$ off the datum axis.
+- Station 2: the radius is $0.005$ larger than nominal, and the center is $0.006$ off the axis.
+- Station 3: the circle has the nominal radius, and its center is $0.003$ off the axis.
+
+What total runout does the seat show, in millimeters?
+--- answer
+0.015
+0.015 mm
+--- why
+A circle whose center is $e$ off the axis swings the indicator from $+e$ to $-e$ about its own radius. Station 1 reads $-0.004$ to $+0.004$. Station 2 reads about its larger radius, $0.005 \pm 0.006$: $-0.001$ to $+0.011$. Station 3 reads $-0.003$ to $+0.003$. Total runout is the highest reading anywhere minus the lowest anywhere: $0.011 - (-0.004) = 0.015$. The circular runouts are only $0.008$, $0.012$ and $0.006$; the bulge at station 2 is what total runout adds.
+
++++ question | A skin panel with no datums
+--- ask
+A skin panel must meet its neighbor with no step in the airflow. Its model-based definition gives the outer surface profile of a surface $0.5$, equal-bilateral, with no datum references. What is the problem?
+--- choice correct
+With no datums the zone may slide and tilt to fit, so it controls only the panel's shape. A well-shaped panel could sit anywhere and still pass, leaving a step. The frame needs the datums that set up the mating interface.
+--- choice
+Profile cannot control a curved skin; the surface needs plus-or-minus coordinates at stations, which do locate it.
+--- choice
+The $0.5$ is read as $\pm 0.5$, so the zone is too loose; it should be halved.
+--- choice
+Nothing: profile always controls location, because the model is the true profile.
+--- why
+What profile controls depends on its datums. With A, B and C the zone is locked to the part and controls form, orientation and location together, which is why profile dominates aerostructures. With none, the zone floats, and only form (and size, for a closed shape) is controlled. Coordinate tables would bring back square zones and say nothing between the stations. An equal-bilateral $0.5$ is $\pm 0.25$ already. The model being the true profile gives the shape, but only datums say where that shape must sit on the vehicle.
+
++++ question | A thin ring without a note
+--- ask
+A large thin ring's drawing carries circularity $0.4\,\mathrm{mm}$, with no Ⓕ, and has no restraint note. Lying on the inspection table, the ring sags and fails. Bolted to its flight interface, it passes easily. What is the verdict under the drawing as written?
+--- choice correct
+It fails. With no restraint note, every tolerance applies in the free state. If the function is the bolted shape, the drawing needs a restraint note that copies the assembly, with Ⓕ on any tolerance that must still hold unrestrained.
+--- choice
+It passes: an inspector may always bolt a part the way it is used.
+--- choice
+It passes: circularity on a thin part is always checked restrained.
+--- choice
+The check is invalid, because circularity cannot be judged on a ring that has no AVG diameter.
+--- why
+The rule is short: unless the drawing says otherwise, dimensions and tolerances apply in the free state, held by nothing but gravity. That is right for rigid parts and wrong for a floppy ring, so a designer must write a restraint note: what the part is held against, with how many fasteners, how hard, and which way it faces gravity. Without one, an inspector who bolts the ring down is measuring something the drawing never asked for. An AVG diameter handles the ring's size, not its circularity.
+
++++ question | A lateral stack with a bonus
+--- ask
+A tracker's position along one direction passes through three contributors:
+
+- panel inserts: position $\varnothing\,0.24$, no modifier;
+- bracket holes: MMC $6.4\,\mathrm{mm}$, LMC $6.6$, position $\varnothing\,0.1$ at MMC;
+- the bracket's locating edge: profile of a surface $0.08$, equal-bilateral.
+
+What is the worst-case stack, in plus-or-minus millimeters?
+--- answer
+0.31
+±0.31
+0.310
+0.31 mm
+--- why
+Turn each zone into a plus-or-minus number along the direction. The inserts: half of $0.24$, so $\pm 0.12$. The bracket holes carry Ⓜ, so for a worst case use the zone at LMC: $0.1 + (6.6 - 6.4) = 0.3$, so $\pm 0.15$. The profile: half of $0.08$ each side, so $\pm 0.04$. Worst case adds them: $0.12 + 0.15 + 0.04 = 0.31$. Forgetting the bonus gives $0.21$; putting diameters in the column gives $0.62$ or more.
+
++++ question | A pin-hole tolerance from a budget
+--- ask
+An attitude-knowledge budget allows $0.02^\circ$ of clocking for a star tracker seated on two dowel pins. The pin holes in the bracket are $45\,\mathrm{mm}$ apart, and the pins float $0.010\,\mathrm{mm}$ in total. Which position callout on each pin hole fits the budget?
+--- choice correct
+`| ⌖ | ⌀0.005 | A | B | C |`
+--- choice
+`| ⌖ | ⌀0.015 | A | B | C |`
+--- choice
+`| ⌖ | ⌀0.005 Ⓜ | A | B | C |`
+--- choice
+`| ⌖ | ⌀0.9 | A | B | C |`
+--- why
+$0.02^\circ$ is $0.02 \times \pi/180 = 0.000349\,\mathrm{rad}$. Over the $45\,\mathrm{mm}$ pin spacing that allows $45 \times 0.000349 = 0.0157\,\mathrm{mm}$ of opposite motion at the two pins. The float uses $0.010$, leaving $0.0057$ for position, so $\varnothing\,0.005$: check $(0.005 + 0.010)/45 = 0.00033\,\mathrm{rad} = 0.019^\circ$. $\varnothing\,0.015$ forgets the float and reaches about $0.032^\circ$. An Ⓜ would let larger holes take larger zones, and that bonus adds straight into clocking. $\varnothing\,0.9$ multiplies degrees by millimeters. A budget this tight is a signal to trade: tighter-fitting pins leave more for position.
+
++++ question | A plan for six flight brackets
+--- ask
+Six flight brackets will be built. Each has four clearance holes with position $\varnothing\,0.25$ Ⓜ, two dowel holes with position $\varnothing\,0.02$ and no modifier, and an angularity control on its seat. The model is released under Y14.41 with semantic PMI. Which inspection plan fits best?
+--- choice correct
+Import the semantic PMI into the CMM software to generate the datum fits and checks; have an inspection programmer review the fits (datums on the high points), point density and probe angles; and measure every feature on the CMM.
+--- choice
+Build a functional gauge for every feature: it is fastest, and it checks bonus automatically.
+--- choice
+Retype the tolerances from the model into a new CMM program by hand, since a generated program cannot be trusted.
+--- choice
+Run the generated program unchanged, since a program made from semantic PMI is correct by construction.
+--- why
+A functional gauge works only for MMC controls, whose virtual condition is a fixed boundary; it cannot check the RFS dowel holes or the angularity, and building one pays off only for large batches. Aerospace low volumes are the CMM's everyday work. Semantic PMI lets the software build the checks from the same data the designer wrote, which removes retyping errors, so going back to retyping throws that away. But generated programs inherit PMI mistakes and make default choices, like least-squares datum fits and sparse points, so a person who understands the GD&T reviews them before they run.
+
++++ question | Three ways to see a lobed pin
+--- ask
+A centerless-ground pin carries circularity $0.005\,\mathrm{mm}$. A micrometer reads $10.002$ across it in every direction. A CMM program that takes three points on one cross-section reports circularity $0.000$. A scanning probe that takes 360 points around the same cross-section reports $0.008$. What is the verdict?
+--- choice correct
+It fails. The scan is the one to believe: a micrometer cannot see odd lobes, because each bump faces a dip, and three points always lie exactly on some circle, so they can never show any out-of-roundness.
+--- choice
+It passes: two of the three measurements agree that it is round.
+--- choice
+It passes: scanning adds noise, so the smallest result is the most trustworthy.
+--- choice
+It passes: circularity is a two-point diameter check, so the micrometer is the right tool.
+--- why
+Circularity is judged by radius about a center. On a three-lobed shape the distance straight across is the same in every direction, so a micrometer reads one steady number while the radius swings up and down. Three points define a circle exactly, so a three-point measurement always reports perfect roundness: sparse points can only make form look better, never worse. With enough well-spread points, the scan finds a radial gap of $0.008$, over the $0.005$ allowed.
+
++++ question | A casting on a surface plate
+--- ask
+A cast pump housing's drawing names three area targets, A1 to A3, each $\varnothing\,6$, on its rough base; B1 and B2 on one side; and C1 on one end. A new inspector wants to skip the target fixture and set the base straight onto a granite surface plate, "because the plate is flatter than any fixture". What is right?
+--- choice correct
+The plate would let the rough base rest on whichever bumps stick out farthest, which changes from part to part and shop to shop. Use pins with flat $\varnothing\,6$ ends at the targets' basic locations, and seat A on three targets, then B on two, then C on one.
+--- choice
+The plate is better: a datum is always best made by the flattest surface available.
+--- choice
+The plate is fine if the inspector averages the probe readings across the whole base.
+--- choice
+Targets only matter for the first machining setup; inspection may use the plate.
+--- why
+A rough cast surface rocks onto different bumps each time it is set down, so the datum plane, and every measurement taken from it, moves. Datum targets fix this by naming the spots that touch: only the target pins contact the part, placed by basic dimensions, so every shop builds the same frame from the drawing alone. The counts, three, two and one, are the 3-2-1 rule, with A seated first. An average plane is not what any simulator makes. And the targets are the datums named in the frames, so inspection must use them too.
+
++++ question | A bent pin and its envelope
+--- ask
+A pin is dimensioned $\varnothing\,12.00$ to $12.05\,\mathrm{mm}$, with no other form control. It is made at $12.02$ all along its length, but its axis is bowed by $0.04\,\mathrm{mm}$. Is it acceptable?
+--- choice correct
+No. Rule #1 requires the pin to fit a perfect tube at its MMC size, $12.05$. Bowed by $0.04$, a $12.02$ pin needs a $12.06$ tube.
+--- choice
+Yes. Every two-point diameter is $12.02$, inside the size limits.
+--- choice
+Yes. Rule #1 applies only to holes.
+--- choice
+Yes. Size limits never control form; only a straightness frame could reject it.
+--- why
+Under Rule #1, the envelope principle, a feature of size must not break a boundary of perfect form at MMC. For a pin, MMC is its largest size, $12.05$. The room a pin made at $12.02$ has for bowing is $12.05 - 12.02 = 0.03$, and this one bows $0.04$. Measuring across with calipers can never see this, since every local diameter is fine; a go gauge shaped like the $12.05$ tube catches it in one push. Rule #1 applies to holes and pins alike, and it is exactly how size limits also limit form.

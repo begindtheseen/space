@@ -44,7 +44,9 @@ export function runnableFence(info: string, code: string): Lang | null {
   if (lang === 'bash') return shellCanRun(code) ? 'bash' : null
   // ```cpp fragment: a piece of a program, shown but never run. ```cpp error:
   // a program the lesson runs to show its compiler error, so Run stays.
-  if (fenceFlags(info).includes('fragment')) return null
+  // ```cpp laptop: a whole program that needs exceptions, threads, signals or OS calls, which the
+  // in-browser build (wasm32, single-threaded, exceptions off) does not have.
+  if (fenceFlags(info).includes('fragment') || fenceFlags(info).includes('laptop')) return null
   // A piece of a program shown on its own (`int main() {`, `def f():`) is
   // explained, not run: pressing Run on it could only fail to compile.
   if (!isWhole(lang, code)) return null

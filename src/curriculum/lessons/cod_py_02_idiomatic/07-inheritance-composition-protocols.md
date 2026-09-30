@@ -326,7 +326,7 @@ except TypeError as exc:
 ```bash
 python3 abc_demo.py
 # a 0.002
-# TypeError: Can't instantiate abstract class Incomplete with abstract method measure
+# TypeError: Can't instantiate abstract class Incomplete without an implementation for abstract method 'measure'
 ```
 
 The gyro's error is 0.102 − 0.100 = 0.002, as expected. The incomplete class fails the moment you try to build one.

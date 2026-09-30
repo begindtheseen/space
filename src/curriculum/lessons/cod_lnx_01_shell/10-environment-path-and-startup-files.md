@@ -298,7 +298,7 @@ FROM_PROFILE=[yes]
 
 `FROM_PROFILE=yes` proves `~/.bash_profile` ran. The long `PATH` comes from the system-wide scripts in `/etc/profile.d/` that every login shell reads. But `$-` is still `hBc`. `bash -l` is a *login* shell, not an *interactive* one. `.bash_profile` pulled in `.bashrc`, the guard fired again, and `SIM_TOOLS` is still empty.
 
-The fix: put the `PATH` export **in `~/.bash_profile`, above the line that sources `.bashrc`**, or in `~/.profile`, or system-wide in `/etc/profile.d/simtools.sh`. Nothing a non-interactive process must see belongs below that guard. The honest test is `ssh host 'echo $PATH'`, not a login session.
+The fix depends on which kind of shell the job starts. `ssh host 'command'` (and `scp`, `rsync`) runs a shell that is neither login nor interactive, and the only file it reads is `~/.bashrc`: so for those, put the `PATH` export **in `~/.bashrc`, above the interactivity guard**, and print nothing there (see the warning below). For jobs that start a login shell (`bash -l`, a scheduler that sources your login files), `~/.bash_profile` above the line that sources `.bashrc`, `~/.profile`, or system-wide `/etc/profile.d/simtools.sh` works. Either way, nothing a non-interactive process must see belongs below the guard. The honest test is the same kind of shell the job uses (`ssh host 'echo $PATH'` for an ssh command), not a login session.
 :::
 
 ::: warning Never print anything from ~/.bashrc
@@ -360,7 +360,7 @@ You add `export PATH="$HOME/sim/bin:$PATH"` to `~/.bashrc`, below the standard i
 :::
 
 ::: answer
-Put it in `~/.bash_profile` — above the line that sources `~/.bashrc` — or in `~/.profile`, or, if every user should get it, in a file under `/etc/profile.d/`. Login shells read those, and their exports pass down to everything started from them.
+Move it **above the guard in `~/.bashrc`**. `ssh sim01 'simrun --version'` starts a shell that is neither login nor interactive, and the one file it reads is `~/.bashrc`; `~/.bash_profile`, `~/.profile` and `/etc/profile.d/` are never read by it. (For a job that starts a login shell, those login files work too: login shells read them, and their exports pass down to everything started from them.)
 
 `bash -lc` does not help because *login* and *interactive* are separate properties. `bash -l` reads `~/.bash_profile`, which sources `~/.bashrc` — but the shell is still non-interactive, `$-` has no `i`, and the guard returns before your line. Anything below that guard is unavailable to every non-interactive process, which is exactly what a batch system runs.
 

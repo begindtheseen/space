@@ -254,7 +254,7 @@ Where do seeds come from? `std::random_device` is a source of **non-deterministi
 The rules for a **[[Monte Carlo|monte-carlo]]** campaign follow from all this:
 
 1. **Seed every engine from a recorded value.** If you pick the campaign's base seed with `random_device`, log it before the first run starts.
-2. **One engine per case.** Build each case's engine from the base seed and the case number, so case 4,417 can be rerun alone without running cases 0 to 4,416 first. `std::seed_seq seq{base_seed, case_index}; std::mt19937_64 eng{seq};` does that; the mixing done by `std::seed_seq` is itself fully specified by the standard.
+2. **One engine per case.** Build each case's engine from the base seed and the case number, so case 4,417 can be rerun alone without running cases 0 to 4,416 first. Feed `std::seed_seq` 32-bit pieces, because it keeps only the low 32 bits of each value (and a brace list must have one element type): `std::seed_seq seq{std::uint32_t(base_seed), std::uint32_t(base_seed >> 32), std::uint32_t(case_index)}; std::mt19937_64 eng{seq};` does that without losing the top half of a 64-bit base seed. The mixing done by `std::seed_seq` is itself fully specified by the standard.
 3. **One engine per thread.** Never share an engine between threads. Two threads calling it at once is a data race, and even with a lock, which thread draws which numbers would depend on timing.
 4. **Distributions belong to the case, too.** Create them inside the case, or call `.reset()` on one before reusing it, so no leftover state leaks from one case into the next.
 

@@ -198,7 +198,7 @@ print(round(np.sqrt(s2), 2))              # 1.76
 print(np.round(np.sqrt(np.diag(cov)), 2)) # [0.61 8.9 ]
 ```
 
-(Run it after the leaking-tank code, so `sol` exists.) The noise estimate $s \approx 1.76\,\mathrm{kPa}$ is close to the $2\,\mathrm{kPa}$ that went in, and the uncertainties match `curve_fit` exactly. That is no accident: by default `curve_fit` calls this same least-squares machinery and does this same arithmetic.
+(Run it after the leaking-tank code, so `sol` exists.) The noise estimate $s \approx 1.76\,\mathrm{kPa}$ is close to the $2\,\mathrm{kPa}$ that went in, and the uncertainties match `curve_fit` exactly. That is no accident: `curve_fit` does this same arithmetic on the Jacobian at the minimum. Its solver differs a little. With no bounds, as here, it uses MINPACK's Levenberg-Marquardt code (`method='lm'`), not `least_squares`; give it `bounds=` and it calls `least_squares` itself with `method='trf'`. Both land on the same minimum for this fit.
 
 ::: warning What pcov assumes
 By default `curve_fit` has no idea how noisy your sensor is. It estimates the noise from the leftover residuals, as in step 1 above. If you know each reading's standard deviation, pass it as `sigma=`, and add `absolute_sigma=True` so SciPy uses your numbers as they are instead of rescaling them. And `pcov` only means what it says if the misses are independent and bell-shaped. If the model is wrong — say the real leak is not exponential — the residuals have a pattern in them, and the one-sigma numbers will be too optimistic. Always plot the residuals and look for a pattern before you quote an uncertainty.

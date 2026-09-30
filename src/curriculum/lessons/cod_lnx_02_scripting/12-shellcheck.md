@@ -68,7 +68,7 @@ bin/bad.sh:18:6: note: Check exit code directly with e.g. 'if ! mycmd;', not ind
 
 Read one line aloud: "file `bin/bad.sh`, line 5, column 1: a warning — use `cd … || exit` in case `cd` fails — code **[[SC2164|sc-code-ranges]]**". Every finding has a code like that, and each code has its own page on the ShellCheck wiki explaining it.
 
-Sixteen findings in nineteen lines, and every one is a real defect this module has already explained:
+Sixteen findings in twenty lines, and every one is a real defect this module has already explained:
 
 | Code | Finding | Lesson |
 | --- | --- | --- |

@@ -120,7 +120,7 @@ A desktop program cannot install a real ISR, but it has something close: a **sig
 ::: example A 1 kHz "interrupt" feeding a slower task
 The handler below plays the ISR: a timer signal fires every $1000\,\mu\mathrm{s}$ (1 kHz), and each time the handler builds a 256-byte sample and copies it into a 16-slot SPSC queue. `main` plays the processing task: it wakes every 5 ms, drains the queue and does the "heavy" work (adding up the samples).
 
-```cpp
+```cpp laptop
 // A host-side stand-in for an interrupt: a POSIX timer signal at 1 kHz.
 // The handler plays the ISR; main() plays the processing task.
 #include <atomic>

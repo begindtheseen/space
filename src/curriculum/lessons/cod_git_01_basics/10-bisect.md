@@ -56,7 +56,7 @@ Think backward instead of forward. With 1 test you can tell apart at most 2 poss
 
 ## Bisect by hand
 
-To see each move, let us run a hunt manually first. The practice repository is a version of orbit-sim with sixty commits. Its first commit sets standard gravity correctly, `G0 = 9.80665`. At its newest commit, `gravity.py` says:
+To see each move, let us run a hunt manually first. Our own orbit-sim, as lesson 09 left it, has only 28 commits, and none of them broke anything, so this lesson starts a fresh example: a **practice repository**, a separate version of orbit-sim with sixty commits and one planted regression. Its commits and hashes have nothing to do with the ones in lessons 01 to 09, even where a message looks familiar. Its first commit sets standard gravity correctly, `G0 = 9.80665`. At its newest commit, `gravity.py` says:
 
 ```python
 G0 = 9.81                  # m/s^2, standard gravity

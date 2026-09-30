@@ -1,0 +1,1325 @@
+@track python
+@course mod-cod_mat_02_gnc_toolboxes
+@module cod_mat_02_gnc_toolboxes
+@title MATLAB for GNC: practice and test
+
+=== mat02-l01 | Practice: Describing a system with tf, zpk, ss and frd
+--- for
+l01-lti-models
+
++++ question | The right coefficient vector
+--- ask
+Which call builds the transfer function below?
+
+$$
+G(s) = \frac{2s + 6}{s^3 + 4s^2}
+$$
+--- choice correct
+`tf([2 6], [1 4 0 0])`
+--- choice
+`tf([2 6], [1 4 0])`
+--- choice
+`tf([6 2], [0 0 4 1])`
+--- choice
+`zpk(3, [0 0 4], 2)`
+--- why
+`tf` wants the coefficients highest power first, with every missing power written as a zero. The bottom is $s^3 + 4s^2 + 0s + 0$, a degree-3 polynomial, so it needs four entries: `[1 4 0 0]`. Dropping one zero gives `[1 4 0]`, which is $s^2 + 4s$: a different system, with no error message. Writing the coefficients lowest power first is the order some textbooks use, but not MATLAB's. The `zpk` line has the sign slip: the zero of $2s + 6 = 2(s + 3)$ sits at $s = -3$ and the poles at $0, 0, -4$, so the right call would be `zpk(-3, [0 0 -4], 2)`.
+
++++ question | Two blocks side by side
+--- ask
+With `P = tf(2, [1 1])` and `Q = tf(1, [1 4])`, what is the numerator of `parallel(P, Q)`? Type the polynomial, for example `5s + 2`.
+--- answer
+3s + 9
+3s+9
+3 s + 9
+3*s + 9
+3*s+9
+9 + 3s
+[3 9]
+--- why
+Parallel means the two outputs are added, so the result is $P + Q$. Over the common denominator $(s + 1)(s + 4) = s^2 + 5s + 4$, the top is $2(s + 4) + 1(s + 1) = 3s + 9$. A series connection would have multiplied instead, giving $\frac{2}{s^2 + 5s + 4}$.
+
++++ question | A sensor that reads double
+--- ask
+A turntable's speed loop has forward path `G = tf(5, [1 0])` and a speed sensor that reports twice the true speed, `H = 2`. What does `dcgain(feedback(G, H))` return?
+--- answer
+0.5
+.5
+1/2
+0.50
+--- why
+$T = \frac{G}{1 + GH} = \frac{5/s}{1 + 10/s} = \frac{5}{s + 10}$, and at $s = 0$ that is $5/10 = 0.5$. The loop drives the error $R - HY$ to zero, so it settles where the sensor reads the command: $HY = R$, which means $Y = R/2$. A loop can only be as accurate as its sensor. With a perfect sensor, `feedback(G, 1)`, the DC gain would be 1.
+
++++ question | The unstable pole comes first
+--- ask
+An engineer puts `G1 = tf(1, [1 -2])` first and `G2 = tf([1 -2], [1 3])` after it. `minreal(G2*G1)` prints $\frac{1}{s + 3}$. What is the truth about the connected hardware?
+--- choice
+It is stable: after the cancellation only the pole at $-3$ is left.
+--- choice correct
+It is unstable. The pole at $+2$ is still inside `G1`. The input can push it, so the signal between the two blocks grows like $e^{2t}$, even though `G2`'s zero stops it from reaching the output.
+--- choice
+It is stable, because the zero comes after the pole, and a zero that follows a pole cancels it in the hardware too.
+--- choice
+It is unstable, because `G2` has a zero in the right half plane, and a right-half-plane zero makes a system unstable.
+--- why
+`pole(ss(G2)*ss(G1))` still lists $+2$ and $-3$: the state-space form keeps every mode, as lesson 1 showed. This time the mode is easy to push from the input but cannot be seen at the output, the mirror image of the lesson's example. Either way the cancellation is only algebra. Inside `G1`, the signal feeding `G2` runs away until something saturates or breaks. Zeros never decide stability; poles do.
+
++++ question | A loop that runs away
+--- ask
+This should build the same closed loop as `feedback(6*G, 1)`, but its step response grows without limit. Which line is wrong?
+
+```matlab
+G = tf(1, [1 3 0]);  G.InputName = 'u';  G.OutputName = 'y';
+K = tf(6);           K.InputName = 'e';  K.OutputName = 'u';
+S = sumblk('e = r + y');
+T = connect(G, K, S, 'r', 'y');
+```
+--- choice
+The `K` line: its output should be named `'e'`, so that it feeds the junction.
+--- choice correct
+The `sumblk` line: `'e = r + y'` adds the measurement, which is positive feedback. It must be `'e = r - y'`.
+--- choice
+The `connect` line: `'e'` must also be listed as an input.
+--- choice
+The `G` line: the plant's input must be named `'r'`, the command.
+--- why
+The string in `sumblk` is the junction's equation, signs included. With $+y$ the error grows when the output grows, so the loop pushes itself further. The closed loop becomes $\frac{6}{s^2 + 3s - 6}$, with a pole at about $+1.37$. The names are fine: `K` turns the error `e` into the command `u`, `G` turns `u` into `y`, and `connect` only needs the outside input `r` and output `y`.
+
++++ question | A gyro on an antenna with friction
+--- ask
+An antenna mount has inertia $J = 2\,\mathrm{kg\,m^2}$ and friction torque $b\,\omega$ with $b = 4\,\mathrm{N\,m\,s}$, so $J\dot{\omega} = \tau - b\,\omega$. The state is $\mathbf{x} = [\theta;\ \omega]$, the input is the motor torque $\tau$, and the only sensor is a rate gyro. Which matrices describe it?
+--- choice
+`A = [0 1; 0 -4]`, `B = [0; 1]`, `C = [0 1]`
+--- choice correct
+`A = [0 1; 0 -2]`, `B = [0; 0.5]`, `C = [0 1]`
+--- choice
+`A = [0 1; 0 -2]`, `B = [0; 0.5]`, `C = [1 0]`
+--- choice
+`A = [0 1; -2 0]`, `B = [0; 0.5]`, `C = [0 1]`
+--- why
+Divide the physics by $J$: $\dot{\omega} = -\frac{b}{J}\omega + \frac{1}{J}\tau = -2\omega + 0.5\tau$, and $\dot{\theta} = \omega$. A gyro sees the rate, the second state, so $C = [0\ 1]$. The first choice forgot to divide by $J$. `C = [1 0]` would be an angle sensor. `A = [0 1; -2 0]` describes a spring on the angle, which this mount does not have. From torque to rate the transfer function is only $\frac{0.5}{s + 2}$: the angle's pole at $s = 0$ never shows, because no rate measurement can tell where the angle started.
+
+=== mat02-l02 | Practice: Time responses and stepinfo
+--- for
+l02-time-responses
+
++++ question | Rise time of a lag with a gain
+--- ask
+What is the 10 to 90 percent rise time of `G = tf(5, [1 4])`, in seconds, to two decimal places?
+--- answer
+0.55
+0.549
+0.55 s
+0.549 s
+.55
+--- why
+Rewrite it in time-constant form: $\frac{5}{s + 4} = \frac{1.25}{0.25s + 1}$. So $\tau = 0.25\,\mathrm{s}$ and the rise time is $\tau\ln 9 = 2.197 \times 0.25 = 0.549\,\mathrm{s}$. The gain 1.25 only sets the final value. Rise time is measured as a fraction of that final value, so the gain does not change it.
+
++++ question | Starting one degree off
+--- ask
+You want to see the antenna loop recover from starting $1^\circ$ off target, at rest, with no command. The loop is stored as a transfer function `T`. Which approach does that correctly?
+--- choice
+`initial(T, [1; 0])`
+--- choice
+`initial(ss(T), [1; 0])`, because `ss` puts the states in the order angle, then rate.
+--- choice correct
+Build `cl = ss(A, B, C, D)` yourself with the state $[\theta;\ \omega]$, then call `initial(cl, [1; 0])`.
+--- choice
+`impulse(T)`, because a start away from rest is the same as a kick.
+--- why
+`initial` needs a state-space model, because "where it starts" is a state vector; a transfer function has no states to start from. Converting with `ss(T)` runs, but MATLAB picks the states, and they need not be "angle, then rate", so `[1; 0]` may mean something else. Building the matrices from the physics gives the starting vector a meaning. An impulse is a kick to the input, which starts the rate moving, not the angle offset.
+
++++ question | Two asserts, one fails
+--- ask
+A loop is `T = feedback(16*G, 1)` with `G = tf(1, [1 4 0])`. The requirement script runs:
+
+```matlab
+S = stepinfo(T);
+assert(S.Overshoot <= 10, 'overshoot')
+assert(S.SettlingTime <= 3, 'settling')
+```
+
+What happens?
+--- choice
+Both asserts pass silently.
+--- choice correct
+The overshoot assert stops the script. The overshoot is about 16 percent, while the settling time, about 2 s, would pass.
+--- choice
+The settling assert stops the script. The settling time is about 4 s.
+--- choice
+Both asserts fail.
+--- why
+The closed loop is $\frac{16}{s^2 + 4s + 16}$, so $\omega_n = 4\,\mathrm{rad/s}$ and $2\zeta\omega_n = 4$ gives $\zeta = 0.5$. That damping always overshoots by $e^{-\pi \times 0.5/0.866} = 16.3\%$, whatever $\omega_n$ is. The settling estimate is $4/(\zeta\omega_n) = 4/2 = 2\,\mathrm{s}$, and `stepinfo` reports about 2.02 s. The first `assert` that fails stops the script, so the second one never runs.
+
++++ question | A step that starts at 2
+--- ask
+A flight log `y`, with times `t`, records a pitch channel stepping from 2 degrees to a new steady value of 3 degrees. Its peak is 3.2 degrees. Which call reports the true overshoot, and what is it?
+--- choice
+`stepinfo(y, t)`, which reports about 20 percent.
+--- choice correct
+`stepinfo(y, t, 3, 2)`, which reports 20 percent: the swing past 3 is 0.2 on a step of size 1.
+--- choice
+`stepinfo(y, t, 2, 3)`, which reports 20 percent.
+--- choice
+`stepinfo(y/3, t)`, which scales the response so the final value is 1.
+--- why
+Overshoot is measured against the size of the step, from the starting value to the final value. Here that step is $3 - 2 = 1$, and the peak goes $0.2$ past the final value: 20 percent. `stepinfo(y, t)` assumes the step started at zero, so it measures against the wrong baseline. The optional inputs come in the order final value, then starting value, so `(2, 3)` swaps them. Dividing by 3 moves the final value to 1 but leaves the start at $2/3$, so the baseline is still wrong.
+
++++ question | A short thruster firing
+--- ask
+A satellite with $J = 10\,\mathrm{kg\,m^2}$ has `P = tf(1, [10 0 0])` from torque to angle. A thruster pair gives $0.5\,\mathrm{N\,m}$ for $0.1\,\mathrm{s}$, much shorter than the satellite's motion. The script plots `impulse(P)` as the angle after the firing. What is wrong?
+--- choice
+Nothing. The firing is short, so `impulse(P)` is the answer as it stands.
+--- choice correct
+`impulse` answers a kick of total size 1. This firing's size is $0.5 \times 0.1 = 0.05\,\mathrm{N\,m\,s}$, so the curve must be multiplied by 0.05.
+--- choice
+The curve must be multiplied by 0.5, the torque, because only the strength of the kick matters.
+--- choice
+A firing must be simulated with `step`, because the thruster pushes with a constant torque.
+--- why
+An impulse is a push whose strength times duration is 1. A system that is linear answers a push twice the size with twice the output, so a kick of size 0.05 gives 0.05 times the impulse response. That works as long as the firing is much shorter than the response. `step` would model a torque that stays on forever. Here the impulse response of $\frac{1}{10s^2}$ is the ramp $t/10$, so the satellite turns at $0.005\,\mathrm{rad/s}$ after the firing.
+
++++ question | Following a sweeping target
+--- ask
+A tracking antenna has the loop $L = \frac{20}{s(s + 4)}$ with unity feedback. It follows a satellite whose direction sweeps at $3^\circ/\mathrm{s}$. After the start-up wiggle dies away, how far behind does it trail, in degrees?
+--- answer
+0.6
+0.60
+.6
+0.6 deg
+0.6 degrees
+--- why
+The loop has one pure integrator, so it follows a ramp with a steady error equal to the ramp rate over $K_v$. Drop the lone $s$ and set $s = 0$ in $\frac{20}{s + 4}$: $K_v = 20/4 = 5\,\mathrm{s^{-1}}$. The lag is $3/5 = 0.6^\circ$. You would confirm it with `t = 0:0.01:20; y = lsim(feedback(L,1), 3*t, t); 3*t(end) - y(end)`.
+
+=== mat02-l03 | Practice: Poles, zeros and the root locus
+--- for
+l03-poles-zeros-root-locus
+
++++ question | The frequency column of damp
+--- ask
+`damp(G)` for `G = tf(34, [1 6 34])` prints one row per pole. What does its frequency column show, in rad/s, to two decimal places?
+--- answer
+5.83
+5.831
+sqrt(34)
+5.83 rad/s
+--- why
+The poles are the roots of $s^2 + 6s + 34$: $s = -3 \pm 5j$. `damp` reports the natural frequency $\omega_n = |p| = \sqrt{3^2 + 5^2} = \sqrt{34} = 5.83\,\mathrm{rad/s}$, not the imaginary part 5. The imaginary part is the wiggle frequency $\omega_d$. The damping column shows $\zeta = 3/5.83 = 0.51$, and the time constant column shows $1/3 = 0.33\,\mathrm{s}$.
+
++++ question | Which one starts the wrong way
+--- ask
+Each model below has a final value above zero after a unit step. Which one first moves below zero?
+--- choice
+`(s + 2)/((s + 1)*(s + 3))`
+--- choice correct
+`(2 - s)/((s + 1)*(s + 3))`
+--- choice
+`2/((s + 1)*(s + 3))`
+--- choice
+`(s + 2)/((s + 1)*(s + 4))`
+--- why
+A wrong-way start comes from a zero in the right half plane, and only $2 - s$ is zero at a positive value, $s = +2$. Its poles, $-1$ and $-3$, are stable, so it still settles, at $\frac{2}{3}$, after first dipping below zero. That makes it non-minimum phase, and `stepinfo` would report a nonzero `Undershoot`. The other two models with zeros have them at $s = -2$, in the left half plane, which speeds the response up and can add overshoot but never reverses the start.
+
++++ question | A gain for 16 percent overshoot
+--- ask
+For the open loop $L(s) = \frac{1}{s(s + 6)}$ with a gain $K$ in front and unity negative feedback, what value of $K$ gives a closed-loop step overshoot of about 16 percent?
+--- answer
+36
+K = 36
+k=36
+--- why
+From lesson 2, 16.3 percent overshoot means $\zeta = 0.5$. The closed-loop polynomial is $s^2 + 6s + K$, so $\omega_n = \sqrt{K}$ and $2\zeta\omega_n = 6$, which gives $\zeta = 3/\sqrt{K}$. Setting $\zeta = 0.5$ gives $\sqrt{K} = 6$, so $K = 36$. The poles are then $-3 \pm 5.20j$: on the locus's vertical line at $-3$, where every gain above 9 lands.
+
++++ question | How much gain a wrong-way zero allows
+--- ask
+The open loop is $L(s) = \frac{2 - s}{s(s + 3)}$, with a gain $K$ in front and unity negative feedback. Above what value of $K$ does the closed loop go unstable?
+--- answer
+3
+K = 3
+k=3
+--- why
+The closed-loop polynomial is $s(s + 3) + K(2 - s) = s^2 + (3 - K)s + 2K$. For a second-order polynomial, both poles are stable exactly when every coefficient is positive, and the middle one, $3 - K$, turns negative once $K > 3$. At $K = 3$ the poles sit on the imaginary axis at $\pm j\sqrt{6} = \pm 2.45j$, and the loop oscillates at 2.45 rad/s. The zero at $+2$ is where one branch of the root locus must end, so more gain drags the poles across into the right half plane.
+
++++ question | A damping ratio that comes out negative
+--- ask
+A script checks the damping of a closed loop whose poles are $-1 \pm 1.73j$, and it prints `zeta = -0.5`. Which line is wrong?
+
+```matlab
+p    = pole(T);
+wn   = abs(p);
+zeta = real(p)./abs(p);
+fprintf('zeta = %.2f\n', zeta(1));
+```
+--- choice
+Line 1: `pole` returns the zeros when the model is a transfer function.
+--- choice
+Line 2: the natural frequency is the imaginary part, `imag(p)`.
+--- choice correct
+Line 3: the damping ratio is `-real(p)./abs(p)`. A stable pole has a negative real part, so without the minus sign the answer comes out negative.
+--- choice
+Line 4: `%.2f` prints the magnitude with the wrong sign.
+--- why
+$\zeta = -\operatorname{Re}(p)/|p|$. For $p = -1 + 1.73j$, $|p| = 2$ and $\zeta = 1/2 = 0.5$. The minus sign is there because stable poles sit to the left, where the real part is negative. `abs(p)` is right for the natural frequency. `[wn, zeta] = damp(T)` does the same job with no sign to forget.
+
++++ question | A fast loop around a wrong-way zero
+--- ask
+Because of where the gyro sits relative to a bending mode's shape, the plant from nozzle to gyro has a zero at $s = +4\,\mathrm{rad/s}$. The team wants a loop crossover of 6 rad/s. What is the sound response?
+--- choice
+Add a controller pole at $s = +4$ to cancel the zero, then tune for 6 rad/s.
+--- choice
+Raise the loop gain until the crossover reaches 6 rad/s; margins can be added afterwards.
+--- choice correct
+Accept a crossover below about 2 rad/s, or move the gyro, or measure elsewhere, so that the zero moves or disappears.
+--- choice
+Add a controller zero at $s = -4$, which mirrors the plant's zero and removes the lag it adds.
+--- why
+A right-half-plane zero is part of the plant, and no controller can undo its wrong-way start or its extra lag. The rule of thumb keeps crossover below about half the zero's frequency: 2 rad/s here. Canceling it with an unstable controller pole is lesson 1's hidden-mode trap: the pole at $+4$ would still be inside the controller, growing. A mirror zero at $-4$ adds phase lead but cannot remove the lag of the zero at $+4$. Where the sensor sits decides whether the zero exists at all.
+
+=== mat02-l04 | Practice: Frequency response and margins
+--- for
+l04-frequency-response-and-margins
+
++++ question | Gain margin from a Nyquist plot
+--- ask
+The loop's Nyquist curve crosses the negative real axis at $-0.4$, and nowhere else. What is the gain margin in dB, to one decimal place?
+--- answer
+8.0
+8
+7.96
+8.0 db
+8 db
+7.96 db
+--- why
+At that crossing the phase is $-180^\circ$ and the gain is 0.4. So the gain could grow by a factor of $1/0.4 = 2.5$ before the curve reached $-1$. In decibels, $20\log_{10} 2.5 = 7.96\,\mathrm{dB}$, about 8 dB. That clears a 6 dB requirement, which would be a factor of about 2.
+
++++ question | Phase at the corner of a lag
+--- ask
+What is the phase of $G(s) = \frac{20}{s(s + 4)}$ at $\omega = 4\,\mathrm{rad/s}$, in degrees?
+--- answer
+-135
+-135 degrees
+-135 deg
+-135°
+--- why
+Phases of blocks in a chain add. The integrator $\frac{1}{s}$ adds $-90^\circ$ at every frequency. The lag $\frac{1}{s + 4}$ adds $-45^\circ$ exactly at its corner, $\omega = 4$. The gain 20 is a positive real number and adds nothing. Total: $-135^\circ$. The size there is $20/(4 \times \sqrt{32}) = 0.88$.
+
++++ question | The antenna loop's phase margin
+--- ask
+The antenna loop from lesson 1, $L(s) = \frac{4}{s(s + 2)}$, has its gain crossover at $\omega_c = 1.572\,\mathrm{rad/s}$. What is its phase margin, in degrees, to one decimal place?
+--- answer
+51.8
+51.8 degrees
+51.8 deg
+51.83
+52
+--- why
+$\text{PM} = 180^\circ + \angle L(j\omega_c)$. The phase is $-90^\circ$ from the integrator plus $-\arctan(1.572/2) = -38.2^\circ$ from the lag, $-128.2^\circ$ in all, so $\text{PM} = 51.8^\circ$. This is the same loop that lesson 2 found overshoots by 16 percent with $\zeta = 0.5$. `margin(L)` gives the same number.
+
++++ question | An infinite gain margin
+--- ask
+`[Gm, Pm] = margin(L)` for $L(s) = \frac{4}{s(s + 2)}$ returns `Gm = Inf`. What does that mean, and what happens after a 50 ms delay is added?
+--- choice
+The loop is unstable: an infinite number means the margin could not be computed.
+--- choice correct
+The phase never reaches $-180^\circ$, so in the model no gain increase makes it unstable. With the delay, the phase keeps falling as frequency rises, it does cross $-180^\circ$, and `Gm` becomes finite.
+--- choice
+The delay changes nothing, because a delay has a gain of 1 at every frequency.
+--- choice
+`Gm = Inf` means the phase margin is also infinite.
+--- why
+The phase of this loop goes from $-90^\circ$ toward $-180^\circ$ but never reaches it, so there is no phase crossover, and `margin` reports `Inf`. A delay has no gain, but its lag $\omega T$ grows without limit, so it pushes the phase through $-180^\circ$ at some finite frequency, and the gain margin becomes finite. Every real loop has some delay, so an infinite gain margin never survives contact with hardware.
+
++++ question | A delay margin from the wrong frequency
+--- ask
+This script should compute the delay margin, the largest extra delay the loop can take before its phase margin hits zero. Which line is wrong?
+
+```matlab
+[Gm, Pm, Wcg, Wcp] = margin(L);
+PMrad = deg2rad(Pm);
+Tmax  = PMrad/Wcg;
+fprintf('delay margin %.0f ms\n', 1000*Tmax);
+```
+--- choice
+Line 1: `margin` returns the phase margin in radians already.
+--- choice
+Line 2: the phase margin should stay in degrees, since `fprintf` prints milliseconds.
+--- choice correct
+Line 3: it divides by `Wcg`, the phase crossover. The phase margin is measured at the gain crossover, `Wcp`, so it must be `PMrad/Wcp`.
+--- choice
+Line 4: the factor 1000 turns milliseconds into seconds, so it should divide.
+--- why
+The delay margin is $T_{\max} = \text{PM}/\omega_c$, where $\omega_c$ is the gain crossover, the frequency where the phase margin is measured. `margin` names that frequency `Wcp`, for "phase margin", and names the phase crossover `Wcg`, for "gain margin". The names describe which margin is read there, not which curve crosses. Dividing by the wrong one gives a delay margin that can be far too small or far too large.
+
++++ question | Designing a notch for a bending peak
+--- ask
+With the rigid-body loop done, $|L|$ peaks at $+8\,\mathrm{dB}$ at a 45 rad/s bending mode. You want that peak at least 10 dB below 0 dB. With a notch centered at 45 rad/s and $\zeta_p = 0.4$, what is the largest $\zeta_z$ you may use? Give two decimal places.
+--- answer
+0.05
+0.050
+0.0504
+.05
+--- why
+The peak must fall from $+8$ to $-10\,\mathrm{dB}$, a cut of 18 dB, which is a factor of $10^{-18/20} = 0.126$. The notch's depth at its center is $\zeta_z/\zeta_p$, so $\zeta_z \le 0.126 \times 0.4 = 0.050$. A smaller $\zeta_z$ cuts deeper. To forgive a bending frequency that is not quite where you think, you would widen the notch with a bigger $\zeta_p$, and pay for it in phase lag at the rigid-body crossover.
+
+=== mat02-l05 | Practice: Discretization with c2d and d2c
+--- for
+l05-discretisation
+
++++ question | Where a pole lands
+--- ask
+A continuous plant has a pole at $s = -20$. After `c2d(P, 0.01, 'zoh')`, where is its discrete pole? Give three decimal places.
+--- answer
+0.819
+0.8187
+0.82
+--- why
+Zoh maps each pole by $z = e^{pT_s} = e^{-20 \times 0.01} = e^{-0.2} = 0.819$. It lies inside the unit circle, so the discrete model is stable, as the continuous one was. A faster pole would land closer to 0; a slower one closer to 1.
+
++++ question | Which discrete model is stable
+--- ask
+Four discrete models have these poles. Which model is stable?
+--- choice correct
+$0.95$ and $-0.9$
+--- choice
+$1.02$ and $0.5$
+--- choice
+$-1.1$ and $0.2$
+--- choice
+$0.5 \pm 0.9j$
+--- why
+A discrete model is stable when every pole has size less than 1: inside the unit circle. The sign does not matter, so $-0.9$ is fine; it only makes that motion flip sign every tick while it shrinks. $1.02$ and $-1.1$ are outside. The complex pair looks harmless, but its size is $\sqrt{0.25 + 0.81} = 1.03$, so it grows slowly.
+
++++ question | What the flight computer's timing costs
+--- ask
+A pitch loop crosses over at 8 rad/s. It runs at 100 Hz, and the command computed from tick $k$ goes out at tick $k + 1$. Adding the zero-order hold's lag to that one-tick wait, about how much phase margin do the two cost together, in degrees?
+--- answer
+6.9
+6.88
+7
+6.9 degrees
+--- why
+At 100 Hz, $T_s = 0.01\,\mathrm{s}$. The hold acts like about $T_s/2 = 0.005\,\mathrm{s}$ of delay, and the one-tick wait adds $T_s = 0.01\,\mathrm{s}$, for 0.015 s in all. A delay costs $\omega T$: $8 \times 0.015 = 0.12\,\mathrm{rad}$, which is $0.12 \times 57.3 = 6.9^\circ$, straight off the phase margin. Both belong in the delay budget from lesson 4.
+
++++ question | A notch close to the Nyquist frequency
+--- ask
+A continuous notch sits at 100 rad/s, and it is discretized with `c2d(N, 0.02, 'tustin')`, with no prewarping. At what frequency does the digital notch land, in rad/s, to one decimal place?
+--- answer
+78.5
+78.54
+78.5 rad/s
+--- why
+Tustin moves a frequency $\omega_a$ to $\omega_d = \frac{2}{T_s}\arctan\left(\frac{\omega_a T_s}{2}\right) = 100\arctan(1) = 100 \times 0.7854 = 78.5\,\mathrm{rad/s}$. That is more than 20 percent low, because 100 rad/s is not far below the Nyquist frequency, $\pi/0.02 = 157\,\mathrm{rad/s}$. The fix is `c2dOptions('Method', 'tustin', 'PrewarpFrequency', 100)`, which makes Tustin land exactly at 100 rad/s.
+
++++ question | A stability test that lies
+--- ask
+A script checks discrete controllers before they go into flight code. It passes a controller whose output grows every tick. Which line is wrong?
+
+```matlab
+Cd = c2d(C, 0.02, 'tustin');
+p  = pole(Cd);
+isStable = all(real(p) < 0);
+assert(isStable, 'unstable controller')
+```
+--- choice
+Line 1: Tustin can turn a stable controller into an unstable one.
+--- choice
+Line 2: `pole` returns the continuous poles of a discrete model.
+--- choice correct
+Line 3: the test for a discrete model is `all(abs(p) < 1)`. A negative real part says nothing about a pole in $z$.
+--- choice
+Line 4: `assert` needs a number, not a true or false value.
+--- why
+A left-half-plane pole in $s$ lands inside the unit circle in $z$, so the discrete rule is $|z| < 1$. With the continuous test, a pole at $z = 0.9$, which is stable, is rejected, and a pole at $z = -1.2$, which is unstable, is passed. Tustin itself maps every stable controller to a stable one; the bug is in the test.
+
++++ question | A model fitted to flight data
+--- ask
+A model fitted to flight-test data sampled at 10 Hz reads $y[k+1] = 0.9\,y[k] + 0.1\,u[k]$. After `Pc = d2c(Pd, 'zoh')`, what is the continuous model's time constant, in seconds, to two decimal places?
+--- answer
+0.95
+0.949
+0.95 s
+0.949 s
+--- why
+`d2c` inverts the pole mapping: $s = \ln(z)/T_s = \ln(0.9)/0.1 = -1.054\,\mathrm{s^{-1}}$. A pole at $-1.054$ has time constant $1/1.054 = 0.949\,\mathrm{s}$. The steady gain is $0.1/(1 - 0.9) = 1$, so the continuous model is $\frac{1.054}{s + 1.054}$. Its time constant is almost ten ticks long, which is why the discrete pole sat so close to 1.
+
+=== mat02-l06 | Practice: place, lqr and kalman
+--- for
+l06-state-space-design
+
++++ question | A mode the input never reaches
+--- ask
+What does `rank(ctrb(A, B))` return for the system below?
+
+```matlab
+A = [-1 0; 0 -2];
+B = [1; 0];
+```
+--- answer
+1
+one
+--- why
+$AB = [-1;\ 0]$, so $\mathcal{C} = [B\ \ AB] = [1\ \ {-1};\ 0\ \ 0]$. Its second row is all zeros, so its rank is 1, less than the 2 states. The input only enters the first state, and the two modes are not coupled, so nothing ever pushes the mode at $-2$. That mode is stable, so it dies out on its own, but no gain can speed it up.
+
++++ question | A sensor that cannot find the angle
+--- ask
+For the double integrator `A = [0 1; 0 0]`, with state angle and rate, which output matrix leaves the system unobservable?
+--- choice
+`C = [1 0]`
+--- choice
+`C = [1 1]`
+--- choice
+`C = [2 -1]`
+--- choice correct
+`C = [0 1]`
+--- why
+$CA = [0\ \ c_1]$, so $\mathcal{O} = [c_1\ \ c_2;\ 0\ \ c_1]$, whose determinant is $c_1^2$. The system is observable exactly when the sensor sees some of the angle, $c_1 \ne 0$. A sum like angle plus rate is enough, because the way the sum changes reveals the rate. Only a pure rate sensor, `[0 1]`, leaves the starting angle unknown.
+
++++ question | Poles from a damping requirement
+--- ask
+For the pitch plant `A = [0 1; 0 0]`, `B = [0; 1]`, you want closed-loop poles with $\omega_n = 4\,\mathrm{rad/s}$ and $\zeta = 0.5$. What gain $K$ does `place` return? Type it as `[k1 k2]`.
+--- answer
+[16 4]
+16 4
+[16, 4]
+16, 4
+k = [16 4]
+--- why
+The poles you want are the roots of $s^2 + 2\zeta\omega_n s + \omega_n^2 = s^2 + 4s + 16$: $-2 \pm 3.46j$. With $u = -Kx$ the closed loop has the polynomial $s^2 + k_2 s + k_1$. Match the coefficients: $k_1 = 16$ and $k_2 = 4$. The angle gain is $\omega_n^2$ and the rate gain is $2\zeta\omega_n$, the spring and the damper of a PD controller.
+
++++ question | A Gramian for the pitch plant
+--- ask
+You call `gram(ss(A, B, eye(2), 0), 'c')` for the pitch plant `A = [0 1; 0 0]`, `B = [0; 1]`, to see how controllable it is. What do you get?
+--- choice
+A matrix with eigenvalues 1 and 1, because the rank test says the plant is controllable.
+--- choice correct
+No meaningful answer: the Gramian's integral never settles, because both poles are at 0. `gram` needs a stable $A$.
+--- choice
+A matrix with one eigenvalue of zero, because a double integrator is only half controllable.
+--- choice
+The same matrix as `ctrb(A, B)`.
+--- why
+The controllability Gramian is an integral from 0 to infinity of $e^{At}BB^{\mathsf{T}}e^{A^{\mathsf{T}}t}$. With poles at 0, $e^{At}$ does not decay, so the integral grows without limit. That is why lesson 6 says `gram` needs a stable $A$. The rank test still works here and says "controllable". To judge how controllable a marginal or unstable plant is, you would work with its stable part or another tool.
+
++++ question | A regulator that pushes the wrong way
+--- ask
+The simulation of an LQR pitch controller diverges even though `eig(A - B*K)` shows stable poles. Which line is wrong?
+
+```matlab
+K = lqr(A, B, diag([400 0]), 0.25);
+for k = 1:N
+    u = K*x;
+    x = x + dt*(A*x + B*u);
+end
+```
+--- choice
+Line 1: `lqr` returns the gain for positive feedback, so it must be negated before use.
+--- choice correct
+Line 3: the control law is `u = -K*x`. Without the minus sign the closed loop is $A + BK$, which pushes the state further away.
+--- choice
+Line 4: the state update must use `A - B*K` explicitly.
+--- choice
+Line 1: the rate is not weighted in `Q`, so the rate is left uncontrolled.
+--- why
+`lqr` and `place` both assume $u = -Kx$, and the stable poles you checked are the eigenvalues of $A - BK$. Writing `u = K*x` flips the sign of every push, so the loop fights for the error instead of against it. A zero weight on the rate is fine: the optimal gain still acts on the rate, as $K = [40\ \ 8.94]$ shows.
+
++++ question | Weights from the requirements
+--- ask
+Using Bryson's rule, the pitch error should stay within 0.1 rad and the actuator can deliver at most $0.5\,\mathrm{rad/s^2}$. The rate is left unweighted. Which weights do you pass to `lqr`?
+--- choice correct
+`Q = diag([100 0])`, `R = 4`
+--- choice
+`Q = diag([10 0])`, `R = 2`
+--- choice
+`Q = diag([0.01 0])`, `R = 0.25`
+--- choice
+`Q = diag([100 0])`, `R = 0.25`
+--- why
+Bryson's rule sets each weight to one over the square of the largest acceptable value: $Q_{11} = 1/0.1^2 = 100$ and $R = 1/0.5^2 = 4$. The second choice forgot to square; the third squared without taking one over. The last one prices effort 16 times too cheaply, so the actuator would be asked for more than it can give. With the right weights, `lqr` gives $K = [5\ \ 3.16]$, and an angle error of 0.1 rad asks for $5 \times 0.1 = 0.5\,\mathrm{rad/s^2}$ from the angle gain: exactly the limit.
+
+=== mat02-l07 | Practice: Model reduction and PID tuning
+--- for
+l07-model-reduction-and-pid-tuning
+
++++ question | What minreal leaves
+--- ask
+`L = C*P` came back as $\frac{3s + 6}{s^3 + 7s^2 + 10s}$. How many poles does `minreal(L)` have?
+--- answer
+2
+two
+--- why
+Factor both: $3s + 6 = 3(s + 2)$ and $s^3 + 7s^2 + 10s = s(s + 2)(s + 5)$. The shared factor $(s + 2)$ cancels, leaving $\frac{3}{s(s + 5)}$: poles at $0$ and $-5$, two in all. Before trusting a cancellation like this, check that the pole being canceled, here $-2$, is stable.
+
++++ question | The right app for the job
+--- ask
+You need a compensator with a lead network and a notch at a bending mode. You want to drag the notch's zeros and watch the root locus and the open-loop Bode plot update, with a shaded settling-time region on the locus. Which tool fits?
+--- choice
+The PID Tuner, `pidTuner(G, 'PID')`, with its response-time slider.
+--- choice correct
+The Control System Designer, `controlSystemDesigner(G)`.
+--- choice
+`pidtune(G, 'PIDF')`, since the derivative filter can act as the notch.
+--- choice
+`balred`, to remove the bending mode so that no notch is needed.
+--- why
+The Control System Designer, which `sisotool` also opens, shows linked root-locus and Bode editors. You drag poles, zeros and gain on them and can shade requirement regions, for any compensator shape. The PID Tuner and `pidtune` only make PID-shaped controllers, and a derivative filter is a first-order roll-off, not a notch. Reducing the model does not remove the bending mode from the vehicle, only from your picture of it.
+
++++ question | PI gains from one complex number
+--- ask
+To cross over at $\omega_c = 3\,\mathrm{rad/s}$ with the phase margin you want, a PI controller must be worth $C(3j) = 2 - 1.5j$ at that frequency. What is $K_i$?
+--- answer
+4.5
+4.50
+ki = 4.5
+--- why
+A PI controller at $s = j\omega$ is $K_p + \frac{K_i}{j\omega} = K_p - j\frac{K_i}{\omega}$. Match the real parts: $K_p = 2$. Match the imaginary parts: $K_i/3 = 1.5$, so $K_i = 4.5$. This is the same two-equation problem `pidtune(G, 'PI', 3)` solves; `pid(2, 4.5)` builds the result.
+
++++ question | A reduced model that jumps at t = 0
+--- ask
+The full four-state model `G` starts from exactly 0 after a unit step. `G1 = balred(G, 1)` jumps to $-0.03$ at the first instant, then rises to the same final value. Is that a bug?
+--- choice
+Yes: `balred` should keep the first instant exact, so the model is corrupted.
+--- choice correct
+No: the default `'MatchDC'` solves the dropped states as algebra and puts their effect into $D$. That feedthrough causes the small jump, and it is the price of an exact DC gain.
+--- choice
+Yes: one state is too few, and any one-state model jumps at $t = 0$.
+--- choice
+No: every reduced model jumps at $t = 0$, whichever option is used.
+--- why
+With `'MatchDC'` the dropped states' derivatives are set to zero. Solving those equations sends part of the input straight to the output, through $D$, so the output moves instantly. In exchange the steady value is exact. `balredOptions('StateElimination', 'Truncate')` would start at zero but get the DC gain slightly wrong. The error bound, twice the sum of the dropped Hankel singular values, covers both.
+
++++ question | A PD controller that became a PI
+--- ask
+A rate loop should get a PD controller with $K_p = 3$ and $K_d = 0.5$. After tuning, the loop is slow and overshoots, and a steady disturbance leaves no error at all. The code reads:
+
+```matlab
+C = pid(3, 0.5);
+L = C*G;
+```
+
+What is wrong?
+--- choice
+Nothing: `pid(3, 0.5)` is the PD controller $3 + 0.5s$.
+--- choice correct
+The second input of `pid` is $K_i$, so this builds the PI controller $3 + 0.5/s$. For PD write `pid(3, 0, 0.5)`, with a filter time as a fourth input in real use.
+--- choice
+`pid` builds the standard form, so 0.5 is the derivative time $T_d$.
+--- choice
+The gains must be passed in the order $K_d$, $K_i$, $K_p$.
+--- why
+`pid(Kp, Ki, Kd, Tf)` is the parallel form $K_p + \frac{K_i}{s} + \frac{K_d s}{T_f s + 1}$, and inputs you leave out are zero. So `pid(3, 0.5)` has an integrator, which explains both clues: a PI controller removes a steady error completely, and its lag makes the loop slower and less damped than a PD. The standard form is a different function, `pidstd`.
+
++++ question | The smallest safe order
+--- ask
+A controller design needs a model whose error is below 0.02 at every frequency. The Hankel singular values are `[1.2 0.3 0.05 0.006 0.002 0.0005]`. What is the smallest order `r` for `balred(sys, r)` that the error bound guarantees?
+--- answer
+3
+three
+r = 3
+--- why
+The bound is twice the sum of the values thrown away. Keeping 3 states throws away $0.006 + 0.002 + 0.0005 = 0.0085$, a bound of $0.017$, which is below 0.02. Keeping 2 throws away 0.0585 as well, a bound of $0.117$: too big. The true error may be smaller than the bound, but only order 3 is guaranteed. You would still run `margin` on the full model afterwards.
+
+=== mat02-l08 | Practice: Gain scheduling
+--- for
+l08-gain-scheduling
+
++++ question | Proportional gain at a design point
+--- ask
+A design point has $M_\alpha = 1.0\,\mathrm{s^{-2}}$ and $M_\delta = 2.0\,\mathrm{s^{-2}}$. Holding $\omega_n = 3\,\mathrm{rad/s}$ and $\zeta = 0.7$, what is $K_p$?
+--- answer
+5
+5.0
+kp = 5
+--- why
+Matching $\ddot{\theta} + M_\delta K_d\dot{\theta} + (M_\delta K_p - M_\alpha)\theta = 0$ to the standard form gives $K_p = \frac{\omega_n^2 + M_\alpha}{M_\delta} = \frac{9 + 1}{2} = 5$. Part of that gain, $M_\alpha/M_\delta = 0.5$, only cancels the air's push. The rest supplies the stiffness $\omega_n^2 = 9$.
+
++++ question | Blending between breakpoints
+--- ask
+With the lesson's table, `Mach = [0.5 0.9 1.3 2.0 3.5]` and `Kp = [5.875 5.250 4.880 3.375 2.067]`, what does `interp1(Mach, Kp, 1.5)` return, to two decimal places?
+--- answer
+4.45
+4.450
+--- why
+Mach 1.5 lies between the breakpoints 1.3 and 2.0, a fraction $(1.5 - 1.3)/(2.0 - 1.3) = 0.2857$ of the way along. Linear interpolation goes that fraction of the way from 4.880 to 3.375: $4.880 - 0.2857 \times 1.505 = 4.45$. The answer always lies between its two neighbors.
+
++++ question | How far the gain may fall
+--- ask
+At a design point with $M_\alpha = 3.0\,\mathrm{s^{-2}}$ and $M_\delta = 3.0\,\mathrm{s^{-2}}$, the scheduled gain is $K_p = 4$. Ignoring the actuator, what is the gain-reduction margin in dB?
+--- answer
+-12
+-12.0
+-12.04
+-12 db
+-12.0 db
+--- why
+The loop loses its stiffness when the gain is scaled below $\frac{M_\alpha}{M_\delta K_p} = \frac{3}{12} = 0.25$. In decibels, $20\log_{10} 0.25 = -12.0\,\mathrm{dB}$. The minus sign says it is a limit on shrinking, not growing: the vehicle diverges if control power falls to a quarter. A typical requirement of 6 dB each way would be met.
+
++++ question | Losing control power at max-q
+--- ask
+At max-q ($M_\alpha = 3.2$, $M_\delta = 2.5$, $K_p = 4.88$, $K_d = 1.68$), a thrust dispersion leaves only 30 percent of the nominal control power, so $M_\delta$ becomes $0.75$. Ignoring the actuator, what happens?
+--- choice
+The vehicle diverges, because any loss of control power on an unstable plant is fatal.
+--- choice correct
+It stays stable, just: the stiffness $0.75 \times 4.88 - 3.2 = 0.46\,\mathrm{s^{-2}}$ is still positive, since 0.30 is above the 0.262 limit.
+--- choice
+Nothing changes, because the gains were designed to hold $\omega_n = 3\,\mathrm{rad/s}$.
+--- choice
+It diverges, because the damping term $M_\delta K_d$ turns negative.
+--- why
+The closed loop is $\ddot{\theta} + M_\delta K_d\dot{\theta} + (M_\delta K_p - M_\alpha)\theta = 0$, which becomes $\ddot{\theta} + 1.26\dot{\theta} + 0.46\theta = 0$. Both coefficients are positive, so it is stable, with a slow natural frequency of $\sqrt{0.46} = 0.68\,\mathrm{rad/s}$. The limit is $M_\alpha/(M_\delta K_p) = 3.2/12.2 = 0.262$, about $-11.6\,\mathrm{dB}$. At 25 percent it would diverge. Damping cannot turn negative by scaling a positive gain down.
+
++++ question | A plant array that looks too calm
+--- ask
+A model array for the five design points shows every closed loop stable even with $K_p = 0$, which cannot be right for an aerodynamically unstable rocket. Which line is wrong?
+
+```matlab
+G = tf(zeros(1,1,5));
+for k = 1:5
+    G(:,:,k) = Md(k)/(s^2 + Ma(k));
+end
+```
+--- choice
+Line 1: the array must be built with `stack`, not preallocated.
+--- choice correct
+Line 3: the plant is $\frac{M_\delta}{s^2 - M_\alpha}$. With a plus sign, each model is an undamped oscillator instead of an unstable plant with a pole at $+\sqrt{M_\alpha}$.
+--- choice
+Line 3: `G(:,:,k)` should be `G(k)`, or the models overwrite each other.
+--- choice
+Line 2: the loop must run over the Mach numbers, not the indices.
+--- why
+From $\ddot{\theta} = M_\alpha\theta + M_\delta\delta$, the Laplace transform gives $(s^2 - M_\alpha)\Theta = M_\delta\Delta$. The air pushes the nose further away, which is a pole in the right half plane. Writing $s^2 + M_\alpha$ turns the air into a spring that pulls the nose back: poles at $\pm j\sqrt{M_\alpha}$. Every margin computed on that array is wrong, and wrong on the hopeful side.
+
++++ question | Thick-air gains at max-q
+--- ask
+The Mach 0.5 gains, $K_p = 5.875$ and $K_d = 2.625$, are flown at max-q, where $M_\alpha = 3.2$ and $M_\delta = 2.5$. Ignoring the actuator, what is the closed-loop damping ratio $\zeta$, to two decimal places?
+--- answer
+0.97
+0.968
+.97
+--- why
+The stiffness is $M_\delta K_p - M_\alpha = 14.69 - 3.2 = 11.49$, so $\omega_n = \sqrt{11.49} = 3.39\,\mathrm{rad/s}$. The damping term is $M_\delta K_d = 6.56 = 2\zeta\omega_n$, so $\zeta = 6.56/6.78 = 0.97$ instead of the designed 0.7. Gains built for a heavy vehicle with little control power are too strong where $M_\delta$ is larger: the loop is stiffer than designed and far more heavily damped, so it barely overshoots but works the actuator harder, and with the actuator lag it crosses over faster, closer to the bending modes. That is why one gain set cannot cover the envelope.
+
+=== mat02-l09 | Practice: Aerospace frames
+--- for
+l09-aerospace-frames
+
++++ question | A point above the North Pole
+--- ask
+What is the ECEF $z$ coordinate, in meters, of a point 1000 m above the North Pole on the WGS84 ellipsoid? Round to the nearest meter.
+--- answer
+6357752
+6357752 m
+6,357,752
+6357752.3
+--- why
+At the pole, $N(1 - e^2) = a\sqrt{1 - e^2} = b$, the polar radius, $6\,356\,752.3\,\mathrm{m}$. Add the 1000 m of altitude: $z = 6\,357\,752\,\mathrm{m}$. Using the equatorial radius $a$ would put the point about 21 km too high. $x$ and $y$ are both 0, whatever longitude you pick.
+
++++ question | NED to ENU
+--- ask
+A velocity in NED is $[3,\ -4,\ 2]\,\mathrm{m/s}$. What is it in ENU? Type the three numbers as `[e n u]`.
+--- answer
+[-4 3 -2]
+-4 3 -2
+[-4, 3, -2]
+-4, 3, -2
+--- why
+ENU lists east first, then north, then up. So take the second NED component, then the first, then flip the sign of the third: east $= -4$, north $= 3$, up $= -2$. The vehicle is moving north and west, and descending at 2 m/s, the same motion in both frames.
+
++++ question | A station's speed in ECI
+--- ask
+A ground station sits at geodetic latitude $60^\circ$, at sea level. About how fast is it moving in ECI?
+--- choice
+About 465 m/s, like every point on Earth.
+--- choice correct
+About 233 m/s, eastward.
+--- choice
+About 403 m/s, because the speed goes with the sine of the latitude.
+--- choice
+Zero, because a station does not move in ECEF.
+--- why
+Its speed is $\omega_E$ times its distance from the spin axis, $(N + h)\cos\varphi$. At $60^\circ$, $N = 6\,394\,205\,\mathrm{m}$, so the distance is $3\,197\,103\,\mathrm{m}$ and the speed is $7.292115 \times 10^{-5} \times 3\,197\,103 = 233\,\mathrm{m/s}$. It is half the equator's 465 m/s, near enough, because $\cos 60^\circ = 0.5$. The speed goes with the cosine of the latitude, not the sine. Zero ECEF velocity still means a nonzero ECI velocity, through the $\boldsymbol{\omega}_E \times \mathbf{r}$ term.
+
++++ question | Coriolis on the equator
+--- ask
+A vehicle flies due north at $1000\,\mathrm{m/s}$ along the equator. What is its Coriolis acceleration?
+--- choice
+About $0.146\,\mathrm{m/s^2}$ eastward, because at the equator the full spin rate acts.
+--- choice correct
+Zero: Earth's spin vector points north here, parallel to the velocity, so their cross product vanishes.
+--- choice
+About $0.073\,\mathrm{m/s^2}$ westward.
+--- choice
+About $0.034\,\mathrm{m/s^2}$ outward.
+--- why
+The Coriolis term is $-2\,\boldsymbol{\omega}_E \times \dot{\mathbf{r}}$. At the equator Earth's spin axis lies level, pointing north, and so does this velocity. The cross product of two parallel vectors is zero. The horizontal effect $2\,\omega_E v\sin\varphi$ is zero there too, since $\sin 0 = 0$. $0.034\,\mathrm{m/s^2}$ is the centrifugal term, a different acceleration, which acts even on a vehicle at rest.
+
++++ question | A velocity that forgot the spin
+--- ask
+At the instant the ECI and ECEF axes line up, a script converts a launch vehicle's navigation velocity from ECEF to ECI. On the pad it reports an ECI speed of zero. Which line is wrong?
+
+```matlab
+C_ie  = eye(3);                  % ECEF to ECI rotation at this instant
+r_eci = C_ie*r_ecef;
+v_eci = C_ie*v_ecef;
+w_E   = [0; 0; 7.292115e-5];     % rad/s
+```
+--- choice
+Line 1: the rotation is never the identity, even when the axes line up.
+--- choice
+Line 2: the position also needs the spin term.
+--- choice correct
+Line 3: velocity needs the carried-along part too: `v_eci = C_ie*v_ecef + cross(w_E, r_eci)`.
+--- choice
+Line 4: Earth's spin vector points along ECI $x$, toward the vernal equinox.
+--- why
+A point at rest in ECEF is carried around by Earth's spin, so in ECI it moves at $\boldsymbol{\omega}_E \times \mathbf{r}$: about 409 m/s for a pad at the Cape. Positions agree when the axes line up, but velocities never do. Earth's spin axis is the shared $z$ axis of both frames.
+
++++ question | Air from the side
+--- ask
+An aircraft's body-axis air velocity is $(u, v, w) = (200,\ -10,\ 15)\,\mathrm{m/s}$. What is the sideslip angle $\beta$, in degrees, to two decimal places?
+--- answer
+-2.85
+-2.854
+-2.85 degrees
+-2.85 deg
+--- why
+$V = \sqrt{200^2 + 10^2 + 15^2} = 200.81\,\mathrm{m/s}$, and $\beta = \arcsin(v/V) = \arcsin(-10/200.81) = -2.85^\circ$. Negative $v$ means the vehicle is sliding toward its left wing, so the air comes from the left. The angle of attack is $\operatorname{atan2}(15, 200) = 4.29^\circ$. Together they give the rotation from body to wind axes, `dcmbody2wind(alpha, beta)`.
+
+=== mat02-l10 | Practice: Rotations and quaternions
+--- for
+l10-rotations-and-quaternion-convention
+
++++ question | Reading a MathWorks quaternion
+--- ask
+An Aerospace Toolbox function returns `[0.866 0 0.5 0]`. It is a pitch. Of how many degrees?
+--- answer
+60
+60 degrees
+60 deg
+60°
+--- why
+MathWorks is scalar first, so $w = 0.866$ and the vector part is $[0\ \ 0.5\ \ 0]$, along $y$, the pitch axis. The angle is $2\arccos(0.866) = 2 \times 30^\circ = 60^\circ$. Check: $\sin 30^\circ = 0.5$ is the vector part's length, as it must be.
+
++++ question | From SciPy to MATLAB
+--- ask
+A Python tool prints `[0.2588 0. 0. 0.9659]` from `as_quat()`. Which array describes the same rotation for MATLAB, and what rotation is it?
+--- choice
+`[0.2588 0 0 0.9659]`, a 150 degree yaw.
+--- choice correct
+`[0.9659 0.2588 0 0]`, a 30 degree roll.
+--- choice
+`[0.9659 0 0 0.2588]`, a 30 degree yaw.
+--- choice
+`[0 0 0.9659 0.2588]`, a 30 degree pitch.
+--- why
+SciPy is scalar last, so $w = 0.9659$ and the vector part is $[0.2588\ \ 0\ \ 0]$, along $x$, the roll axis. MathWorks wants $[w\ x\ y\ z]$: move the last number to the front. The angle is $2\arccos(0.9659) = 30^\circ$. Copying the four numbers across unchanged would be read as a 150 degree turn about $z$: the right length and the wrong rotation.
+
++++ question | East, seen from a yawed vehicle
+--- ask
+A vehicle is yawed $90^\circ$, so its nose points east. With `C = angle2dcm(pi/2, 0, 0)`, what is `C*[0; 1; 0]`, the NED east direction written in body axes? Type it as `[x y z]`.
+--- answer
+[1 0 0]
+1 0 0
+[1, 0, 0]
+1, 0, 0
+--- why
+For a yaw $\psi$ the DCM is $[\cos\psi\ \ \sin\psi\ \ 0;\ -\sin\psi\ \ \cos\psi\ \ 0;\ 0\ \ 0\ \ 1]$, which at $90^\circ$ is $[0\ 1\ 0;\ -1\ 0\ 0;\ 0\ 0\ 1]$. Times east, $[0;\ 1;\ 0]$, it picks out the second column: $[1;\ 0;\ 0]$. East is straight ahead, along the nose, as it should be for a vehicle facing east. The angles go in as radians, which `pi/2` already is.
+
++++ question | A quaternion with a negative scalar part
+--- ask
+An attitude filter outputs `[-0.9659 0 0 -0.2588]` (MathWorks order). What attitude is it?
+--- choice
+A 330 degree yaw the other way, which is a different attitude from a 30 degree yaw.
+--- choice correct
+The same attitude as `[0.9659 0 0 0.2588]`, a 30 degree yaw: $\mathbf{q}$ and $-\mathbf{q}$ describe the same attitude.
+--- choice
+An invalid quaternion, because the scalar part must never be negative.
+--- choice
+A 30 degree yaw seen in SciPy's order.
+--- why
+Flipping all four signs changes the angle from $\theta$ to $360^\circ - \theta$ about the reversed axis, which ends in the same place. Its length is still 1, so it is a valid unit quaternion. Code that compares quaternions should allow for the sign, for example by flipping one so that $w \ge 0$ first, or it will report a jump that did not happen.
+
++++ question | The fix at the interface
+--- ask
+A Python ground tool receives `q` from MATLAB as a NumPy array in the order $[w\ x\ y\ z]$ and builds `r = R.from_quat(q)`. Which change fixes it, for any SciPy version?
+--- choice
+`r = R.from_quat(q / np.linalg.norm(q))`
+--- choice correct
+`r = R.from_quat(q[[1, 2, 3, 0]])`
+--- choice
+`r = R.from_quat(q[[3, 0, 1, 2]])`
+--- choice
+Keep `R.from_quat(q)` and use `r.as_matrix().T`.
+--- why
+SciPy expects $[x\ y\ z\ w]$ by default, so the elements at MATLAB indices 2, 3, 4 come first and $w$ goes last. In Python's zero-based indexing that is `q[[1, 2, 3, 0]]`. Normalizing does nothing, because the norm was already 1. `q[[3, 0, 1, 2]]` is the reverse move, from SciPy order to MATLAB order. The transpose fixes a different mismatch, what the matrix means, and only after the order is right. On SciPy 1.14 or later, `R.from_quat(q, scalar_first=True)` also works.
+
++++ question | Two quarter turns
+--- ask
+`quatmultiply([0.7071 0 0 0.7071], [0.7071 0 0.7071 0])` combines a 90 degree yaw with a 90 degree pitch. What single rotation angle does the result describe, in degrees?
+--- answer
+120
+120 degrees
+120 deg
+120°
+--- why
+The scalar part of the product is $q_0 r_0 - q_1 r_1 - q_2 r_2 - q_3 r_3 = 0.7071 \times 0.7071 - 0 - 0 - 0 = 0.5$. The angle is $2\arccos(0.5) = 2 \times 60^\circ = 120^\circ$. The full product is $[0.5\ \ {-0.5}\ \ 0.5\ \ 0.5]$: one turn of 120 degrees about an axis tilted equally between all three axes. Two quarter turns about different axes do not add up to a half turn.
+
+=== mat02-l11 | Practice: Atmosphere, gravity and magnetism
+--- for
+l11-atmosphere-gravity-magnetism
+
++++ question | Temperature at 5 km
+--- ask
+What temperature does the ISA give at a geopotential altitude of 5 km, in kelvin?
+--- answer
+255.65
+255.65 k
+255.7
+--- why
+Below 11 km the temperature falls by 6.5 K per kilometer from 288.15 K: $288.15 - 6.5 \times 5 = 288.15 - 32.5 = 255.65\,\mathrm{K}$, about $-17.5\,^\circ\mathrm{C}$. `atmosisa(5000)` returns that as its first output.
+
++++ question | A balloon to 35 km
+--- ask
+A science balloon climbs to 35 km. Which atmosphere model should its simulation use?
+--- choice
+`atmosisa`, because the ISA is the aviation standard.
+--- choice correct
+`atmoscoesa`, which follows the standard layers up to 86 km geometric altitude.
+--- choice
+`atmosnrlmsise00`, because any altitude above 20 km needs space weather.
+--- choice
+A constant density above 20 km, since the air is thin there.
+--- why
+`atmosisa` is documented only from 0 to 20 km of geopotential altitude, so it would be outside its range above 20 km. COESA covers 35 km with its warming stratosphere layers, and below 20 km it agrees with the ISA. NRLMSISE-00 is the choice above 86 km, where the Sun's activity drives the density. A constant density would be wrong by a factor of about 10 between 20 and 35 km.
+
++++ question | Dynamic pressure at 11 km
+--- ask
+`atmosisa(11000)` gives $a = 295.07\,\mathrm{m/s}$ and $\rho = 0.3639\,\mathrm{kg/m^3}$. A launch vehicle passes 11 km at Mach 1.5. What is its dynamic pressure, in kPa, to one decimal place?
+--- answer
+35.6
+35.6 kpa
+35.65
+35645
+35645 pa
+--- why
+The speed is $V = 1.5 \times 295.07 = 442.6\,\mathrm{m/s}$. Then $q = \tfrac{1}{2}\rho V^2 = 0.5 \times 0.3639 \times 442.6^2 = 35\,645\,\mathrm{Pa}$, about 35.6 kPa. That is the $\bar{q}$ a gain schedule uses. Speed enters squared, so a small error in the speed of sound grows twice as fast in $q$.
+
++++ question | Geopotential altitude at 80 km
+--- ask
+A GPS receiver reports a geometric altitude of 80 km. What geopotential altitude should you pass to `atmoscoesa`, in km, to one decimal place?
+--- answer
+79.0
+79
+79.01
+79006
+79006 m
+--- why
+$H = \frac{r_0 z}{r_0 + z} = \frac{6\,356\,766 \times 80\,000}{6\,436\,766} = 79\,006\,\mathrm{m}$. The gap is about a kilometer, and at 80 km the density changes by roughly 15 percent per kilometer, so passing the geometric number straight in would give a density about 15 percent too low.
+
++++ question | A magnetometer residual of a thousand times
+--- ask
+An attitude filter compares a magnetometer reading with the model. The residual is huge, and the model's numbers are about a thousand times bigger than the measured ones. Which line is wrong?
+
+```matlab
+b_meas = [24.4 -3.2 37.3];                   % magnetometer, microtesla, NED
+XYZ = wrldmagm(0, 28.57, -80.65, decyear(2026, 1, 1));
+resid = XYZ - b_meas;
+```
+--- choice
+Line 2: `wrldmagm` wants the altitude in kilometers.
+--- choice correct
+Line 3: `wrldmagm` answers in nanotesla, so the reading must be converted first: `b_meas*1000`.
+--- choice
+Line 2: the date must be a `datetime`, not a decimal year.
+--- choice
+Line 3: `wrldmagm` gives the field in ECEF, so it must be rotated to NED first.
+--- why
+The model's `XYZ` is in nanotesla and already in NED: about $[24\,400\ \ {-3160}\ \ 37\,300]\,\mathrm{nT}$ at the Cape. One microtesla is 1000 nanotesla, so the reading is $[24\,400\ \ {-3200}\ \ 37\,300]\,\mathrm{nT}$ and the residual becomes small. Convert units once, at the edge, and name the unit in the variable.
+
++++ question | J2 over the pole
+--- ask
+At 400 km altitude the point-mass pull is $8.676\,\mathrm{m/s^2}$ and $k = \tfrac{3}{2}J_2(R_E/r)^2 = 0.00144$. Using the point-mass-plus-$J_2$ formula, what is the pull straight over the North Pole, in m/s², to two decimal places?
+--- answer
+8.65
+8.651
+8.65 m/s^2
+--- why
+Over the pole $x = y = 0$ and $z = r$, so the $z$ component carries the factor $1 + k(3 - 5z^2/r^2) = 1 + k(3 - 5) = 1 - 2k = 0.99712$. The pull is $8.676 \times 0.99712 = 8.65\,\mathrm{m/s^2}$. Over the equator the factor was $1 + k$, a stronger pull. The bulge pulls hardest on a satellite passing over the equator, which is what swings an inclined orbit's plane around.
+
+=== mat02-l12 | Practice: Wind, turbulence and units
+--- for
+l12-turbulence-wind-and-units
+
++++ question | Forty knots in SI
+--- ask
+What does `convvel(40, 'kts', 'm/s')` return, to two decimal places?
+--- answer
+20.58
+20.578
+20.6
+--- why
+A knot is one nautical mile, 1852 m, per hour: $1852/3600 = 0.5144\,\mathrm{m/s}$. So $40 \times 0.5144 = 20.58\,\mathrm{m/s}$. A quick check: a knot is about half a meter per second, so 40 knots is about 20 m/s.
+
++++ question | Wind at 15 m
+--- ask
+Using the MIL-F-8785C profile with $z_0 = 0.0457\,\mathrm{m}$, the wind measured at 20 ft (6.096 m) is $8\,\mathrm{m/s}$. What is the mean wind at 15 m, to two decimal places?
+--- answer
+9.47
+9.472
+9.47 m/s
+--- why
+The bottom of the ratio is $\ln(6.096/0.0457) = 4.893$ and the top is $\ln(15/0.0457) = \ln(328.2) = 5.794$. So $u = 8 \times 5.794/4.893 = 9.47\,\mathrm{m/s}$. Two and a half times the reference height adds only about 18 percent, because the logarithm grows slowly.
+
++++ question | The corner of the gust filter
+--- ask
+A Dryden along-track filter has $L_u = 300\,\mathrm{m}$ and the aircraft flies at $V = 150\,\mathrm{m/s}$. On a Bode plot of $H_u$, where does the gain start to fall, and how steeply?
+--- choice
+At 150 rad/s, the airspeed, falling 40 dB per decade.
+--- choice correct
+At 0.5 rad/s, $V/L_u$, falling 20 dB per decade above it.
+--- choice
+At 2 rad/s, $L_u/V$, falling 20 dB per decade.
+--- choice
+At 0.5 rad/s, falling 40 dB per decade, since turbulence has two sides.
+--- why
+$H_u$ is a first-order lag, $\frac{1}{1 + (L_u/V)s}$, times a constant, with time constant $L_u/V = 2\,\mathrm{s}$. A lag's corner sits at one over its time constant: $V/L_u = 0.5\,\mathrm{rad/s}$. Above the corner it falls 20 dB per decade, the slope $-2$ of the Dryden spectrum in power. Fly faster and the corner moves up, so the gusts feel quicker.
+
++++ question | Descending toward the runway
+--- ask
+Below 1000 ft, the Dryden vertical scale length is $L_w = h$. An airplane descends at a steady 60 m/s from 500 ft to 50 ft. What happens to the vertical gusts' time scale $L_w/V$?
+--- choice
+Nothing: the time scale depends only on airspeed.
+--- choice correct
+It falls tenfold, from about 2.5 s to about 0.25 s: near the ground the gusts are smaller and feel quicker.
+--- choice
+It grows tenfold, because the air is denser low down.
+--- choice
+It falls to zero, since the model stops at 1000 ft.
+--- why
+With $L_w = h$, going from 500 ft to 50 ft cuts the scale length tenfold, from 152.4 m to 15.24 m. At 60 m/s, $L_w/V$ goes from 2.54 s to 0.25 s. The ground squeezes the gusts smaller, which is why the model needs altitude as well as airspeed. The formulas are written for this band, down to low altitude.
+
++++ question | A thrust that lost a factor of ten
+--- ask
+A script converts an engine's 190,000 lbf of thrust to SI and gets about 86,000. The stage then barely lifts off in simulation. Which line is wrong?
+
+```matlab
+T_N  = convmass(190000, 'lbm', 'kg');   % thrust, N
+m_kg = convmass(5000, 'lbm', 'kg');     % dry mass, kg
+TW   = T_N/(m_kg*9.80665);
+```
+--- choice
+Line 2: dry mass must be converted with `'slug'`.
+--- choice correct
+Line 1: thrust is a force, so it needs `convforce(190000, 'lbf', 'N')`, which gives about 845,000 N.
+--- choice
+Line 3: the weight should use 32.174, standard gravity in ft/s².
+--- choice
+Nothing: pound-force and pound-mass have the same number, so either converter works.
+--- why
+`convmass` multiplies by 0.4536, the kilograms in a pound-mass. `convforce` multiplies by 4.4482, the newtons in a pound-force. The ratio of the two is $g_0 = 9.80665$, so treating a force as a mass loses almost a factor of ten. With the right converter the thrust-to-weight ratio is 38. The two pounds share a number only as weight and mass under standard gravity, never as force and kilograms.
+
++++ question | Gusts in moderate turbulence
+--- ask
+An airplane flies at 200 ft in moderate turbulence, $W_{20} = 30\,\mathrm{kt}$. Using the MIL-F-8785C formulas below 1000 ft, what is the along-track gust intensity $\sigma_u$, in m/s, to two decimal places?
+--- answer
+2.37
+2.372
+2.37 m/s
+--- why
+First $W_{20} = 30 \times 0.5144 = 15.43\,\mathrm{m/s}$, so $\sigma_w = 0.1 \times 15.43 = 1.543\,\mathrm{m/s}$. With $h$ in feet, $0.177 + 0.000823 \times 200 = 0.3416$, and $0.3416^{0.4} = 0.651$. So $\sigma_u = 1.543/0.651 = 2.37\,\mathrm{m/s}$. Near the ground the along-track gusts are stronger than the vertical ones, because the ground squeezes vertical motion most.
+
+=== mat02-l13 | Practice: satelliteScenario
+--- for
+l13-satellite-scenario
+
++++ question | Period at 700 km
+--- ask
+What is the period of a circular orbit 700 km above the equatorial radius, in minutes, to one decimal place? Use $\mu = 3.986 \times 10^{14}\,\mathrm{m^3/s^2}$.
+--- answer
+98.8
+98.77
+98.8 min
+--- why
+$a = 6\,378\,137 + 700\,000 = 7\,078\,137\,\mathrm{m}$. Then $T = 2\pi\sqrt{a^3/\mu} = 2\pi\sqrt{3.546 \times 10^{20}/3.986 \times 10^{14}} = 2\pi \times 943.2 = 5926\,\mathrm{s}$, which is 98.8 minutes. Higher orbits are slower: 500 km took 94.6 minutes.
+
++++ question | The satellite call for 800 km
+--- ask
+Which call adds a circular orbit 800 km up, inclined $53^\circ$?
+--- choice correct
+`satellite(sc, 7178137, 0, 53, 0, 0, 0)`
+--- choice
+`satellite(sc, 800e3, 0, 53, 0, 0, 0)`
+--- choice
+`satellite(sc, 7178.137, 0, 53, 0, 0, 0)`
+--- choice
+`satellite(sc, 7178137, 53, 0, 0, 0, 0)`
+--- why
+The first element is the semi-major axis, measured from Earth's center, in meters: $6\,378\,137 + 800\,000 = 7\,178\,137$. The second choice uses altitude instead of distance from the center; the third uses kilometers. The last swaps eccentricity and inclination: an eccentricity of 53 is not an orbit at all. The angles are in degrees.
+
++++ question | How far west each lap lands
+--- ask
+The 700 km orbit has a period of 5926 s. How far west does its equator crossing move from one lap to the next, in degrees, to one decimal place?
+--- answer
+24.8
+24.76
+24.8 degrees
+--- why
+During one period Earth turns $360^\circ \times 5926/86\,164 = 24.8^\circ$ under the orbit. The track uses Earth's sidereal day of 86,164 s, one turn relative to the stars, not the 86,400 s solar day. That is about 2,760 km along the equator, which is why a single low orbit leaves wide gaps between neighboring tracks.
+
++++ question | A station beyond the inclination
+--- ask
+A satellite flies a 500 km circular orbit at $51.6^\circ$ inclination. A ground station sits at $65^\circ$ N, with a $10^\circ$ elevation mask. Can it ever see the satellite?
+--- choice
+Never: the ground track never goes above $51.6^\circ$ latitude.
+--- choice correct
+Yes, on low passes: the visibility circle's radius is a central angle of $14.05^\circ$, and the station is only $13.4^\circ$ north of the track's highest latitude.
+--- choice
+Yes, with overhead passes, because Earth's rotation carries the station under the orbit.
+--- choice
+Only if the mask is lowered below $0^\circ$.
+--- why
+The ground track tops out at $51.6^\circ$. The satellite counts as visible whenever the point below it lies within the central angle $\lambda$ of the station. For 500 km with a $10^\circ$ mask that is $\lambda = 14.05^\circ$, and $65^\circ - 51.6^\circ = 13.4^\circ$ is just inside. So the station gets short, low passes near the top of the track, never overhead ones. `accessIntervals` would list them.
+
++++ question | A pass that vanished
+--- ask
+A scenario built with `satelliteScenario(start, stop, 120)` lists no pass on a day when an independent check finds a 1.5 minute pass that barely clears the mask. What is the likely cause, and the fix?
+--- choice
+The two-body propagator cannot predict passes shorter than two minutes; switch to SGP4.
+--- choice correct
+With 120 s samples, a 90 s pass can fall between two samples. Use a sample time well below the shortest event, then shorten it again and check the answers do not change.
+--- choice
+`MinElevationAngle` is in radians, so the mask was far too high.
+--- choice
+`accessIntervals` only lists passes longer than the sample time by design.
+--- why
+The scenario computes positions only at its sample times. A pass shorter than the gap between samples can start and end between two of them and never be seen, and even long passes get edges only as good as the sample grid. The fix is to sample faster and confirm that the list stops changing. The mask is in degrees.
+
++++ question | The longest pass at 800 km
+--- ask
+For a circular orbit 800 km up (period 100.9 min) and a $5^\circ$ elevation mask, the central angle of the visibility circle is $\lambda = 22.73^\circ$. Ignoring Earth's turning during the pass, how long is the longest possible pass, in minutes, to one decimal place?
+--- answer
+12.7
+12.74
+12.7 min
+--- why
+The longest pass goes straight overhead and crosses the whole circle, an arc of $2\lambda = 45.46^\circ$ of the orbit. The satellite covers $360^\circ$ in one period, so the pass lasts $100.9 \times 45.46/360 = 12.7$ minutes. A higher orbit and a lower mask both widen the circle, which is why this pass is longer than the 7.4 minutes at 500 km with a $10^\circ$ mask.
+
+=== mat02-test | MATLAB for GNC: module test
+--- teach
+The test covers the whole module: LTI models and loops, time responses, poles and the root locus, margins and delay, discretization, state-space design, model reduction and PID, gain scheduling, frames, quaternions, the environment models, turbulence and units, and satellite access. Most questions combine two or more lessons, and many need a short calculation, so keep a calculator at hand. To get ready, redo the practice questions of the lessons that felt hard, and work each lesson's check questions again on paper.
+--- gate
+questions 13
+minutes 30
+
++++ question | Overshoot from the locus
+--- ask
+The open loop $L(s) = \frac{10}{s(s + 2)}$ is closed with unity negative feedback. What percent overshoot does `stepinfo(feedback(L, 1))` report, to one decimal place?
+--- answer
+35.1
+35.1%
+35.09
+35
+--- why
+The closed-loop polynomial is $s^2 + 2s + 10$, with poles $-1 \pm 3j$. So $\omega_n = \sqrt{10} = 3.16$ and $\zeta = 1/\sqrt{10} = 0.316$. Then $\sqrt{1 - \zeta^2} = 0.949$ and $M_p = e^{-\pi \times 0.316/0.949} = e^{-\pi/3} = 0.351$, about 35.1 percent. On the root locus the poles have climbed the line $\operatorname{Re}(s) = -1$: the same decay as at lower gain, faster wiggles and far more overshoot.
+
++++ question | What is left after going digital
+--- ask
+A continuous pitch design crosses over at 5 rad/s with a phase margin of $40^\circ$. It is implemented at 50 Hz, and each command goes out one tick after the sample it was computed from. Estimate the phase margin that remains, in degrees, to one decimal place.
+--- answer
+31.4
+31.4 degrees
+31.41
+31
+--- why
+At 50 Hz, $T_s = 0.02\,\mathrm{s}$. The hold acts like $T_s/2 = 0.01\,\mathrm{s}$ of delay and the one-tick wait adds $0.02\,\mathrm{s}$: 0.03 s in all. A delay costs $\omega_c T = 5 \times 0.03 = 0.15\,\mathrm{rad} = 8.6^\circ$ and leaves the gain alone. So $40^\circ - 8.6^\circ = 31.4^\circ$, just above a $30^\circ$ minimum. Any further delay, a slower bus or a sensor filter, would break the requirement.
+
++++ question | A digital notch that slid
+--- ask
+A bending-mode notch is designed at 120 rad/s, and the controller runs at 100 Hz. The notch is discretized with `c2d(N, 0.01, 'tustin')`, with no prewarp. Where does the notch land, in rad/s, to the nearest whole number?
+--- answer
+108
+108.1
+108 rad/s
+--- why
+$\omega_d = \frac{2}{T_s}\arctan\left(\frac{\omega_a T_s}{2}\right) = 200\arctan(0.6) = 200 \times 0.5404 = 108\,\mathrm{rad/s}$, 10 percent low. A notch with $\zeta_p = 0.5$ is wide, but at the mode its depth would fall far short of the design. Tustin is the right method for a filter; the missing piece is `c2dOptions('Method', 'tustin', 'PrewarpFrequency', 120)`.
+
++++ question | A controller that cancels an unstable pole
+--- ask
+The plant is $P = \frac{1}{s - 1}$. A designer picks $C = \frac{s - 1}{s(s + 4)}$ so that the unstable pole cancels. `minreal(C*P)` gives $\frac{1}{s(s + 4)}$, and `pole(feedback(minreal(C*P), 1))` shows $-0.27$ and $-3.73$. What is the truth?
+--- choice
+The loop is stable, because `minreal` only removes pairs that cancel exactly.
+--- choice correct
+The real closed loop also has a pole at $+1$. The controller's zero only hides it from the loop; `pole(feedback(ss(P)*ss(C), 1))` shows it, and any disturbance at the plant input grows like $e^{t}$.
+--- choice
+The loop is stable as long as the zero is placed within 1 percent of the pole.
+--- choice
+The loop is unstable because the controller has a zero in the right half plane, and such zeros are unstable.
+--- why
+Canceling a pole on paper cannot remove a real mode from the plant. In state space the pole at $+1$ is still there. The controller's zero stops the command from exciting it, but a gust or an offset entering at the plant still does. In real hardware the zero never sits exactly on the pole, so the mode leaks into the output too. That is lesson 1's hidden mode, and lesson 7's warning never to let `minreal` cancel an unstable pole. Stable plant poles are the only ones you may cancel.
+
++++ question | A digital regulator's poles
+--- ask
+A continuous LQR design puts the pitch poles at $-3 \pm 3j$. The same weights go to `dlqr` for a 20 Hz model built with `c2d(..., 'zoh')`. About what size should the discrete closed-loop poles have, to three decimal places?
+--- answer
+0.861
+0.86
+0.8607
+--- why
+The mapping $z = e^{sT_s}$ turns a continuous pole's real part into the discrete pole's size: $|z| = e^{\operatorname{Re}(s)T_s} = e^{-3 \times 0.05} = e^{-0.15} = 0.861$. Its angle is $3 \times 0.05 = 0.15\,\mathrm{rad}$. The discrete design lands close to that, and its stability is judged by $|z| < 1$, never by a sign.
+
++++ question | The poles of an LQG loop
+--- ask
+An LQR gain puts the controller poles, the eigenvalues of $A - BK$, at $-2 \pm 2j$. A Kalman filter puts the estimator poles, the eigenvalues of $A - LC$, at $-6 \pm 6j$. The two are joined with `lqgreg`. Which statement is right?
+--- choice
+The closed loop has only the controller poles $-2 \pm 2j$; the estimator is inside the computer and has no poles of its own.
+--- choice correct
+The closed loop has all four poles, $-2 \pm 2j$ and $-6 \pm 6j$, by the separation principle; its gain and phase margins must still be checked with `allmargin`.
+--- choice
+The closed-loop poles lie between the two sets, at about $-4 \pm 4j$.
+--- choice
+The closed loop keeps LQR's guaranteed margins of at least $60^\circ$, because the estimator is faster than the controller.
+--- why
+The separation principle says the LQG closed loop's poles are exactly the controller poles together with the estimator poles, so you may design the two halves separately. What it does not promise is robustness. LQR's built-in margins hold only with the full state measured; once a Kalman filter sits in the loop, they vanish. So you break the loop at the plant input and read the margins, whatever the poles say.
+
++++ question | A scheduled gain and its low margin
+--- ask
+At a design point with $M_\alpha = 2.0\,\mathrm{s^{-2}}$ and $M_\delta = 4.0\,\mathrm{s^{-2}}$, the schedule holds $\omega_n = 4\,\mathrm{rad/s}$. Ignoring the actuator, what is the gain-reduction margin in dB, to one decimal place?
+--- answer
+-19.1
+-19.08
+-19.1 db
+-19
+--- why
+First the gain: $K_p = \frac{\omega_n^2 + M_\alpha}{M_\delta} = \frac{16 + 2}{4} = 4.5$. The loop loses its stiffness below a gain factor of $\frac{M_\alpha}{M_\delta K_p} = \frac{2}{18} = 0.111$. In decibels, $20\log_{10} 0.111 = -19.1\,\mathrm{dB}$. A faster design, with a larger $\omega_n$, buys a deeper low margin, because more of $K_p$ goes to stiffness and less to canceling the air.
+
++++ question | Five gains that became one
+--- ask
+A gain-schedule script builds the controller array like this. Every margin comes out, but a reviewer says the schedule was never applied. Why?
+
+```matlab
+Ma = [0.4 1.5 3.2 1.8 0.3];  Md = [1.6 2.0 2.5 3.2 4.5];
+Kp = (9 + Ma)/Md;
+Kd = 4.2./Md;
+C  = pid(Kp(:), 0, Kd(:));
+L  = act*C*G;                % G is a 5-by-1 plant array
+[~, Pm] = margin(L);
+```
+--- choice
+`pid` cannot build arrays, so `C` holds only the first design point.
+--- choice correct
+`/` between two row vectors is matrix right division: `Kp` is one least-squares number, not five gains. `C` is then a single controller, reused for all five plants without any error. It should be `./`.
+--- choice
+`Kd(:)` makes a column, which does not match the rows of `Kp`, so the two are paired wrongly.
+--- choice
+`margin` returns only the worst margin of an array, so the schedule cannot be seen.
+--- why
+From the MATLAB core module, `a/b` for two row vectors finds the one scalar $x$ that makes $x \cdot b$ closest to $a$. So `Kp` is 1-by-1. A single model combined with an array is reused for every element, so the script runs cleanly and flies one proportional gain at all five points. Only `Kd` was scheduled. Element-wise `./` gives the five gains 5.875 to 2.067.
+
++++ question | An offset in NED on the equator
+--- ask
+The reference point is at latitude $0^\circ$, longitude $0^\circ$, sea level. A second point differs from it in ECEF by $\mathbf{d} = [0,\ 100,\ 50]\,\mathrm{m}$. What is `dcmecef2ned(0, 0)*d`? Type it as `[n e d]`.
+--- answer
+[50 100 0]
+50 100 0
+[50, 100, 0]
+50, 100, 0
+--- why
+At $\varphi = \lambda = 0$ the rows of the ECEF-to-NED matrix are north $= [0\ 0\ 1]$, east $= [0\ 1\ 0]$ and down $= [-1\ 0\ 0]$. There, ECEF $z$ points north, ECEF $y$ points east, and ECEF $x$ points up, out of the ground. So the offset is 50 m north, 100 m east and 0 m down. The matrix is applied to the offset, never to an absolute position.
+
++++ question | A SciPy quaternion applied the MathWorks way
+--- ask
+A Python tool prints `[0. 0. 0.7071 0.7071]` from `as_quat()` for a vehicle's attitude over NED. After reordering it correctly for MATLAB into `q`, what does `quatrotate(q, [1 0 0])` return, the north direction in body axes? Type it as `[x y z]`.
+--- answer
+[0 -1 0]
+0 -1 0
+[0, -1, 0]
+0, -1, 0
+--- why
+SciPy is scalar last, so $w = 0.7071$ with the vector part along $z$: a $90^\circ$ yaw, and MATLAB's `q` is `[0.7071 0 0 0.7071]`. `quatrotate` re-expresses a fixed vector in the turned frame, the same as `quat2dcm(q)` times it. For a $90^\circ$ yaw the DCM's first column is $[0;\ -1;\ 0]$. With the nose pointing east, north lies along the left wing, $-y$. SciPy's `r.apply` would turn the vector the other way and give `[0 1 0]`.
+
++++ question | One atmosphere for an ascent to 120 km
+--- ask
+An ascent simulation must provide air density from the pad to 120 km, using positions from the navigation system in geometric altitude. Which plan is sound?
+--- choice
+`atmoscoesa` all the way, since it warns above its limit and keeps running.
+--- choice
+`atmosisa` to 20 km, then hold the 20 km density constant.
+--- choice correct
+`atmoscoesa` up to a stated altitude at or below 86 km geometric, with the altitude converted to geopotential first, then `atmosnrlmsise00` with the launch date, place and space-weather inputs above it; and a test of the switch.
+--- choice
+`atmosnrlmsise00` for the whole flight, with `rho(1)` as the density.
+--- why
+COESA ends at 86 km geometric, which is 84.852 km geopotential, and above that it extrapolates with no data behind it. NRLMSISE-00 covers the thermosphere, where the Sun's activity changes the density many times over. COESA expects geopotential altitude, and near its top the difference is about a kilometer. NRLMSISE-00 could in fact run from the ground, but its column 1 is helium atoms per cubic meter; the total mass density is column 6.
+
++++ question | Gravity for a rotating-frame simulation
+--- ask
+A launch simulation integrates $\ddot{\mathbf{r}} = \mathbf{F}/m - 2\,\boldsymbol{\omega}_E \times \dot{\mathbf{r}} - \boldsymbol{\omega}_E \times (\boldsymbol{\omega}_E \times \mathbf{r})$ in ECEF. Which gravity should go into $\mathbf{F}/m$?
+--- choice
+`gravitywgs84`, because it is the WGS84 gravity that matches the ECEF frame.
+--- choice correct
+The gravitational pull alone, for example from `gravitysphericalharmonic`, because the centrifugal term is already in the equation.
+--- choice
+A constant $9.80665\,\mathrm{m/s^2}$ pointing to Earth's center, because the rotating terms correct the rest.
+--- choice
+`gravitywgs84` plus the centrifugal term a second time, for accuracy.
+--- why
+`gravitywgs84` returns normal gravity: gravitation minus the spin's outward push, about $0.034\,\mathrm{m/s^2}$ less at the equator. This equation already carries that push in its centrifugal term, so normal gravity would count it twice. The pull alone, point mass plus $J_2$ or a spherical-harmonic model, is what belongs there. A constant pull toward the center ignores both the bulge and the fall of gravity with height.
+
++++ question | Gusts that come out twice as strong
+--- ask
+A Dryden simulation at 500 ft produces vertical gusts with a standard deviation near 1.5 m/s, where about 0.77 m/s was expected for light turbulence. Which line is wrong?
+
+```matlab
+W20  = 15;                               % 20 ft wind from the forecast, knots
+h_ft = 500;
+sw   = 0.1*W20;                          % vertical intensity, m/s
+Lw   = convlength(h_ft, 'ft', 'm');      % vertical scale length, m
+n    = sqrt(pi/dt)*randn(size(t));       % white noise of unit strength
+```
+--- choice
+Line 4: the scale length must stay in feet.
+--- choice
+Line 5: the factor `sqrt(pi/dt)` doubles the gusts and should be removed.
+--- choice correct
+Line 1: the knots are used as m/s. It needs `W20 = convvel(15, 'kts', 'm/s')`, which is 7.72 m/s.
+--- choice
+Line 3: the intensity is $0.1 W_{20}$ only above 2,000 ft.
+--- why
+15 knots is 7.72 m/s, so $\sigma_w = 0.1 \times 7.72 = 0.77\,\mathrm{m/s}$. Treating the number 15 as m/s makes the gusts $1/0.5144 = 1.94$ times too strong. The filters take SI lengths and speeds, so the scale length in meters is right; only the height inside the scale-length formulas stays in feet. The noise factor is what makes the output's standard deviation match $\sigma$ at any time step. Convert once, at the edge, and check the simulated standard deviation.
+
++++ question | Passes for a station north of the orbit
+--- ask
+A scenario holds `satellite(sc, 6978137, 0, 45, 0, 0, 0)` and a ground station at $60^\circ$ N with `MinElevationAngle=10`. For that orbit and mask, the visibility circle's central angle is $\lambda = 15.8^\circ$. What will `accessIntervals` show over a day?
+--- choice
+An empty table: a $45^\circ$ orbit never passes north of $45^\circ$.
+--- choice correct
+Some short, low passes: the station is $15^\circ$ north of the track's highest latitude, just inside $15.8^\circ$.
+--- choice
+Passes straight overhead twice a day, since Earth's turning brings the station under the track.
+--- choice
+Nothing until the orbit's altitude is raised: 6,978,137 m is below the surface.
+--- why
+The first element is the semi-major axis from Earth's center, so this is a 600 km orbit, well above the surface. Its ground track tops out at $45^\circ$. The satellite is visible whenever the point below it lies within $15.8^\circ$ of the station, and $60^\circ - 45^\circ = 15^\circ$ just fits. So the station sees the satellite only near the top of its track, low on the southern horizon, for a few minutes. The sample time must be short enough not to miss such grazing passes.
+
++++ question | A bending mode above the Nyquist frequency
+--- ask
+A structures report lists the first bending mode at 12 Hz with 1 percent damping. The attitude loop runs at 20 Hz. Which statement is right?
+--- choice
+The mode is at $2\pi \times 12 = 75\,\mathrm{rad/s}$, well below $\pi/T_s = 157\,\mathrm{rad/s}$, so a prewarped Tustin notch at 75 rad/s handles it.
+--- choice correct
+The mode lies above the 10 Hz Nyquist frequency, so the samples show it disguised as a slower wave inside the loop's band. No digital notch can sit at 12 Hz; filter it before sampling with an analog filter, or sample faster.
+--- choice
+A lightly damped mode above the Nyquist frequency is invisible to a digital controller and can be ignored.
+--- choice
+`damp` would report the mode at 12, so it must be compared with the 20 Hz rate directly: it is safely below.
+--- why
+At 20 Hz, $T_s = 0.05\,\mathrm{s}$ and the Nyquist frequency is 10 Hz, or $\pi/0.05 = 62.8\,\mathrm{rad/s}$; 157 rad/s belongs to a 50 Hz loop. A 12 Hz mode is faster than the samples can show, so it aliases: it appears as a slower wave and can drive the loop. A digital filter only exists up to the Nyquist frequency, so the fix happens before sampling, or with a faster rate. `damp` reports rad/s, 75.4 here, so every comparison needs the units written down.
+
++++ question | PI gains for a chosen crossover
+--- ask
+At $\omega = 2\,\mathrm{rad/s}$ the plant is worth $G(2j) = 0.25$ at an angle of $-100^\circ$. You want a PI controller that puts the gain crossover at 2 rad/s with a $55^\circ$ phase margin. What is $K_p$, to two decimal places?
+--- answer
+3.63
+3.625
+3.62
+--- why
+At crossover the loop must be $L(2j) = 1$ at an angle of $-180^\circ + 55^\circ = -125^\circ$. So $C(2j) = L/G$ has size $1/0.25 = 4$ and angle $-125^\circ - (-100^\circ) = -25^\circ$: $4\cos 25^\circ - 4j\sin 25^\circ = 3.625 - 1.690j$. A PI controller is $K_p - jK_i/\omega$, so $K_p = 3.63$ and $K_i = 2 \times 1.690 = 3.38$. `margin(pid(3.63, 3.38)*G)` would confirm $55^\circ$ at 2 rad/s.

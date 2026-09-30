@@ -112,6 +112,22 @@ The rule `out/` ignored the *folder*. When a folder is ignored, Git does not eve
 The fix is `out/*`: "ignore everything *inside* `out`". Now Git does look in the folder, sees each file, and the negation can rescue `keep.md`. With the fixed rules, `git check-ignore -v out/keep.md` reports the rescuing line, `.gitignore:10:!out/keep.md`, and `git status` lists `out/keep.md` as untracked, ready to add. **Check:** two ways of writing "ignore out", two different behaviors, and `check-ignore -v` told us which line did it both times.
 :::
 
+With the rules right, Maya commits them together with the note they rescue:
+
+```bash
+git add .gitignore out/keep.md
+git commit -m "Ignore build products, run output and secrets"
+```
+
+```text
+[main c235da4] Ignore build products, run output and secrets
+ 2 files changed, 17 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 out/keep.md
+```
+
+Sixteen lines of `.gitignore` and one line of note: 17 insertions. From now on, a careless `git add .` in orbit-sim cannot pick up the bytecode, the run output, the logs or the token.
+
 ::: warning `.gitignore` does nothing to files Git already tracks
 Ignore rules apply only to **untracked** files. If `sim.log` was committed before anyone wrote `*.log`, Git keeps tracking it, and every run shows ` M sim.log` in `git status`. To stop tracking it without deleting your copy, remove it from the index only:
 
@@ -287,7 +303,7 @@ git add .gitattributes data/golden_pass_0417.bin
 git commit -m "Store golden telemetry in LFS"
 ```
 
-`git lfs track` writes exactly the line you saw earlier: `*.bin filter=lfs diff=lfs merge=lfs -text`. That line is the whole connection. **`filter=lfs`** runs every matching file through LFS's **[[clean and smudge filters|clean-smudge]]**: on `git add` the file is swapped for its pointer (and the payload queued for upload), and on checkout the pointer is swapped back for the real file. **`-text`** stops line-ending conversion from corrupting the payload.
+Maya writes the rest of the `.gitattributes` shown earlier by hand, and `git lfs track` adds its last line, the one you saw there: `*.bin filter=lfs diff=lfs merge=lfs -text`. That line is the whole connection. **`filter=lfs`** runs every matching file through LFS's **[[clean and smudge filters|clean-smudge]]**: on `git add` the file is swapped for its pointer (and the payload queued for upload), and on checkout the pointer is swapped back for the real file. **`-text`** stops line-ending conversion from corrupting the payload. So Maya's commit, `8a53b36`, stores the attributes and the 133-byte pointer for `data/golden_pass_0417.bin`, and the 10 MB payload goes to the LFS server.
 
 Two more features matter for engineering teams:
 
@@ -360,7 +376,7 @@ The file is tracked through Git LFS, and their machine did not have `git-lfs` in
 | `git check-attr -a path` | which attributes apply to a path |
 | Git LFS | pointer file in Git, payload on an LFS server; `git lfs track`, `git lfs lock` |
 
-The next lesson goes back to naming commits: **tags**, the permanent labels that mark releases, and **semantic versioning**, the numbering rules that tell everyone how big a change a new release is.
+orbit-sim ends this lesson two commits further on: `c235da4`, the ignore rules, and `8a53b36`, the attributes and the telemetry. The next lesson goes back to naming commits: **tags**, the permanent labels that mark releases, and **semantic versioning**, the numbering rules that tell everyone how big a change a new release is.
 
 ::: context leaked-secrets A commit is forever
 Automated bots scan public code hosting sites around the clock for things that look like passwords and cloud access keys, and a key pushed to a public repository can be found and abused within minutes. Deleting the file in a later commit does not help: the earlier snapshot still holds it, in every clone. The only real fix is to **revoke** the secret — cancel it and issue a new one — and then keep secrets out of the repository for good, in files listed in `.gitignore` or in a separate secrets manager. Teams also run scanners that refuse a commit that contains something shaped like a key.

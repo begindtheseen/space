@@ -1,0 +1,2454 @@
+@track python
+@course mod-cod_rs_02_ownership
+@module cod_rs_02_ownership
+@title Ownership, borrowing, lifetimes and traits: practice and test
+
+=== rs02-l01 | Practice: Ownership and moves
+--- for
+l01-ownership-and-moves
+
++++ question | A tank handed out and handed back
+--- ask
+What does this print? Type the output on one line.
+
+```rust
+struct Tank(&'static str);
+
+impl Drop for Tank {
+    fn drop(&mut self) {
+        print!("drop:{} ", self.0);
+    }
+}
+
+fn inspect(t: Tank) -> Tank {
+    print!("inspect:{} ", t.0);
+    t
+}
+
+fn vent(t: Tank) {
+    print!("vent:{} ", t.0);
+}
+
+fn main() {
+    let lox = Tank("lox");
+    let rp1 = Tank("rp1");
+    let lox = inspect(lox);
+    vent(rp1);
+    print!("end ");
+}
+```
+--- answer
+inspect:lox vent:rp1 drop:rp1 end drop:lox
+--- why
+`inspect` takes the tank by value, so `lox` moves in, and returning `t` moves it back out into a new `lox` binding. Nothing is dropped on that round trip: ownership only travelled. `vent` also takes its tank by value but never gives it back, so `rp1` is dropped when `vent` ends, before "end" prints. At the end of `main`, only the second `lox` still owns a tank, so it is the only drop left. The first `lox` binding and `rp1` were moved away, and a moved-from binding is never dropped. Two tanks, two drops.
+
++++ question | What survives a let
+--- ask
+Here is the start of a `main`:
+
+```rust
+#[derive(Debug, Clone, Copy)]
+struct Fix {
+    lat: f64,
+    lon: f64,
+}
+
+fn main() {
+    let a = Fix { lat: 28.5, lon: -80.6 };
+    let b = a;
+    let c = (7u16, [0.5f64; 3]);
+    let d = c;
+    let e = vec![1u8, 2, 3];
+    let f = e;
+    let g = (String::from("GPS"), 4u8);
+    let h = g;
+    // the line goes here
+}
+```
+
+Pick every line that compiles where the comment is.
+--- choice correct
+`println!("{:?}", a);`
+--- choice correct
+`println!("{:?}", c);`
+--- choice
+`println!("{:?}", e);`
+--- choice
+`println!("{}", g.1);`
+--- why
+`Fix` derives `Copy`, and both fields are `f64`, so `let b = a;` duplicates it and `a` stays usable. A tuple is Copy when every part is, and `u16` and `[f64; 3]` both are, so `c` survives too. `e` is a `Vec`: `let f = e;` moves the 24-byte header and ends `e` (E0382). `g` holds a `String`, so the tuple as a whole is not Copy, and `let h = g;` moves all of it, the `u8` included. The compiler reports "borrow of moved value: `g`" for `g.1`: after a move, the old name owns nothing, not even its Copy parts.
+
++++ question | A loop that eats the list
+--- ask
+What happens with this program?
+
+```rust
+fn main() {
+    let names = vec![String::from("IMU-A"), String::from("IMU-B")];
+    let mut total = 0;
+    for n in names {
+        total += n.len();
+    }
+    println!("{} {}", total, names.len());
+}
+```
+--- choice
+It prints `10 2`.
+--- choice
+It prints `10 0`: the loop emptied the vector, and an empty vector has length 0.
+--- choice correct
+It does not compile: `for n in names` calls `into_iter`, which takes `names` by value, so `names.len()` uses a moved value (E0382). Loop over `&names` instead.
+--- choice
+It does not compile: `n` is a `String`, and `len` only works on a borrowed `&str`.
+--- why
+A `for` loop calls `into_iter` on whatever follows `in`. For a `Vec<String>` taken by value, that consumes the vector: each `String` moves out into `n` and is dropped at the end of its pass, and the buffer is freed when the loop ends. There is no empty vector left to measure; the binding is dead. `for n in &names` lends the vector instead, gives `n` the type `&String`, and leaves `names` usable, so the program prints `10 2`. `len` works on a `String` and a `&String` alike.
+
++++ question | Which types may be Copy
+--- ask
+Pick every type that `#[derive(Clone, Copy)]` is allowed on.
+--- choice correct
+`struct Imu { t: f64, gyro: [f64; 3] }`
+--- choice correct
+`struct Label { name: &'static str, id: u8 }`
+--- choice
+`struct Count { n: Box<u32> }`
+--- choice
+`struct Probe { t: f64 }`, which also has an `impl Drop for Probe`
+--- choice correct
+`enum Phase { Idle, Burn(u32) }`
+--- choice correct
+`struct Frame { data: [u8; 4096] }`
+--- why
+Copy is allowed when every part is Copy and the type has no `Drop`. `&'static str` is a shared reference, and shared references are Copy: a copy is a second pointer to the same text, and neither copy frees it. An enum is Copy when the data of every variant is. A `Box` owns heap memory, so two bitwise copies would free it twice: E0204. A type with `Drop` cannot be Copy either (E0184): which copy would run the cleanup? `Frame` is allowed, but Copy is not a speed setting: every pass by value copies 4096 bytes, so pass it as `&Frame`.
+
++++ question | A report that ends the burn
+--- ask
+This should print the report and then the delta-v, but it does not compile. What is wrong, and what is the best fix?
+
+```rust
+struct Burn {
+    dv: f64,
+    log: Vec<String>,
+}
+
+impl Burn {
+    fn report(self) -> String {
+        format!("{} m/s, {} entries", self.dv, self.log.len())
+    }
+}
+
+fn main() {
+    let b = Burn { dv: 12.5, log: Vec::new() };
+    println!("{}", b.report());
+    println!("{}", b.dv);
+}
+```
+--- choice correct
+`report` takes `self` by value, so `b.report()` moves `b` into the method, and `b.dv` afterwards uses a moved value. Change it to `fn report(&self)`, since it only reads.
+--- choice
+Nothing is wrong: `dv` is an `f64`, which is Copy, so reading it after the call is fine.
+--- choice
+Derive `Clone` and call `b.clone().report()`: the clone is consumed and `b` survives.
+--- choice
+Derive `Clone` and `Copy` for `Burn`, so the call copies `b` instead of moving it.
+--- why
+A method whose receiver is `self` takes ownership, exactly like a parameter of type `Burn`. The compiler says so: "`Burn::report` takes ownership of the receiver `self`, which moves `b`". That `dv` is Copy does not help, because the whole of `b` was moved, not one field. Cloning compiles, but it copies the whole `log` vector just to print a line. Copy is impossible, because a `Vec<String>` field is not Copy (E0204). A method that only reads should borrow: `&self`.
+
++++ question | A spare valve from the rack
+--- ask
+What does this print? Type the output on one line.
+
+```rust
+struct Valve(u8);
+
+impl Drop for Valve {
+    fn drop(&mut self) {
+        print!("close:{} ", self.0);
+    }
+}
+
+fn main() {
+    let spare;
+    {
+        let mut rack = Vec::new();
+        rack.push(Valve(1));
+        rack.push(Valve(2));
+        spare = rack.remove(0);
+        print!("inner ");
+    }
+    print!("outer ");
+    let _kept = spare;
+    print!("end ");
+}
+```
+--- answer
+inner close:2 outer end close:1
+--- why
+`rack.remove(0)` moves `Valve(1)` out of the vector and into `spare`, which lives in the outer scope. The vector keeps only `Valve(2)`. At the inner closing brace, `rack` goes out of scope and drops what it still owns, so "close:2" comes right after "inner". `let _kept = spare;` moves the valve again, and a move prints nothing. `_kept` owns it until the end of `main`, after "end". Each valve closed exactly once, by whoever owned it last.
+
+=== rs02-l02 | Practice: Borrowing, and the rule of many readers or one writer
+--- for
+l02-borrowing-and-aliasing-xor-mutability
+
++++ question | Looking at the last waypoint, then adding one
+--- ask
+What happens?
+
+```rust
+fn main() {
+    let mut plan = vec![120.0, 240.0];
+    let last = plan.last();
+    println!("{:?}", last);
+    plan.push(360.0);
+    println!("{:?}", plan);
+}
+```
+--- choice correct
+It compiles, and prints `Some(240.0)` and then `[120.0, 240.0, 360.0]`.
+--- choice
+E0502: `last` borrows `plan` until the end of `main`, so the push conflicts with it.
+--- choice
+It prints `Some(360.0)` first, because `last` shows the vector as it is when printed.
+--- choice
+E0499: `last` and `push` both borrow `plan` mutably.
+--- why
+`plan.last()` returns an `Option<&f64>`, a shared borrow of the vector. A borrow lasts from where it is made to its last use, not to the closing brace: that is non-lexical lifetimes. The last use of `last` is the first `println!`, so by the `push` no shared borrow is alive, and `push` may take its exclusive one. Swap the print and the push and you get E0502, because `last` would then be used after the vector may have moved its buffer. `last` takes `&self`; only `push` borrows mutably.
+
++++ question | Halving the readings
+--- ask
+The compiler rejects this. Which error code does it report? Type the code.
+
+```rust
+fn scale(v: &mut [f64], k: f64) {
+    for x in v.iter_mut() {
+        *x *= k;
+    }
+}
+
+fn main() {
+    let readings = vec![1.0, 2.0, 4.0];
+    scale(&mut readings, 0.5);
+    println!("{:?}", readings);
+}
+```
+--- answer
+E0596
+0596
+error[E0596]
+--- why
+`scale` needs a `&mut [f64]`, and the call writes `&mut readings`, but `readings` was declared with a plain `let`. You may only lend a value exclusively if its owner allows changes: `let mut readings`. The message is "cannot borrow `readings` as mutable, as it is not declared as mutable". The `mut` on the `let` is the owner's permission; the `&mut` at the call is the claim to be the one writer. With `let mut`, it prints `[0.5, 1.0, 2.0]`: a borrowed `Vec<f64>` is accepted where a slice is asked for.
+
++++ question | Hot readings, then clear
+--- ask
+This fails with E0502 on `temps.clear();`. Which change makes it compile and still print `2`?
+
+```rust
+fn main() {
+    let mut temps = vec![20.0, 85.5, 90.1];
+    let hot: Vec<&f64> = temps.iter().filter(|t| **t > 80.0).collect();
+    temps.clear();
+    println!("{}", hot.len());
+}
+```
+--- choice correct
+Replace the `let hot` line with `let hot: Vec<f64> = temps.iter().copied().filter(|t| *t > 80.0).collect();`
+--- choice
+Declare it `let mut hot: Vec<&f64> = ...`, so `hot` may change after the clear.
+--- choice
+Move `temps.clear();` up, so it comes before the `let hot` line.
+--- choice
+Put the `let hot` line in its own block, `{ ... }`, so its borrow ends at the brace.
+--- why
+`hot` is a vector of references into `temps`, so it keeps `temps` borrowed for as long as `hot` is used, which is up to the `println!`. `clear` needs `&mut temps` in the middle: a reader and a writer at once. `copied()` turns each `&f64` into an independent `f64`, so `hot` owns its numbers and the borrow of `temps` ends with the `let` line. Clearing first compiles but prints 0, so the program no longer means the same thing. A `mut` on `hot` changes nothing about what it borrows, and a block would hide `hot` from the `println!` altogether.
+
++++ question | Two rates, two writers
+--- ask
+What happens?
+
+```rust
+fn main() {
+    let mut rates = vec![0.10, 0.20, 0.30];
+    let a = &mut rates[0];
+    let b = &mut rates[1];
+    *a += 0.01;
+    *b += 0.01;
+    println!("{:?}", rates);
+}
+```
+--- choice
+It compiles: `a` and `b` point at different elements, so nothing is aliased.
+--- choice correct
+E0499: `&mut rates[0]` borrows the whole vector exclusively, and the borrow checker does not compare index values, so `b` is a second `&mut` of `rates` while `a` is still used.
+--- choice
+E0502, because indexing is a shared borrow.
+--- choice
+It compiles, but panics while running, because two `&mut` to one vector are detected at run time.
+--- why
+`&mut rates[i]` goes through the vector as a whole: the compiler sees "an exclusive borrow of `rates`", whatever `i` is. It does not work out that 0 and 1 differ, and in general it could not, because indices are usually computed while the program runs. So two exclusive borrows overlap: the two-writers error. When you really need two exclusive views, `rates.split_at_mut(1)` gives two slices and promises in its signature that they do not overlap. Borrow rules are checked at compile time, never at run time.
+
++++ question | Removing zeros while walking the queue
+--- ask
+This should remove every zero from the queue. What is wrong, and what is the right fix?
+
+```rust
+fn main() {
+    let mut queue = vec![3, 0, 5, 0];
+    for (i, x) in queue.iter().enumerate() {
+        if *x == 0 {
+            queue.remove(i);
+        }
+    }
+    println!("{:?}", queue);
+}
+```
+--- choice
+Nothing: it compiles and prints `[3, 5]`.
+--- choice correct
+E0502: the loop's iterator holds a shared borrow of `queue` for the whole loop, and `remove` needs `&mut queue` in the middle of it. Read first, then write: `let kept: Vec<i32> = queue.iter().copied().filter(|x| *x != 0).collect();` and then `queue = kept;`
+--- choice
+It compiles, but panics with an index out of bounds once the vector has shrunk.
+--- choice
+E0308: `remove` wants a `usize`, and `enumerate` gives a `&usize`.
+--- why
+This is iterator invalidation. `remove` shifts every later element one place left, and the same loop in C++, with `erase`, can walk off the end or skip elements. Rust rejects the shape: a reader (the loop) and a writer (`remove`) alive at once. Even an index loop that compiled would be wrong: after removing a zero at index 1, the element that slides into index 1 is never looked at, so two zeros in a row leave one behind. Building the kept list first and then assigning it has one clear meaning. `enumerate` gives a plain `usize` index; only the item is a reference.
+
++++ question | Four programs, two threads
+--- ask
+Each program uses `thread::scope`.
+
+```rust
+// A
+let config = vec![1.5, 2.5];
+thread::scope(|s| {
+    s.spawn(|| println!("{}", config[0]));
+    s.spawn(|| println!("{}", config[1]));
+});
+
+// B
+let mut log: Vec<u32> = Vec::new();
+thread::scope(|s| {
+    s.spawn(|| log.push(1));
+    s.spawn(|| println!("{}", log.len()));
+});
+
+// C
+let mut buf = [0u32; 4];
+let (a, b) = buf.split_at_mut(2);
+thread::scope(|s| {
+    s.spawn(|| a[0] = 1);
+    s.spawn(|| b[0] = 2);
+});
+
+// D
+let mut count = 0u64;
+thread::scope(|s| {
+    s.spawn(|| {
+        for _ in 0..100 {
+            count += 1;
+        }
+    });
+    println!("{}", count);
+});
+```
+
+Pick every program the compiler accepts.
+--- choice correct
+A
+--- choice
+B
+--- choice correct
+C
+--- choice
+D
+--- why
+The rule is the same with or without threads: many readers, or one writer. In A, both closures hold a `&Vec<f64>`, which is fine. In B, the pushing closure needs `&mut log` for as long as its thread may run, and the other closure's `&log` overlaps it: E0502. In C++ that would be a data race. In C, the two `&mut` slices cover different elements, so nothing is both shared and written. D is the trap: the code in the scope's own body runs *while* the spawned thread may still be counting, so the `println!` is a reader beside a live writer, E0502 again. Printing `count` after the scope ends, when every thread has finished, is allowed.
+
+=== rs02-l03 | Practice: Reading borrow-checker errors
+--- for
+l03-reading-borrow-checker-errors
+
++++ question | Three labels for one conflict
+--- ask
+The compiler prints this for a five-line `main`:
+
+```text
+error[E0502]: cannot borrow `target` as mutable because it is also borrowed as immutable
+ --> src/main.rs:4:5
+  |
+3 |     let view = &target;
+  |                ------- immutable borrow occurs here
+4 |     target.push_str("-2");
+  |     ^^^^^^^^^^^^^^^^^^^^^ mutable borrow occurs here
+5 |     println!("{}", view);
+  |                    ---- immutable borrow later used here
+```
+
+Which fix follows from reading the labels, with no clone?
+--- choice correct
+Move the `println!` above the `push_str` line. The borrow's last use then comes before the conflict, so the borrow has ended when `push_str` asks for `&mut target`.
+--- choice
+Change line 3 to `let view = &mut target;`, so both lines borrow the same way.
+--- choice
+Move `let view = &target;` below the `println!`.
+--- choice
+Write line 4 as `target.clone().push_str("-2");`.
+--- why
+Read the three points. Line 3, dashes: the shared borrow starts. Line 4, carets: the conflict, a `push_str` that needs `&mut target`. Line 5, dashes: the borrow is still used. The fix is to move one of the three so the conflict no longer sits inside the borrow; printing first ends the borrow before the push. A `&mut` borrow on line 3 gives E0499 instead, because `push_str` needs its own. Moving the `let` below its use leaves `view` undeclared where it is printed. And `target.clone().push_str(...)` changes a throwaway copy, so `target` never gets its suffix.
+
++++ question | The first name out of the list
+--- ask
+Which error code does the compiler report for this? Type the code.
+
+```rust
+fn main() {
+    let names = vec![String::from("EPS"), String::from("TCS")];
+    let first = names[0];
+    println!("{} {}", first, names.len());
+}
+```
+--- answer
+E0507
+0507
+error[E0507]
+--- why
+`names[0]` is a place inside the vector, and `let first = names[0];` tries to move the `String` out of it. Indexing only reaches the element through a borrow of the vector, and moving out would leave a hole in a `Vec` that still owns its other elements. So it is E0507, "cannot move out of index of `Vec<String>`". With a Copy element, such as an `i32`, the same line copies and compiles. Here, borrow it with `let first = &names[0];`, or take it out on purpose with `names.remove(0)` if the vector may change.
+
++++ question | Switching mode inside the match
+--- ask
+The compiler rejects this with E0506 on `mode = Mode::Coast;`.
+
+```rust
+enum Mode {
+    Coast,
+    Burn(f64),
+}
+
+fn main() {
+    let mut mode = Mode::Burn(12.0);
+    if let Mode::Burn(dv) = &mode {
+        mode = Mode::Coast;
+        println!("burned {} m/s", dv);
+    }
+    if let Mode::Coast = mode {
+        println!("coasting");
+    }
+}
+```
+
+Pick every change that makes it compile and print both lines.
+--- choice correct
+Match on the value instead of a reference: `if let Mode::Burn(dv) = mode {`
+--- choice correct
+Copy the number out first: add `let dv = *dv;` as the first line inside the `if let`.
+--- choice correct
+Swap the two lines inside the `if let`, so the `println!` comes before `mode = Mode::Coast;`.
+--- choice
+Match on `&mut mode` instead of `&mode`.
+--- choice
+Write `let mode = Mode::Coast;` instead of `mode = Mode::Coast;`.
+--- why
+The three points: the pattern borrows `mode` (start), the assignment overwrites it and drops the old value (conflict), and `dv` is printed afterwards (still used). Matching on `mode` by value binds `dv` to a copied `f64`, and copying a Copy field moves nothing, so `mode` is not borrowed at all. `let dv = *dv;` copies the number out through the reference, and the borrow ends there. Swapping the lines moves the last use before the conflict. An exclusive borrow is still a borrow, so `&mut mode` gives the same E0506. The `let` version compiles, but it makes a new inner `mode` that vanishes at the brace; the outer `mode` stays `Burn`, and "coasting" never prints.
+
++++ question | Keeping every reading
+--- ask
+What happens?
+
+```rust
+fn main() {
+    let mut latest: Vec<&f64> = Vec::new();
+    for i in 0..3 {
+        let reading = i as f64 * 1.5;
+        latest.push(&reading);
+    }
+    println!("{:?}", latest);
+}
+```
+--- choice
+It prints `[0.0, 1.5, 3.0]`.
+--- choice correct
+E0597: each `reading` is dropped at the end of its pass through the loop, but `latest` keeps a reference to it and is used after the loop. Store the numbers themselves: a `Vec<f64>` and `latest.push(reading)`.
+--- choice
+E0499: the loop borrows `reading` three times.
+--- choice
+It prints `[3.0, 3.0, 3.0]`, because every reference points at the same variable.
+--- why
+Each pass through the loop body is its own scope, so a fresh `reading` is born and dies every time. The closing brace of the body is the conflict ("`reading` dropped here while still borrowed"), and the `println!` is where the borrow is still needed. In C, storing the address of a loop variable like this is the classic dangling pointer. Storing the value costs nothing extra: an `f64` is 8 bytes and Copy, the same size as a reference to it, and nothing can dangle.
+
++++ question | A downlink that sends twice
+--- ask
+`send` should hand over the pending bytes once and leave nothing pending, so the program should print `3 0`. It fails with E0507.
+
+```rust
+struct Downlink {
+    pending: Option<Vec<u8>>,
+}
+
+impl Downlink {
+    fn send(&mut self) -> usize {
+        match self.pending {
+            Some(bytes) => bytes.len(),
+            None => 0,
+        }
+    }
+}
+
+fn main() {
+    let mut d = Downlink { pending: Some(vec![1, 2, 3]) };
+    println!("{} {}", d.send(), d.send());
+}
+```
+
+Which fix does what was asked?
+--- choice
+Follow the compiler's help and match on `&self.pending`.
+--- choice correct
+Match on `self.pending.take()`, which moves the `Vec` out and leaves `None` behind.
+--- choice
+Change `send` to take `self` instead of `&mut self`.
+--- choice
+Write the arm as `Some(bytes) => bytes.clone().len()`.
+--- why
+`send` only borrows the `Downlink`. Moving the `Vec` out of `self.pending` would leave the owner's field broken, so it is refused. `Option::take` is the tool for moving out through a `&mut`: it returns what was inside and puts `None` in its place, so the second call finds nothing and gives 0. The compiler's help, `match &self.pending`, compiles but only looks: both calls see the same 3 bytes, and it prints `3 3`. Taking `self` would consume the whole downlink, so `send` could not be called twice. The clone comes too late: the pattern has already moved `bytes`, so it is still E0507.
+
++++ question | Two getters for one rig
+--- ask
+This fails with E0499 on `let r = rig.right_mut();`.
+
+```rust
+struct Rig {
+    left: Vec<f64>,
+    right: Vec<f64>,
+}
+
+impl Rig {
+    fn left_mut(&mut self) -> &mut Vec<f64> {
+        &mut self.left
+    }
+    fn right_mut(&mut self) -> &mut Vec<f64> {
+        &mut self.right
+    }
+}
+
+fn main() {
+    let mut rig = Rig { left: vec![1.0], right: vec![2.0] };
+    let l = rig.left_mut();
+    let r = rig.right_mut();
+    l.push(r[0]);
+    println!("{:?}", rig.left);
+}
+```
+
+Pick every replacement for the three lines `let l`, `let r` and `l.push` that compiles.
+--- choice correct
+`let l = &mut rig.left; let r = &mut rig.right; l.push(r[0]);`
+--- choice correct
+`let x = rig.right_mut()[0]; rig.left_mut().push(x);`
+--- choice
+`let l = rig.left_mut(); let r = &rig.right; l.push(r[0]);`
+--- choice correct
+Add `fn both_mut(&mut self) -> (&mut Vec<f64>, &mut Vec<f64>) { (&mut self.left, &mut self.right) }` to the impl, then write `let (l, r) = rig.both_mut(); l.push(r[0]);`
+--- why
+Each getter's signature says `&mut self`, so each call borrows all of `rig`, and the checker takes the signature at its word: it never looks inside to see that `left_mut` only touches `left`. Two such borrows alive at once is E0499. A getter plus a field borrow fails too (E0502), because the getter's borrow covers `right` as well. Inside one function body, though, the compiler tracks fields separately, so `&mut rig.left` and `&mut rig.right` may coexist, and `both_mut` does that split inside the impl and hands out both. Copying the `f64` out first ends the first borrow before the second begins.
+
+=== rs02-l04 | Practice: Lifetimes, or how long a borrow may last
+--- for
+l04-lifetimes
+
++++ question | The first word of a dropped line
+--- ask
+What happens?
+
+```rust
+fn first_word(s: &str) -> &str {
+    s.split(' ').next().unwrap_or("")
+}
+
+fn main() {
+    let w;
+    {
+        let line = String::from("ALT 1200");
+        w = first_word(&line);
+    }
+    println!("{}", w);
+}
+```
+--- choice
+It prints `ALT`.
+--- choice correct
+E0597: by elision rule 2, the result borrows from the only input, so `w` keeps `line` borrowed, and `line` is dropped at the inner brace while `w` is still needed.
+--- choice
+E0106: `first_word` returns a reference, so it needs a written lifetime.
+--- choice
+It prints `ALT`, because `split` makes a new string that `w` owns.
+--- why
+`fn first_word(s: &str) -> &str` has one input lifetime, so rule 2 gives it to the output: written out, `fn first_word<'a>(s: &'a str) -> &'a str`. No annotation is needed, and the caller reads the signature: `w` points into `line`. That is also true: `split` hands out slices of the original text, not copies. The owner dies at the inner closing brace, and the borrow is used on the next line. Declare `line` in the outer block, or return a `String` if the word must outlive the line.
+
++++ question | A cursor over a packet
+--- ask
+What does this print? Type the output.
+
+```rust
+struct Cursor<'a> {
+    data: &'a [u8],
+    pos: usize,
+}
+
+impl<'a> Cursor<'a> {
+    fn take(&mut self, n: usize) -> Option<&'a [u8]> {
+        let end = self.pos + n;
+        if end > self.data.len() {
+            return None;
+        }
+        let out = &self.data[self.pos..end];
+        self.pos = end;
+        Some(out)
+    }
+}
+
+fn main() {
+    let buf = [0x01u8, 0x02, 0x03, 0x04, 0x05];
+    let mut c = Cursor { data: &buf, pos: 0 };
+    let a = c.take(2);
+    let b = c.take(2);
+    let d = c.take(2);
+    println!("{:?} {:?} {:?}", a, b, d);
+}
+```
+--- answer
+Some([1, 2]) Some([3, 4]) None
+Some([1,2]) Some([3,4]) None
+--- why
+Each `take` returns a slice of `buf` and moves `pos` on: bytes 0 and 1, then 2 and 3. The third call would need bytes 4 and 5, but `end = 6` is past the 5 bytes, so it returns `None`. The key is the return type, `Option<&'a [u8]>`: each slice borrows the *buffer*, for `'a`, not the cursor. So `a` stays usable while `c.take` borrows `c` mutably again. Write the return type as `Option<&[u8]>` and rule 3 ties it to `&mut self` instead: `a` would then keep the cursor borrowed exclusively, and the second `take` would fail with E0499. Same body, a different promise.
+
++++ question | A fallback that is not in the table
+--- ask
+Does this compile, and if so, what does it print?
+
+```rust
+use std::collections::HashMap;
+
+fn lookup<'a>(table: &'a HashMap<String, String>, key: &str) -> &'a str {
+    table.get(key).map(|s| s.as_str()).unwrap_or("none")
+}
+
+fn main() {
+    let mut t = HashMap::new();
+    t.insert(String::from("mode"), String::from("SAFE"));
+    println!("{} {}", lookup(&t, "mode"), lookup(&t, "gain"));
+}
+```
+--- choice correct
+It compiles and prints `SAFE none`. `"none"` is a `&'static str`, valid for the whole run, so it is valid for `'a` too.
+--- choice
+It does not compile: `"none"` does not point into `table`, so it cannot have the lifetime `'a`.
+--- choice
+It does not compile: E0106, because `key` is a reference with no named lifetime.
+--- choice
+It compiles, but only because the compiler copies `"none"` into the table.
+--- why
+`-> &'a str` promises only that the result stays valid for at least `'a`; it does not say where the result points. A reference into the table keeps that promise, and so does a string literal, which sits in the program's read-only data and never expires. A `'static` reference may be used wherever a shorter lifetime is asked for. `key` needs no name, because the result never comes from it: elision gives it a lifetime of its own, and the caller may drop the key at once. Nothing is copied: `unwrap_or` just picks one of two references.
+
++++ question | What the static bound lets in
+--- ask
+Pick every call that compiles in place of the comment.
+
+```rust
+fn keep<T: 'static>(x: T) -> T {
+    x
+}
+
+fn main() {
+    let local = String::from("DRAGON-7");
+    // let k = keep(...);
+}
+```
+--- choice correct
+`let k = keep(String::from("x"));`
+--- choice correct
+`let k = keep(5u8);`
+--- choice correct
+`let k = keep("ORBIT-1");`
+--- choice correct
+`let k = keep(vec![1.0, 2.0]);`
+--- choice
+`let k = keep(&local);`
+--- why
+`T: 'static` means "the type holds no borrow that could expire", not "the value lives forever". An owned `String` or `Vec<f64>`, and a plain `u8`, contain no borrows at all, so they pass, and each is still dropped when its owner is done with it. A string literal is a `&'static str`, a borrow that never expires, so it passes too. `&local` borrows a `String` that dies at the end of `main`, so it fails: "argument requires that `local` is borrowed for `'static`" (E0597). This is the bound `thread::spawn` puts on its closure.
+
++++ question | Headers kept across packets
+--- ask
+A receive loop reuses one buffer for every packet and keeps a `Header` view of each. It fails with E0502 on `buf[0] = pkt;`.
+
+```rust
+struct Header<'a> {
+    apid: u16,
+    raw: &'a [u8],
+}
+
+fn main() {
+    let mut buf = vec![0u8; 8];
+    let mut seen: Vec<Header> = Vec::new();
+    for pkt in 0..3u8 {
+        buf[0] = pkt;
+        seen.push(Header { apid: pkt as u16, raw: &buf });
+    }
+    println!("{}", seen.len());
+}
+```
+
+What is the real fix?
+--- choice
+Give the field the static lifetime: `raw: &'static [u8]`.
+--- choice
+Add a second lifetime, `Header<'a, 'b>`, so each header gets its own.
+--- choice correct
+Make `Header` own its bytes, for example `raw: [u8; 8]` copied from the buffer, so each header is independent of the buffer's next reuse.
+--- choice
+Move `let mut buf` inside the loop, so each packet has its own buffer for `seen` to borrow.
+--- why
+A `Header<'a>` is a borrow, not a container: while any header in `seen` is alive, `buf` may not change. The loop wants the opposite: overwrite `buf` for the next packet and keep the old headers. With a borrowing view, every kept header would show the newest packet's bytes, the exact zero-copy bug that lifetimes catch. Wanting to keep a view for a long time is the design prompt to own the data. A `'static` field would reject every borrow of a local buffer, a second lifetime changes no fact about `buf`, and a buffer declared inside the loop dies at the end of each pass while `seen` still points into it (E0597).
+
++++ question | A signature that needs a name
+--- ask
+`pick_frame` returns the first frame whose APID matches, or else `fallback`:
+
+```rust
+struct Frame {
+    apid: u16,
+}
+
+// signature goes here
+{
+    for f in frames {
+        if f.apid == wanted {
+            return f;
+        }
+    }
+    fallback
+}
+```
+
+Which signature compiles?
+--- choice
+`fn pick_frame(frames: &[Frame], wanted: u16, fallback: &Frame) -> &Frame`
+--- choice
+`fn pick_frame<'a>(frames: &'a [Frame], wanted: u16, fallback: &Frame) -> &'a Frame`
+--- choice correct
+`fn pick_frame<'a>(frames: &'a [Frame], wanted: u16, fallback: &'a Frame) -> &'a Frame`
+--- choice
+`fn pick_frame(frames: &[Frame], wanted: u16, fallback: &Frame) -> &'static Frame`
+--- why
+The result can come from `frames` or from `fallback`, so both must be tied to it. The first version has two input lifetimes and no `self`, so elision fails (E0106). The second ties only `frames`, but the body returns `fallback`, which may die sooner: "explicit lifetime required in the type of `fallback`" (E0621). The `'static` version promises more than the body can keep, since `f` points into a caller's slice. The third says exactly what is true: the result is good while both inputs are alive. Unlike a lookup key, which is only compared, both inputs here really are sources, so both carry `'a`.
+
+=== rs02-l05 | Practice: Interior mutability and shared ownership
+--- for
+l05-interior-mutability-and-shared-ownership
+
++++ question | Counting owners through a call
+--- ask
+What does this print? Type the three numbers.
+
+```rust
+use std::rc::Rc;
+
+fn peek(r: Rc<String>) -> usize {
+    Rc::strong_count(&r)
+}
+
+fn main() {
+    let a = Rc::new(String::from("EPS"));
+    let b = Rc::clone(&a);
+    let during = peek(Rc::clone(&b));
+    let c = b;
+    println!("{} {} {}", during, Rc::strong_count(&a), Rc::strong_count(&c));
+}
+```
+--- answer
+3 2 2
+3, 2, 2
+--- why
+`a` starts the count at 1, `b` makes it 2, and the clone passed to `peek` makes it 3 while `peek` runs, so `during` is 3. When `peek` returns, its parameter goes out of scope and the count falls back to 2. `let c = b;` moves a handle; it does not clone one, so no owner is added and the count stays 2. `a` and `c` report the same number because every handle reads the one shared count.
+
++++ question | A history in a Cell
+--- ask
+What happens with this code?
+
+```rust
+use std::cell::Cell;
+
+fn main() {
+    let history = Cell::new(vec![1.0]);
+    history.get().push(2.0);
+}
+```
+--- choice correct
+It does not compile: `Cell::get` copies the value out, so it needs a `Copy` type, and `Vec<f64>` is not Copy. Use a `RefCell` and `history.borrow_mut().push(2.0)`.
+--- choice
+It compiles and pushes 2.0 into the history.
+--- choice
+It compiles, but the push changes a copy, so the history stays `[1.0]`.
+--- choice
+It panics while running with "already borrowed".
+--- why
+A `Cell` never hands out a reference to its inside. `get` gives you a copy, which only makes sense for `Copy` types, so for a `Vec` the method is not available at all (E0599, "trait bounds were not satisfied"). If it were, the third choice would describe the result: the push would land on a temporary copy. To change a `Vec` in place through a shared reference you must borrow its inside, which is what `RefCell` does, with a run-time counter to keep the borrows honest.
+
++++ question | A weak watcher
+--- ask
+What does this print? Type the output.
+
+```rust
+use std::rc::{Rc, Weak};
+
+fn main() {
+    let bus = Rc::new(String::from("28V bus"));
+    let watcher: Weak<String> = Rc::downgrade(&bus);
+    let before = watcher.upgrade().map(|b| b.len());
+    let owners = Rc::strong_count(&bus);
+    drop(bus);
+    let after = watcher.upgrade().map(|b| b.len());
+    println!("{} {:?} {:?}", owners, before, after);
+}
+```
+--- answer
+1 Some(7) None
+--- why
+`Rc::downgrade` makes a `Weak` handle, which does not count as an owner, so the strong count is 1. `upgrade()` gives `Some(Rc)` while the value exists; the temporary `Rc` inside `map` is dropped at the end of that line, so it is gone before `owners` is read. "28V bus" is 7 bytes. `drop(bus)` removes the last strong handle, the `String` is freed, and the next `upgrade()` returns `None`. That is why `Weak` is used for back-pointers: it can never keep a value alive, so it can never form a cycle that leaks.
+
++++ question | Echoing the last entry
+--- ask
+What happens when this runs?
+
+```rust
+use std::cell::RefCell;
+
+fn main() {
+    let log = RefCell::new(vec![1, 2, 3]);
+    let n = log.borrow().len();
+    log.borrow_mut().push(n);
+    if let Some(last) = log.borrow().last() {
+        log.borrow_mut().push(*last + 1);
+    }
+    println!("{:?}", log.borrow());
+}
+```
+--- choice
+It prints `[1, 2, 3, 3, 4]`.
+--- choice correct
+It panics with "RefCell already borrowed" inside the `if let`: the guard from `log.borrow()` must live as long as `last`, which points through it, so `borrow_mut` runs while a read is live.
+--- choice
+It does not compile: E0502.
+--- choice
+It hangs, because `borrow_mut` waits for the read to end.
+--- why
+The first two lines are fine: `log.borrow().len()` copies a `usize` out, and that guard ends at the semicolon, so the push works. In the `if let`, `last` is a `&i32` into the vector, reached through the guard, so the guard must live for the whole block. `borrow_mut` finds a reader and panics. The compiler cannot see it, because `borrow` and `borrow_mut` both take `&self`; the check happens at run time. A `RefCell` never waits, since the only code that could end the read is the same thread that is asking. Fix: `let last = log.borrow().last().copied();` ends the read at once, then push.
+
++++ question | A counter that loses counts
+--- ask
+Two threads each count 100,000 packets. Three runs printed 176198, 156812 and 200000.
+
+```rust
+use std::sync::{Arc, Mutex};
+use std::thread;
+
+fn main() {
+    let packets = Arc::new(Mutex::new(0u64));
+    let mut handles = Vec::new();
+    for _ in 0..2 {
+        let counter = Arc::clone(&packets);
+        handles.push(thread::spawn(move || {
+            for _ in 0..100_000 {
+                let n = *counter.lock().unwrap();
+                *counter.lock().unwrap() = n + 1;
+            }
+        }));
+    }
+    for h in handles {
+        h.join().unwrap();
+    }
+    println!("{}", *packets.lock().unwrap());
+}
+```
+
+What is wrong?
+--- choice correct
+Each increment locks twice: once to read, released at the semicolon, then again to write. Between the two, the other thread can count, and its update is overwritten. Hold one guard for both steps: `*counter.lock().unwrap() += 1;`
+--- choice
+It is a data race: Rust's compile-time promise has failed here.
+--- choice
+Each thread gets its own copy of the counter, so the two totals are never added.
+--- choice
+The `u64` overflows and wraps around.
+--- why
+The lock protects each access, not the sequence. Thread A reads 41 and releases the lock; thread B reads 41 and writes 42; A writes 42. Two packets, one count. This is a race condition in the program's logic, not a data race: every touch of the number happened under the lock, so nothing is undefined, and Rust's promise holds. Rust stops data races; it cannot know that your read and your write belong together. The fix is one guard held across both. `Arc::clone` gives both threads the same counter, and $2 \times 100\,000$ is nowhere near the `u64` limit.
+
++++ question | Choosing for a ground tool
+--- ask
+A ground-station tool starts four worker threads. Each reads a mission configuration that is loaded from disk once, at startup, and never changes. Each also adds to one shared count of rejected frames. Which pair of tools fits best?
+--- choice
+`Rc<RefCell<Config>>` for the configuration, and a `Cell<u32>` for the count.
+--- choice
+`Arc<Mutex<Config>>`, locked for every read, and a `static mut REJECTED: u32` for the count.
+--- choice correct
+A `static CONFIG: OnceLock<Config>` filled once with `get_or_init`, and an `AtomicU32`, or a `Mutex<u32>` held only for the increment, for the count.
+--- choice
+An `RwLock<Config>` that each worker writes before it reads, so it always sees fresh data, and an `Rc<Cell<u32>>` for the count.
+--- why
+`Rc`, `RefCell` and `Cell` are single-thread types, and the compiler refuses them the moment they would cross a thread. A `Mutex` around data that never changes makes four readers take turns for nothing, and a `static mut` counter touched by four threads is a data race that needs `unsafe` to even write. Set once, then read forever, is exactly `OnceLock`: after the first `get_or_init`, every thread gets a `&Config` with no lock. For one shared number, an atomic is the lightest tool, and a `Mutex<u32>` held only for the `+= 1` is also correct. Writing before every read defeats the point of a reader-writer lock.
+
+=== rs02-l06 | Practice: Send, Sync, Box, Pin and Drop
+--- for
+l06-send-sync-box-pin-and-drop
+
++++ question | What may go to a worker thread
+--- ask
+Each value below is moved into `thread::spawn(move || ...)`, and the closure uses it. Pick every value for which that compiles.
+--- choice correct
+`vec![String::from("boot")]`
+--- choice correct
+`Box::new([0.0f64; 3])`
+--- choice correct
+`Cell::new(5u32)`
+--- choice correct
+`Mutex::new(vec![0u8; 4])`
+--- choice
+`std::ptr::null_mut::<u32>()`, a raw pointer
+--- choice
+`Link { name: String::from("S-band"), hits: Rc::new(0) }`, where `struct Link { name: String, hits: Rc<u32> }`
+--- why
+`spawn` requires everything the closure captures to be `Send`. Plain owned data is Send, and a `Box` is just an owner of heap data. A `Cell` is Send but not Sync: moving it to one thread that becomes its only user is fine; what is forbidden is two threads holding `&Cell` at once. A `Mutex` is Send when what it holds is. A raw pointer is neither Send nor Sync, because the compiler knows nothing about what it points at (E0277, "`*mut u32` cannot be sent between threads safely"). `Link` fails because Send is an auto trait worked out field by field, and one `Rc` field, with its non-atomic count, makes the whole struct non-Send.
+
++++ question | Drops at the end of main
+--- ask
+What does this print? Type the output on one line.
+
+```rust
+struct Tag(&'static str);
+
+impl Drop for Tag {
+    fn drop(&mut self) {
+        print!("{} ", self.0);
+    }
+}
+
+struct Pair {
+    a: Tag,
+    b: Tag,
+}
+
+fn main() {
+    let p = Pair { a: Tag("a"), b: Tag("b") };
+    let t = Tag("t");
+    {
+        let _inner = Tag("i");
+    }
+    let q = p;
+    print!("| ");
+}
+```
+--- answer
+i | a b t
+--- why
+`_inner` is dropped at its block's closing brace, before the bar. At the end of `main`, locals are dropped in reverse order of declaration: `q` was declared last, so it goes first, then `t`. `p` was moved into `q`, so it owns nothing and is skipped. `Pair` has no `Drop` of its own, so dropping `q` just drops its fields, in declaration order: `a`, then `b`. What decides the order is where the *owner* was declared, not where the value was built.
+
++++ question | Dropping a chain of boxes
+--- ask
+What does this print? Type the output on one line.
+
+```rust
+struct Node {
+    id: u8,
+    next: Option<Box<Node>>,
+}
+
+impl Drop for Node {
+    fn drop(&mut self) {
+        print!("{} ", self.id);
+    }
+}
+
+fn main() {
+    let tail = Node { id: 3, next: None };
+    let mid = Node { id: 2, next: Some(Box::new(tail)) };
+    let head = Node { id: 1, next: Some(Box::new(mid)) };
+    print!("start ");
+}
+```
+--- answer
+start 1 2 3
+--- why
+`tail` and `mid` were moved into boxes, so only `head` is left for `main` to drop. For a struct, its own `drop` runs first, then its fields are dropped. So `head` prints 1, then its `next` field drops the box holding `mid`, which prints 2 and then drops its own `next`, which prints 3. A `Box` frees its heap memory after the value inside has been dropped. Three nodes, three prints, and not one line of cleanup code written by hand.
+
++++ question | A Cell behind a lock
+--- ask
+What happens?
+
+```rust
+use std::cell::Cell;
+use std::sync::{Arc, Mutex};
+use std::thread;
+
+fn main() {
+    let stats = Arc::new(Mutex::new(Cell::new(0u32)));
+    let mut handles = Vec::new();
+    for _ in 0..4 {
+        let s = Arc::clone(&stats);
+        handles.push(thread::spawn(move || {
+            let guard = s.lock().unwrap();
+            guard.set(guard.get() + 1);
+        }));
+    }
+    for h in handles {
+        h.join().unwrap();
+    }
+    println!("{}", stats.lock().unwrap().get());
+}
+```
+--- choice correct
+It compiles and prints `4`. A `Mutex<T>` is Sync when `T` is merely Send, and `Cell<u32>` is Send, so the `Arc` may be shared, and the lock lets one thread at a time reach the `Cell`.
+--- choice
+It does not compile: `Cell<u32>` is not Sync, so nothing containing it may be shared between threads.
+--- choice
+It does not compile: `Cell<u32>` is not Send.
+--- choice
+It compiles, but it is a data race, so it may print less than 4.
+--- why
+`Cell` is not Sync because two threads holding `&Cell` could both change it at once. Inside a `Mutex` that cannot happen: to reach the `Cell` a thread must hold the guard, and only one guard exists at a time. So the value is, in effect, handed from thread to thread, and handing over needs only Send. That is the trick of a lock, and why the `Mutex` row reads "Sync when `T: Send`". Every `get` and `set` happens under the one lock, so there is no data race. A plain `Mutex<u32>` would be the simpler way to write it.
+
++++ question | A log shared through an Arc
+--- ask
+What is wrong with this program?
+
+```rust
+use std::cell::RefCell;
+use std::sync::Arc;
+use std::thread;
+
+fn main() {
+    let log = Arc::new(RefCell::new(Vec::new()));
+    let worker_log = Arc::clone(&log);
+    let h = thread::spawn(move || {
+        worker_log.borrow_mut().push("worker up");
+    });
+    h.join().unwrap();
+    println!("{:?}", log.borrow());
+}
+```
+--- choice
+Nothing: an `Arc` makes whatever it holds safe to share between threads.
+--- choice correct
+It fails with E0277: `RefCell<Vec<&str>>` is not Sync, so `Arc<RefCell<...>>` is not Send. Use `Arc<Mutex<Vec<&str>>>`, and `lock()` in place of `borrow_mut()`.
+--- choice
+It fails with E0373, because the closure borrows `log`; adding `move` fixes it.
+--- choice
+It compiles, but panics with "already borrowed" if both threads touch the log at once.
+--- why
+An `Arc` makes only the *count* thread-safe. Through it, both threads reach the same `RefCell`, so `Arc<T>` is Send only when `T` is Sync, and `RefCell` is not: its borrow counter is changed with plain, non-atomic updates. The compiler says so in one note: "required for `Arc<RefCell<Vec<&str>>>` to implement `Send`". The closure already has `move`. A `Mutex` enforces the same one-writer rule, with a lock that makes the other thread wait instead of panicking.
+
++++ question | A plan made of plans
+--- ask
+An enum that holds two copies of itself needs a `Box`, or it fails with E0072. Does this one compile without a `Box`, and why?
+
+```rust
+enum Plan {
+    Step(u32),
+    Seq(Vec<Plan>),
+}
+```
+--- choice correct
+Yes. A `Vec<Plan>` is a fixed-size header (pointer, length, capacity) whose elements live on the heap, so `Plan` has a known, finite size: the `Vec` already is the indirection.
+--- choice
+No: E0072, recursive type with infinite size. It needs `Seq(Vec<Box<Plan>>)`.
+--- choice
+Yes, but only because `Vec` is Copy.
+--- choice
+It compiles, but every nested `Seq` makes `Plan` bigger.
+--- why
+The compiler must know every type's size. A `Plan` that held a `Plan` inline would contain itself forever. A `Vec<Plan>` does not hold its elements inline: it is a 24-byte header on a 64-bit machine, pointing at a heap buffer, however many plans it holds and however deeply they nest. Measured, `Plan` is 24 bytes. `Box`, `Vec`, `Rc` and `&` all break the cycle the same way; a `Vec<Box<Plan>>` would add a second, pointless layer. And `Vec` is not Copy: it owns heap memory.
+
++++ question | Why some values are pinned
+--- ask
+Moving an ordinary value is always harmless. Why does async code need `Pin`?
+--- choice correct
+An `async` block may keep a reference to one of its own locals across an `.await`, so the future can point into itself; moving it would leave that pointer at the old address. `Pin` promises the value will not move again, and types that do not care, marked `Unpin`, are unaffected.
+--- choice
+`Pin` puts the value on the heap so that it can never be dropped.
+--- choice
+`Pin` makes the value read-only while an executor polls it.
+--- choice
+Every `Box` must be pinned before it can be sent to another thread.
+--- why
+A move copies the bytes to a new place and forgets the old one. That is safe as long as nothing points at the old place, which is true of numbers, `String`s and ordinary structs: they are `Unpin`. A future built from an `async` block holds its locals across each pause, and one local may borrow another, so the future can contain a pointer into itself. `Pin<P>` is a promise about the value `P` points to: it stays put until it is dropped. That is why `poll` takes `Pin<&mut Self>`. A pinned value is still dropped normally, and `Pin<&mut T>` still lets `poll` change the state.
+
+=== rs02-l07 | Practice: Unsafe Rust and the safe wrapper
+--- for
+l07-unsafe-rust
+
++++ question | Which lines need unsafe
+--- ask
+Here is the start of a program:
+
+```rust
+static mut FRAMES: u32 = 0;
+struct Wrapper(*mut u32);
+
+fn main() {
+    let v = [1u32, 2, 3, 4];
+    let p = v.as_ptr();
+    // the line goes here
+}
+```
+
+Pick every line that is refused unless it sits inside an `unsafe` block, or, for an `impl`, is written `unsafe impl`.
+--- choice
+`let q = std::ptr::null::<u8>();`
+--- choice correct
+`let second = *p.add(1);`
+--- choice correct
+`let s = std::slice::from_raw_parts(p, 4);`
+--- choice correct
+`let n = FRAMES;`
+--- choice correct
+`let g = *v.get_unchecked(2);`
+--- choice
+`let r: &u32 = &v[3];`
+--- choice correct
+`impl Send for Wrapper {}` (placed outside `main`)
+--- why
+Making a raw pointer, even a null one, is safe: an address alone harms nobody. `*p.add(1)` uses two superpowers at once: `add` is an `unsafe fn` (the result must stay inside the array), and `*` follows a raw pointer. `from_raw_parts` and `get_unchecked` are `unsafe fn`s too, because they have preconditions the compiler cannot check (a valid pointer and length; an index in range). Reading a `static mut` is another superpower. `Send` is an unsafe trait, so a hand-written impl must say `unsafe impl` (E0200 without it). `&v[3]` is an ordinary reference from bounds-checked indexing: safe, and it would panic cleanly if the index were out of range.
+
++++ question | Writing through a raw pointer
+--- ask
+What does this print? Type the output.
+
+```rust
+fn main() {
+    let mut a = [1.5f64, 2.0, 4.0];
+    let p = a.as_mut_ptr();
+    unsafe {
+        *p.add(2) = *p + *p.add(1);
+    }
+    println!("{:?}", a);
+}
+```
+--- answer
+[1.5, 2.0, 3.5]
+[1.5,2.0,3.5]
+--- why
+`p` points at element 0. `*p` is 1.5 and `*p.add(1)` is 2.0, and `p.add(2)` is element 2, which gets their sum, 3.5, replacing the 4.0. `add(i)` moves the pointer by `i` elements, not bytes: $i \times 8$ bytes for an `f64`. It is an unsafe function because the result must stay inside the array; every offset here is at most 2, inside 3 elements, so the block is correct. The safe version is just `a[2] = a[0] + a[1];`.
+
++++ question | An index inside an unsafe block
+--- ask
+What happens when this is built and run?
+
+```rust
+fn main() {
+    let v = vec![9.79, 9.81, 9.83];
+    let i = v.len() + 4;
+    let x = unsafe { v[i] };
+    println!("{}", x);
+}
+```
+--- choice
+It prints whatever `f64` happens to lie past the end of the vector.
+--- choice correct
+It panics with "index out of bounds: the len is 3 but the index is 7", and the compiler warns that the `unsafe` block is unnecessary.
+--- choice
+It does not compile: indexing is not allowed inside `unsafe`.
+--- choice
+It is undefined behavior, which the debug build happens to catch.
+--- why
+`unsafe` unlocks five operations and switches nothing else off. `v[i]` is safe, bounds-checked indexing wherever it is written, so it still checks and panics cleanly, exactly as it would outside the block, and that is defined behavior. The warning is the compiler pointing out that nothing in the block used a superpower. To really skip the check you would call the unsafe `get_unchecked(i)`, and with `i = 7` that *would* be undefined behavior.
+
++++ question | Which wrappers are sound
+--- ask
+Each version is a public, safe function:
+
+```rust
+// A
+pub fn sample(v: &[f64], i: usize) -> f64 {
+    assert!(i < v.len());
+    // SAFETY: the assert guarantees i < v.len().
+    unsafe { *v.as_ptr().add(i) }
+}
+
+// B
+pub fn sample(v: &[f64], i: usize) -> f64 {
+    if i <= v.len() {
+        // SAFETY: i was checked against the length.
+        unsafe { *v.as_ptr().add(i) }
+    } else {
+        0.0
+    }
+}
+
+// C
+pub fn sample(v: &[f64], i: usize) -> f64 {
+    debug_assert!(i < v.len());
+    // SAFETY: the debug_assert checks i < v.len().
+    unsafe { *v.as_ptr().add(i) }
+}
+
+// D
+pub fn sample(v: &[f64], i: usize) -> f64 {
+    v.get(i).copied().unwrap_or(0.0)
+}
+```
+
+Pick every version that is sound: no call from safe code, with any arguments, in any build, can cause undefined behavior.
+--- choice correct
+A
+--- choice
+B
+--- choice
+C
+--- choice correct
+D
+--- why
+A checks before it trusts: in every build, a bad `i` panics before the unsafe line runs. B is off by one: `i == v.len()` passes the test and reads one element past the end, and its `SAFETY:` comment hides the mistake instead of arguing it. C is fine in a debug build, but `debug_assert!` is compiled out of release builds, so a release call with a bad `i` reads out of bounds; soundness must hold in every build. D has no unsafe code at all, so it is sound by construction, and it is what you should normally write.
+
++++ question | Two halves that overlap
+--- ask
+This variant of a split function printed the expected `[0.005, -0.02, 0.005, 0.1, 0.0, 0.0]`, but a reviewer rejects it.
+
+```rust
+pub fn split_halves(v: &mut [f64], mid: usize) -> (&mut [f64], &mut [f64]) {
+    let len = v.len();
+    assert!(mid < len);
+    let p = v.as_mut_ptr();
+    unsafe {
+        (
+            std::slice::from_raw_parts_mut(p, mid + 1),
+            std::slice::from_raw_parts_mut(p.add(mid), len - mid),
+        )
+    }
+}
+
+fn main() {
+    let mut imu = [0.01, -0.02, 0.005, 0.1, 0.0, -9.81];
+    let (gyro, accel) = split_halves(&mut imu, 3);
+    gyro[0] -= 0.005;
+    accel[2] += 9.81;
+    println!("{:?}", imu);
+}
+```
+
+What is the bug?
+--- choice correct
+The first slice covers `mid + 1` elements, indices 0 to `mid`, and the second starts at `mid`, so element `mid` is in both: two live `&mut` to one `f64`. That is undefined behavior, even though this run printed the expected numbers.
+--- choice
+`p.add(mid)` points past the end of the array when `mid` is 3.
+--- choice
+Nothing: the output is right, and the `assert!` keeps both slices in bounds.
+--- choice
+`from_raw_parts_mut` may only be used on a `Vec`, never on an array.
+--- why
+The unsafe function's contract says the memory must not be reached through any other path while the slice lives. Here `gyro[3]` and `accel[0]` are the same element: two exclusive references to one value, the exact aliasing the borrow rules forbid, now hidden where the compiler cannot look. The optimizer may assume the two never overlap, so the damage can surface anywhere later. This test never touched element 3, so it passed, which is why unsafe code needs a written `SAFETY:` argument and a run under Miri. The fix is `from_raw_parts_mut(p, mid)`. `p.add(3)` is inside a 6-element array, and any slice of `f64` works.
+
++++ question | A hit counter in a static
+--- ask
+A teammate wants a global hit counter. Without the `unsafe impl` line, the compiler refuses the `static`: "`Cell<u32>` cannot be shared between threads safely". With it, the program compiles and prints 1.
+
+```rust
+use std::cell::Cell;
+
+struct Stats {
+    hits: Cell<u32>,
+}
+
+unsafe impl Sync for Stats {}
+
+static STATS: Stats = Stats { hits: Cell::new(0) };
+
+fn main() {
+    STATS.hits.set(STATS.hits.get() + 1);
+    println!("{}", STATS.hits.get());
+}
+```
+
+What is wrong with this fix?
+--- choice correct
+`unsafe impl Sync` is a promise the compiler takes on trust, and it is false: two threads calling `hits.set(hits.get() + 1)` at once is a data race, which is undefined behavior. Use a `static` holding an `AtomicU32` or a `Mutex<u32>`, which need no `unsafe`.
+--- choice
+Nothing: this program has only one thread, so the promise holds.
+--- choice
+Nothing: the compiler checks the promise while the program runs, and panics if two threads touch the counter.
+--- choice
+`Cell` is already Sync, so the `unsafe impl` line is only redundant.
+--- why
+A `static` can be reached from every thread, so its type must be Sync. `Cell` is not, on purpose: it changes its value through `&` with no protection. `unsafe impl Sync` adds no protection; it only tells the compiler to stop asking. The type is now unsound: any safe code, in any thread, can cause a data race through it. A promise has to hold for every possible use of the type, not just for today's `main`. An atomic does the read-add-write as one indivisible step, and a `Mutex` makes threads take turns; both are Sync honestly.
+
+=== rs02-l08 | Practice: Traits, generics and dispatch
+--- for
+l08-traits-and-dispatch
+
++++ question | Beacons with a default label
+--- ask
+What does this print? Type the output.
+
+```rust
+trait Beacon {
+    fn id(&self) -> u8;
+    fn label(&self) -> String {
+        format!("beacon-{}", self.id())
+    }
+}
+
+struct Pad;
+struct Ship;
+
+impl Beacon for Pad {
+    fn id(&self) -> u8 {
+        3
+    }
+}
+
+impl Beacon for Ship {
+    fn id(&self) -> u8 {
+        7
+    }
+    fn label(&self) -> String {
+        String::from("ship")
+    }
+}
+
+fn main() {
+    println!("{} {} {}", Pad.label(), Ship.label(), Ship.id());
+}
+```
+--- answer
+beacon-3 ship 7
+--- why
+`label` has a body in the trait, so it is a default method. `Pad` writes only the required `id`, so it gets the default, which calls `Pad`'s own `id`: `beacon-3`. `Ship` replaces `label` with its own version, so the default never runs for it, even though `Ship` has an `id` too. A default method may call required methods without knowing which type it will run on; that is how `Iterator` builds dozens of methods on top of `next`.
+
++++ question | Describing any sensor
+--- ask
+What happens when this is compiled?
+
+```rust
+pub trait Sensor {
+    fn read(&mut self) -> Option<f64>;
+}
+
+fn describe<S: Sensor>(s: &S) -> String {
+    format!("{:?}", s)
+}
+```
+--- choice correct
+E0277: the bound only promises `Sensor`, and `{:?}` needs `Debug`. Write `S: Sensor + std::fmt::Debug`.
+--- choice
+It compiles: every type can be printed with `{:?}`.
+--- choice
+It compiles, and each call is checked when the program runs.
+--- choice
+It fails because a generic function may not take a reference to `S`.
+--- why
+Inside a generic function you may use only what the bounds promise. `S: Sensor` promises `read` and nothing else, so formatting with `{:?}` is refused before anyone even calls `describe`. The body is checked once, against the bound, not once per caller, which is a real difference from C++ templates. Adding `+ std::fmt::Debug` widens the promise, and from then on only types that are both sensors and `Debug` may be passed.
+
++++ question | A blanket impl and a special case
+--- ask
+What happens when this is compiled?
+
+```rust
+use std::fmt::Display;
+
+trait Loggable {
+    fn log_line(&self) -> String;
+}
+
+impl<T: Display> Loggable for T {
+    fn log_line(&self) -> String {
+        format!("[LOG] {}", self)
+    }
+}
+
+impl Loggable for String {
+    fn log_line(&self) -> String {
+        format!("[STR] {}", self)
+    }
+}
+
+fn main() {
+    println!("{}", 42.log_line());
+}
+```
+--- choice
+It prints `[LOG] 42`, and a `String` would print with `[STR]`.
+--- choice correct
+E0119, conflicting implementations: `String` implements `Display`, so the blanket impl already covers it, and a second impl for `String` would give two answers for one type.
+--- choice
+E0117, the orphan rule, because `String` belongs to the standard library.
+--- choice
+It compiles, and the more specific impl wins for `String`.
+--- why
+`impl<T: Display> Loggable for T` implements `Loggable` for every `Display` type at once, `String` included. A program may have at most one impl of a trait for a given type, and stable Rust has no rule that lets "the more specific one" win, so the second impl conflicts. The orphan rule is not the problem: `Loggable` is local, so implementing it for `String` would be fine on its own. A local type that does not implement `Display` may still get its own `impl Loggable`, because the blanket impl does not cover it.
+
++++ question | Sizes of pointers
+--- ask
+On a 64-bit machine, what does this print? Type the five numbers.
+
+```rust
+use std::mem::size_of;
+
+trait Sensor {
+    fn read(&mut self) -> f64;
+}
+
+struct Gyro {
+    t: f64,
+    bias: [f64; 3],
+}
+
+fn main() {
+    println!(
+        "{} {} {} {} {}",
+        size_of::<&[f64]>(),
+        size_of::<Box<dyn Sensor>>(),
+        size_of::<&Gyro>(),
+        size_of::<Box<[f64; 3]>>(),
+        size_of::<&str>(),
+    );
+}
+```
+--- answer
+16 16 8 8 16
+--- why
+A reference or a box to a type whose size is known is one 8-byte address: `&Gyro` and `Box<[f64; 3]>`. A slice reference `&[f64]` and a `&str` are fat pointers: the address plus a length. `Box<dyn Sensor>` is a fat pointer too: the address plus a pointer to the vtable of the concrete type inside. The second word always carries what the type alone cannot say: how many elements, or which type's methods to call.
+
++++ question | A suite in one Vec
+--- ask
+What is wrong, and what is the fix?
+
+```rust
+trait Sensor {
+    fn read(&mut self) -> f64;
+}
+
+struct Gyro;
+struct Accel;
+
+impl Sensor for Gyro {
+    fn read(&mut self) -> f64 {
+        0.01
+    }
+}
+
+impl Sensor for Accel {
+    fn read(&mut self) -> f64 {
+        -9.81
+    }
+}
+
+fn read_all<S: Sensor>(list: &mut Vec<S>) -> f64 {
+    list.iter_mut().map(|s| s.read()).sum()
+}
+
+fn main() {
+    let mut suite = vec![Gyro, Accel];
+    println!("{}", read_all(&mut suite));
+}
+```
+--- choice correct
+`vec![Gyro, Accel]` fails with E0308, mismatched types: a `Vec` holds one type, and a generic `S` stands for one type. Store `Vec<Box<dyn Sensor>>` and let `read_all` take `&mut [Box<dyn Sensor>]`.
+--- choice
+Write `where S: Sensor` instead of `<S: Sensor>`: a where clause lets `S` differ from element to element.
+--- choice
+Write the parameter as `list: &mut Vec<impl Sensor>`: `impl Trait` allows mixed types.
+--- choice
+Name the type in the call: `read_all::<dyn Sensor>(&mut suite)`.
+--- why
+Static dispatch fixes one concrete type per copy of the code: `read_all` for `Gyro`, or for `Accel`, never both in one list. A where clause is only another spelling of the same bound, and `impl Sensor` in argument position still means "one type, not named". Mixing types in one collection is what dynamic dispatch is for: each `Box<dyn Sensor>` carries its own vtable, and `s.read()` finds the right function while the program runs. For a set fixed at build time, an enum with one variant per sensor works too, with no heap.
+
++++ question | Six sensors, one array, no heap
+--- ask
+A 1 kHz loop reads six sensors whose types are fixed when the software is built. They must sit in one array that the loop walks, with no heap allocation, and every `read` call should be able to inline. Which design fits?
+--- choice
+`Vec<Box<dyn Sensor>>`
+--- choice
+`[&mut dyn Sensor; 6]`, references to sensors kept on the stack.
+--- choice
+A generic array `[S; 6]` with the bound `S: Sensor`.
+--- choice correct
+`enum AnySensor { Gyro(Gyro), Accel(Accel), ... }`, with an `impl Sensor for AnySensor` whose `read` forwards through a `match`, stored as `[AnySensor; 6]`.
+--- why
+Boxes put every sensor on the heap. An array of `&mut dyn Sensor` avoids the heap, but each call still goes through a vtable, so nothing inlines. A generic array holds six values of one type, not six kinds of sensor. The enum holds any of the known types inline, so the array is plain data; the `match` is an ordinary branch, and each arm is a direct call the optimizer can inline. Adding a sensor type means adding a variant, and exhaustiveness checking points at every `match` that must handle it.
+
+=== rs02-l09 | Practice: The standard traits
+--- for
+l09-the-standard-traits
+
++++ question | Delta-v with operators
+--- ask
+What does this print? Type the output.
+
+```rust
+use std::ops::{Add, Mul};
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Mps(f64);
+
+impl Add for Mps {
+    type Output = Mps;
+    fn add(self, o: Mps) -> Mps {
+        Mps(self.0 + o.0)
+    }
+}
+
+impl Mul<f64> for Mps {
+    type Output = Mps;
+    fn mul(self, k: f64) -> Mps {
+        Mps(self.0 * k)
+    }
+}
+
+fn main() {
+    let dv = Mps(1.5) + Mps(2.5) * 2.0;
+    println!("{:?}", dv);
+}
+```
+--- answer
+Mps(6.5)
+--- why
+Implementing `Add` and `Mul` gives your type the operators, but not a new precedence: `*` still binds tighter than `+`. So this is `Mps(1.5) + (Mps(2.5) * 2.0)`, which is `Mps(1.5) + Mps(5.0)`, and that is `Mps(6.5)`. Each operator is a method call: `Add::add(Mps(1.5), Mul::mul(Mps(2.5), 2.0))`. Both take their operands by value, which is fine because `Mps` is Copy.
+
++++ question | Fitting numbers into a byte
+--- ask
+What does this print? Type the output.
+
+```rust
+fn main() {
+    let a = u8::try_from(255_i32);
+    let b = u8::try_from(-1_i32);
+    let c = -1_i32 as u8;
+    println!("{:?} {} {}", a, b.is_err(), c);
+}
+```
+--- answer
+Ok(255) true 255
+--- why
+255 is the largest `u8`, so `try_from(255)` succeeds. $-1$ is outside 0 to 255, so `try_from(-1)` is an `Err`. The `as` cast never fails: between integer types it keeps the low 8 bits, and $-1$ is stored as all ones, which read as a `u8` is 255. The cast turned "minus one" into "full scale" without a word. That is why `try_from` is the right tool for any value that might not fit.
+
++++ question | A countdown iterator
+--- ask
+What does this print? Type the output.
+
+```rust
+struct Countdown {
+    n: u32,
+}
+
+impl Iterator for Countdown {
+    type Item = u32;
+    fn next(&mut self) -> Option<u32> {
+        if self.n == 0 {
+            None
+        } else {
+            self.n -= 1;
+            Some(self.n + 1)
+        }
+    }
+}
+
+fn main() {
+    let total: u32 = Countdown { n: 5 }.filter(|x| x % 2 == 1).sum();
+    let picked: Vec<u32> = Countdown { n: 5 }.skip(1).take(2).collect();
+    println!("{} {:?}", total, picked);
+}
+```
+--- answer
+9 [4, 3]
+9 [4,3]
+--- why
+`next` hands out 5, 4, 3, 2, 1, then `None` for good. Only `next` was written; `filter`, `sum`, `skip`, `take` and `collect` are default methods of `Iterator`, built on it. The odd values add to $5 + 3 + 1 = 9$. A fresh countdown with its first item skipped and two taken gives `[4, 3]`. Each chain needs its own `Countdown`, because the adapters take the iterator by value and use it up.
+
++++ question | Comparing readings
+--- ask
+What does this print? Type the output.
+
+```rust
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Reading {
+    v: f64,
+}
+
+fn main() {
+    let r = Reading { v: f64::NAN };
+    let z = Reading { v: 0.0 };
+    let nz = Reading { v: -0.0 };
+    println!("{} {} {}", r == r, z == nz, r != r);
+}
+```
+--- answer
+false true true
+--- why
+A derived `PartialEq` compares field by field with each field's own `==`. For `f64`, NaN is not equal to anything, not even itself, so `r == r` is false and `r != r` is true. That is why `f64` is only `PartialEq`, never `Eq`, and a struct holding one can never honestly be `Eq`. Negative zero has a different sign bit, but IEEE 754 says `-0.0 == 0.0`, so the middle comparison is true.
+
++++ question | A callsign that crashes when printed
+--- ask
+This compiles, but printing `c` crashes the program. What is wrong?
+
+```rust
+use std::fmt;
+
+struct Callsign(String);
+
+impl fmt::Display for Callsign {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}]", self)
+    }
+}
+
+fn main() {
+    let c = Callsign(String::from("DRAGON-7"));
+    println!("{}", c);
+}
+```
+--- choice correct
+`write!(f, "[{}]", self)` formats `self` with `{}`, which calls this same `fmt` again, and again, until the stack overflows. Format the field instead: `write!(f, "[{}]", self.0)`.
+--- choice
+`Display` must be derived, not written by hand, so this impl is ignored.
+--- choice
+`fmt` must end with an explicit `Ok(())` after the `write!`.
+--- choice
+Nothing: it prints `[DRAGON-7]`.
+--- why
+`{}` on a value means "call its `Display::fmt`". Inside `Display::fmt` for `Callsign`, formatting `self` with `{}` is a call to itself with no way out. The compiler does not catch it, and the program dies with "thread 'main' has overflowed its stack". `self.0` is the `String`, whose own `Display` prints the text. `write!` already returns the `fmt::Result`, which is why it is the last expression, and `Display` cannot be derived at all.
+
++++ question | A throttle command
+--- ask
+What does this print? Type the output.
+
+```rust
+use std::num::ParseIntError;
+
+#[derive(Debug)]
+enum CmdError {
+    Parse(ParseIntError),
+    Range(u32),
+}
+
+impl From<ParseIntError> for CmdError {
+    fn from(e: ParseIntError) -> Self {
+        CmdError::Parse(e)
+    }
+}
+
+fn throttle(s: &str) -> Result<u8, CmdError> {
+    let v: u32 = s.trim().parse()?;
+    u8::try_from(v).map_err(|_| CmdError::Range(v))
+}
+
+fn main() {
+    println!("{:?} {:?} {}", throttle(" 42"), throttle("300"), throttle("4x").is_err());
+}
+```
+--- answer
+Ok(42) Err(Range(300)) true
+--- why
+`" 42"` is trimmed, parses as a `u32`, and fits a `u8`: `Ok(42)`. `"300"` parses, but `u8::try_from(300)` fails, and `map_err` turns that into our `Range(300)`, which keeps the rejected value for the report. `"4x"` fails to parse, and `?` meets a `ParseIntError` in a function that returns `CmdError`, so it converts it with our `From` impl before returning. Without that impl, the `?` line would not compile. `From` is for the conversion that always works, `TryFrom` for the one that may not.
+
+=== rs02-l10 | Practice: Errors and panics
+--- for
+l10-errors-and-panics
+
++++ question | Error or panic
+--- ask
+Pick every failure that should be a panic rather than a returned `Err`.
+--- choice
+An uplinked command frame fails its checksum.
+--- choice correct
+A private ring-buffer index, computed as `head % CAP`, turns out to be `CAP` or more.
+--- choice
+The configuration file has a key the parser does not know.
+--- choice correct
+A `match` on the state machine reaches a state that the line just above it ruled out.
+--- choice
+The star tracker reports "no solution" because the Moon is in its field of view.
+--- why
+Ask whether the caller can reasonably do something about it. A bad checksum, an unknown key and a blinded star tracker all come from the outside world: ask for a resend, warn and use a default, or skip the update. They must be `Err` values, never a crash. `head % CAP` can only be 0 to `CAP - 1`, so anything else means the code is not what you think it is, and a state the previous line ruled out is the same kind of broken assumption. Those are bugs, and stopping is the honest response.
+
++++ question | Hidden panics
+--- ask
+`a` and `b` are `i32`, `p` and `q` are `f64`, `v` is a `Vec<u8>`, `text` is a `String`, and `n` is a `u32`. Pick every expression that can panic in a debug build.
+--- choice correct
+`a / b`
+--- choice
+`p / q`
+--- choice correct
+`&text[0..3]`
+--- choice
+`v.get(9)`
+--- choice
+`u8::try_from(a)`
+--- choice correct
+`n + 1`
+--- why
+Integer division by zero panics; float division by zero gives infinity (or NaN for 0.0 / 0.0) and carries on. Slicing a `String` panics if the text is shorter than 3 bytes or if byte 3 falls inside a character that takes several bytes. `n + 1` overflows when `n` is `u32::MAX`, which panics in a debug build. `get` and `try_from` are the twins that cannot panic: they return `None` or `Err` and let the caller decide.
+
++++ question | Errors that know their cause
+--- ask
+What does this print? Type the output on one line. It uses the thiserror crate.
+
+```rust
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+enum CfgError {
+    #[error("missing key {0}")]
+    Missing(String),
+    #[error("bad number")]
+    BadNumber(#[from] std::num::ParseFloatError),
+}
+
+fn rate(line: &str) -> Result<f64, CfgError> {
+    let v = line
+        .strip_prefix("rate=")
+        .ok_or(CfgError::Missing(String::from("rate")))?;
+    Ok(v.parse()?)
+}
+
+fn main() {
+    for l in ["rate=100", "rate=fast", "gain=2"] {
+        match rate(l) {
+            Ok(r) => print!("{} ", r),
+            Err(e) => print!("[{}] ", e),
+        }
+    }
+}
+```
+--- answer
+100 [bad number] [missing key rate]
+--- why
+For `"rate=100"`, the prefix comes off and `"100"` parses to 100.0, which prints as `100`. For `"rate=fast"`, `parse` returns a `ParseFloatError`, and `?` converts it through the `From` impl that `#[from]` generated, giving `BadNumber`, whose message is "bad number". For `"gain=2"`, `strip_prefix` returns `None`, `ok_or` turns that into `Missing("rate")`, and `{0}` in its message is the first field. The square brackets come from the `print!` in `main`, not from the enum.
+
++++ question | A panic in the release build
+--- ask
+`Cargo.toml` sets `panic = "abort"` under `[profile.release]`. This program is run with `cargo run --release`:
+
+```rust
+struct Valve(&'static str);
+
+impl Drop for Valve {
+    fn drop(&mut self) {
+        println!("closing {}", self.0);
+    }
+}
+
+fn main() {
+    let _v = Valve("LOX main");
+    let mode: Option<u8> = None;
+    let m = mode.expect("mode table is loaded before the loop starts");
+    println!("{m}");
+}
+```
+
+What happens?
+--- choice correct
+The panic message with the `expect` text prints, "closing LOX main" does not, and the process ends with status 134.
+--- choice
+The panic message prints, then "closing LOX main", and the exit status is 101.
+--- choice
+"closing LOX main" prints first, then the panic message, and the exit status is 134.
+--- choice
+Nothing prints at all: with abort, the panic message is skipped too.
+--- why
+With abort, a panic still prints its message, but then the process stops on the spot: no unwinding, so no `Drop` runs, and the valve's cleanup never happens. The shell reports $128 + 6 = 134$, because the process was ended by the abort signal, number 6. With the default unwinding, `_v` would be dropped on the way out and the status would be 101. That is why flight designs never rely on `Drop` during a failure, and why the `expect` message states the broken invariant: it is the text that reaches the crash record.
+
++++ question | A checksum that crashes in debug
+--- ask
+CI runs the tests in release mode, and they pass. A developer's debug run panics with "attempt to add with overflow" on the second frame.
+
+```rust
+fn checksum_ok(frame: &[u8]) -> bool {
+    let (body, last) = frame.split_at(frame.len() - 1);
+    let sum: u8 = body.iter().sum();
+    sum == last[0]
+}
+
+fn main() {
+    println!("{}", checksum_ok(&[0x00, 0x64, 0x0A, 0x14, 0x82]));
+    println!("{}", checksum_ok(&[0x00, 0xC8, 0xFF, 0xC7]));
+}
+```
+
+What is the right fix?
+--- choice correct
+The checksum is meant to keep only the lowest 8 bits, so the wrap is correct; say so with `body.iter().fold(0u8, |acc, &b| acc.wrapping_add(b))`, which gives the same answer in every build.
+--- choice
+The second frame is corrupt: return an `Err` when the sum passes 255.
+--- choice
+Add the bytes up in a `u32` and compare that with the last byte.
+--- choice
+Set `overflow-checks = false` in the debug profile, so both builds agree.
+--- why
+The second frame's body adds to $0 + 200 + 255 = 455$, and $455 - 256 = 199$, which is `0xC7`, the frame's last byte: the frame is fine. `sum` uses plain `+`, which treats wraparound as a bug: it panics when overflow checks are on (debug) and silently wraps when they are off (release). `wrapping_add` states that the wrap is the point and behaves the same everywhere. Comparing a `u32` total of 455 with a byte of 199 would reject good frames, and switching the checks off would hide every other overflow in the crate.
+
++++ question | One line for the log
+--- ask
+What does this print? It uses the anyhow crate. Type the output.
+
+```rust
+use anyhow::{Context, Result};
+
+fn gain(text: &str) -> Result<f64> {
+    let v: f64 = text.trim().parse().context("parsing gain")?;
+    Ok(v)
+}
+
+fn main() {
+    match gain(" 12.x ").context("loading controller config") {
+        Ok(g) => println!("{g}"),
+        Err(e) => println!("{:#}", e),
+    }
+}
+```
+--- answer
+loading controller config: parsing gain: invalid float literal
+--- why
+`parse` fails with a `ParseFloatError`, whose message is "invalid float literal". `.context("parsing gain")` wraps it in a sentence, and the `.context(...)` in `main` wraps that again, so the chain from the outside in is: loading, then parsing, then the cause. `{:#}` prints the whole chain on one line, joined by colons. Plain `{}` would print only the outermost message, and returning the error from `main` would print `Error:` with a "Caused by:" list. anyhow fits here because this is the top of an application: nobody matches on the cause, a person reads it.
+
+=== rs02-l11 | Practice: Testing, and the map back to C++
+--- for
+l11-testing-and-the-cpp-map
+
++++ question | A should_panic that fails
+--- ask
+Does this test pass?
+
+```rust
+pub struct Limiter {
+    max_step: f64,
+}
+
+impl Limiter {
+    pub fn new(max_step: f64) -> Self {
+        assert!(max_step > 0.0, "max_step must be positive, got {max_step}");
+        Limiter { max_step }
+    }
+}
+
+#[test]
+#[should_panic(expected = "rate must be positive")]
+fn rejects_negative_step() {
+    Limiter::new(-1.0);
+}
+```
+--- choice
+Yes: `new` panics, which is what the test asks for.
+--- choice correct
+No: the test does panic, but the message "max_step must be positive, got -1" does not contain the text "rate must be positive".
+--- choice
+It does not compile: `expected` must repeat the whole message.
+--- choice
+Yes: `expected` is only a note for the reader.
+--- why
+`#[should_panic(expected = "...")]` passes only if the test panics *and* the panic message contains that text somewhere. `expected = "must be positive"` would pass. Without `expected`, any panic at all would pass, including one from an unrelated bug, which is why the text is worth writing. cargo reports "panic did not contain expected string" and shows the substring it was looking for.
+
++++ question | Float assertions that pass
+--- ask
+`r` is `2.0_f64.sqrt()`. Pick every assertion that passes.
+--- choice
+`assert_eq!(0.1 + 0.2, 0.3);`
+--- choice correct
+`assert_eq!(0.25 + 0.5, 0.75);`
+--- choice
+`assert_eq!(r * r, 2.0);`
+--- choice correct
+`assert_eq!(1.5 * 4.0, 6.0);`
+--- choice correct
+`assert!((r * r - 2.0).abs() < 1e-12);`
+--- why
+0.25, 0.5, 0.75, 1.5, 4.0 and 6.0 are all exact in binary (sums of powers of two), so arithmetic on them is exact. 0.1, 0.2 and 0.3 are not, and their sum lands on 0.30000000000000004. The square root of 2 is rounded, so squaring it gives 2.0000000000000004. For computed values, compare with a tolerance, as the last assertion does.
+
++++ question | What proptest shrinks to
+--- ask
+`cargo test` fails with "attempt to multiply with overflow":
+
+```rust
+pub fn scaled(a: u16) -> u16 {
+    a * 3 / 3
+}
+
+proptest! {
+    #[test]
+    fn scaling_round_trips(a: u16) {
+        prop_assert_eq!(scaled(a), a);
+    }
+}
+```
+
+proptest reports the minimal failing input, `a = ...`. What number is it? Type it.
+--- answer
+21846
+21 846
+21,846
+--- why
+The multiplication overflows when $3a$ passes 65,535, the largest `u16`. $3 \times 21\,845 = 65\,535$ still fits, and $3 \times 21\,846 = 65\,538$ does not, so 21,846 is the smallest failing input. Shrinking keeps simplifying a failing input, moving it toward zero, for as long as it still fails, so it stops exactly at the edge of the bug. A hand-written test with `a = 1000` would pass forever. The fix is to compute in a wider type, or to notice that `a * 3 / 3` is just `a`.
+
++++ question | What miri can see
+--- ask
+Pick every bug that `cargo +nightly miri test` reports as undefined behavior, when a test runs the code.
+--- choice correct
+An `unsafe` read, through a raw pointer, one element past the end of an array.
+--- choice correct
+A read through a raw pointer into a `Vec`'s old buffer, after a `push` moved it.
+--- choice
+A safe function that returns the wrong sum.
+--- choice
+An index out of bounds with `v[i]` in safe code.
+--- choice
+A bug inside a C library called through FFI.
+--- why
+Miri tracks every allocation and every pointer, so out-of-bounds and use-after-free reads through raw pointers are caught the first time a test runs them, even when the test's assertions pass. A wrong answer in safe code is a logic bug, not undefined behavior: only an assertion catches it. A bounds-checked `v[i]` panics cleanly, which is defined behavior; under Miri it is the same panic. And Miri interprets Rust's MIR, so it cannot run the code of a C library at all.
+
++++ question | Tests that fail together
+--- ask
+Two tests in one file each write telemetry to `out.bin`, read it back and check the contents. Each passes when run alone (`cargo test write_short`, then `cargo test write_long`), but a plain `cargo test` fails one of them now and then. What is going on?
+--- choice correct
+Tests run in parallel threads by default, so both tests use `out.bin` at the same time and one reads what the other wrote. Give each test its own file, so no test depends on another.
+--- choice
+`cargo test` runs tests in alphabetical order, and the second always overwrites the first.
+--- choice
+Tests are not allowed to write files, so the write sometimes silently fails.
+--- choice
+The first test's file is never closed, because values are not dropped at the end of a test.
+--- why
+The test runner starts tests on several threads at once, so tests must not share outside state such as a file, an environment variable or a global. A failure that comes and goes with timing is the signature of that kind of race. `cargo test -- --test-threads=1` would hide it, but the real fix is independence: a separate file per test, or an in-memory buffer. Tests may write files, and each test's values are dropped when it returns, like any function's.
+
++++ question | What C++ lets through
+--- ask
+In C++:
+
+```cpp
+void add_twice(int& a, const int& b) {
+    a += b;
+    a += b;
+}
+
+int x = 1;
+add_twice(x, x);
+```
+
+What is `x` afterwards? Type the number.
+--- answer
+4
+--- why
+`a` and `b` both refer to `x`. The first line makes `x` 2, and since `b` is the same variable, the second line adds 2, giving 4, not the 3 a reader expects from "add `b` twice". C++ allows the call, so the compiler must reload `b` after every write through `a`. In Rust, `add_twice(&mut x, &x)` is refused with E0502: a `&mut` is guaranteed exclusive, so no other reference to `x` can exist while it does, and the compiler knows `b` cannot change behind its back. That is the `&mut T` row of the map back to C++: the same code, with a promise C++ cannot make.
+
+=== rs02-test | Ownership, borrowing, lifetimes and traits: module test
+--- teach
+The test covers the whole module: ownership and moves, borrowing and the rule of many readers or one writer, reading borrow errors, lifetimes, interior mutability and shared ownership, Send and Sync, Drop, unsafe code and soundness, traits and dispatch, the standard traits, errors and panics, and testing. Most questions combine two or more lessons: you predict what code does, find why it fails, or pick the fix that keeps its meaning. To get ready, redo the practice questions of the lessons that felt hard, and trace each borrow and each drop on paper before you answer.
+--- gate
+questions 13
+minutes 25
+
++++ question | A helper that lends the newest sample
+--- ask
+What happens?
+
+```rust
+fn newest(log: &Vec<f64>) -> &f64 {
+    &log[log.len() - 1]
+}
+
+fn main() {
+    let mut log = vec![0.5, 0.7];
+    let n = newest(&log);
+    log.push(0.9);
+    println!("{}", n);
+}
+```
+--- choice
+It prints `0.7`: the compiler does not look inside `newest`, so it cannot know that `n` points into `log`.
+--- choice
+It prints `0.9`.
+--- choice correct
+E0502: by elision rule 2, the returned `&f64` borrows from `log`, so `n` keeps `log` borrowed across the `push`. Copy the number out: `let n = *newest(&log);`
+--- choice
+E0106: `newest` returns a reference, so it needs a written lifetime.
+--- why
+The compiler does not look inside `newest`, and it does not need to: the signature has one input lifetime, so the output borrows from it. From the caller's side, `n` is a shared borrow of `log`, still used after `push` asked for `&mut log`. That is the push-while-referencing error, found straight through a function call. In C++ the same code compiles, and `n` dangles whenever the push reallocates. An `f64` is Copy, so `*newest(&log)` gives an independent number and the borrow ends on that line.
+
++++ question | Handles, owners and drops
+--- ask
+What does this print? Type the output on one line.
+
+```rust
+use std::rc::Rc;
+
+struct Log(&'static str);
+
+impl Drop for Log {
+    fn drop(&mut self) {
+        print!("drop:{} ", self.0);
+    }
+}
+
+fn main() {
+    let a = Rc::new(Log("eps"));
+    let b = Rc::clone(&a);
+    {
+        let c = Rc::clone(&b);
+        print!("{} ", Rc::strong_count(&c));
+    }
+    drop(a);
+    print!("{} ", Rc::strong_count(&b));
+    let _d = Log("tcs");
+    print!("end ");
+}
+```
+--- answer
+3 1 end drop:tcs drop:eps
+--- why
+Inside the block there are three handles, so the count is 3, and `c` is dropped at the brace. `drop(a)` removes a second handle, leaving 1. The `Log` is not dropped then, because `b` still owns it: the first handle has no special role. At the end of `main`, locals are dropped in reverse order of declaration: `_d` first, printing `drop:tcs`, then `b`, the last handle, whose drop takes the count to 0 and drops the `Log`, printing `drop:eps`.
+
++++ question | Two lifetimes, one result
+--- ask
+What does the compiler say about this function?
+
+```rust
+fn prefer<'a, 'b>(primary: &'a str, backup: &'b str, ok: bool) -> &'a str {
+    if ok { primary } else { backup }
+}
+```
+--- choice
+It compiles: both inputs are borrowed strings, so either may be returned.
+--- choice correct
+It fails in the body: the signature promises a result valid for `'a`, but `backup` is only known to live for `'b`, which may be shorter ("lifetime may not live long enough"). Use one lifetime for both inputs, or add the bound `'b: 'a`.
+--- choice
+It compiles, and callers learn from the body that `backup` must stay alive too.
+--- choice
+E0106: a function may not have two lifetime parameters.
+--- why
+A signature is checked from both sides. Callers rely only on the label, which here says "the result depends only on `primary`". So the body must keep that promise, and returning `backup`, whose lifetime `'b` has no stated relation to `'a`, breaks it. The compiler even suggests `'b: 'a`, read "tick b outlives tick a". The usual fix is one `'a` on both inputs, which tells callers the truth: the result may come from either, so both must stay alive. Two lifetime parameters are allowed; what matters is that the relation between them is stated.
+
++++ question | Popping while popping
+--- ask
+What happens when this runs?
+
+```rust
+use std::cell::RefCell;
+
+fn main() {
+    let queue = RefCell::new(vec![3, 2, 1]);
+    while let Some(x) = queue.borrow_mut().pop() {
+        print!("{} ", x);
+        if x == 2 {
+            queue.borrow_mut().push(9);
+        }
+    }
+    println!("done");
+}
+```
+--- choice
+It prints `1 2 9 3 done`.
+--- choice
+It prints `1 2 3 done`: the push inside the loop is lost.
+--- choice correct
+It prints `1 2` and then panics with "RefCell already borrowed": the guard from `queue.borrow_mut()` in the `while let` line lives through each pass of the loop body, so the inner `borrow_mut` meets a live writer.
+--- choice
+It does not compile: two `borrow_mut` calls are E0499.
+--- why
+A temporary guard made in the `while let` line is kept until the end of each pass through the body, like the iterator of a `for` loop, even though `x` is a plain copied `i32`. The first pass pops 1 and asks for nothing more. On the second, `x` is 2, and the inner `borrow_mut` finds the counter already at "one writer": a panic. The compiler cannot catch it, because both calls take `&self`; that is the price of moving the check to run time. Pop into a local first, `let next = queue.borrow_mut().pop();`, so the guard ends at the semicolon, then match on `next`.
+
++++ question | Threads and shared state
+--- ask
+Here are four programs:
+
+```rust
+// A
+let limit = RefCell::new(80u32);
+thread::scope(|s| {
+    s.spawn(|| println!("{}", *limit.borrow()));
+    s.spawn(|| println!("{}", *limit.borrow()));
+});
+
+// B
+let count = Mutex::new(0u32);
+thread::scope(|s| {
+    s.spawn(|| *count.lock().unwrap() += 1);
+    s.spawn(|| *count.lock().unwrap() += 1);
+});
+
+// C
+let table = Arc::new(vec![1.0012, 0.9987, 1.0005]);
+let t2 = Arc::clone(&table);
+let h = thread::spawn(move || t2[2]);
+println!("{} {}", h.join().unwrap(), table.len());
+
+// D
+let tags = vec![Rc::new(1u8), Rc::new(2u8)];
+let h = thread::spawn(move || tags.len());
+println!("{}", h.join().unwrap());
+```
+
+Pick every program that compiles.
+--- choice
+A
+--- choice correct
+B
+--- choice correct
+C
+--- choice
+D
+--- why
+A fails even though both threads only read: `borrow()` changes the RefCell's counter through `&`, without atomics, so `RefCell` is not Sync and a `&RefCell` may not cross threads. The compiler checks types, not what the code happens to do with them. B is the standard fix: the lock makes the threads take turns. C shares data that is only read, through an atomic count. D fails because each `Rc` in the vector has a non-atomic count, and Send is decided from the parts: a `Vec<Rc<u8>>` is not Send.
+
++++ question | A ring with a public head
+--- ask
+Code outside this module uses `Ring`:
+
+```rust
+pub struct Ring {
+    buf: [f64; 8],
+    pub head: usize, // invariant: head < 8
+}
+
+impl Ring {
+    pub fn new() -> Ring {
+        Ring { buf: [0.0; 8], head: 0 }
+    }
+
+    pub fn push(&mut self, x: f64) {
+        self.head = (self.head + 1) % 8;
+        self.buf[self.head] = x;
+    }
+
+    pub fn newest(&self) -> f64 {
+        // SAFETY: head < 8 always holds.
+        unsafe { *self.buf.get_unchecked(self.head) }
+    }
+}
+```
+
+Which change makes `Ring` sound, while `newest` stays a safe function?
+--- choice
+Expand the `SAFETY:` comment to explain the `% 8` in `push`.
+--- choice
+Add `debug_assert!(self.head < 8);` before the unsafe block.
+--- choice correct
+Make `head` private, so only `new` and `push`, inside the module, can change it.
+--- choice
+Put `#![forbid(unsafe_code)]` at the top of every crate that uses `Ring`.
+--- why
+The `SAFETY:` argument is about every piece of code that can change `head`. With `pub head`, that is any safe code anywhere: `ring.head = 100;` then `ring.newest()` reads far past the array. So the type is unsound, although no unsafe line is wrong. Privacy makes the list finite: `new` starts `head` at 0, and `push` keeps it below 8 with `% 8`, so the argument covers every case. A comment proves nothing on its own, `debug_assert!` vanishes from release builds, and banning unsafe code in the callers does not stop them writing a public field.
+
++++ question | A factory for two kinds of gyro
+--- ask
+Why does this fail, and what fixes it?
+
+```rust
+trait Sensor {
+    fn read(&mut self) -> f64;
+}
+
+struct SimGyro {
+    t: f64,
+}
+
+struct RealGyro {
+    port: u8,
+}
+
+// impl Sensor for SimGyro and for RealGyro are written, and work.
+
+fn make_sensor(sim: bool) -> impl Sensor {
+    if sim {
+        SimGyro { t: 0.0 }
+    } else {
+        RealGyro { port: 3 }
+    }
+}
+```
+--- choice correct
+`-> impl Sensor` means one concrete type, chosen by the function, and the two branches produce different types (E0308). Return `Box<dyn Sensor>` and box both values.
+--- choice
+`impl Sensor` may appear only in argument position, never as a return type.
+--- choice
+The trait needs a default method before it can be returned.
+--- choice
+Each branch needs `.into()` to convert its value to the trait.
+--- why
+`-> impl Sensor` hides the type's name from callers, but there is still exactly one type, fixed at compile time, which is what lets calls on it be static and inlined. An `if` whose branches give a `SimGyro` and a `RealGyro` has no single type: "`if` and `else` have incompatible types". Choosing the type while the program runs is dynamic dispatch: `Box<dyn Sensor>` is one type (a fat pointer) whatever is inside, and each box carries its own sensor's vtable. An enum with one variant per gyro would also work, with no heap.
+
++++ question | Adding big matrices by reference
+--- ask
+Here is a 6-by-6 matrix type with `+` defined on references:
+
+```rust
+use std::ops::Add;
+
+#[derive(Debug)]
+struct Mat6([f64; 36]);
+
+impl Add for &Mat6 {
+    type Output = Mat6;
+    fn add(self, o: &Mat6) -> Mat6 {
+        let mut out = [0.0; 36];
+        for i in 0..36 {
+            out[i] = self.0[i] + o.0[i];
+        }
+        Mat6(out)
+    }
+}
+
+fn main() {
+    let a = Mat6([1.0; 36]);
+    let b = Mat6([2.0; 36]);
+    // the lines go here
+}
+```
+
+Pick every line that compiles, each tried on its own where the comment is.
+--- choice correct
+`let c = &a + &b;`
+--- choice
+`let d = a + b;`
+--- choice correct
+`let e = &(&a + &b) + &a;`
+--- choice correct
+`let c = &a + &b; println!("{:?}", a.0[0]);`
+--- why
+The impl is for `&Mat6`, so `+` works on two references and only borrows its operands: `a` and `b` stay usable, and none of the 288 bytes of a matrix is copied just to call `add`. `a + b` asks for `Add` on `Mat6` itself, which nobody wrote: E0369, "cannot add `Mat6` to `Mat6`". Had that impl existed, `a + b` would move both (`Mat6` is not Copy), and a later use of `a` would be E0382. `&a + &b` returns an owned `Mat6`, and borrowing that temporary for the next addition is fine.
+
++++ question | A question mark that cannot convert
+--- ask
+This library function fails with E0277 on the `from_str_radix` line: "`?` couldn't convert the error to `FrameError`".
+
+```rust
+use std::num::ParseIntError;
+
+#[derive(Debug)]
+pub enum FrameError {
+    TooShort,
+    BadHex(ParseIntError),
+}
+
+pub fn first_byte(line: &str) -> Result<u8, FrameError> {
+    let tok = line.split_whitespace().next().ok_or(FrameError::TooShort)?;
+    let b = u8::from_str_radix(tok, 16)?;
+    Ok(b)
+}
+```
+
+Which change fixes it the way a library should?
+--- choice correct
+Add `impl From<ParseIntError> for FrameError`, whose `from` returns `FrameError::BadHex(e)`, or derive it with thiserror's `#[from]`.
+--- choice
+Add `impl From<FrameError> for ParseIntError`.
+--- choice
+Replace the second `?` with `.unwrap()`.
+--- choice
+Change the return type to `Result<u8, ParseIntError>`.
+--- why
+On an `Err(e)`, `?` returns `Err(From::from(e))`, so it needs a conversion from the error it meets, `ParseIntError`, into the function's error type. The reverse impl points the wrong way. `unwrap` would let a malformed hex byte from the radio crash the program, which outside input must never be able to do. And a `ParseIntError` cannot express `TooShort`, so the first `?` would stop compiling. With the `From` impl, callers get a typed `BadHex` that keeps the original error as its cause.
+
++++ question | A lock that remembers a crash
+--- ask
+What does this print on its last line? Type it.
+
+```rust
+use std::sync::{Arc, Mutex};
+use std::thread;
+
+fn main() {
+    let count = Arc::new(Mutex::new(0u32));
+    let c2 = Arc::clone(&count);
+    let _ = thread::spawn(move || {
+        let mut g = c2.lock().unwrap();
+        *g += 1;
+        panic!("sensor fault");
+    })
+    .join();
+    let state = match count.lock() {
+        Ok(g) => format!("ok {}", *g),
+        Err(e) => format!("poisoned {}", *e.into_inner()),
+    };
+    println!("{}", state);
+}
+```
+--- answer
+poisoned 1
+--- why
+The worker locks, adds 1, then panics while still holding the guard. With the default unwinding, the guard is dropped on the way out, so the lock is released and `main` does not wait forever. But the mutex marks itself poisoned, because the data may have been left halfway through an update. So `main`'s `lock()` returns `Err`, and `into_inner()` recovers the guard anyway, showing the 1 the worker wrote. With `panic = "abort"`, none of this would happen: the first panic would end the whole process.
+
++++ question | Tests that pass
+--- ask
+The crate has:
+
+```rust
+const THROTTLE_TABLE: [u32; 4] = [0, 40, 70, 100];
+
+fn thrust_pct(setting: usize) -> u32 {
+    THROTTLE_TABLE[setting]
+}
+```
+
+and these tests:
+
+```rust
+#[test]
+fn a() -> Result<(), String> {
+    let n = thrust_pct(2);
+    if n == 70 { Err(format!("got {n}")) } else { Ok(()) }
+}
+
+#[test]
+#[should_panic]
+fn b() {
+    let v: Vec<u8> = Vec::new();
+    let _ = v[0];
+}
+
+#[test]
+#[should_panic(expected = "out of range")]
+fn c() {
+    thrust_pct(9);
+}
+
+#[test]
+fn d() {
+    assert_eq!(0.5 + 0.25, 0.75);
+}
+```
+
+Pick every test that passes under `cargo test`.
+--- choice
+a
+--- choice correct
+b
+--- choice
+c
+--- choice correct
+d
+--- why
+A test that returns `Result` fails when it returns `Err`, whatever the reason; `a` gets 70 and returns `Err`. `b` indexes an empty vector and panics, as it promised to. `c` does panic, but the message is "index out of bounds: the len is 4 but the index is 9", which does not contain "out of range", so it fails. `d` compares values that are exact in binary.
+
++++ question | Flushing the queue
+--- ask
+`flush` should hand every frame to `archive` and leave the queue empty, so the program should print `3 0`. The loop fails with E0507.
+
+```rust
+fn archive(f: Vec<u8>) -> usize {
+    f.len()
+}
+
+struct Queue {
+    frames: Vec<Vec<u8>>,
+}
+
+impl Queue {
+    fn flush(&mut self) -> usize {
+        let mut n = 0;
+        for f in self.frames {
+            n += archive(f);
+        }
+        n
+    }
+}
+
+fn main() {
+    let mut q = Queue { frames: vec![vec![1, 2], vec![3]] };
+    println!("{} {}", q.flush(), q.frames.len());
+}
+```
+
+Which change does exactly that, with no copying?
+--- choice
+`for f in &self.frames { n += archive(f.clone()); }`
+--- choice
+`for f in self.frames.iter_mut() { n += archive(*f); }`
+--- choice correct
+`for f in std::mem::take(&mut self.frames) { n += archive(f); }`
+--- choice
+Change `flush` to take `self` instead of `&mut self`.
+--- why
+`for f in self.frames` would call `into_iter` on the field, moving the vector out of a struct that `flush` only borrows. `std::mem::take` moves the vector out and leaves an empty `Vec` in its place, so the owner's queue is whole and empty, and each frame moves into `archive` without a copy. The clone version copies every frame and leaves the queue full, printing `3 2`. `*f` through `iter_mut` is again a move out through a borrow, E0507. Taking `self` compiles inside `flush`, but consumes the queue, so reading `q.frames` afterwards uses a moved value.
+
++++ question | What C++ compiles without a word
+--- ask
+Each C++ fragment is compiled with g++ 13 and `-Wall -Wextra`. Pick every one that compiles with no warning and has undefined behavior.
+--- choice
+`std::string a = "x"; std::string b = std::move(a); std::cout << a;`
+--- choice correct
+`std::vector<int> v{1, 2, 3}; int& r = v[0]; v.push_back(4); std::cout << r;`
+--- choice correct
+`std::string_view label() { std::string s = "IMU-A"; return s; }`, and then printing `label()`
+--- choice
+`const std::string& label() { std::string s = "IMU-B"; return s; }`, and then printing `label()`
+--- choice correct
+Two `std::thread`s that each run `n += 1` a thousand times on the same plain `long n`
+--- why
+Reading a moved-from `std::string` is legal: its value is "valid but unspecified", a logic bug but not undefined behavior. The push can reallocate and leave `r` pointing into freed memory, and g++ says nothing. The `string_view` holds a pointer into `s`, which dies at the `return`; since the return type is not a reference, the warning's pattern does not match. Returning `const std::string&` to a local is the one shape g++ catches, with `-Wreturn-local-addr`. Two unsynchronized `n += 1` loops are a data race. Rust refuses every one of these shapes at compile time.
+
++++ question | A clone that shares
+--- ask
+What does this print? Type the three numbers.
+
+```rust
+use std::cell::RefCell;
+use std::rc::Rc;
+
+fn main() {
+    let a = Rc::new(RefCell::new(vec![1.0, 2.0]));
+    let b = a.clone();
+    b.borrow_mut().push(3.0);
+    let c = a.borrow().clone();
+    b.borrow_mut().push(4.0);
+    println!("{} {} {}", a.borrow().len(), b.borrow().len(), c.len());
+}
+```
+--- answer
+4 4 3
+4, 4, 3
+--- why
+`a.clone()` on an `Rc` is the cheap kind: one more handle to the same `RefCell`, so pushes through `b` are seen through `a`. `a.borrow().clone()` clones the `Vec` inside, a deep copy with its own heap buffer, made while the vector held 3 numbers. The later push reaches `a` and `b`, which now see 4, but not `c`, which keeps 3. Whether `.clone()` shares or copies depends on the type: for `Rc` and `Arc` it counts, for `Vec` and `String` it allocates.
+
++++ question | How many copies of the code
+--- ask
+How many compiled copies of `log_all` does this program contain, and how many of `log_dyn`? Type the two numbers, separated by a space.
+
+```rust
+use std::fmt::Display;
+
+fn log_all<T: Display>(items: &[T]) {
+    for x in items {
+        println!("{}", x);
+    }
+}
+
+fn log_dyn(items: &[&dyn Display]) {
+    for x in items {
+        println!("{}", x);
+    }
+}
+
+fn main() {
+    log_all(&[1.0, 2.0]);
+    log_all(&[3u32]);
+    log_all(&[4.5]);
+    log_all(&["a", "b"]);
+    log_dyn(&[&1.0, &3u32, &"a"]);
+}
+```
+--- answer
+3 1
+3, 1
+3,1
+--- why
+The compiler writes one copy of a generic function for each concrete type it is used with: `T` is `f64` (for both `1.0, 2.0` and `4.5`), `u32`, and `&str`, so three copies, each with a direct call to its type's formatting that can be inlined. `log_dyn` is not generic: it is compiled once, and each `x` is a fat pointer whose vtable finds the right formatting code while the program runs. More types would mean more copies of `log_all` and still one `log_dyn`: code size traded against call speed.
+
++++ question | Threads that keep their data
+--- ask
+`main` starts with `let log = vec![1];`, `let s = String::from("x");` and `let name = "IMU-A";`. Pick every line that compiles after them, each tried on its own.
+--- choice correct
+`thread::spawn(move || name.len());`
+--- choice
+`thread::spawn(|| log.len());`
+--- choice correct
+`thread::spawn(move || log.len());`
+--- choice
+`let r = &s; thread::spawn(move || r.len());`
+--- choice
+`let n = Rc::new(5); thread::spawn(move || *n + 1);`
+--- why
+`spawn` needs a closure that is `Send` and `'static`, since the thread may outlive `main`'s locals. `name` is a `&'static str`, a borrow that never expires, and `move` copies it in. Without `move`, the closure borrows `log`: E0373. With `move`, it owns the vector and holds no borrow, so it passes. Moving `r` in moves only the reference, and a reference to a local `String` is still a borrow that expires: E0597, "`s` is borrowed for `'static`". The `Rc` fails the other half, Send (E0277).

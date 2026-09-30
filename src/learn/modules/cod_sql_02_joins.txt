@@ -1,0 +1,3452 @@
+@track sql
+@course mod-cod_sql_02_joins
+@module cod_sql_02_joins
+@title Joins, aggregation and subqueries: practice and test
+@schema
+CREATE TABLE satellite (
+    sat_id   TEXT PRIMARY KEY,
+    name     TEXT NOT NULL,
+    plane    INTEGER NOT NULL,
+    launched TEXT NOT NULL
+);
+INSERT INTO satellite VALUES
+  ('SAT-101', 'Vega',  1, '2024-05-10'),
+  ('SAT-102', 'Lyra',  1, '2024-05-10'),
+  ('SAT-103', 'Orion', 2, '2025-02-01'),
+  ('SAT-104', 'Draco', 2, '2025-08-19'),
+  ('SAT-105', 'Hydra', 3, '2026-02-01');
+CREATE TABLE reading (
+    sat_id  TEXT NOT NULL REFERENCES satellite(sat_id),
+    ts      TEXT NOT NULL,
+    channel TEXT NOT NULL,
+    value   REAL NOT NULL
+);
+INSERT INTO reading VALUES
+  ('SAT-101', '2026-04-01T00:00:00Z', 'BUS_TEMP', 19),
+  ('SAT-101', '2026-04-01T08:00:00Z', 'BUS_TEMP', 23),
+  ('SAT-101', '2026-04-02T00:00:00Z', 'BUS_TEMP', 27),
+  ('SAT-101', '2026-04-02T16:00:00Z', 'BUS_TEMP', 25),
+  ('SAT-101', '2026-04-01T00:00:00Z', 'BATT_V',   28.2),
+  ('SAT-101', '2026-04-02T00:00:00Z', 'BATT_V',   27.6),
+  ('SAT-102', '2026-04-01T04:00:00Z', 'BUS_TEMP', 21),
+  ('SAT-102', '2026-04-01T20:00:00Z', 'BUS_TEMP', 21),
+  ('SAT-102', '2026-04-01T04:00:00Z', 'BATT_V',   27.9),
+  ('SAT-103', '2026-04-02T12:00:00Z', 'BUS_TEMP', 15),
+  ('SAT-103', '2026-04-03T00:00:00Z', 'BUS_TEMP', 17),
+  ('SAT-103', '2026-04-03T00:00:00Z', 'BATT_V',   26.8),
+  ('SAT-104', '2026-04-01T10:00:00Z', 'BATT_V',   28.4);
+CREATE TABLE channel (
+    channel  TEXT PRIMARY KEY,
+    units    TEXT NOT NULL,
+    hi_limit REAL NOT NULL
+);
+INSERT INTO channel VALUES
+  ('BATT_V',    'V',    29.0),
+  ('BUS_TEMP',  'degC', 25.0),
+  ('SUN_ANGLE', 'deg',  90.0);
+CREATE TABLE sat_limit (
+    sat_id  TEXT NOT NULL REFERENCES satellite(sat_id),
+    channel TEXT NOT NULL REFERENCES channel(channel),
+    hi      REAL NOT NULL,
+    PRIMARY KEY (sat_id, channel)
+);
+INSERT INTO sat_limit VALUES
+  ('SAT-101', 'BUS_TEMP', 26.0),
+  ('SAT-101', 'BATT_V',   28.0),
+  ('SAT-102', 'BUS_TEMP', 22.0),
+  ('SAT-103', 'BUS_TEMP', 17.0),
+  ('SAT-103', 'BATT_V',   27.0);
+CREATE TABLE burn (
+    burn_id       INTEGER PRIMARY KEY,
+    sat_id        TEXT NOT NULL REFERENCES satellite(sat_id),
+    ts            TEXT NOT NULL,
+    propellant_kg REAL NOT NULL
+);
+INSERT INTO burn VALUES
+  (1, 'SAT-101', '2026-04-01T06:00:00Z', 0.8),
+  (2, 'SAT-101', '2026-04-02T06:00:00Z', 0.8),
+  (3, 'SAT-101', '2026-04-03T06:00:00Z', 0.5),
+  (4, 'SAT-103', '2026-04-02T09:00:00Z', 1.1);
+CREATE TABLE fuel_budget (
+    sat_id    TEXT PRIMARY KEY REFERENCES satellite(sat_id),
+    budget_kg REAL NOT NULL
+);
+INSERT INTO fuel_budget VALUES
+  ('SAT-101', 5.0), ('SAT-102', 4.0), ('SAT-103', 3.0), ('SAT-104', 4.0), ('SAT-105', 6.0);
+CREATE TABLE contact_plan (
+    sat_id  TEXT NOT NULL,
+    station TEXT NOT NULL
+);
+INSERT INTO contact_plan VALUES
+  ('SAT-101', 'Kiruna'),
+  ('SAT-101', 'Hawaii'),
+  ('SAT-102', 'Kiruna'),
+  ('SAT-103', 'Santiago'),
+  ('SAT-107', 'Hawaii');
+CREATE TABLE event_log (
+    event_id INTEGER PRIMARY KEY,
+    sat_id   TEXT NOT NULL,
+    ts       TEXT NOT NULL,
+    kind     TEXT NOT NULL,
+    ref_id   INTEGER
+);
+INSERT INTO event_log VALUES
+  (1, 'SAT-101', '2026-04-01T01:00:00Z', 'CMD', NULL),
+  (2, 'SAT-101', '2026-04-01T01:00:05Z', 'ACK', 1),
+  (3, 'SAT-102', '2026-04-01T02:00:00Z', 'CMD', NULL),
+  (4, 'SAT-103', '2026-04-01T03:00:00Z', 'CMD', NULL),
+  (5, 'SAT-103', '2026-04-01T03:00:09Z', 'ACK', 4),
+  (6, 'SAT-101', '2026-04-01T04:00:00Z', 'CMD', NULL),
+  (7, 'SAT-102', '2026-04-01T02:01:40Z', 'ACK', 3),
+  (8, 'SAT-104', '2026-04-01T05:00:00Z', 'CMD', NULL);
+CREATE TABLE downlink (
+    frame_id INTEGER PRIMARY KEY,
+    sat_id   TEXT,
+    ts       TEXT NOT NULL,
+    bytes    INTEGER NOT NULL
+);
+INSERT INTO downlink VALUES
+  (1, 'SAT-101', '2026-04-03T01:00:00Z', 900),
+  (2, 'SAT-103', '2026-04-03T02:00:00Z', 1200),
+  (3, NULL,      '2026-04-03T03:00:00Z', 400),
+  (4, 'SAT-101', '2026-04-03T05:00:00Z', 700);
+CREATE TABLE raw_sample (
+    sat_id  TEXT NOT NULL,
+    ts      TEXT NOT NULL,
+    channel TEXT NOT NULL,
+    value   REAL
+);
+INSERT INTO raw_sample VALUES
+  ('SAT-101', '2026-04-01T00:00:00Z', 'BATT_SOC', 0.95),
+  ('SAT-101', '2026-04-01T06:00:00Z', 'BATT_SOC', 0.90),
+  ('SAT-101', '2026-04-01T12:00:00Z', 'BATT_SOC', NULL),
+  ('SAT-101', '2026-04-01T18:00:00Z', 'BATT_SOC', 0.82),
+  ('SAT-102', '2026-04-01T00:00:00Z', 'BATT_SOC', NULL),
+  ('SAT-102', '2026-04-01T06:00:00Z', 'BATT_SOC', NULL),
+  ('SAT-102', '2026-04-01T12:00:00Z', 'BATT_SOC', 0.71),
+  ('SAT-102', '2026-04-01T18:00:00Z', 'BATT_SOC', 0.69),
+  ('SAT-103', '2026-04-01T00:00:00Z', 'BATT_SOC', 0.88),
+  ('SAT-103', '2026-04-01T06:00:00Z', 'BATT_SOC', 0.86),
+  ('SAT-103', '2026-04-01T12:00:00Z', 'BATT_SOC', 0.84),
+  ('SAT-103', '2026-04-01T18:00:00Z', 'BATT_SOC', 0.82),
+  ('SAT-104', '2026-04-01T00:00:00Z', 'BATT_SOC', NULL),
+  ('SAT-104', '2026-04-01T06:00:00Z', 'BATT_SOC', NULL),
+  ('SAT-104', '2026-04-01T12:00:00Z', 'BATT_SOC', NULL),
+  ('SAT-104', '2026-04-01T18:00:00Z', 'BATT_SOC', NULL);
+CREATE TABLE downlink_day (
+    sat_id TEXT NOT NULL,
+    day    TEXT NOT NULL,
+    mb     INTEGER NOT NULL,
+    PRIMARY KEY (sat_id, day)
+);
+INSERT INTO downlink_day VALUES
+  ('SAT-101', '2026-04-01', 300),
+  ('SAT-101', '2026-04-02', 250),
+  ('SAT-102', '2026-04-01', 180),
+  ('SAT-103', '2026-04-02', 90),
+  ('SAT-103', '2026-04-03', 110);
+CREATE TABLE power_day (
+    sat_id TEXT NOT NULL,
+    day    TEXT NOT NULL,
+    wh     INTEGER NOT NULL,
+    PRIMARY KEY (sat_id, day)
+);
+INSERT INTO power_day VALUES
+  ('SAT-101', '2026-04-01', 500),
+  ('SAT-101', '2026-04-02', 480),
+  ('SAT-102', '2026-04-01', 350),
+  ('SAT-103', '2026-04-02', 300),
+  ('SAT-104', '2026-04-01', 420);
+CREATE TABLE component (
+    comp_id   TEXT PRIMARY KEY,
+    parent_id TEXT REFERENCES component(comp_id),
+    name      TEXT NOT NULL,
+    mass_kg   REAL NOT NULL
+);
+INSERT INTO component VALUES
+  ('VEGA',  NULL,   'Vega spacecraft',  40.0),
+  ('PWR',   'VEGA', 'Power subsystem',   2.0),
+  ('BATT',  'PWR',  'Battery',           6.5),
+  ('ARR',   'PWR',  'Solar array',       4.0),
+  ('ARR-1', 'ARR',  'Panel 1',           1.5),
+  ('ARR-2', 'ARR',  'Panel 2',           1.5),
+  ('COM',   'VEGA', 'Communications',    1.0),
+  ('XB',    'COM',  'X-band radio',      2.5),
+  ('ANT',   'COM',  'Antenna',           0.8),
+  ('PROP',  'VEGA', 'Propulsion',        3.0),
+  ('TANK',  'PROP', 'Tank',              5.0);
+CREATE TABLE reading_archive (
+    sat_id  TEXT NOT NULL,
+    ts      TEXT NOT NULL,
+    channel TEXT NOT NULL,
+    value   REAL NOT NULL
+);
+INSERT INTO reading_archive VALUES
+  ('SAT-101', '2026-03-31T00:00:00Z', 'BUS_TEMP', 18),
+  ('SAT-101', '2026-03-31T12:00:00Z', 'BUS_TEMP', 20),
+  ('SAT-102', '2026-03-31T12:00:00Z', 'BUS_TEMP', 21),
+  ('SAT-104', '2026-03-31T10:00:00Z', 'BATT_V',   28.5),
+  ('SAT-101', '2026-04-01T00:00:00Z', 'BUS_TEMP', 19);
+@end
+
+=== sql02-l01 | Practice: Joining tables
+--- for
+l01-joining-tables
+
++++ practice | Battery readings with names
+--- task
+The `reading` table (`sat_id`, `ts`, `channel`, `value`) knows only a satellite's id. The `satellite` table (`sat_id`, `name`, `plane`, `launched`) knows its name.
+
+List every reading on the `BATT_V` channel (battery voltage) together with the name of the satellite that sent it. Return three columns: `name`, `ts` and `value`. Sort by `ts`, then by `name`.
+--- starter
+SELECT r.sat_id, r.ts, r.value
+FROM reading AS r
+WHERE r.channel = 'BATT_V'
+ORDER BY r.ts;
+--- solution
+SELECT s.name, r.ts, r.value
+FROM reading AS r
+JOIN satellite AS s ON s.sat_id = r.sat_id
+WHERE r.channel = 'BATT_V'
+ORDER BY r.ts, s.name;
+--- hint
+The name lives in another table. Join `satellite` to `reading` on the column they share.
+--- hint
+`JOIN satellite AS s ON s.sat_id = r.sat_id` puts each reading's satellite on the same row, so you can select `s.name`.
+--- check result | Five battery readings, oldest first, each with its satellite's name
+ordered
+[["Vega", "2026-04-01T00:00:00Z", 28.2], ["Lyra", "2026-04-01T04:00:00Z", 27.9], ["Draco", "2026-04-01T10:00:00Z", 28.4], ["Vega", "2026-04-02T00:00:00Z", 27.6], ["Orion", "2026-04-03T00:00:00Z", 26.8]]
+--- check source | Joins the two tables
+[Jj][Oo][Ii][Nn]
+--- check source absent | Does not type any satellite's name
+'(Vega|Lyra|Orion|Draco|Hydra)'
+
++++ practice | Channels and the readings that broke their limit
+--- task
+The `channel` table (`channel`, `units`, `hi_limit`) lists every channel the fleet can report, with its upper limit.
+
+For every channel, list the readings above that channel's `hi_limit`. A channel with no such reading must still appear once, with NULL in the reading's columns. Return four columns: `channel` (from `channel`), `sat_id`, `ts` and `value`. Sort by `channel`, then by `ts`.
+--- starter
+SELECT c.channel, r.sat_id, r.ts, r.value
+FROM channel AS c
+LEFT JOIN reading AS r ON r.channel = c.channel
+WHERE r.value > c.hi_limit
+ORDER BY c.channel, r.ts;
+--- solution
+SELECT c.channel, r.sat_id, r.ts, r.value
+FROM channel AS c
+LEFT JOIN reading AS r
+       ON r.channel = c.channel
+      AND r.value > c.hi_limit
+ORDER BY c.channel, r.ts;
+--- hint
+Run the starter: two channels are missing. On their rows the left join put NULL in `r.value`, and the WHERE test threw those rows away.
+--- hint
+"Above the limit" is part of what counts as a matching reading, so it belongs in the ON clause, next to the channel match.
+--- check result | BUS_TEMP has one breach; BATT_V and SUN_ANGLE appear once each with NULLs
+ordered
+[["BATT_V", null, null, null], ["BUS_TEMP", "SAT-101", "2026-04-02T00:00:00Z", 27.0], ["SUN_ANGLE", null, null, null]]
+--- check source | Uses a left join
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source absent | Compares with the channel's own limit, not a typed number
+>\s*2[59]\b
+
++++ practice | Fleet and plan disagreements
+--- task
+The `contact_plan` table (`sat_id`, `station`) was imported from a spreadsheet, with no foreign key, so its ids are not checked against the fleet.
+
+List every disagreement between the fleet (`satellite`) and the plan: satellites with no planned contact, and planned contacts whose `sat_id` is not in the fleet. Return three columns:
+
+- `fleet_id`: `satellite.sat_id` (NULL for a contact whose satellite is not in the fleet)
+- `plan_id`: `contact_plan.sat_id` (NULL for a satellite with no contact)
+- `station`
+
+Sort by whichever of the two ids is present: `ORDER BY COALESCE(s.sat_id, c.sat_id)`.
+--- starter
+SELECT s.sat_id AS fleet_id, c.sat_id AS plan_id, c.station
+FROM satellite AS s
+LEFT JOIN contact_plan AS c ON c.sat_id = s.sat_id
+WHERE c.sat_id IS NULL
+ORDER BY COALESCE(s.sat_id, c.sat_id);
+--- solution
+SELECT s.sat_id AS fleet_id, c.sat_id AS plan_id, c.station
+FROM satellite AS s
+FULL OUTER JOIN contact_plan AS c ON c.sat_id = s.sat_id
+WHERE s.sat_id IS NULL OR c.sat_id IS NULL
+ORDER BY COALESCE(s.sat_id, c.sat_id);
+--- hint
+A left join can only keep leftovers from its left table. You need the leftovers from both sides.
+--- hint
+Use `FULL OUTER JOIN`, then keep only the rows where one side is missing: `WHERE s.sat_id IS NULL OR c.sat_id IS NULL`.
+--- check result | Two satellites with no contact, and one contact for a satellite that does not exist
+ordered
+[["SAT-104", null, null], ["SAT-105", null, null], [null, "SAT-107", "Hawaii"]]
+--- check source | Keeps unmatched rows from both sides
+[Ff][Uu][Ll][Ll]
+--- check source absent | Does not type the ids
+'SAT-10[4-7]'
+
++++ practice | Every satellite, every channel
+--- task
+For the satellites in orbital planes 2 and 3, list every pairing of a satellite with a channel from the `channel` table, together with that satellite's readings on that channel.
+
+- A pair with readings gives one row per reading.
+- A pair with no readings appears once, with NULL `ts` and `value`.
+- A satellite with no readings at all still gets one row for each channel.
+
+Return `name`, `channel`, `ts` and `value`. Sort by `name`, then `channel`, then `ts`.
+--- starter
+SELECT s.name, ch.channel, r.ts, r.value
+FROM satellite AS s
+JOIN reading AS r ON r.sat_id = s.sat_id
+JOIN channel AS ch ON ch.channel = r.channel
+WHERE s.plane IN (2, 3)
+ORDER BY s.name, ch.channel, r.ts;
+--- solution
+SELECT s.name, ch.channel, r.ts, r.value
+FROM satellite AS s
+CROSS JOIN channel AS ch
+LEFT JOIN reading AS r
+       ON r.sat_id = s.sat_id
+      AND r.channel = ch.channel
+WHERE s.plane IN (2, 3)
+ORDER BY s.name, ch.channel, r.ts;
+--- hint
+The pairs that ought to exist do not come from the readings. Build them first: every satellite with every channel.
+--- hint
+`satellite CROSS JOIN channel` makes the grid. Then left-join `reading` on both the satellite and the channel, so a pair with no reading keeps one row of NULLs.
+--- check result | Ten rows: Hydra three times with NULLs, SUN_ANGLE empty for everyone
+ordered
+[["Draco", "BATT_V", "2026-04-01T10:00:00Z", 28.4], ["Draco", "BUS_TEMP", null, null], ["Draco", "SUN_ANGLE", null, null], ["Hydra", "BATT_V", null, null], ["Hydra", "BUS_TEMP", null, null], ["Hydra", "SUN_ANGLE", null, null], ["Orion", "BATT_V", "2026-04-03T00:00:00Z", 26.8], ["Orion", "BUS_TEMP", "2026-04-02T12:00:00Z", 15.0], ["Orion", "BUS_TEMP", "2026-04-03T00:00:00Z", 17.0], ["Orion", "SUN_ANGLE", null, null]]
+--- check source | Builds the grid with a cross join
+[Cc][Rr][Oo][Ss][Ss]\s+[Jj][Oo][Ii][Nn]
+--- check source absent | Picks the satellites by plane, not by typing their ids
+'SAT-10[345]'
+
++++ practice | Kiruna passes
+--- task
+This query should list every satellite with its planned passes over the Kiruna ground station, from `contact_plan` (`sat_id`, `station`). A satellite with no Kiruna pass should still appear, once, with a NULL `station`. It shows only two satellites.
+
+Find the condition that turns the outer join back into an inner join and fix it. Return `name` and `station`, sorted by `name`.
+--- starter
+SELECT s.name, c.station
+FROM satellite AS s
+LEFT JOIN contact_plan AS c ON c.sat_id = s.sat_id
+WHERE c.station = 'Kiruna'
+ORDER BY s.name;
+--- solution
+SELECT s.name, c.station
+FROM satellite AS s
+LEFT JOIN contact_plan AS c
+       ON c.sat_id = s.sat_id
+      AND c.station = 'Kiruna'
+ORDER BY s.name;
+--- hint
+On a satellite with no Kiruna pass, what is `c.station` after the left join, and what does `c.station = 'Kiruna'` give on that row?
+--- hint
+The station test decides which plan rows count as partners. Move it into the ON clause.
+--- check result | All five satellites; Lyra and Vega at Kiruna, the rest NULL
+ordered
+[["Draco", null], ["Hydra", null], ["Lyra", "Kiruna"], ["Orion", null], ["Vega", "Kiruna"]]
+--- check source | Still a left join
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source | Still asks for Kiruna
+'Kiruna'
+
++++ practice | Command acknowledgement report
+--- task
+`event_log` (`event_id`, `sat_id`, `ts`, `kind`, `ref_id`) records each command sent to a satellite as a row of kind `'CMD'`. When the satellite confirms a command, it writes a row of kind `'ACK'` whose `ref_id` is the command's `event_id`.
+
+For every command, return four columns:
+
+- `cmd`: the command's `event_id`
+- `sat_id`
+- `delay_s`: seconds from the command to its acknowledgement, worked out as `unixepoch(ack_ts) - unixepoch(cmd_ts)`; NULL when there is no acknowledgement
+- `status`: `'ok'` if the acknowledgement came within 60 seconds (60 counts as within), `'slow'` if it came later, `'missing'` if there is none
+
+Every command must appear. Sort by `cmd`.
+--- starter
+SELECT c.event_id AS cmd, c.sat_id,
+       unixepoch(a.ts) - unixepoch(c.ts) AS delay_s,
+       'ok' AS status
+FROM event_log AS c
+JOIN event_log AS a ON a.ref_id = c.event_id
+ORDER BY c.event_id;
+--- solution
+SELECT c.event_id AS cmd,
+       c.sat_id,
+       unixepoch(a.ts) - unixepoch(c.ts) AS delay_s,
+       CASE
+           WHEN a.event_id IS NULL THEN 'missing'
+           WHEN unixepoch(a.ts) - unixepoch(c.ts) <= 60 THEN 'ok'
+           ELSE 'slow'
+       END AS status
+FROM event_log AS c
+LEFT JOIN event_log AS a
+       ON a.ref_id = c.event_id
+      AND a.kind = 'ACK'
+WHERE c.kind = 'CMD'
+ORDER BY c.event_id;
+--- hint
+Commands and acknowledgements are rows of the same table, so this is a self-join: one copy for the command, one for its answer. Make it a left join, or unanswered commands vanish.
+--- hint
+`c.kind = 'CMD'` is about the left copy, so it goes in WHERE. `a.kind = 'ACK'` is about the partner, so it goes in ON.
+--- hint
+Test for the missing acknowledgement first in the CASE. On a row with no partner the delay is NULL, and `NULL <= 60` is not true, so it would fall through to `'slow'`.
+--- check result | Five commands: two ok, one slow, two missing
+ordered
+[[1, "SAT-101", 5, "ok"], [3, "SAT-102", 100, "slow"], [4, "SAT-103", 9, "ok"], [6, "SAT-101", null, "missing"], [8, "SAT-104", null, "missing"]]
+--- check source | Works out the delay with unixepoch
+unixepoch
+--- check source absent | Does not type the delays
+\b(100|5|9)\s+AS\b
+
+=== sql02-l02 | Practice: Join keys and how many rows come out
+--- for
+l02-join-keys-and-cardinality
+
++++ practice | Downlink and power, key named once
+--- task
+`downlink_day` (`sat_id`, `day`, `mb`) holds the megabytes each satellite sent to the ground each day. `power_day` (`sat_id`, `day`, `wh`) holds the watt-hours of solar energy it collected each day. Both have the key `(sat_id, day)`.
+
+Write `SELECT *` over the two tables joined on their whole key, so that each key column appears only once. The result has four columns: `sat_id`, `day`, `mb`, `wh`. Keep only the satellite-days found in both tables. Sort by `sat_id`, then `day`.
+--- starter
+SELECT *
+FROM downlink_day AS d
+JOIN power_day AS p ON p.sat_id = d.sat_id AND p.day = d.day
+ORDER BY d.sat_id, d.day;
+--- solution
+SELECT *
+FROM downlink_day
+JOIN power_day USING (sat_id, day)
+ORDER BY sat_id, day;
+--- hint
+Run the starter and count the columns: `sat_id` and `day` each appear twice, once from each table.
+--- hint
+`USING (sat_id, day)` joins on equal values of both columns and merges each pair into one output column.
+--- check result | Four satellite-days, four columns
+ordered
+[["SAT-101", "2026-04-01", 300, 500], ["SAT-101", "2026-04-02", 250, 480], ["SAT-102", "2026-04-01", 180, 350], ["SAT-103", "2026-04-02", 90, 300]]
+--- check source | Names the key with USING
+[Uu][Ss][Ii][Nn][Gg]\s*\(
+--- check source absent | Does not leave the key to NATURAL JOIN
+[Nn][Aa][Tt][Uu][Rr][Aa][Ll]
+
++++ practice | Reconcile downlink and power
+--- task
+Some satellite-days are in only one of `downlink_day` (`sat_id`, `day`, `mb`) and `power_day` (`sat_id`, `day`, `wh`).
+
+List every satellite-day found in either table, with its `mb` and `wh`, NULL where that table has no row. The `sat_id` and `day` columns must never be NULL: they show the key from whichever table has it. Return `sat_id`, `day`, `mb`, `wh`, sorted by `sat_id`, then `day`.
+--- starter
+SELECT d.sat_id, d.day, d.mb, p.wh
+FROM downlink_day AS d
+LEFT JOIN power_day AS p ON p.sat_id = d.sat_id AND p.day = d.day
+ORDER BY d.sat_id, d.day;
+--- solution
+SELECT sat_id, day, d.mb, p.wh
+FROM downlink_day AS d
+FULL JOIN power_day AS p USING (sat_id, day)
+ORDER BY sat_id, day;
+--- hint
+A left join loses the satellite-days that only `power_day` has. Keep leftovers from both sides.
+--- hint
+In an outer join, a column merged by `USING` holds whichever side's value is not NULL, so `FULL JOIN … USING (sat_id, day)` fills the key for you. (With ON you would need `COALESCE(d.sat_id, p.sat_id)`.)
+--- check result | Six satellite-days; one only in downlink_day, one only in power_day
+ordered
+[["SAT-101", "2026-04-01", 300, 500], ["SAT-101", "2026-04-02", 250, 480], ["SAT-102", "2026-04-01", 180, 350], ["SAT-103", "2026-04-02", 90, 300], ["SAT-103", "2026-04-03", 110, null], ["SAT-104", "2026-04-01", null, 420]]
+--- check source | Keeps unmatched rows from both tables
+[Ff][Uu][Ll][Ll]
+--- check source absent | Does not type the missing keys
+'SAT-104'|'2026-04-03'
+
++++ practice | Temperature and voltage side by side
+--- task
+Some satellites record a bus temperature (`BUS_TEMP`) and a battery voltage (`BATT_V`) at the same instant. In `reading` (`sat_id`, `ts`, `channel`, `value`), a pair like that is two rows.
+
+Pair each `BUS_TEMP` reading with the `BATT_V` reading of the same satellite at exactly the same `ts`. A reading with no partner is left out. Return `sat_id`, `ts`, `temp` and `volts`, sorted by `sat_id`, then `ts`.
+--- starter
+SELECT t.sat_id, t.ts, t.value AS temp, v.value AS volts
+FROM reading AS t
+JOIN reading AS v ON v.sat_id = t.sat_id
+WHERE t.channel = 'BUS_TEMP' AND v.channel = 'BATT_V'
+ORDER BY t.sat_id, t.ts;
+--- solution
+SELECT t.sat_id, t.ts, t.value AS temp, v.value AS volts
+FROM reading AS t
+JOIN reading AS v
+  ON v.sat_id = t.sat_id
+ AND v.ts = t.ts
+ AND v.channel = 'BATT_V'
+WHERE t.channel = 'BUS_TEMP'
+ORDER BY t.sat_id, t.ts;
+--- hint
+Run the starter: each temperature is paired with every voltage of its satellite, at any time. The join names only part of what makes two readings "the same moment of the same satellite".
+--- hint
+Match on the satellite and on the time: `ON v.sat_id = t.sat_id AND v.ts = t.ts`.
+--- check result | Four pairs
+ordered
+[["SAT-101", "2026-04-01T00:00:00Z", 19.0, 28.2], ["SAT-101", "2026-04-02T00:00:00Z", 27.0, 27.6], ["SAT-102", "2026-04-01T04:00:00Z", 21.0, 27.9], ["SAT-103", "2026-04-03T00:00:00Z", 17.0, 26.8]]
+--- check source | Matches on the time as well as the satellite
+\bts\s*=\s*\w+\.ts\b|[Uu][Ss][Ii][Nn][Gg]\s*\([^)]*\bts\b
+--- check source absent | Does not type the values
+\b(19|27|21|17)(\.0)?\s*(,|AS\b)
+
++++ practice | Readings over their own limit
+--- task
+`sat_limit` (`sat_id`, `channel`, `hi`) holds an upper limit for some satellites on some channels. Its key is `(sat_id, channel)`: one limit per satellite per channel.
+
+This query should list every reading that is above its own satellite's limit for its own channel. It lists Vega's 27.6 V battery reading, which is under Vega's 28 V battery limit. Fix the join. Return `sat_id`, `ts`, `channel`, `value` and `hi`, sorted by `sat_id`, `ts`, then `channel`.
+--- starter
+SELECT r.sat_id, r.ts, r.channel, r.value, l.hi
+FROM reading AS r
+JOIN sat_limit AS l ON l.sat_id = r.sat_id
+WHERE r.value > l.hi
+ORDER BY r.sat_id, r.ts, r.channel;
+--- solution
+SELECT r.sat_id, r.ts, r.channel, r.value, l.hi
+FROM reading AS r
+JOIN sat_limit AS l ON l.sat_id = r.sat_id AND l.channel = r.channel
+WHERE r.value > l.hi
+ORDER BY r.sat_id, r.ts, r.channel;
+--- hint
+Vega's 27.6 V is being compared with Vega's temperature limit of 26. Which part of the key did the join leave out?
+--- hint
+Join on the whole key of `sat_limit`: the satellite and the channel.
+--- check result | Two readings, both Vega's
+ordered
+[["SAT-101", "2026-04-01T00:00:00Z", "BATT_V", 28.2, 28.0], ["SAT-101", "2026-04-02T00:00:00Z", "BUS_TEMP", 27.0, 26.0]]
+--- check source | Joins on the channel too
+\bchannel\s*=\s*\w+\.channel\b
+--- check source absent | Does not pick the rows by hand
+'SAT-101'
+
++++ practice | Readings soon after a burn
+--- task
+`burn` (`burn_id`, `sat_id`, `ts`, `propellant_kg`) logs each thruster firing. A firing heats the spacecraft, so the thermal team wants to see temperatures taken soon after one.
+
+Pair each `BUS_TEMP` reading with every burn of the same satellite that happened in the 12 hours before it: the burn's `ts` is earlier than the reading's, and at most 12 hours earlier. Use `unixepoch(ts)`, which turns a timestamp into seconds, for the difference. Return the reading's `sat_id`, `ts` and `value`, and the `burn_id`. Sort by `sat_id`, `ts`, then `burn_id`.
+--- starter
+SELECT r.sat_id, r.ts, r.value, b.burn_id
+FROM reading AS r
+JOIN burn AS b ON b.sat_id = r.sat_id
+WHERE r.channel = 'BUS_TEMP'
+ORDER BY r.sat_id, r.ts, b.burn_id;
+--- solution
+SELECT r.sat_id, r.ts, r.value, b.burn_id
+FROM reading AS r
+JOIN burn AS b
+  ON b.sat_id = r.sat_id
+ AND b.ts < r.ts
+ AND unixepoch(r.ts) - unixepoch(b.ts) <= 12 * 3600
+WHERE r.channel = 'BUS_TEMP'
+ORDER BY r.sat_id, r.ts, b.burn_id;
+--- hint
+The starter pairs every reading with every burn of its satellite: many-to-many on `sat_id`. The time test belongs in the join condition too.
+--- hint
+Add two conditions to ON: the burn is earlier (`b.ts < r.ts`), and the gap in seconds is at most `12 * 3600`.
+--- check result | Three pairs
+ordered
+[["SAT-101", "2026-04-01T08:00:00Z", 23.0, 1], ["SAT-101", "2026-04-02T16:00:00Z", 25.0, 2], ["SAT-103", "2026-04-02T12:00:00Z", 15.0, 4]]
+--- check source | Works in seconds with unixepoch
+unixepoch
+--- check source absent | Does not pick the burns by id
+burn_id\s*(=|[Ii][Nn]\b)
+
++++ question | How many rows the plan join makes
+--- ask
+`contact_plan` has `SAT-101` twice and `SAT-102`, `SAT-103` and `SAT-107` once each. `burn` has `SAT-101` three times and `SAT-103` once. How many rows does this return?
+
+```sql
+SELECT *
+FROM contact_plan AS c
+JOIN burn AS b ON b.sat_id = c.sat_id;
+```
+--- answer
+7
+seven
+--- why
+Neither side is unique on `sat_id`, so it is many-to-many and the counting rule multiplies per key: $2 \times 3$ for SAT-101, $1 \times 1$ for SAT-103, and $1 \times 0$ for SAT-102 and SAT-107, which have no burns. $6 + 1 = 7$. Every Vega pass is paired with every Vega burn, whether or not they have anything to do with each other.
+
+=== sql02-l03 | Practice: GROUP BY, HAVING and the basic aggregates
+--- for
+l03-group-by-and-aggregates
+
++++ practice | A summary per channel
+--- task
+For each channel in `reading` (`sat_id`, `ts`, `channel`, `value`), return five columns:
+
+- `channel`
+- `n`: how many readings it has
+- `lo` and `hi`: its smallest and largest value
+- `mean`: its average value, rounded to 2 decimals with `ROUND(x, 2)`
+
+Sort by `channel`.
+--- starter
+SELECT channel, value
+FROM reading
+ORDER BY channel;
+--- solution
+SELECT channel,
+       COUNT(*)              AS n,
+       MIN(value)            AS lo,
+       MAX(value)            AS hi,
+       ROUND(AVG(value), 2)  AS mean
+FROM reading
+GROUP BY channel
+ORDER BY channel;
+--- hint
+One output row per channel means one group per channel: `GROUP BY channel`.
+--- hint
+After grouping, SELECT may name the grouping column and aggregates: `COUNT(*)`, `MIN(value)`, `MAX(value)`, `AVG(value)`.
+--- check result | BATT_V and BUS_TEMP, one row each
+ordered
+[["BATT_V", 5, 26.8, 28.4, 27.78], ["BUS_TEMP", 8, 15.0, 27.0, 21.0]]
+--- check source | Groups the rows
+[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]
+--- check source absent | Does not type the answers
+27\.78|21\.0\b
+
++++ practice | Busy days
+--- task
+The day of a reading is the first ten characters of its timestamp, `substr(ts, 1, 10)`.
+
+List the days on which the fleet sent at least 4 readings, of any channel, in `reading`. Return `day` and `n`, the number of readings that day. Sort by `day`.
+--- starter
+SELECT substr(ts, 1, 10) AS day, COUNT(*) AS n
+FROM reading
+GROUP BY substr(ts, 1, 10)
+ORDER BY day;
+--- solution
+SELECT substr(ts, 1, 10) AS day, COUNT(*) AS n
+FROM reading
+GROUP BY substr(ts, 1, 10)
+HAVING COUNT(*) >= 4
+ORDER BY day;
+--- hint
+"At least 4 readings" is a property of a whole day's pile of rows, not of any one row.
+--- hint
+A condition on an aggregate goes in HAVING, after GROUP BY: `HAVING COUNT(*) >= 4`.
+--- check result | Two days; the second has exactly 4
+ordered
+[["2026-04-01", 7], ["2026-04-02", 4]]
+--- check source | Filters the groups with HAVING
+[Hh][Aa][Vv][Ii][Nn][Gg]
+--- check source absent | Does not pick the days by hand
+'2026-04-0[123]'
+
++++ practice | Dropouts per satellite
+--- task
+`raw_sample` (`sat_id`, `ts`, `channel`, `value`) has one row for each scheduled sample slot. When a sample was lost in transmission, its row is still there, with `value` NULL.
+
+For every satellite in `satellite`, including any with no rows in `raw_sample` at all, return:
+
+- `name`
+- `slots`: its number of `raw_sample` rows
+- `samples`: how many of those rows have a value
+- `missing_pct`: the percentage of its slots with no value, rounded to 1 decimal; NULL for a satellite with no slots (never divide by zero)
+
+Group by the satellite's id as well as its name. Sort by `name`.
+--- starter
+SELECT s.name,
+       COUNT(*)       AS slots,
+       COUNT(x.value) AS samples,
+       ROUND(100.0 * (COUNT(*) - COUNT(x.value)) / COUNT(*), 1) AS missing_pct
+FROM satellite AS s
+LEFT JOIN raw_sample AS x ON x.sat_id = s.sat_id
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- solution
+SELECT s.name,
+       COUNT(x.sat_id) AS slots,
+       COUNT(x.value)  AS samples,
+       ROUND(100.0 * (COUNT(x.sat_id) - COUNT(x.value)) / NULLIF(COUNT(x.sat_id), 0), 1) AS missing_pct
+FROM satellite AS s
+LEFT JOIN raw_sample AS x ON x.sat_id = s.sat_id
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- hint
+Run the starter and look at Hydra, which has no slots at all. After the left join, how many rows does Hydra's group hold, and what does `COUNT(*)` count?
+--- hint
+Count a right-hand column that is never NULL in a real row, like `COUNT(x.sat_id)`. Guard the division with `NULLIF(…, 0)`, which turns a zero into NULL.
+--- check result | Hydra has 0 slots and a NULL percentage; Draco lost all four
+ordered
+[["Draco", 4, 0, 100.0], ["Hydra", 0, 0, null], ["Lyra", 4, 2, 50.0], ["Orion", 4, 4, 0.0], ["Vega", 4, 3, 25.0]]
+--- check source | Keeps satellites with no slots
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source | Counts the values, not the rows, for the samples
+[Cc][Oo][Uu][Nn][Tt]\s*\(\s*\w+\.value\s*\)
+
++++ practice | A summary that must work on a quiet day
+--- task
+Create a view named `hot_summary` that returns exactly one row with three columns, about the `BUS_TEMP` readings above 25:
+
+- `n_hot`: how many there are
+- `peak`: the largest of them
+- `excess`: the sum of `value - 25` over them; 0, not NULL, when there are none
+
+Then finish with `SELECT * FROM hot_summary;`. On a day with no hot readings the view must still return one row, with 0, NULL and 0.
+--- starter
+CREATE VIEW hot_summary AS
+SELECT COUNT(*) AS n_hot, MAX(value) AS peak, SUM(value - 25) AS excess
+FROM reading
+WHERE channel = 'BUS_TEMP' AND value > 25
+GROUP BY channel;
+SELECT * FROM hot_summary;
+--- solution
+CREATE VIEW hot_summary AS
+SELECT COUNT(*)                     AS n_hot,
+       MAX(value)                   AS peak,
+       COALESCE(SUM(value - 25), 0) AS excess
+FROM reading
+WHERE channel = 'BUS_TEMP' AND value > 25;
+SELECT * FROM hot_summary;
+--- hint
+An aggregate with no GROUP BY always returns exactly one row, even when WHERE leaves nothing. With a GROUP BY, no rows means no groups, and so no output rows.
+--- hint
+Over no rows, `COUNT` gives 0 but `SUM` and `MAX` give NULL. Wrap the sum in `COALESCE(…, 0)`.
+--- check result | Today: one hot reading, 27, which is 2 over
+[[1, 27.0, 2.0]]
+--- check query | A second hot reading is counted
+INSERT INTO reading VALUES ('SAT-103', '2026-04-03T06:00:00Z', 'BUS_TEMP', 30);
+SELECT * FROM hot_summary
+=> [[2, 30.0, 7.0]]
+--- check query | With no hot readings: one row of 0, NULL and 0
+DELETE FROM reading WHERE channel = 'BUS_TEMP' AND value > 25;
+SELECT * FROM hot_summary
+=> [[0, null, 0]]
+
++++ practice | Peaks with the right counts
+--- task
+This query should list the satellites whose `BUS_TEMP` peak reached 21 or more, with `n`, the number of all their `BUS_TEMP` readings, and `peak`, the largest. It shows Vega with `n` = 3, but Vega sent 4 `BUS_TEMP` readings.
+
+Fix it. Return `sat_id`, `n` and `peak`, sorted by `sat_id`.
+--- starter
+SELECT sat_id, COUNT(*) AS n, MAX(value) AS peak
+FROM reading
+WHERE channel = 'BUS_TEMP' AND value >= 21
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+SELECT sat_id, COUNT(*) AS n, MAX(value) AS peak
+FROM reading
+WHERE channel = 'BUS_TEMP'
+GROUP BY sat_id
+HAVING MAX(value) >= 21
+ORDER BY sat_id;
+--- hint
+`value >= 21` in WHERE throws away the cool readings before the piles are made, so every count after it counts only warm readings.
+--- hint
+The test is about each satellite's peak, a property of the whole pile: `HAVING MAX(value) >= 21`. Keep the channel test in WHERE.
+--- check result | Vega with all 4 readings, and Lyra
+ordered
+[["SAT-101", 4, 27.0], ["SAT-102", 2, 21.0]]
+--- check source | Tests the peak in HAVING
+[Hh][Aa][Vv][Ii][Nn][Gg]\s+[Mm][Aa][Xx]\s*\(
+--- check source absent | No longer drops the cool readings in WHERE
+value\s*>=\s*21[\s\S]*[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]
+
++++ practice | When each satellite was last heard
+--- task
+For every satellite, including any that never reported, return:
+
+- `name`
+- `last_seen`: the `ts` of its most recent reading on any channel; NULL if it has none
+- `channels`: how many different channels it has reported; 0 if none
+- `hours_silent`: the hours from `last_seen` to `'2026-04-03T12:00:00Z'`, worked out as `(unixepoch('2026-04-03T12:00:00Z') - unixepoch(last_seen)) / 3600.0`, rounded to 1 decimal; NULL if it has none
+
+Group by the satellite's id as well as its name. Sort by `name`.
+--- starter
+SELECT s.name, MAX(r.ts) AS last_seen, COUNT(*) AS channels, NULL AS hours_silent
+FROM satellite AS s
+JOIN reading AS r ON r.sat_id = s.sat_id
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- solution
+SELECT s.name,
+       MAX(r.ts)                 AS last_seen,
+       COUNT(DISTINCT r.channel) AS channels,
+       ROUND((unixepoch('2026-04-03T12:00:00Z') - unixepoch(MAX(r.ts))) / 3600.0, 1) AS hours_silent
+FROM satellite AS s
+LEFT JOIN reading AS r ON r.sat_id = s.sat_id
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- hint
+`MAX(ts)` is the latest timestamp, because ISO-8601 text sorts in time order. A left join keeps the satellite that never reported.
+--- hint
+`COUNT(DISTINCT r.channel)` counts different channels, and gives 0 for a satellite whose only row is the NULL-filled one. The hours can use `MAX(r.ts)` directly inside `unixepoch(…)`.
+--- check result | Five satellites; Hydra has NULL, 0 and NULL
+ordered
+[["Draco", "2026-04-01T10:00:00Z", 1, 50.0], ["Hydra", null, 0, null], ["Lyra", "2026-04-01T20:00:00Z", 2, 40.0], ["Orion", "2026-04-03T00:00:00Z", 2, 12.0], ["Vega", "2026-04-02T16:00:00Z", 2, 20.0]]
+--- check source | Counts different channels
+[Dd][Ii][Ss][Tt][Ii][Nn][Cc][Tt]
+--- check source | Keeps the silent satellite
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+
++++ question | An aggregate over nothing
+--- ask
+No reading in `reading` is on the `SUN_ANGLE` channel. What does this query return, and what does it return once `GROUP BY sat_id` is added before the semicolon?
+
+```sql
+SELECT COUNT(*), COUNT(DISTINCT sat_id), MAX(value)
+FROM reading
+WHERE channel = 'SUN_ANGLE';
+```
+--- choice correct
+One row: 0, 0 and NULL. With `GROUP BY sat_id`, no rows at all.
+--- choice
+One row: 0, 0 and 0. With `GROUP BY sat_id`, one row of zeros per satellite.
+--- choice
+No rows, with or without `GROUP BY sat_id`, because WHERE kept nothing.
+--- choice
+One row: 0, 0 and NULL, with or without `GROUP BY sat_id`.
+--- why
+Without GROUP BY the whole input is one group, even when it is empty, so exactly one row comes out. COUNT of nothing is 0; MAX of nothing is NULL, because there is no largest of no values. With GROUP BY, groups are made only from rows that exist: no rows means no groups, and so no output rows.
+
+=== sql02-l04 | Practice: The fan-out trap
+--- for
+l04-the-fan-out-trap
+
++++ practice | Bytes and passes per satellite
+--- task
+`downlink` (`frame_id`, `sat_id`, `ts`, `bytes`) has one row per radio frame received from a satellite. `contact_plan` (`sat_id`, `station`) has one row per planned pass. A satellite can have many rows in each.
+
+For every satellite, return:
+
+- `name`
+- `bytes`: the total bytes of its frames; 0 if none
+- `passes`: its number of planned passes; 0 if none
+
+Each total must count every frame and every pass exactly once. Sort by `name`.
+--- starter
+SELECT s.name,
+       COALESCE(SUM(d.bytes), 0) AS bytes,
+       COUNT(c.station)          AS passes
+FROM satellite AS s
+LEFT JOIN downlink AS d     ON d.sat_id = s.sat_id
+LEFT JOIN contact_plan AS c ON c.sat_id = s.sat_id
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- solution
+SELECT s.name,
+       COALESCE(d.bytes, 0)  AS bytes,
+       COALESCE(p.passes, 0) AS passes
+FROM satellite AS s
+LEFT JOIN (SELECT sat_id, SUM(bytes) AS bytes
+           FROM downlink
+           GROUP BY sat_id) AS d ON d.sat_id = s.sat_id
+LEFT JOIN (SELECT sat_id, COUNT(*) AS passes
+           FROM contact_plan
+           GROUP BY sat_id) AS p ON p.sat_id = s.sat_id
+ORDER BY s.name;
+--- hint
+Run the starter and look at Vega: 2 frames and 2 passes make $2 \times 2 = 4$ joined rows, so each frame is added twice and each pass counted twice.
+--- hint
+Reduce each many side to one row per satellite first, in a derived table `(SELECT sat_id, SUM(bytes) AS bytes FROM downlink GROUP BY sat_id)`, then left-join the summaries to `satellite`.
+--- check result | Vega 1600 bytes and 2 passes; Draco and Hydra zeros
+ordered
+[["Draco", 0, 0], ["Hydra", 0, 0], ["Lyra", 0, 1], ["Orion", 1200, 1], ["Vega", 1600, 2]]
+--- check source | Aggregates before joining
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]|[Ww][Ii][Tt][Hh]\s+\w+\s+[Aa][Ss]\s*\(
+--- check source absent | Does not type the totals
+\b1600\b
+
++++ practice | Megabytes and the day's peak
+--- task
+`downlink_day` (`sat_id`, `day`, `mb`) has exactly one row per satellite per day. `reading` has many rows per satellite per day; a reading's day is `substr(ts, 1, 10)`.
+
+For each satellite in `downlink_day`, return:
+
+- `sat_id`
+- `mb`: its total megabytes over its days in `downlink_day`
+- `peak`: the highest `BUS_TEMP` reading on those days; NULL if there is none
+
+Sort by `sat_id`.
+--- starter
+SELECT d.sat_id, SUM(d.mb) AS mb, MAX(r.value) AS peak
+FROM downlink_day AS d
+JOIN reading AS r
+  ON r.sat_id = d.sat_id
+ AND substr(r.ts, 1, 10) = d.day
+ AND r.channel = 'BUS_TEMP'
+GROUP BY d.sat_id
+ORDER BY d.sat_id;
+--- solution
+SELECT d.sat_id,
+       SUM(d.mb)   AS mb,
+       MAX(t.peak) AS peak
+FROM downlink_day AS d
+LEFT JOIN (SELECT sat_id, substr(ts, 1, 10) AS day, MAX(value) AS peak
+           FROM reading
+           WHERE channel = 'BUS_TEMP'
+           GROUP BY sat_id, substr(ts, 1, 10)) AS t
+       ON t.sat_id = d.sat_id AND t.day = d.day
+GROUP BY d.sat_id
+ORDER BY d.sat_id;
+--- hint
+Run the starter. The peaks are right, because a maximum ignores repeats, but Vega's megabytes have doubled. Each day's single `mb` row meets every reading of that day.
+--- hint
+Summarize the readings to one row per satellite-day first (the day's peak), then join that to `downlink_day` on both `sat_id` and `day`. Now nothing repeats a day's megabytes.
+--- check result | Vega 550 MB, not 1100
+ordered
+[["SAT-101", 550, 27.0], ["SAT-102", 180, 21.0], ["SAT-103", 200, 17.0]]
+--- check source | Summarizes the readings before joining
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]|[Ww][Ii][Tt][Hh]\s+\w+\s+[Aa][Ss]\s*\(
+--- check source absent | Does not type the totals
+\b550\b
+
++++ practice | Plane summary
+--- task
+For each orbital plane, return:
+
+- `plane`
+- `sats`: how many satellites are in it
+- `burns`: how many burns its satellites made, from `burn` (`burn_id`, `sat_id`, `ts`, `propellant_kg`)
+- `prop_kg`: their total propellant; 0 if none
+
+Every plane appears, even one whose satellites never burned. Sort by `plane`.
+--- starter
+SELECT s.plane,
+       COUNT(*)             AS sats,
+       COUNT(b.burn_id)     AS burns,
+       SUM(b.propellant_kg) AS prop_kg
+FROM satellite AS s
+LEFT JOIN burn AS b ON b.sat_id = s.sat_id
+GROUP BY s.plane
+ORDER BY s.plane;
+--- solution
+SELECT s.plane,
+       COUNT(DISTINCT s.sat_id)          AS sats,
+       COUNT(b.burn_id)                  AS burns,
+       COALESCE(SUM(b.propellant_kg), 0) AS prop_kg
+FROM satellite AS s
+LEFT JOIN burn AS b ON b.sat_id = s.sat_id
+GROUP BY s.plane
+ORDER BY s.plane;
+--- hint
+Each burn matches exactly one satellite, so the burns and their propellant are counted once each. But a satellite appears once per burn, so counting rows counts Vega three times.
+--- hint
+`sat_id` is the satellite's key, so counting distinct keys undoes the repeats: `COUNT(DISTINCT s.sat_id)`. Wrap the sum in `COALESCE(…, 0)` for the plane with no burns.
+--- check result | Plane 1 has 2 satellites and 3 burns; plane 3 has 1 satellite and nothing burned
+ordered
+[[1, 2, 3, 2.1], [2, 2, 1, 1.1], [3, 1, 0, 0]]
+--- check source | Counts distinct satellite keys
+[Cc][Oo][Uu][Nn][Tt]\s*\(\s*[Dd][Ii][Ss][Tt][Ii][Nn][Cc][Tt]\s+\w*\.?sat_id
+--- check source absent | Does not add up distinct masses
+[Ss][Uu][Mm]\s*\(\s*[Dd][Ii][Ss][Tt][Ii][Nn][Cc][Tt]
+
++++ practice | Averages that look right
+--- task
+For each orbital plane, return:
+
+- `plane`
+- `mean_temp`: the mean of all `BUS_TEMP` readings from its satellites, rounded to 2 decimals; NULL if there are none
+- `prop_kg`: the total propellant its satellites burned; 0 if none
+
+Every plane appears. The satellites have different numbers of burns and readings. Sort by `plane`.
+--- starter
+SELECT s.plane,
+       ROUND(AVG(r.value), 2)            AS mean_temp,
+       COALESCE(SUM(b.propellant_kg), 0) AS prop_kg
+FROM satellite AS s
+LEFT JOIN reading AS r ON r.sat_id = s.sat_id AND r.channel = 'BUS_TEMP'
+LEFT JOIN burn AS b    ON b.sat_id = s.sat_id
+GROUP BY s.plane
+ORDER BY s.plane;
+--- solution
+SELECT s.plane,
+       ROUND(SUM(t.sum_temp) / SUM(t.n_temp), 2) AS mean_temp,
+       COALESCE(SUM(b.prop_kg), 0)               AS prop_kg
+FROM satellite AS s
+LEFT JOIN (SELECT sat_id, SUM(value) AS sum_temp, COUNT(*) AS n_temp
+           FROM reading
+           WHERE channel = 'BUS_TEMP'
+           GROUP BY sat_id) AS t ON t.sat_id = s.sat_id
+LEFT JOIN (SELECT sat_id, SUM(propellant_kg) AS prop_kg
+           FROM burn
+           GROUP BY sat_id) AS b ON b.sat_id = s.sat_id
+GROUP BY s.plane
+ORDER BY s.plane;
+--- hint
+In the starter, each of Vega's readings is repeated once per Vega burn (3 times), while Lyra's readings, with no burns, appear once. The plane's average becomes a weighted one, tilted towards Vega.
+--- hint
+Summarize each table per satellite first. For the mean, carry each satellite's sum and count, and divide the plane's total sum by its total count: averaging the satellites' means would weight them wrongly too.
+--- check result | Plane 1: 22.67 and 2.1; plane 3: NULL and 0
+ordered
+[[1, 22.67, 2.1], [2, 16.0, 1.1], [3, null, 0]]
+--- check source | Summarizes before joining
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]|[Ww][Ii][Tt][Hh]\s+\w+\s+[Aa][Ss]\s*\(
+--- check source absent | Does not type the mean
+22\.67
+
++++ practice | The DISTINCT patch
+--- task
+This report should give, for every satellite: `name`; `cmds`, the number of commands it was sent (rows of `event_log` with `kind = 'CMD'`); and `prop_kg`, the total propellant it burned, 0 if none. A teammate saw inflated numbers and patched them with DISTINCT. Now Vega shows 1.3 kg, but Vega burned 0.8 + 0.8 + 0.5 = 2.1 kg.
+
+Rewrite it so that both columns are right. Sort by `name`.
+--- starter
+SELECT s.name,
+       COUNT(DISTINCT e.event_id)                AS cmds,
+       COALESCE(SUM(DISTINCT b.propellant_kg), 0) AS prop_kg
+FROM satellite AS s
+LEFT JOIN event_log AS e ON e.sat_id = s.sat_id AND e.kind = 'CMD'
+LEFT JOIN burn AS b      ON b.sat_id = s.sat_id
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- solution
+SELECT s.name,
+       COALESCE(e.cmds, 0)    AS cmds,
+       COALESCE(b.prop_kg, 0) AS prop_kg
+FROM satellite AS s
+LEFT JOIN (SELECT sat_id, COUNT(*) AS cmds
+           FROM event_log
+           WHERE kind = 'CMD'
+           GROUP BY sat_id) AS e ON e.sat_id = s.sat_id
+LEFT JOIN (SELECT sat_id, SUM(propellant_kg) AS prop_kg
+           FROM burn
+           GROUP BY sat_id) AS b ON b.sat_id = s.sat_id
+ORDER BY s.name;
+--- hint
+`SUM(DISTINCT …)` adds each different value once. Vega's two burns of 0.8 kg are different burns with the same value, so one of them is lost.
+--- hint
+`COUNT(DISTINCT e.event_id)` was safe, because `event_id` is a key. For the propellant, aggregate `burn` per satellite before joining, so no burn is repeated in the first place.
+--- check result | Vega 2 commands and 2.1 kg
+ordered
+[["Draco", 1, 0], ["Hydra", 0, 0], ["Lyra", 1, 0], ["Orion", 1, 1.1], ["Vega", 2, 2.1]]
+--- check source absent | No SUM(DISTINCT …)
+[Ss][Uu][Mm]\s*\(\s*[Dd][Ii][Ss][Tt][Ii][Nn][Cc][Tt]
+--- check source absent | Does not type the total
+\b2\.1\b
+
++++ practice | Fuel budget report
+--- task
+`fuel_budget` (`sat_id`, `budget_kg`) has exactly one row per satellite: the propellant it may use this quarter. For every satellite, return:
+
+- `name` and `budget_kg`
+- `used_kg`: its total propellant burned, from `burn`; 0 if none
+- `left_kg`: the budget minus what was used
+- `pct_used`: what was used as a percentage of the budget, rounded to 1 decimal
+- `passes`: its number of planned passes in `contact_plan`; 0 if none
+
+Sort by `pct_used`, highest first, then by `name`.
+--- starter
+SELECT s.name, f.budget_kg,
+       SUM(b.propellant_kg) AS used_kg,
+       f.budget_kg - SUM(b.propellant_kg) AS left_kg,
+       ROUND(100.0 * SUM(b.propellant_kg) / f.budget_kg, 1) AS pct_used,
+       COUNT(c.station) AS passes
+FROM satellite AS s
+JOIN fuel_budget AS f ON f.sat_id = s.sat_id
+LEFT JOIN burn AS b ON b.sat_id = s.sat_id
+LEFT JOIN contact_plan AS c ON c.sat_id = s.sat_id
+GROUP BY s.sat_id, s.name, f.budget_kg
+ORDER BY pct_used DESC, s.name;
+--- solution
+SELECT s.name,
+       f.budget_kg,
+       COALESCE(b.used_kg, 0)                                  AS used_kg,
+       f.budget_kg - COALESCE(b.used_kg, 0)                    AS left_kg,
+       ROUND(100.0 * COALESCE(b.used_kg, 0) / f.budget_kg, 1) AS pct_used,
+       COALESCE(p.passes, 0)                                   AS passes
+FROM satellite AS s
+JOIN fuel_budget AS f ON f.sat_id = s.sat_id
+LEFT JOIN (SELECT sat_id, SUM(propellant_kg) AS used_kg
+           FROM burn
+           GROUP BY sat_id) AS b ON b.sat_id = s.sat_id
+LEFT JOIN (SELECT sat_id, COUNT(*) AS passes
+           FROM contact_plan
+           GROUP BY sat_id) AS p ON p.sat_id = s.sat_id
+ORDER BY pct_used DESC, s.name;
+--- hint
+Check each join: `fuel_budget` is one row per satellite, so it is safe. `burn` and `contact_plan` are both many rows per satellite, so joining both multiplies each by the other.
+--- hint
+Summarize `burn` and `contact_plan` per satellite in derived tables, left-join those, and use `COALESCE(…, 0)` for satellites with neither.
+--- check result | Vega has used 42% of its budget, Orion 36.7%; the rest none
+ordered
+[["Vega", 5.0, 2.1, 2.9, 42.0, 2], ["Orion", 3.0, 1.1, 1.9, 36.7, 1], ["Draco", 4.0, 0, 4.0, 0.0, 0], ["Hydra", 6.0, 0, 6.0, 0.0, 0], ["Lyra", 4.0, 0, 4.0, 0.0, 1]]
+--- check source | Summarizes before joining
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]|[Ww][Ii][Tt][Hh]\s+\w+\s+[Aa][Ss]\s*\(
+--- check source absent | Does not type the percentages
+\b42(\.0)?\b|36\.7
+
++++ question | The multiplier after two joins
+--- ask
+Vega has three burns, of 0.8, 0.8 and 0.5 kg, and two planned passes. What does `SUM(b.propellant_kg)` give for Vega here?
+
+```sql
+SELECT s.name, SUM(b.propellant_kg)
+FROM satellite AS s
+JOIN burn AS b         ON b.sat_id = s.sat_id
+JOIN contact_plan AS c ON c.sat_id = s.sat_id
+GROUP BY s.sat_id, s.name;
+```
+--- answer
+4.2
+4.20
+4.2 kg
+--- why
+Each burn is paired with each of Vega's 2 passes, so every burn appears twice in the joined rows: $2 \times (0.8 + 0.8 + 0.5) = 2 \times 2.1 = 4.2$. The multiplier is the number of matching rows on the other many side. `COUNT(*)` for Vega would be $3 \times 2 = 6$, neither the number of burns nor the number of passes.
+
+=== sql02-l05 | Practice: Lists, percentiles and conditional aggregates
+--- for
+l05-richer-aggregates
+
++++ practice | One row per satellite, channels as columns
+--- task
+For every satellite, including any with no readings, return five columns in one pass over the data:
+
+- `name`
+- `n_temp`: its number of `BUS_TEMP` readings
+- `n_volt`: its number of `BATT_V` readings
+- `max_temp`: its highest `BUS_TEMP` reading; NULL if none
+- `min_volt`: its lowest `BATT_V` reading; NULL if none
+
+Use `FILTER (WHERE …)` on the aggregates. Group by the satellite's id as well as its name. Sort by `name`.
+--- starter
+SELECT s.name, COUNT(*) AS n_temp, 0 AS n_volt, MAX(r.value) AS max_temp, NULL AS min_volt
+FROM satellite AS s
+JOIN reading AS r ON r.sat_id = s.sat_id
+WHERE r.channel = 'BUS_TEMP'
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- solution
+SELECT s.name,
+       COUNT(r.value) FILTER (WHERE r.channel = 'BUS_TEMP') AS n_temp,
+       COUNT(r.value) FILTER (WHERE r.channel = 'BATT_V')   AS n_volt,
+       MAX(r.value)   FILTER (WHERE r.channel = 'BUS_TEMP') AS max_temp,
+       MIN(r.value)   FILTER (WHERE r.channel = 'BATT_V')   AS min_volt
+FROM satellite AS s
+LEFT JOIN reading AS r ON r.sat_id = s.sat_id
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- hint
+A WHERE on the channel throws the other channel's rows away for every aggregate. A FILTER hides rows from only the aggregate it is attached to.
+--- hint
+Keep every reading with a left join, and write `COUNT(r.value) FILTER (WHERE r.channel = 'BUS_TEMP')`, and the same pattern for the other three columns.
+--- check result | Hydra has 0, 0, NULL and NULL; Draco only reports voltage
+ordered
+[["Draco", 0, 1, null, 28.4], ["Hydra", 0, 0, null, null], ["Lyra", 2, 1, 21.0, 27.9], ["Orion", 2, 1, 17.0, 26.8], ["Vega", 4, 2, 27.0, 27.6]]
+--- check source | Uses FILTER
+[Ff][Ii][Ll][Tt][Ee][Rr]\s*\(\s*[Ww][Hh][Ee][Rr][Ee]
+--- check source | Keeps satellites with no readings
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+
++++ practice | Who reports each channel
+--- task
+For each channel in `reading`, return `channel` and `sats`: the ids of the satellites that reported it, each id once, in id order, joined by commas with no spaces, like `SAT-101,SAT-102`. Sort by `channel`.
+--- starter
+SELECT channel, group_concat(sat_id) AS sats
+FROM reading
+GROUP BY channel
+ORDER BY channel;
+--- solution
+SELECT channel, group_concat(DISTINCT sat_id ORDER BY sat_id) AS sats
+FROM reading
+GROUP BY channel
+ORDER BY channel;
+--- hint
+Run the starter: every reading adds its satellite's id, so Vega's id appears once per Vega reading, in no promised order.
+--- hint
+Put `DISTINCT` and an `ORDER BY` inside the brackets. With DISTINCT, SQLite's `group_concat` takes only one argument, and its separator is then a comma, which is what you want.
+--- check result | Four satellites report BATT_V, three report BUS_TEMP
+ordered
+[["BATT_V", "SAT-101,SAT-102,SAT-103,SAT-104"], ["BUS_TEMP", "SAT-101,SAT-102,SAT-103"]]
+--- check source | Builds the list with group_concat or string_agg
+[Gg][Rr][Oo][Uu][Pp]_[Cc][Oo][Nn][Cc][Aa][Tt]|[Ss][Tt][Rr][Ii][Nn][Gg]_[Aa][Gg][Gg]
+--- check source absent | Does not type the lists
+'SAT-10\d,
+
++++ practice | Limit breaches per day
+--- task
+`sat_limit` (`sat_id`, `channel`, `hi`) gives some satellites an upper limit on some channels; its key is `(sat_id, channel)`. A reading is *over* when it is above the limit for its own satellite and channel. A reading with no limit row is never over.
+
+For each day (`substr(ts, 1, 10)`), return:
+
+- `day`
+- `n`: all readings that day, of every channel, with or without a limit
+- `n_over`: how many were over
+- `over_sats`: the ids of the satellites with a reading over that day, each once, in id order, comma-separated; NULL if none
+
+Sort by `day`.
+--- starter
+SELECT substr(r.ts, 1, 10) AS day,
+       COUNT(*) AS n,
+       COUNT(*) FILTER (WHERE r.value > l.hi) AS n_over,
+       group_concat(DISTINCT r.sat_id ORDER BY r.sat_id) FILTER (WHERE r.value > l.hi) AS over_sats
+FROM reading AS r
+JOIN sat_limit AS l ON l.sat_id = r.sat_id AND l.channel = r.channel
+GROUP BY substr(r.ts, 1, 10)
+ORDER BY day;
+--- solution
+SELECT substr(r.ts, 1, 10) AS day,
+       COUNT(*) AS n,
+       COUNT(*) FILTER (WHERE r.value > l.hi) AS n_over,
+       group_concat(DISTINCT r.sat_id ORDER BY r.sat_id) FILTER (WHERE r.value > l.hi) AS over_sats
+FROM reading AS r
+LEFT JOIN sat_limit AS l ON l.sat_id = r.sat_id AND l.channel = r.channel
+GROUP BY substr(r.ts, 1, 10)
+ORDER BY day;
+--- hint
+Run the starter and compare `n` with a plain count of each day's readings. The inner join dropped every reading that has no limit row.
+--- hint
+Keep every reading with a left join on the whole key. On a reading with no limit, `r.value > l.hi` compares with NULL, which is not true, so FILTER leaves it out of `n_over` without any extra work.
+--- check result | 3 April has two readings and no breach
+ordered
+[["2026-04-01", 7, 1, "SAT-101"], ["2026-04-02", 4, 1, "SAT-101"], ["2026-04-03", 2, 0, null]]
+--- check source | Keeps readings with no limit
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source | Uses FILTER
+[Ff][Ii][Ll][Tt][Ee][Rr]\s*\(\s*[Ww][Hh][Ee][Rr][Ee]
+
++++ practice | Daily means as columns
+--- task
+For every satellite, return `name` and three columns `d1`, `d2` and `d3`: its mean `BUS_TEMP` reading on 2026-04-01, 2026-04-02 and 2026-04-03. A day with no `BUS_TEMP` reading from that satellite gives NULL, never 0, and every satellite appears, even one that reports only other channels or nothing at all. Group by the satellite's id as well as its name. Sort by `name`.
+--- starter
+SELECT s.name,
+       AVG(r.value) FILTER (WHERE substr(r.ts, 1, 10) = '2026-04-01') AS d1,
+       AVG(r.value) FILTER (WHERE substr(r.ts, 1, 10) = '2026-04-02') AS d2,
+       AVG(r.value) FILTER (WHERE substr(r.ts, 1, 10) = '2026-04-03') AS d3
+FROM satellite AS s
+LEFT JOIN reading AS r ON r.sat_id = s.sat_id
+WHERE r.channel = 'BUS_TEMP'
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- solution
+SELECT s.name,
+       AVG(r.value) FILTER (WHERE substr(r.ts, 1, 10) = '2026-04-01') AS d1,
+       AVG(r.value) FILTER (WHERE substr(r.ts, 1, 10) = '2026-04-02') AS d2,
+       AVG(r.value) FILTER (WHERE substr(r.ts, 1, 10) = '2026-04-03') AS d3
+FROM satellite AS s
+LEFT JOIN reading AS r
+       ON r.sat_id = s.sat_id
+      AND r.channel = 'BUS_TEMP'
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- hint
+Two satellites are missing from the starter's result. Draco's rows are all `BATT_V`, and Hydra's single row is the NULL-filled one. What does the WHERE do to them?
+--- hint
+The channel decides which readings count as a match, so it belongs in the ON clause. Then a satellite with no temperature readings keeps one NULL row, and every AVG over it is NULL.
+--- check result | Vega 21 and 26, Orion 15 and 17, Lyra 21; Draco and Hydra all NULL
+ordered
+[["Draco", null, null, null], ["Hydra", null, null, null], ["Lyra", 21.0, null, null], ["Orion", null, 15.0, 17.0], ["Vega", 21.0, 26.0, null]]
+--- check source | Keeps every satellite
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source absent | Never turns a missing day into 0
+[Ee][Ll][Ss][Ee]\s+0\b
+
++++ practice | The mean that counted zeros
+--- task
+This query should give each satellite's mean battery voltage (`BATT_V`), rounded to 2 decimals, as `mean_v`, and its number of `BATT_V` readings, as `n_v`. It says Vega's mean voltage is 9.3 V, but Vega's two battery readings are 28.2 V and 27.6 V.
+
+Fix the mean. Return `sat_id`, `mean_v` and `n_v`, sorted by `sat_id`.
+--- starter
+SELECT sat_id,
+       ROUND(AVG(CASE WHEN channel = 'BATT_V' THEN value ELSE 0 END), 2) AS mean_v,
+       COUNT(CASE WHEN channel = 'BATT_V' THEN 1 END)                    AS n_v
+FROM reading
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+SELECT sat_id,
+       ROUND(AVG(CASE WHEN channel = 'BATT_V' THEN value END), 2) AS mean_v,
+       COUNT(CASE WHEN channel = 'BATT_V' THEN 1 END)             AS n_v
+FROM reading
+GROUP BY sat_id
+ORDER BY sat_id;
+--- hint
+Vega has 6 readings, 2 of them voltages. $(28.2 + 27.6 + 0 + 0 + 0 + 0) / 6 = 9.3$: every temperature reading was counted as a voltage of 0.
+--- hint
+A CASE with no ELSE gives NULL, and AVG skips NULLs. Drop the `ELSE 0`, or write `AVG(value) FILTER (WHERE channel = 'BATT_V')`.
+--- check result | Vega 27.9 from 2 readings
+ordered
+[["SAT-101", 27.9, 2], ["SAT-102", 27.9, 1], ["SAT-103", 26.8, 1], ["SAT-104", 28.4, 1]]
+--- check source absent | No ELSE 0 inside the average
+[Ee][Ll][Ss][Ee]\s+0\b
+--- check source | Still averages
+[Aa][Vv][Gg]\s*\(
+
++++ question | A percentile by hand
+--- ask
+The fleet's eight `BUS_TEMP` readings, sorted, are 15, 17, 19, 21, 21, 23, 25 and 27. In PostgreSQL, what does this return?
+
+```sql
+SELECT PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY value)
+FROM reading
+WHERE channel = 'BUS_TEMP';
+```
+--- answer
+25.6
+25.60
+--- why
+PERCENTILE_CONT numbers the sorted values from position 0 to $n - 1 = 7$ and reads off position $p \times (n - 1) = 0.9 \times 7 = 6.3$. Position 6 holds 25 and position 7 holds 27, so the answer is 30% of the way from 25 to 27: $25 + 0.3 \times (27 - 25) = 25.6$. PERCENTILE_DISC would instead return a value that really occurred, 27.
+
+=== sql02-l06 | Practice: Subtotals with GROUPING SETS, ROLLUP and CUBE
+--- for
+l06-grouping-sets-rollup-cube
+
++++ practice | Readings per plane, with a fleet total
+--- task
+SQLite has no ROLLUP, so build by hand what `GROUP BY ROLLUP (plane)` would give for the number of readings:
+
+- one row per orbital plane, with `n`, the number of readings its satellites sent (0 for a plane whose satellites sent none);
+- then one grand-total row, with `plane` NULL.
+
+Return `plane`, `n` and `lvl`, where `lvl` is 0 for a plane's row and 1 for the total. Sort by `lvl`, then `plane`.
+--- starter
+SELECT s.plane, COUNT(*) AS n, 0 AS lvl
+FROM satellite AS s
+JOIN reading AS r ON r.sat_id = s.sat_id
+GROUP BY s.plane
+ORDER BY lvl, plane;
+--- solution
+SELECT s.plane, COUNT(r.sat_id) AS n, 0 AS lvl
+FROM satellite AS s
+LEFT JOIN reading AS r ON r.sat_id = s.sat_id
+GROUP BY s.plane
+UNION ALL
+SELECT NULL, COUNT(*), 1
+FROM reading
+ORDER BY lvl, plane;
+--- hint
+A grouping set is just a GROUP BY. Write one query per level, put NULL in the column that level rolls up, and stack them with `UNION ALL`.
+--- hint
+For plane 3 to appear with 0, start from `satellite`, left-join the readings and count a reading column, not `*`. The total row is `SELECT NULL, COUNT(*), 1 FROM reading`. ORDER BY goes once, at the very end.
+--- check result | Planes 1, 2 and 3 with 9, 4 and 0, then 13 in all
+ordered
+[[1, 9, 0], [2, 4, 0], [3, 0, 0], [null, 13, 1]]
+--- check source | Stacks the levels with UNION ALL
+[Uu][Nn][Ii][Oo][Nn]\s+[Aa][Ll][Ll]
+--- check source absent | Does not type the total
+\b13\b
+
++++ practice | A cross-tab with every margin
+--- task
+Build by hand, in SQLite, what `GROUP BY CUBE (s.plane, r.channel)` gives for the number of readings, over `reading` joined to `satellite` (an inner join: a plane with no readings has no rows):
+
+- one row per plane and channel that has readings;
+- one row per plane, over all channels (`channel` NULL);
+- one row per channel, over all planes (`plane` NULL);
+- one grand total (both NULL).
+
+Return `plane`, `channel`, `n` and `lvl`, where `lvl` is what `GROUPING(s.plane, r.channel)` would give: 0 for a cell, 1 for a plane's total, 2 for a channel's total, 3 for the grand total. Sort by `lvl`, `plane`, then `channel`.
+--- starter
+SELECT s.plane, r.channel, COUNT(*) AS n, 0 AS lvl
+FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+GROUP BY s.plane, r.channel
+UNION ALL
+SELECT s.plane, NULL, COUNT(*), 1
+FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+GROUP BY s.plane
+UNION ALL
+SELECT NULL, NULL, COUNT(*), 3
+FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+ORDER BY lvl, plane, channel;
+--- solution
+SELECT s.plane, r.channel, COUNT(*) AS n, 0 AS lvl
+FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+GROUP BY s.plane, r.channel
+UNION ALL
+SELECT s.plane, NULL, COUNT(*), 1
+FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+GROUP BY s.plane
+UNION ALL
+SELECT NULL, r.channel, COUNT(*), 2
+FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+GROUP BY r.channel
+UNION ALL
+SELECT NULL, NULL, COUNT(*), 3
+FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+ORDER BY lvl, plane, channel;
+--- hint
+The starter is a ROLLUP: it climbs one ladder, plane then total. A CUBE of two columns has $2^2 = 4$ grouping sets. Which one is missing?
+--- hint
+Add the grouping set `(channel)`: a branch grouped by `r.channel` alone, with NULL for the plane and 2 for `lvl`.
+--- check result | Four cells, two plane totals, two channel totals, one grand total
+ordered
+[[1, "BATT_V", 3, 0], [1, "BUS_TEMP", 6, 0], [2, "BATT_V", 2, 0], [2, "BUS_TEMP", 2, 0], [1, null, 9, 1], [2, null, 4, 1], [null, "BATT_V", 5, 2], [null, "BUS_TEMP", 8, 2], [null, null, 13, 3]]
+--- check source | Stacks the grouping sets
+[Uu][Nn][Ii][Oo][Nn]\s+[Aa][Ll][Ll]
+--- check source | Has a branch grouped by the channel alone
+[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]\s+(r\.)?channel\s*(\n|$|[Uu][Nn][Ii][Oo][Nn]|[Oo][Rr][Dd][Ee][Rr])
+
++++ practice | A subtotal that averages the averages
+--- task
+This report should show each plane-1 satellite's number of `BUS_TEMP` readings and their mean, then a plane-1 subtotal worked out the way ROLLUP works it out: from all of the plane's readings. Its subtotal says 22.25, but the plane's six readings average 22.67.
+
+Fix the subtotal branch. Return `name` (NULL on the subtotal), `n`, `mean_temp` rounded to 2 decimals, and `lvl` (0 for a satellite, 1 for the subtotal). Sort by `lvl`, then `name`.
+--- starter
+SELECT s.name, COUNT(*) AS n, ROUND(AVG(r.value), 2) AS mean_temp, 0 AS lvl
+FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+WHERE r.channel = 'BUS_TEMP' AND s.plane = 1
+GROUP BY s.sat_id, s.name
+UNION ALL
+SELECT NULL, SUM(n), ROUND(AVG(mean_temp), 2), 1
+FROM (SELECT COUNT(*) AS n, AVG(r.value) AS mean_temp
+      FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+      WHERE r.channel = 'BUS_TEMP' AND s.plane = 1
+      GROUP BY s.sat_id) AS per_sat
+ORDER BY lvl, name;
+--- solution
+SELECT s.name, COUNT(*) AS n, ROUND(AVG(r.value), 2) AS mean_temp, 0 AS lvl
+FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+WHERE r.channel = 'BUS_TEMP' AND s.plane = 1
+GROUP BY s.sat_id, s.name
+UNION ALL
+SELECT NULL, COUNT(*), ROUND(AVG(r.value), 2), 1
+FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+WHERE r.channel = 'BUS_TEMP' AND s.plane = 1
+ORDER BY lvl, name;
+--- hint
+Vega's mean is 23.5 from 4 readings and Lyra's is 21 from 2. $(23.5 + 21) / 2 = 22.25$ treats Lyra's 2 readings as weighing as much as Vega's 4.
+--- hint
+Compute the subtotal's AVG straight from the raw rows of the plane, as ROLLUP does: the same FROM and WHERE as the first branch, with no GROUP BY.
+--- check result | Lyra 21, Vega 23.5, subtotal 22.67 over 6 readings
+ordered
+[["Lyra", 2, 21.0, 0], ["Vega", 4, 23.5, 0], [null, 6, 22.67, 1]]
+--- check source absent | Does not average the averages
+[Aa][Vv][Gg]\s*\(\s*mean_temp
+--- check source | Still two levels stacked
+[Uu][Nn][Ii][Oo][Nn]\s+[Aa][Ll][Ll]
+
++++ practice | A labelled plane report
+--- task
+Build in SQLite the rows this PostgreSQL query returns:
+
+```sql
+SELECT CASE WHEN GROUPING(s.plane) = 1 THEN 'all planes' ELSE 'plane ' || s.plane END AS plane_label,
+       CASE WHEN GROUPING(s.name) = 1 THEN '(subtotal)' ELSE s.name END AS sat,
+       COUNT(*) AS n,
+       MAX(r.value) AS peak
+FROM reading AS r
+JOIN satellite AS s ON s.sat_id = r.sat_id
+WHERE r.channel = 'BUS_TEMP'
+GROUP BY ROLLUP (s.plane, s.name)
+ORDER BY GROUPING(s.plane), s.plane, GROUPING(s.name), s.name;
+```
+
+Return exactly the four columns `plane_label`, `sat`, `n` and `peak`, in the same order as that ORDER BY: each plane's satellites by name, then that plane's subtotal, planes in order, and the fleet total last. (Helper columns for sorting are fine inside a derived table, as long as the outer SELECT returns only the four.)
+--- starter
+SELECT 'plane ' || s.plane AS plane_label, s.name AS sat, COUNT(*) AS n, MAX(r.value) AS peak
+FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+WHERE r.channel = 'BUS_TEMP'
+GROUP BY s.plane, s.name
+ORDER BY plane_label, sat;
+--- solution
+SELECT plane_label, sat, n, peak
+FROM (
+    SELECT 'plane ' || s.plane AS plane_label, s.name AS sat, COUNT(*) AS n, MAX(r.value) AS peak,
+           0 AS g_plane, s.plane AS p, 0 AS g_name
+    FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+    WHERE r.channel = 'BUS_TEMP'
+    GROUP BY s.plane, s.name
+    UNION ALL
+    SELECT 'plane ' || s.plane, '(subtotal)', COUNT(*), MAX(r.value), 0, s.plane, 1
+    FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+    WHERE r.channel = 'BUS_TEMP'
+    GROUP BY s.plane
+    UNION ALL
+    SELECT 'all planes', '(subtotal)', COUNT(*), MAX(r.value), 1, NULL, 1
+    FROM reading AS r JOIN satellite AS s ON s.sat_id = r.sat_id
+    WHERE r.channel = 'BUS_TEMP'
+) AS t
+ORDER BY g_plane, p, g_name, sat;
+--- hint
+`ROLLUP (s.plane, s.name)` is three grouping sets: `(plane, name)`, `(plane)` and `()`. Write one branch for each, with the labels typed in where GROUPING would be 1.
+--- hint
+Give each branch helper columns that play the part of `GROUPING(s.plane)`, `s.plane` and `GROUPING(s.name)`, stack the branches in a derived table, and sort the outer query by those, selecting only the four real columns.
+--- check result | Six rows, reading like a receipt
+ordered
+[["plane 1", "Lyra", 2, 21.0], ["plane 1", "Vega", 4, 27.0], ["plane 1", "(subtotal)", 6, 27.0], ["plane 2", "Orion", 2, 17.0], ["plane 2", "(subtotal)", 2, 17.0], ["all planes", "(subtotal)", 8, 27.0]]
+--- check source | Stacks the levels
+[Uu][Nn][Ii][Oo][Nn]\s+[Aa][Ll][Ll]
+--- check source absent | Does not type the counts
+\b[268]\s+AS\s+n\b
+
++++ question | A GROUPING number
+--- ask
+In PostgreSQL, a row from `GROUP BY CUBE (plane, channel)` shows plane 2 and a NULL channel, and that NULL is there because the channel was rolled up. What is `GROUPING(plane, channel)` on that row?
+--- answer
+1
+one
+--- why
+`GROUPING(a, b)` packs one bit per column: $2 \times$ GROUPING(a) $+$ GROUPING(b). The plane was kept, so its bit is 0; the channel was rolled up, so its bit is 1: $2 \times 0 + 1 = 1$. A channel's total across all planes would give 2, and the grand total 3. If the NULL had been a real NULL in the data, the answer would be 0.
+
++++ question | A partial rollup
+--- ask
+Which grouping sets does `GROUP BY s.plane, ROLLUP (day)` produce?
+--- choice correct
+`(plane, day)` and `(plane)`: a row per plane per day and a subtotal per plane, but no grand total.
+--- choice
+`(plane, day)`, `(plane)` and `()`: the same as `ROLLUP (plane, day)`.
+--- choice
+`(plane, day)`, `(plane)`, `(day)` and `()`: every combination.
+--- choice
+`(day)` and `()`: the plain `plane` is ignored once ROLLUP is present.
+--- why
+A plain column next to ROLLUP stays in every grouping set, and ROLLUP only drops its own columns, from the right. So `plane` is always kept and `day` is kept or rolled up: `(plane, day)` and `(plane)`. With no set that drops `plane`, there is no grand total. That is useful when a total across planes would mean nothing.
+
+=== sql02-l07 | Practice: Subqueries
+--- for
+l07-subqueries
+
++++ practice | Below the fleet's mean voltage
+--- task
+List the `BATT_V` readings that are below the fleet's mean `BATT_V` reading (the mean of all `BATT_V` readings), with `below_by`: the mean minus the reading, rounded to 2 decimals. Work the mean out inside the query; do not type it. Return `sat_id`, `ts`, `value` and `below_by`, sorted by `below_by`, largest first.
+--- starter
+SELECT sat_id, ts, value, 0 AS below_by
+FROM reading
+WHERE channel = 'BATT_V'
+ORDER BY below_by DESC;
+--- solution
+SELECT sat_id, ts, value,
+       ROUND((SELECT AVG(value) FROM reading WHERE channel = 'BATT_V') - value, 2) AS below_by
+FROM reading
+WHERE channel = 'BATT_V'
+  AND value < (SELECT AVG(value) FROM reading WHERE channel = 'BATT_V')
+ORDER BY below_by DESC;
+--- hint
+`WHERE value < AVG(value)` is not allowed: WHERE looks at one row at a time, before any aggregate exists. Work the mean out in a separate, complete query in brackets.
+--- hint
+`(SELECT AVG(value) FROM reading WHERE channel = 'BATT_V')` is one value. It needs its own channel filter, or it averages temperatures in too. Use it in WHERE and again in the SELECT list.
+--- check result | Orion 0.98 below, Vega's second reading 0.18 below
+ordered
+[["SAT-103", "2026-04-03T00:00:00Z", 26.8, 0.98], ["SAT-101", "2026-04-02T00:00:00Z", 27.6, 0.18]]
+--- check source | Uses a subquery for the mean
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]\s+[Aa][Vv][Gg]
+--- check source absent | Does not type the mean
+27\.7
+
++++ practice | Latest reading on every channel
+--- task
+For each satellite and each channel it reports, return its most recent reading on that channel: `sat_id`, `channel`, `ts`, `value`. Pick the rows with a row comparison, `(…) IN (SELECT …)`. Sort by `sat_id`, then `channel`.
+--- starter
+SELECT sat_id, channel, ts, value
+FROM reading
+WHERE (sat_id, ts) IN (SELECT sat_id, MAX(ts)
+                       FROM reading
+                       GROUP BY sat_id)
+ORDER BY sat_id, channel;
+--- solution
+SELECT sat_id, channel, ts, value
+FROM reading
+WHERE (sat_id, channel, ts) IN (SELECT sat_id, channel, MAX(ts)
+                                FROM reading
+                                GROUP BY sat_id, channel)
+ORDER BY sat_id, channel;
+--- hint
+The starter finds each satellite's single latest moment, whatever the channel. Vega's battery reading at 2 April 00:00 is not Vega's latest reading overall, so it is lost.
+--- hint
+The latest time must be found per satellite *and* channel. Put `channel` in the inner GROUP BY and SELECT, and in the row on the left: `(sat_id, channel, ts) IN (…)`.
+--- check result | Seven rows, one per satellite and channel
+ordered
+[["SAT-101", "BATT_V", "2026-04-02T00:00:00Z", 27.6], ["SAT-101", "BUS_TEMP", "2026-04-02T16:00:00Z", 25.0], ["SAT-102", "BATT_V", "2026-04-01T04:00:00Z", 27.9], ["SAT-102", "BUS_TEMP", "2026-04-01T20:00:00Z", 21.0], ["SAT-103", "BATT_V", "2026-04-03T00:00:00Z", 26.8], ["SAT-103", "BUS_TEMP", "2026-04-03T00:00:00Z", 17.0], ["SAT-104", "BATT_V", "2026-04-01T10:00:00Z", 28.4]]
+--- check source | Compares a row of values with IN
+\)\s*[Ii][Nn]\s*\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]
+--- check source | Finds the latest time with MAX
+[Mm][Aa][Xx]\s*\(\s*ts\s*\)
+
++++ practice | Planes, grouped twice
+--- task
+For every orbital plane, return:
+
+- `plane`
+- `reporting`: how many of its satellites sent at least one reading
+- `busiest`: the most readings any one of its satellites sent; 0 if none did
+- `total`: all readings from its satellites; 0 if none
+
+Every plane appears. Count readings per satellite in a derived table first, then group those counts by plane. Sort by `plane`.
+--- starter
+SELECT s.plane,
+       COUNT(DISTINCT r.sat_id) AS reporting,
+       COUNT(*)                 AS busiest,
+       COUNT(*)                 AS total
+FROM satellite AS s
+JOIN reading AS r ON r.sat_id = s.sat_id
+GROUP BY s.plane
+ORDER BY s.plane;
+--- solution
+SELECT s.plane,
+       COUNT(c.sat_id)       AS reporting,
+       COALESCE(MAX(c.n), 0) AS busiest,
+       COALESCE(SUM(c.n), 0) AS total
+FROM satellite AS s
+LEFT JOIN (SELECT sat_id, COUNT(*) AS n
+           FROM reading
+           GROUP BY sat_id) AS c ON c.sat_id = s.sat_id
+GROUP BY s.plane
+ORDER BY s.plane;
+--- hint
+"The most readings any one satellite sent" is an aggregate of aggregates. Two layers of GROUP BY cannot live in one SELECT, but a derived table can hold the first layer.
+--- hint
+`(SELECT sat_id, COUNT(*) AS n FROM reading GROUP BY sat_id) AS c` has one row per reporting satellite. Left-join it to `satellite` and group by plane: `COUNT(c.sat_id)`, `MAX(c.n)`, `SUM(c.n)`.
+--- check result | Plane 1: 2 reporting, busiest 6, total 9; plane 3 all zeros
+ordered
+[[1, 2, 6, 9], [2, 2, 3, 4], [3, 0, 0, 0]]
+--- check source | Counts per satellite in a derived table
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt][^()]*[Cc][Oo][Uu][Nn][Tt]
+--- check source | Keeps the plane with no readings
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+
++++ practice | Above their own channel's mean
+--- task
+List the readings that are above the mean of the same satellite's readings on the same channel. A reading equal to that mean does not count, and a satellite with a single reading on a channel has nothing above its mean. Use a correlated subquery. Return `sat_id`, `channel`, `ts` and `value`, sorted by `sat_id`, `channel`, then `ts`.
+--- starter
+SELECT r.sat_id, r.channel, r.ts, r.value
+FROM reading AS r
+WHERE r.value > (SELECT AVG(r2.value)
+                 FROM reading AS r2
+                 WHERE r2.sat_id = r.sat_id)
+ORDER BY r.sat_id, r.channel, r.ts;
+--- solution
+SELECT r.sat_id, r.channel, r.ts, r.value
+FROM reading AS r
+WHERE r.value > (SELECT AVG(r2.value)
+                 FROM reading AS r2
+                 WHERE r2.sat_id = r.sat_id
+                   AND r2.channel = r.channel)
+ORDER BY r.sat_id, r.channel, r.ts;
+--- hint
+Run the starter: it compares voltages near 28 with a mean that mixes in temperatures near 20, so every voltage looks high.
+--- hint
+Tie the inner query to the outer row on both the satellite and the channel: `WHERE r2.sat_id = r.sat_id AND r2.channel = r.channel`.
+--- check result | Four readings: three of Vega's and one of Orion's; Lyra's equal pair gives none
+ordered
+[["SAT-101", "BATT_V", "2026-04-01T00:00:00Z", 28.2], ["SAT-101", "BUS_TEMP", "2026-04-02T00:00:00Z", 27.0], ["SAT-101", "BUS_TEMP", "2026-04-02T16:00:00Z", 25.0], ["SAT-103", "BUS_TEMP", "2026-04-03T00:00:00Z", 17.0]]
+--- check source | The inner query refers to the outer row's channel
+\w+\.channel\s*=\s*\w+\.channel
+--- check source absent | Does not type any mean
+\b(23\.5|27\.9)\b
+
++++ practice | Counts that are all the same
+--- task
+This query should give every satellite with the number of readings it sent, 0 for none. Every satellite shows 13.
+
+Fix it. Return `name` and `n`, sorted by `name`.
+--- starter
+SELECT s.name,
+       (SELECT COUNT(*) FROM reading WHERE sat_id = sat_id) AS n
+FROM satellite AS s
+ORDER BY s.name;
+--- solution
+SELECT s.name,
+       (SELECT COUNT(*) FROM reading AS r WHERE r.sat_id = s.sat_id) AS n
+FROM satellite AS s
+ORDER BY s.name;
+--- hint
+A bare column name is looked up in the nearest query first. Inside the brackets, both sides of `sat_id = sat_id` mean the reading's own `sat_id`.
+--- hint
+Give the inner table an alias and qualify both sides: `WHERE r.sat_id = s.sat_id`, so one side comes from the outer row.
+--- check result | Vega 6, Lyra 3, Orion 3, Draco 1, Hydra 0
+ordered
+[["Draco", 1], ["Hydra", 0], ["Lyra", 3], ["Orion", 3], ["Vega", 6]]
+--- check source | Refers to the outer satellite
+\bs\.sat_id\b
+--- check source | Still counts in a subquery
+\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]\s+[Cc][Oo][Uu][Nn][Tt]
+
++++ practice | A median that follows the data
+--- task
+Create a view named `plane1_median` with one row and two columns:
+
+- `median`: the median of the `BUS_TEMP` readings from satellites in plane 1
+- `mean`: their mean, rounded to 2 decimals
+
+SQLite has no PERCENTILE_CONT. Sort the values and average the middle one (odd count) or two (even count), with `LIMIT` and `OFFSET` worked out from the count by subqueries. Then finish with `SELECT * FROM plane1_median;`. The view must stay right when readings are added.
+--- starter
+CREATE VIEW plane1_median AS
+SELECT AVG(value) AS median, ROUND(AVG(value), 2) AS mean
+FROM reading
+WHERE channel = 'BUS_TEMP';
+SELECT * FROM plane1_median;
+--- solution
+CREATE VIEW plane1_median AS
+SELECT (SELECT AVG(value)
+        FROM (SELECT r.value
+              FROM reading AS r
+              JOIN satellite AS s ON s.sat_id = r.sat_id
+              WHERE r.channel = 'BUS_TEMP' AND s.plane = 1
+              ORDER BY r.value
+              LIMIT 2 - (SELECT COUNT(*)
+                         FROM reading AS r
+                         JOIN satellite AS s ON s.sat_id = r.sat_id
+                         WHERE r.channel = 'BUS_TEMP' AND s.plane = 1) % 2
+              OFFSET ((SELECT COUNT(*)
+                       FROM reading AS r
+                       JOIN satellite AS s ON s.sat_id = r.sat_id
+                       WHERE r.channel = 'BUS_TEMP' AND s.plane = 1) - 1) / 2) AS middle
+       ) AS median,
+       (SELECT ROUND(AVG(r.value), 2)
+        FROM reading AS r
+        JOIN satellite AS s ON s.sat_id = r.sat_id
+        WHERE r.channel = 'BUS_TEMP' AND s.plane = 1) AS mean;
+SELECT * FROM plane1_median;
+--- hint
+With $n$ values, take `LIMIT 2 - n % 2` values after skipping `OFFSET (n - 1) / 2` of them, then average what you took. For $n = 6$ that skips 2 and takes 2.
+--- hint
+$n$ must be a subquery, `(SELECT COUNT(*) FROM …)`, with the same join and filters as the values, so that it changes when the data does. Put the whole LIMIT … OFFSET query in a derived table and take `AVG` over it.
+--- check result | Today: median 22 from 19, 21, 21, 23, 25, 27; mean 22.67
+[[22.0, 22.67]]
+--- check query | A seventh reading in plane 1 moves the median to the middle value
+INSERT INTO reading VALUES ('SAT-102', '2026-04-02T04:00:00Z', 'BUS_TEMP', 40);
+SELECT * FROM plane1_median
+=> [[23.0, 25.14]]
+--- check query | A reading from another plane changes nothing
+INSERT INTO reading VALUES ('SAT-103', '2026-04-03T04:00:00Z', 'BUS_TEMP', 99);
+SELECT * FROM plane1_median
+=> [[23.0, 25.14]]
+
++++ question | One value, several rows
+--- ask
+Vega has six readings and Hydra has none. What happens when this runs in PostgreSQL, and in SQLite?
+
+```sql
+SELECT s.name,
+       (SELECT r.value FROM reading AS r WHERE r.sat_id = s.sat_id) AS v
+FROM satellite AS s;
+```
+--- choice correct
+PostgreSQL stops with an error, because the subquery returns more than one row for Vega. SQLite quietly uses the first row it finds for each satellite, and NULL for Hydra.
+--- choice
+Both return one row per reading, as a join would.
+--- choice
+Both return NULL for any satellite with more than one reading.
+--- choice
+Both stop with an error as soon as Hydra's subquery finds no rows.
+--- why
+A subquery used as a value must return at most one row. No rows gives NULL, which is why Hydra is fine. Several rows is an error in PostgreSQL; SQLite takes the first row the subquery happens to produce, which is an answer nobody chose. Make such a subquery return one row by design: an aggregate, a filter on a key, or `ORDER BY … LIMIT 1` with an order that means something.
+
+=== sql02-l08 | Practice: EXISTS, IN and the anti-join
+--- for
+l08-exists-in-and-anti-joins
+
++++ practice | Satellites that burned
+--- task
+List the satellites that made at least one burn (a row in `burn`, with `burn_id`, `sat_id`, `ts`, `propellant_kg`), each satellite once. Do not use DISTINCT or GROUP BY. Return `sat_id` and `name`, sorted by `sat_id`.
+--- starter
+SELECT s.sat_id, s.name
+FROM satellite AS s
+JOIN burn AS b ON b.sat_id = s.sat_id
+ORDER BY s.sat_id;
+--- solution
+SELECT s.sat_id, s.name
+FROM satellite AS s
+WHERE EXISTS (SELECT 1 FROM burn AS b WHERE b.sat_id = s.sat_id)
+ORDER BY s.sat_id;
+--- hint
+A join returns one row per matching pair, so a satellite with three burns comes out three times. The question only asks whether a match exists.
+--- hint
+`WHERE EXISTS (SELECT 1 FROM burn AS b WHERE b.sat_id = s.sat_id)` keeps each satellite once.
+--- check result | Vega and Orion, once each
+ordered
+[["SAT-101", "Vega"], ["SAT-103", "Orion"]]
+--- check source absent | No DISTINCT or GROUP BY
+[Dd][Ii][Ss][Tt][Ii][Nn][Cc][Tt]|[Gg][Rr][Oo][Uu][Pp]\s+[Bb][Yy]
+--- check source | Tests for a match with EXISTS or IN
+[Ee][Xx][Ii][Ss][Tt][Ss]|\b[Ii][Nn]\s*\(\s*[Ss][Ee][Ll][Ee][Cc][Tt]
+
++++ practice | Silent on the battery channel
+--- task
+List the satellites that have no `BATT_V` reading at or after `'2026-04-02T00:00:00Z'`. Write it as an outer join: a LEFT JOIN and an `IS NULL` test, not NOT EXISTS. Return `sat_id` and `name`, sorted by `sat_id`.
+--- starter
+SELECT s.sat_id, s.name
+FROM satellite AS s
+LEFT JOIN reading AS r ON r.sat_id = s.sat_id
+WHERE r.sat_id IS NULL
+ORDER BY s.sat_id;
+--- solution
+SELECT s.sat_id, s.name
+FROM satellite AS s
+LEFT JOIN reading AS r
+       ON r.sat_id = s.sat_id
+      AND r.channel = 'BATT_V'
+      AND r.ts >= '2026-04-02T00:00:00Z'
+WHERE r.sat_id IS NULL
+ORDER BY s.sat_id;
+--- hint
+The starter finds satellites that have never sent anything. The channel and the time window are part of what counts as a matching reading.
+--- hint
+Put both in the ON clause, next to the key. Leave only `r.sat_id IS NULL` in WHERE. A reading at exactly midnight on 2 April is inside the window.
+--- check result | Lyra, Draco and Hydra
+ordered
+[["SAT-102", "Lyra"], ["SAT-104", "Draco"], ["SAT-105", "Hydra"]]
+--- check source | Uses a left join
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+--- check source absent | Not NOT EXISTS this time
+[Nn][Oo][Tt]\s+[Ee][Xx][Ii][Ss][Tt][Ss]
+
++++ practice | Not heard on 3 April
+--- task
+`downlink` (`frame_id`, `sat_id`, `ts`, `bytes`) logs the radio frames the ground received. A frame that could not be decoded far enough to tell who sent it has a NULL `sat_id`.
+
+List the satellites the ground received no frame from on 2026-04-03 (a frame's day is `substr(ts, 1, 10)`), with `planned`, the number of passes planned for each in `contact_plan` (`sat_id`, `station`). Return `sat_id`, `name` and `planned`, sorted by `sat_id`.
+--- starter
+SELECT s.sat_id, s.name, 0 AS planned
+FROM satellite AS s
+WHERE s.sat_id NOT IN (SELECT d.sat_id
+                       FROM downlink AS d
+                       WHERE substr(d.ts, 1, 10) = '2026-04-03')
+ORDER BY s.sat_id;
+--- solution
+SELECT s.sat_id, s.name,
+       (SELECT COUNT(*) FROM contact_plan AS c WHERE c.sat_id = s.sat_id) AS planned
+FROM satellite AS s
+WHERE NOT EXISTS (SELECT 1
+                  FROM downlink AS d
+                  WHERE d.sat_id = s.sat_id
+                    AND substr(d.ts, 1, 10) = '2026-04-03')
+ORDER BY s.sat_id;
+--- hint
+Run the starter: it returns nothing at all. The list after NOT IN holds a NULL, and `x NOT IN (…, NULL)` is never true.
+--- hint
+Write the anti-join with `NOT EXISTS (SELECT 1 FROM downlink AS d WHERE d.sat_id = s.sat_id AND …)`, which never compares with the NULL. The count of passes is a correlated scalar subquery.
+--- check result | Lyra with 1 planned pass, Draco and Hydra with none
+ordered
+[["SAT-102", "Lyra", 1], ["SAT-104", "Draco", 0], ["SAT-105", "Hydra", 0]]
+--- check source | Uses NOT EXISTS
+[Nn][Oo][Tt]\s+[Ee][Xx][Ii][Ss][Tt][Ss]
+--- check source absent | No NOT IN
+[Nn][Oo][Tt]\s+[Ii][Nn]\s*\(
+
++++ practice | Commands nobody answered
+--- task
+In `event_log` (`event_id`, `sat_id`, `ts`, `kind`, `ref_id`), an `'ACK'` row's `ref_id` is the `event_id` of the command it answers. A `'CMD'` row's `ref_id` is NULL.
+
+List the commands (rows of kind `'CMD'`) that have no acknowledgement. Return `event_id`, `sat_id` and `ts`, sorted by `event_id`.
+--- starter
+SELECT event_id, sat_id, ts
+FROM event_log
+WHERE kind = 'CMD'
+  AND event_id NOT IN (SELECT ref_id FROM event_log)
+ORDER BY event_id;
+--- solution
+SELECT c.event_id, c.sat_id, c.ts
+FROM event_log AS c
+WHERE c.kind = 'CMD'
+  AND NOT EXISTS (SELECT 1
+                  FROM event_log AS a
+                  WHERE a.kind = 'ACK'
+                    AND a.ref_id = c.event_id)
+ORDER BY c.event_id;
+--- hint
+Run the starter. The subquery returns every row's `ref_id`, and the command rows' `ref_id` is NULL.
+--- hint
+Ask "does an acknowledgement exist for this command?" with a correlated `NOT EXISTS`, matching `a.ref_id = c.event_id`.
+--- check result | Commands 6 and 8
+ordered
+[[6, "SAT-101", "2026-04-01T04:00:00Z"], [8, "SAT-104", "2026-04-01T05:00:00Z"]]
+--- check source | Uses an anti-join that is safe with NULL
+[Nn][Oo][Tt]\s+[Ee][Xx][Ii][Ss][Tt][Ss]|[Ii][Ss]\s+[Nn][Uu][Ll][Ll]
+--- check source absent | No NOT IN
+[Nn][Oo][Tt]\s+[Ii][Nn]\s*\(
+
++++ practice | A slot check that tests the wrong column
+--- task
+`raw_sample` (`sat_id`, `ts`, `channel`, `value`) has one row per scheduled sample slot, and `value` is NULL when the sample itself was lost.
+
+This query should list the satellites with no `raw_sample` row at all for the slot at `'2026-04-01T12:00:00Z'`: no slot recorded, not merely a lost value. It also lists Vega and Draco, whose rows for that slot exist with a NULL value. Fix the test. Return `sat_id` and `name`, sorted by `sat_id`.
+--- starter
+SELECT s.sat_id, s.name
+FROM satellite AS s
+LEFT JOIN raw_sample AS x
+       ON x.sat_id = s.sat_id
+      AND x.ts = '2026-04-01T12:00:00Z'
+WHERE x.value IS NULL
+ORDER BY s.sat_id;
+--- solution
+SELECT s.sat_id, s.name
+FROM satellite AS s
+LEFT JOIN raw_sample AS x
+       ON x.sat_id = s.sat_id
+      AND x.ts = '2026-04-01T12:00:00Z'
+WHERE x.sat_id IS NULL
+ORDER BY s.sat_id;
+--- hint
+`x.value` is NULL in two different situations here: on a padded row with no match, and on a real row whose sample was lost.
+--- hint
+Test a right-hand column that is never NULL in a real row. The join key, `x.sat_id`, is the safe choice.
+--- check result | Only Hydra has no slot row
+ordered
+[["SAT-105", "Hydra"]]
+--- check source | Tests the join key for NULL
+\w+\.sat_id\s+[Ii][Ss]\s+[Nn][Uu][Ll][Ll]|[Nn][Oo][Tt]\s+[Ee][Xx][Ii][Ss][Tt][Ss]
+--- check source absent | No longer tests the value
+value\s+[Ii][Ss]\s+[Nn][Uu][Ll][Ll]
+
++++ practice | Plan alerts
+--- task
+Before tomorrow's passes, operations wants an alert for every row of `contact_plan` (`sat_id`, `station`) whose pass will be wasted:
+
+- status `'not in fleet'` when its `sat_id` is not in `satellite`;
+- otherwise status `'silent'` when that satellite has sent no reading of any channel at or after `'2026-04-02T00:00:00Z'`.
+
+Planned passes that are fine are left out. Return `station`, `sat_id` and `status`, sorted by `station`, then `sat_id`.
+--- starter
+SELECT station, sat_id, 'silent' AS status
+FROM contact_plan
+WHERE sat_id NOT IN (SELECT sat_id FROM reading WHERE ts >= '2026-04-02T00:00:00Z')
+ORDER BY station, sat_id;
+--- solution
+SELECT c.station, c.sat_id,
+       CASE
+           WHEN NOT EXISTS (SELECT 1 FROM satellite AS s WHERE s.sat_id = c.sat_id) THEN 'not in fleet'
+           ELSE 'silent'
+       END AS status
+FROM contact_plan AS c
+WHERE NOT EXISTS (SELECT 1
+                  FROM reading AS r
+                  WHERE r.sat_id = c.sat_id
+                    AND r.ts >= '2026-04-02T00:00:00Z')
+ORDER BY c.station, c.sat_id;
+--- hint
+A satellite that does not exist has sent no readings either, so both kinds of wasted pass pass the same "no recent reading" test. What tells them apart is whether the id is in `satellite`.
+--- hint
+Keep the rows with `NOT EXISTS` on recent readings, then label them with a CASE whose first WHEN is `NOT EXISTS (SELECT 1 FROM satellite AS s WHERE s.sat_id = c.sat_id)`.
+--- check result | SAT-107 at Hawaii is not in the fleet; Lyra at Kiruna is silent
+ordered
+[["Hawaii", "SAT-107", "not in fleet"], ["Kiruna", "SAT-102", "silent"]]
+--- check source | Uses EXISTS
+[Ee][Xx][Ii][Ss][Tt][Ss]
+--- check source | Labels the rows with CASE
+[Cc][Aa][Ss][Ee]\s+[Ww][Hh][Ee][Nn]
+
++++ question | NOT IN against a list with a NULL
+--- ask
+`downlink.sat_id` holds `'SAT-101'`, `'SAT-103'`, NULL and `'SAT-101'`. What is the value of this condition?
+
+```sql
+'SAT-105' NOT IN (SELECT sat_id FROM downlink)
+```
+--- choice
+TRUE: SAT-105 is not in the list.
+--- choice
+FALSE: the NULL could stand for any id, so NOT IN rules everything out.
+--- choice correct
+UNKNOWN (NULL): the comparison with the NULL cannot be decided, so a WHERE with this condition keeps nothing.
+--- choice
+An error, because the subquery returns a NULL.
+--- why
+`x NOT IN (a, b, NULL)` means `x <> a AND x <> b AND x <> NULL`. The first comparisons are TRUE, but `x <> NULL` is UNKNOWN, and TRUE AND UNKNOWN is UNKNOWN. It is not FALSE, but WHERE keeps only TRUE, so the row goes. NOT EXISTS with `d.sat_id = s.sat_id` finds no matching row for SAT-105 and gives plain TRUE.
+
+=== sql02-l09 | Practice: Common table expressions
+--- for
+l09-common-table-expressions
+
++++ practice | Voltage drop, as a named step
+--- task
+The battery's nominal voltage is 28.5 V. Write a CTE named `drops` that holds, for every `BATT_V` reading, its `sat_id`, `ts` and `drop_v`: 28.5 minus the reading's value. The main query keeps the readings whose drop is more than 0.5 V and shows `drop_v` rounded to 2 decimals.
+
+Return `sat_id`, `ts` and `drop_v`, sorted by `drop_v`, largest first.
+--- starter
+WITH drops AS (
+    SELECT sat_id, ts, 28.5 - value AS drop_v
+    FROM reading
+    WHERE channel = 'BATT_V'
+)
+SELECT sat_id, ts, drop_v
+FROM drops
+ORDER BY drop_v DESC;
+--- solution
+WITH drops AS (
+    SELECT sat_id, ts, 28.5 - value AS drop_v
+    FROM reading
+    WHERE channel = 'BATT_V'
+)
+SELECT sat_id, ts, ROUND(drop_v, 2) AS drop_v
+FROM drops
+WHERE drop_v > 0.5
+ORDER BY drop_v DESC;
+--- hint
+Inside the main query, `drop_v` is a real column of `drops`, so WHERE can test it.
+--- hint
+Add `WHERE drop_v > 0.5` to the main query, and round in its SELECT list: `ROUND(drop_v, 2) AS drop_v`.
+--- check result | Orion 1.7, Vega 0.9, Lyra 0.6
+ordered
+[["SAT-103", "2026-04-03T00:00:00Z", 1.7], ["SAT-101", "2026-04-02T00:00:00Z", 0.9], ["SAT-102", "2026-04-01T04:00:00Z", 0.6]]
+--- check source | Names the step drops
+[Ww][Ii][Tt][Hh]\s+drops\s+[Aa][Ss]
+--- check source absent | Does not type the drops
+\b(1\.7|0\.9|0\.6)\b
+
++++ practice | How far above the coolest satellite
+--- task
+Write a CTE with a column list, `sat_mean (sat_id, mean_temp) AS (…)`, holding each satellite's mean `BUS_TEMP` reading. The main query returns, for each satellite in `sat_mean`, its `sat_id`, its `mean_temp`, and `above_coolest`: how far its mean is above the lowest mean in `sat_mean`.
+
+Use `sat_mean` twice instead of writing its query twice. Sort by `sat_id`.
+--- starter
+WITH sat_mean AS (
+    SELECT sat_id, AVG(value) AS mean_temp
+    FROM reading
+    GROUP BY sat_id
+)
+SELECT sat_id, mean_temp, 0 AS above_coolest
+FROM sat_mean
+ORDER BY sat_id;
+--- solution
+WITH sat_mean (sat_id, mean_temp) AS (
+    SELECT sat_id, AVG(value)
+    FROM reading
+    WHERE channel = 'BUS_TEMP'
+    GROUP BY sat_id
+)
+SELECT sat_id,
+       mean_temp,
+       mean_temp - (SELECT MIN(mean_temp) FROM sat_mean) AS above_coolest
+FROM sat_mean
+ORDER BY sat_id;
+--- hint
+The starter averages every channel together, so voltages get into the temperature means. Filter the channel inside the CTE.
+--- hint
+The lowest mean is one value: `(SELECT MIN(mean_temp) FROM sat_mean)`. A CTE can be read as many times as you like in the main query.
+--- check result | Vega 7.5 above, Lyra 5, Orion 0
+ordered
+[["SAT-101", 23.5, 7.5], ["SAT-102", 21.0, 5.0], ["SAT-103", 16.0, 0.0]]
+--- check source | Names the columns in a list
+sat_mean\s*\(\s*sat_id\s*,\s*mean_temp\s*\)
+--- check source | Reads sat_mean twice
+[Ff][Rr][Oo][Mm]\s+sat_mean[\s\S]*[Ff][Rr][Oo][Mm]\s+sat_mean
+
++++ practice | A plane summary in steps
+--- task
+Write two chained CTEs, then a main query:
+
+- `burns_per_sat`: each satellite's total propellant from `burn`;
+- `reported`: the satellites with at least one reading at or after `'2026-04-01T12:00:00Z'`, each once.
+
+The main query returns, for every orbital plane, `plane`, `prop_kg` (the total propellant of its satellites, 0 if none) and `quiet` (how many of its satellites are not in `reported`). Sort by `plane`.
+--- starter
+WITH burns_per_sat AS (
+    SELECT sat_id, SUM(propellant_kg) AS prop_kg
+    FROM burn
+    GROUP BY sat_id
+)
+SELECT s.plane, SUM(b.prop_kg) AS prop_kg, 0 AS quiet
+FROM satellite AS s
+JOIN burns_per_sat AS b ON b.sat_id = s.sat_id
+GROUP BY s.plane
+ORDER BY s.plane;
+--- solution
+WITH burns_per_sat AS (
+    SELECT sat_id, SUM(propellant_kg) AS prop_kg
+    FROM burn
+    GROUP BY sat_id
+),
+reported AS (
+    SELECT DISTINCT sat_id
+    FROM reading
+    WHERE ts >= '2026-04-01T12:00:00Z'
+)
+SELECT s.plane,
+       COALESCE(SUM(b.prop_kg), 0)               AS prop_kg,
+       COUNT(*) FILTER (WHERE rp.sat_id IS NULL) AS quiet
+FROM satellite AS s
+LEFT JOIN burns_per_sat AS b ON b.sat_id = s.sat_id
+LEFT JOIN reported AS rp     ON rp.sat_id = s.sat_id
+GROUP BY s.plane
+ORDER BY s.plane;
+--- hint
+Both CTEs hold at most one row per satellite, so left-joining both to `satellite` cannot fan out. A satellite missing from `reported` gets NULL there.
+--- hint
+Count the satellites whose `reported` side is NULL: `COUNT(*) FILTER (WHERE rp.sat_id IS NULL)`. Only the first CTE gets the word WITH; the second follows a comma.
+--- check result | Plane 1: 2.1 kg and none quiet; planes 2 and 3 one quiet satellite each
+ordered
+[[1, 2.1, 0], [2, 1.1, 1], [3, 0, 1]]
+--- check source | Chains two steps
+[Ww][Ii][Tt][Hh]\s+\w+\s+[Aa][Ss]\s*\([\s\S]*\)\s*,\s*\w+\s+[Aa][Ss]\s*\(
+--- check source absent | No NOT IN
+[Nn][Oo][Tt]\s+[Ii][Nn]\s*\(
+
++++ practice | Two versions that agree too easily
+--- task
+Two teammates wrote "the names of the satellites that made a burn":
+
+```sql
+-- version A
+SELECT s.name FROM satellite AS s
+WHERE EXISTS (SELECT 1 FROM burn AS b WHERE b.sat_id = s.sat_id)
+-- version B
+SELECT s.name FROM satellite AS s
+JOIN burn AS b ON b.sat_id = s.sat_id
+```
+
+Save them as views named `v_a` and `v_b`. Then write one query that returns a single row with four columns: `n_a` and `n_b`, the row counts of the two views; `only_a`, the number of rows of `v_a EXCEPT v_b`; and `only_b`, the number of rows of `v_b EXCEPT v_a`.
+--- starter
+CREATE VIEW v_a AS
+SELECT s.name FROM satellite AS s
+WHERE EXISTS (SELECT 1 FROM burn AS b WHERE b.sat_id = s.sat_id);
+CREATE VIEW v_b AS
+SELECT s.name FROM satellite AS s
+JOIN burn AS b ON b.sat_id = s.sat_id;
+SELECT (SELECT COUNT(*) FROM (SELECT * FROM v_a EXCEPT SELECT * FROM v_b)) AS only_a;
+--- solution
+CREATE VIEW v_a AS
+SELECT s.name FROM satellite AS s
+WHERE EXISTS (SELECT 1 FROM burn AS b WHERE b.sat_id = s.sat_id);
+CREATE VIEW v_b AS
+SELECT s.name FROM satellite AS s
+JOIN burn AS b ON b.sat_id = s.sat_id;
+SELECT (SELECT COUNT(*) FROM v_a) AS n_a,
+       (SELECT COUNT(*) FROM v_b) AS n_b,
+       (SELECT COUNT(*) FROM (SELECT * FROM v_a
+                              EXCEPT
+                              SELECT * FROM v_b) AS a) AS only_a,
+       (SELECT COUNT(*) FROM (SELECT * FROM v_b
+                              EXCEPT
+                              SELECT * FROM v_a) AS b) AS only_b;
+--- hint
+Each of the four numbers is a scalar subquery. `A EXCEPT B` returns the rows of A that are not in B, so count its rows with `SELECT COUNT(*) FROM (…)`.
+--- hint
+Both EXCEPT counts come out 0, yet the versions are not the same. EXCEPT compares distinct rows; only the row counts show that B repeats a name.
+--- check result | Both EXCEPTs are empty, but B has 4 rows and A has 2
+[[2, 4, 0, 0]]
+--- check query | v_a lists each satellite once
+SELECT name FROM v_a ORDER BY name
+=> [["Orion"], ["Vega"]]
+--- check source | Uses EXCEPT both ways
+[Ee][Xx][Cc][Ee][Pp][Tt][\s\S]*[Ee][Xx][Cc][Ee][Pp][Tt]
+
++++ practice | A step that skips the step before
+--- task
+This query should list the satellite-days whose mean `BUS_TEMP` was above 20: `sat_id`, `day` (`substr(ts, 1, 10)`) and `mean_temp` rounded to 2 decimals, sorted by `sat_id`, then `day`. Its first step keeps only the `BUS_TEMP` readings, yet the daily means come out wrong: Orion's 3 April shows 21.9, and Orion's only `BUS_TEMP` reading that day was 17.
+
+Fix the chain.
+--- starter
+WITH bus AS (
+    SELECT sat_id, ts, value
+    FROM reading
+    WHERE channel = 'BUS_TEMP'
+),
+daily AS (
+    SELECT sat_id, substr(ts, 1, 10) AS day, AVG(value) AS mean_temp
+    FROM reading
+    GROUP BY sat_id, substr(ts, 1, 10)
+)
+SELECT sat_id, day, ROUND(mean_temp, 2) AS mean_temp
+FROM daily
+WHERE mean_temp > 20
+ORDER BY sat_id, day;
+--- solution
+WITH bus AS (
+    SELECT sat_id, ts, value
+    FROM reading
+    WHERE channel = 'BUS_TEMP'
+),
+daily AS (
+    SELECT sat_id, substr(ts, 1, 10) AS day, AVG(value) AS mean_temp
+    FROM bus
+    GROUP BY sat_id, substr(ts, 1, 10)
+)
+SELECT sat_id, day, ROUND(mean_temp, 2) AS mean_temp
+FROM daily
+WHERE mean_temp > 20
+ORDER BY sat_id, day;
+--- hint
+Test each step on its own: swap the main query for `SELECT * FROM daily`. Orion's 3 April mean is (17 + 26.8) / 2, a temperature averaged with a voltage.
+--- hint
+The second step reads the raw table, so the first step's filter never reaches it. Make `daily` read `FROM bus`.
+--- check result | Vega's two days and Lyra's one
+ordered
+[["SAT-101", "2026-04-01", 21.0], ["SAT-101", "2026-04-02", 26.0], ["SAT-102", "2026-04-01", 21.0]]
+--- check source | The daily step reads the first step
+[Ff][Rr][Oo][Mm]\s+bus\b
+--- check source | Still a chain of named steps
+[Ww][Ii][Tt][Hh]\s+bus\s+[Aa][Ss]
+
++++ practice | First and last temperature
+--- task
+For each satellite with at least two `BUS_TEMP` readings, return `name`, `first_temp` (its earliest `BUS_TEMP` value), `last_temp` (its latest) and `change` (last minus first).
+
+Write it as chained CTEs: one step finds each satellite's first and last `BUS_TEMP` timestamps, the next looks up the values at those times, and the main query attaches the names. Careful: some satellites record another channel at exactly the same instant. Sort by `name`.
+--- starter
+SELECT s.name, MIN(r.value) AS first_temp, MAX(r.value) AS last_temp,
+       MAX(r.value) - MIN(r.value) AS change
+FROM reading AS r
+JOIN satellite AS s ON s.sat_id = r.sat_id
+WHERE r.channel = 'BUS_TEMP'
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- solution
+WITH bounds AS (
+    SELECT sat_id, MIN(ts) AS first_ts, MAX(ts) AS last_ts
+    FROM reading
+    WHERE channel = 'BUS_TEMP'
+    GROUP BY sat_id
+    HAVING COUNT(*) >= 2
+),
+ends AS (
+    SELECT b.sat_id, f.value AS first_temp, l.value AS last_temp
+    FROM bounds AS b
+    JOIN reading AS f ON f.sat_id = b.sat_id AND f.ts = b.first_ts AND f.channel = 'BUS_TEMP'
+    JOIN reading AS l ON l.sat_id = b.sat_id AND l.ts = b.last_ts  AND l.channel = 'BUS_TEMP'
+)
+SELECT s.name, e.first_temp, e.last_temp, e.last_temp - e.first_temp AS change
+FROM ends AS e
+JOIN satellite AS s ON s.sat_id = e.sat_id
+ORDER BY s.name;
+--- hint
+The smallest and largest values are not the first and last ones: Vega's temperatures went 19, 23, 27, 25. Find the earliest and latest timestamps, then look up the readings at those times.
+--- hint
+Join `reading` to the bounds twice, once for each end, on the satellite, the time *and* the channel. Without the channel, Vega's battery reading at the same instant would join too.
+--- check result | Lyra 21 to 21, Orion 15 to 17, Vega 19 to 25
+ordered
+[["Lyra", 21.0, 21.0, 0.0], ["Orion", 15.0, 17.0, 2.0], ["Vega", 19.0, 25.0, 6.0]]
+--- check source | Built as named steps
+[Ww][Ii][Tt][Hh]\s+\w+\s+[Aa][Ss]\s*\(
+--- check source | Keeps only satellites with two or more readings
+[Cc][Oo][Uu][Nn][Tt]\s*\(\s*\*?\s*\w*\s*\)\s*>=?\s*[12]
+
++++ question | A step used twice
+--- ask
+In PostgreSQL 16, a CTE named `daily` summarizes a billion readings per satellite per day, and two later steps both read it. The main query keeps only `sat_id = 'SAT-101'`. Why can this be slow, and what changes it?
+--- choice correct
+A CTE read more than once is materialized: `daily` is computed in full for every satellite and stored, and the filter on one satellite cannot reach inside it. Writing `daily AS NOT MATERIALIZED (…)` lets each use be planned with the filter pushed into the scan.
+--- choice
+It cannot be slow: since PostgreSQL 12 every CTE is pasted in where it is used.
+--- choice
+A CTE is saved in the database like a view, so it is recomputed on every read; `AS MATERIALIZED` makes it a cached table.
+--- choice
+WITH forces a nested-loop join; the only fix is to rewrite the steps as nested subqueries.
+--- why
+PostgreSQL 12 and later inline a CTE that is used once and is not recursive. One read two or more times is materialized: computed once, on its own, and stored, so the planner does not look across it, and here that means summarizing every satellite to show one. `NOT MATERIALIZED` asks for inlining, at the price of doing the work once per use. Which is faster depends on the data, so compare the plans with `EXPLAIN`.
+
+=== sql02-l10 | Practice: Recursive CTEs
+--- for
+l10-recursive-ctes
+
++++ practice | Readings per day, empty days included
+--- task
+Show every day from 2026-04-01 to 2026-04-05 with `n`, the number of readings (any channel) the fleet sent that day; 0 for a day with none. A reading's day is `substr(ts, 1, 10)`. Build the days with `WITH RECURSIVE` and `date(day, '+1 day')`, which moves a date string forward one day. Return `day` and `n`, sorted by `day`.
+--- starter
+SELECT substr(ts, 1, 10) AS day, COUNT(*) AS n
+FROM reading
+GROUP BY substr(ts, 1, 10)
+ORDER BY day;
+--- solution
+WITH RECURSIVE days (day) AS (
+    SELECT '2026-04-01'
+    UNION ALL
+    SELECT date(day, '+1 day')
+    FROM days
+    WHERE day < '2026-04-05'
+)
+SELECT d.day, COUNT(r.sat_id) AS n
+FROM days AS d
+LEFT JOIN reading AS r ON substr(r.ts, 1, 10) = d.day
+GROUP BY d.day
+ORDER BY d.day;
+--- hint
+GROUP BY only makes rows for days that have readings. The empty days must come from somewhere else: a list of every day you want.
+--- hint
+Grow the days with a recursive CTE whose step stops once the day it read is `'2026-04-05'`, then left-join the readings and count a reading column, not `*`.
+--- check result | Five days; 4 and 5 April with 0
+ordered
+[["2026-04-01", 7], ["2026-04-02", 4], ["2026-04-03", 2], ["2026-04-04", 0], ["2026-04-05", 0]]
+--- check source | Generates the days recursively
+[Rr][Ee][Cc][Uu][Rr][Ss][Ii][Vv][Ee]
+--- check source absent | Does not type the empty days
+'2026-04-0[34]'
+
++++ practice | Everything inside the power subsystem
+--- task
+`component` (`comp_id`, `parent_id`, `name`, `mass_kg`) stores Vega's parts as a tree: each row's `parent_id` is the part it sits inside, and the spacecraft itself has a NULL parent.
+
+List `PWR` and every part inside it, at any depth: `depth` (0 for PWR, 1 for its children, and so on), `comp_id`, and `path`, the ids from PWR down to the part, each followed by a slash and starting with one, like `/PWR/ARR/`. Sort by `path`.
+--- starter
+SELECT 1 AS depth, comp_id, '/PWR/' || comp_id || '/' AS path
+FROM component
+WHERE parent_id = 'PWR'
+ORDER BY path;
+--- solution
+WITH RECURSIVE tree (comp_id, depth, path) AS (
+    SELECT comp_id, 0, '/' || comp_id || '/'
+    FROM component
+    WHERE comp_id = 'PWR'
+    UNION ALL
+    SELECT c.comp_id, t.depth + 1, t.path || c.comp_id || '/'
+    FROM component AS c
+    JOIN tree AS t ON c.parent_id = t.comp_id
+)
+SELECT depth, comp_id, path
+FROM tree
+ORDER BY path;
+--- hint
+The starter goes one level down. The depth of a real parts list is not known in advance, so let a recursive CTE repeat the step "find the parts whose parent I found last round".
+--- hint
+Anchor at `comp_id = 'PWR'` with depth 0 and path `'/PWR/'`. The step joins `component AS c` to the CTE on `c.parent_id = t.comp_id`, adding 1 to the depth and gluing `c.comp_id || '/'` onto the path.
+--- check result | Five parts, the panels at depth 2
+ordered
+[[0, "PWR", "/PWR/"], [1, "ARR", "/PWR/ARR/"], [2, "ARR-1", "/PWR/ARR/ARR-1/"], [2, "ARR-2", "/PWR/ARR/ARR-2/"], [1, "BATT", "/PWR/BATT/"]]
+--- check source | Walks the tree recursively
+[Rr][Ee][Cc][Uu][Rr][Ss][Ii][Vv][Ee]
+--- check source absent | Does not type the deeper parts
+'ARR-[12]'
+
++++ practice | Mass of each subsystem
+--- task
+In `component` (`comp_id`, `parent_id`, `name`, `mass_kg`), a part's own `mass_kg` does not include the parts inside it.
+
+For each subsystem directly inside the spacecraft (the parts whose `parent_id` is `'VEGA'`), return `comp_id`, `name` and `total_kg`: its own mass plus the mass of every part inside it at any depth, rounded to 1 decimal. Sort by `total_kg`, heaviest first.
+--- starter
+SELECT comp_id, name, mass_kg AS total_kg
+FROM component
+WHERE parent_id = 'VEGA'
+ORDER BY total_kg DESC;
+--- solution
+WITH RECURSIVE sub (top_id, comp_id, mass_kg) AS (
+    SELECT comp_id, comp_id, mass_kg
+    FROM component
+    WHERE parent_id = 'VEGA'
+    UNION ALL
+    SELECT s.top_id, c.comp_id, c.mass_kg
+    FROM component AS c
+    JOIN sub AS s ON c.parent_id = s.comp_id
+)
+SELECT t.comp_id, t.name, ROUND(SUM(sub.mass_kg), 1) AS total_kg
+FROM sub
+JOIN component AS t ON t.comp_id = sub.top_id
+GROUP BY t.comp_id, t.name
+ORDER BY total_kg DESC;
+--- hint
+Walk down from all three subsystems at once, and carry along which subsystem each row started from, so the rows can be grouped by it afterwards.
+--- hint
+Anchor: each subsystem, with `top_id` set to its own id. Step: children of last round's rows, keeping `top_id`. Then `GROUP BY top_id` and `SUM(mass_kg)`, and join `component` once more for the name.
+--- check result | Power 15.5 kg, propulsion 8, communications 4.3
+ordered
+[["PWR", "Power subsystem", 15.5], ["PROP", "Propulsion", 8.0], ["COM", "Communications", 4.3]]
+--- check source | Walks the tree recursively
+[Rr][Ee][Cc][Uu][Rr][Ss][Ii][Vv][Ee]
+--- check source | Adds up the masses
+[Ss][Uu][Mm]\s*\(
+
++++ practice | A loop in the parts list
+--- schema
+CREATE TABLE component (
+    comp_id   TEXT PRIMARY KEY,
+    parent_id TEXT,
+    name      TEXT NOT NULL,
+    mass_kg   REAL NOT NULL
+);
+INSERT INTO component VALUES
+  ('VEGA',  NULL,   'Vega spacecraft', 40.0),
+  ('COM',   'VEGA', 'Communications',   1.0),
+  ('PROP',  'TANK', 'Propulsion',       3.0),
+  ('TANK',  'PROP', 'Tank',             5.0),
+  ('VALVE', 'TANK', 'Valve',            0.4);
+--- task
+This problem has its own `component` table (`comp_id`, `parent_id`, `name`, `mass_kg`). Someone mistyped the parent of `PROP` as `TANK`, so `PROP` and `TANK` now sit inside each other, and a plain walk down from `PROP` would go round forever.
+
+Walk down from `PROP` and list each part once: `depth` (0 for PROP), `comp_id` and `path` (like `/PROP/TANK/`). Use a visited check on the path, so the walk stops by itself because it refuses to step onto a part that is already on its path. Sort by `path`.
+--- starter
+WITH RECURSIVE tree (comp_id, depth, path) AS (
+    SELECT comp_id, 0, '/' || comp_id || '/'
+    FROM component
+    WHERE comp_id = 'PROP'
+    UNION ALL
+    SELECT c.comp_id, t.depth + 1, t.path || c.comp_id || '/'
+    FROM component AS c
+    JOIN tree AS t ON c.parent_id = t.comp_id
+    WHERE t.depth < 4
+)
+SELECT depth, comp_id, path
+FROM tree
+ORDER BY path;
+--- solution
+WITH RECURSIVE tree (comp_id, depth, path) AS (
+    SELECT comp_id, 0, '/' || comp_id || '/'
+    FROM component
+    WHERE comp_id = 'PROP'
+    UNION ALL
+    SELECT c.comp_id, t.depth + 1, t.path || c.comp_id || '/'
+    FROM component AS c
+    JOIN tree AS t ON c.parent_id = t.comp_id
+    WHERE t.path NOT LIKE '%/' || c.comp_id || '/%'
+)
+SELECT depth, comp_id, path
+FROM tree
+ORDER BY path;
+--- hint
+Run the starter: the depth limit stops the query, but PROP and TANK come back again and again. A depth limit keeps the database safe; it does not make the answer right.
+--- hint
+Refuse the step when the child's id is already on the path: `WHERE t.path NOT LIKE '%/' || c.comp_id || '/%'`. The slashes stop a short id from matching inside a longer one.
+--- check result | PROP, TANK and VALVE, once each
+ordered
+[[0, "PROP", "/PROP/"], [1, "TANK", "/PROP/TANK/"], [2, "VALVE", "/PROP/TANK/VALVE/"]]
+--- check source | Checks the path before stepping
+[Ll][Ii][Kk][Ee]|instr\s*\(
+--- check source | Still recursive
+[Rr][Ee][Cc][Uu][Rr][Ss][Ii][Vv][Ee]
+
++++ practice | Empty slots that vanish
+--- task
+This query should list Vega's (`SAT-101`) number of `BUS_TEMP` readings in every 4-hour slot of 2026-04-01, from the slot starting at 00:00 to the one starting at 20:00. A slot runs from its start up to, but not including, the next start, and a slot with no reading shows 0. The query returns only two slots.
+
+Fix it. Return `slot_start` and `n`, sorted by `slot_start`.
+--- starter
+WITH RECURSIVE slots (slot_start) AS (
+    SELECT '2026-04-01T00:00:00Z'
+    UNION ALL
+    SELECT strftime('%Y-%m-%dT%H:%M:%SZ', slot_start, '+4 hours')
+    FROM slots
+    WHERE slot_start < '2026-04-01T20:00:00Z'
+)
+SELECT sl.slot_start, COUNT(r.value) AS n
+FROM slots AS sl
+LEFT JOIN reading AS r
+       ON r.ts >= sl.slot_start
+      AND r.ts < strftime('%Y-%m-%dT%H:%M:%SZ', sl.slot_start, '+4 hours')
+WHERE r.sat_id = 'SAT-101' AND r.channel = 'BUS_TEMP'
+GROUP BY sl.slot_start
+ORDER BY sl.slot_start;
+--- solution
+WITH RECURSIVE slots (slot_start) AS (
+    SELECT '2026-04-01T00:00:00Z'
+    UNION ALL
+    SELECT strftime('%Y-%m-%dT%H:%M:%SZ', slot_start, '+4 hours')
+    FROM slots
+    WHERE slot_start < '2026-04-01T20:00:00Z'
+)
+SELECT sl.slot_start, COUNT(r.value) AS n
+FROM slots AS sl
+LEFT JOIN reading AS r
+       ON r.sat_id = 'SAT-101'
+      AND r.channel = 'BUS_TEMP'
+      AND r.ts >= sl.slot_start
+      AND r.ts < strftime('%Y-%m-%dT%H:%M:%SZ', sl.slot_start, '+4 hours')
+GROUP BY sl.slot_start
+ORDER BY sl.slot_start;
+--- hint
+The series of slots is right: run `SELECT * FROM slots` and you get six. They disappear later. On an empty slot's row, what is `r.sat_id`, and what does the WHERE do with it?
+--- hint
+Every condition on `reading` belongs in the ON clause, where it decides what counts as a match instead of throwing rows away.
+--- check result | Six slots; Vega read at 00:00 and 08:00 only
+ordered
+[["2026-04-01T00:00:00Z", 1], ["2026-04-01T04:00:00Z", 0], ["2026-04-01T08:00:00Z", 1], ["2026-04-01T12:00:00Z", 0], ["2026-04-01T16:00:00Z", 0], ["2026-04-01T20:00:00Z", 0]]
+--- check source absent | No reading filters left in WHERE
+[Ww][Hh][Ee][Rr][Ee]\s+r\.
+--- check source | Still counts a reading column
+[Cc][Oo][Uu][Nn][Tt]\s*\(\s*r\.
+
++++ practice | Missed battery reports
+--- task
+Plane-1 satellites must send at least one `BATT_V` reading in every 12-hour slot. The slots start at `'2026-04-01T00:00:00Z'`, `'2026-04-01T12:00:00Z'`, `'2026-04-02T00:00:00Z'` and `'2026-04-02T12:00:00Z'`, and each covers from its start up to, but not including, the next start.
+
+List every plane-1 satellite and slot with no `BATT_V` reading in it: `name` and `slot_start`. Generate the slots with a recursive CTE and `strftime('%Y-%m-%dT%H:%M:%SZ', slot_start, '+12 hours')`. Sort by `name`, then `slot_start`.
+--- starter
+WITH RECURSIVE slots (slot_start) AS (
+    SELECT '2026-04-01T00:00:00Z'
+    UNION ALL
+    SELECT strftime('%Y-%m-%dT%H:%M:%SZ', slot_start, '+12 hours')
+    FROM slots
+    WHERE slot_start < '2026-04-02T12:00:00Z'
+)
+SELECT NULL AS name, slot_start
+FROM slots
+ORDER BY slot_start;
+--- solution
+WITH RECURSIVE slots (slot_start) AS (
+    SELECT '2026-04-01T00:00:00Z'
+    UNION ALL
+    SELECT strftime('%Y-%m-%dT%H:%M:%SZ', slot_start, '+12 hours')
+    FROM slots
+    WHERE slot_start < '2026-04-02T12:00:00Z'
+)
+SELECT s.name, sl.slot_start
+FROM satellite AS s
+CROSS JOIN slots AS sl
+WHERE s.plane = 1
+  AND NOT EXISTS (SELECT 1
+                  FROM reading AS r
+                  WHERE r.sat_id = s.sat_id
+                    AND r.channel = 'BATT_V'
+                    AND r.ts >= sl.slot_start
+                    AND r.ts < strftime('%Y-%m-%dT%H:%M:%SZ', sl.slot_start, '+12 hours'))
+ORDER BY s.name, sl.slot_start;
+--- hint
+First build the grid of everything that should exist: every plane-1 satellite with every slot, a cross join.
+--- hint
+Then keep the grid rows for which no matching reading exists: `NOT EXISTS` with the satellite, the channel and the half-open time window.
+--- check result | Five missed slots: three of Lyra's, two of Vega's
+ordered
+[["Lyra", "2026-04-01T12:00:00Z"], ["Lyra", "2026-04-02T00:00:00Z"], ["Lyra", "2026-04-02T12:00:00Z"], ["Vega", "2026-04-01T12:00:00Z"], ["Vega", "2026-04-02T12:00:00Z"]]
+--- check source | Generates the slots recursively
+[Rr][Ee][Cc][Uu][Rr][Ss][Ii][Vv][Ee]
+--- check source absent | Does not type the missed slots
+'2026-04-01T12|'2026-04-02T00
+
++++ question | Where the doubling stops
+--- ask
+What does this return?
+
+```sql
+WITH RECURSIVE t (n) AS (
+    SELECT 3
+    UNION ALL
+    SELECT n * 2 FROM t WHERE n < 40
+)
+SELECT MAX(n) FROM t;
+```
+--- answer
+48
+forty-eight
+forty eight
+--- why
+The anchor makes 3, and each round doubles the one row made the round before: 6, 12, 24. The round that reads 24 passes `24 < 40` and makes 48. The round that reads 48 fails the test, makes nothing, and the recursion stops. The stop test is checked on the row being read, not on the row about to be made, which is why the result goes past 40.
+
+=== sql02-l11 | Practice: UNION, INTERSECT and EXCEPT
+--- for
+l11-set-operations
+
++++ practice | The oldest battery readings
+--- task
+`reading_archive` has the same columns as `reading` (`sat_id`, `ts`, `channel`, `value`) and holds older readings. Stack the `BATT_V` readings of both tables and return the three oldest: `src` (`'live'` for a row of `reading`, `'archive'` for a row of `reading_archive`), `sat_id`, `ts` and `value`. Sort by `ts`, oldest first.
+--- starter
+SELECT 'live' AS src, sat_id, ts, value
+FROM reading
+WHERE channel = 'BATT_V'
+ORDER BY ts
+LIMIT 3;
+--- solution
+SELECT 'live' AS src, sat_id, ts, value
+FROM reading
+WHERE channel = 'BATT_V'
+UNION ALL
+SELECT 'archive', sat_id, ts, value
+FROM reading_archive
+WHERE channel = 'BATT_V'
+ORDER BY ts
+LIMIT 3;
+--- hint
+Stack the two queries with `UNION ALL`. Each branch has its own WHERE; the columns line up by position.
+--- hint
+ORDER BY and LIMIT belong to the whole stacked result, so write them once, after the last branch.
+--- check result | The archive's Draco reading first, then two live ones
+ordered
+[["archive", "SAT-104", "2026-03-31T10:00:00Z", 28.5], ["live", "SAT-101", "2026-04-01T00:00:00Z", 28.2], ["live", "SAT-102", "2026-04-01T04:00:00Z", 27.9]]
+--- check source | Stacks the tables
+[Uu][Nn][Ii][Oo][Nn]\s+[Aa][Ll][Ll]
+--- check source | Keeps three
+[Ll][Ii][Mm][Ii][Tt]\s+3
+
++++ practice | In both tables
+--- task
+List the satellites that appear in both `reading` and `reading_archive`, each once: one column, `sat_id`. Use a set operation. Sort by `sat_id`.
+--- starter
+SELECT sat_id FROM reading
+UNION
+SELECT sat_id FROM reading_archive
+ORDER BY sat_id;
+--- solution
+SELECT sat_id FROM reading
+INTERSECT
+SELECT sat_id FROM reading_archive
+ORDER BY sat_id;
+--- hint
+UNION keeps a row found in either result. The question asks for rows found in both.
+--- hint
+`INTERSECT` keeps the distinct rows that appear in both results.
+--- check result | SAT-101, SAT-102 and SAT-104
+ordered
+[["SAT-101"], ["SAT-102"], ["SAT-104"]]
+--- check source | Uses INTERSECT
+[Ii][Nn][Tt][Ee][Rr][Ss][Ee][Cc][Tt]
+--- check source absent | Does not type the ids
+'SAT-10\d'
+
++++ practice | Planned but never heard from
+--- task
+List the ids in `contact_plan` (`sat_id`, `station`) that never sent a frame in `downlink` (`frame_id`, `sat_id`, `ts`, `bytes`; one frame has a NULL `sat_id`), with the satellite's `name`, NULL for an id that is not in the fleet. Use EXCEPT for the subtraction, then join the names on. Return `sat_id` and `name`, sorted by `sat_id`.
+--- starter
+SELECT sat_id, NULL AS name
+FROM contact_plan
+WHERE sat_id NOT IN (SELECT sat_id FROM downlink)
+ORDER BY sat_id;
+--- solution
+SELECT q.sat_id, s.name
+FROM (SELECT sat_id FROM contact_plan
+      EXCEPT
+      SELECT sat_id FROM downlink) AS q
+LEFT JOIN satellite AS s ON s.sat_id = q.sat_id
+ORDER BY q.sat_id;
+--- hint
+EXCEPT compares whole rows and treats two NULLs as the same, so the NULL frame cannot poison it the way it poisons NOT IN. But it only returns the compared column.
+--- hint
+Put the EXCEPT in a derived table (or a CTE), then left-join `satellite` to it, so an id outside the fleet keeps a NULL name.
+--- check result | Lyra, and SAT-107 with no name
+ordered
+[["SAT-102", "Lyra"], ["SAT-107", null]]
+--- check source | Subtracts with EXCEPT
+[Ee][Xx][Cc][Ee][Pp][Tt]
+--- check source | Keeps the id that is not in the fleet
+[Ll][Ee][Ff][Tt]\s+([Oo][Uu][Tt][Ee][Rr]\s+)?[Jj][Oo][Ii][Nn]
+
++++ practice | Counting each real reading once
+--- task
+Vega's `BUS_TEMP` reading at `'2026-04-01T00:00:00Z'` was copied into `reading_archive` but never deleted from `reading`, so that one row is in both tables. Other rows only look alike: Lyra really did read 21 °C three times, at different times.
+
+Stack the two tables with a set operation that removes exact copies. For each satellite, count its `BUS_TEMP` readings across both tables, counting the copied row once and every real reading once, and give their mean rounded to 2 decimals. Return `sat_id`, `n` and `mean_temp`, sorted by `sat_id`.
+--- starter
+SELECT sat_id, COUNT(*) AS n, ROUND(AVG(value), 2) AS mean_temp
+FROM (SELECT sat_id, value FROM reading WHERE channel = 'BUS_TEMP'
+      UNION ALL
+      SELECT sat_id, value FROM reading_archive WHERE channel = 'BUS_TEMP') AS all_rows
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+SELECT sat_id, COUNT(*) AS n, ROUND(AVG(value), 2) AS mean_temp
+FROM (SELECT sat_id, ts, channel, value FROM reading
+      UNION
+      SELECT sat_id, ts, channel, value FROM reading_archive) AS all_rows
+WHERE channel = 'BUS_TEMP'
+GROUP BY sat_id
+ORDER BY sat_id;
+--- hint
+UNION ALL keeps the copied row twice. Plain UNION removes rows that are equal in every selected column, so what you select decides what counts as "the same reading".
+--- hint
+Two readings are the same reading only if the satellite, the time, the channel and the value all match. Stack those four columns with UNION; with only `sat_id` and `value`, Lyra's three 21s would collapse into one.
+--- check result | Vega 6, Lyra 3, Orion 2
+ordered
+[["SAT-101", 6, 22.0], ["SAT-102", 3, 21.0], ["SAT-103", 2, 16.0]]
+--- check source | Removes the copy with UNION
+[Uu][Nn][Ii][Oo][Nn](?!\s+[Aa][Ll][Ll])
+--- check source | Compares the time too
+\bts\b
+
++++ practice | Swapped columns
+--- task
+This query should list every reading of `SAT-102` from both `reading` and `reading_archive`: `ts`, `channel` and `value`, sorted by `ts`, then `channel`. The archive's row comes out with the channel name where the time should be.
+
+Fix it.
+--- starter
+SELECT ts, channel, value FROM reading WHERE sat_id = 'SAT-102'
+UNION ALL
+SELECT channel, ts, value FROM reading_archive WHERE sat_id = 'SAT-102'
+ORDER BY ts, channel;
+--- solution
+SELECT ts, channel, value FROM reading WHERE sat_id = 'SAT-102'
+UNION ALL
+SELECT ts, channel, value FROM reading_archive WHERE sat_id = 'SAT-102'
+ORDER BY ts, channel;
+--- hint
+A set operation lines columns up by position, not by name. Both columns are text, so nothing complains when they are swapped.
+--- hint
+List the columns of the second branch in the same order as the first.
+--- check result | Four readings, the archive's first
+ordered
+[["2026-03-31T12:00:00Z", "BUS_TEMP", 21.0], ["2026-04-01T04:00:00Z", "BATT_V", 27.9], ["2026-04-01T04:00:00Z", "BUS_TEMP", 21.0], ["2026-04-01T20:00:00Z", "BUS_TEMP", 21.0]]
+--- check source absent | No branch lists channel before ts
+[Ss][Ee][Ll][Ee][Cc][Tt]\s+channel\s*,\s*ts
+--- check source | Still stacks with UNION ALL
+[Uu][Nn][Ii][Oo][Nn]\s+[Aa][Ll][Ll]
+
++++ practice | Yesterday against today
+--- task
+Compare the satellites that sent any reading on 2026-04-01 with those that sent any on 2026-04-02 (a reading's day is `substr(ts, 1, 10)`). Return one row per satellite that reported on either day: `sat_id` and `status`, which is `'steady'` if it reported on both days, `'dropped'` if only on 1 April, and `'new'` if only on 2 April.
+
+Build each status with a set operation. SQLite does not allow brackets around part of a compound query, and runs its set operators left to right, so give each part its own CTE, then stack the three. Sort by `sat_id`.
+--- starter
+SELECT sat_id, 'steady' AS status FROM reading WHERE substr(ts, 1, 10) = '2026-04-01'
+INTERSECT
+SELECT sat_id, 'steady' FROM reading WHERE substr(ts, 1, 10) = '2026-04-02'
+UNION ALL
+SELECT sat_id, 'new' FROM reading WHERE substr(ts, 1, 10) = '2026-04-02'
+EXCEPT
+SELECT sat_id, 'new' FROM reading WHERE substr(ts, 1, 10) = '2026-04-01'
+ORDER BY sat_id;
+--- solution
+WITH d1 AS (
+    SELECT sat_id FROM reading WHERE substr(ts, 1, 10) = '2026-04-01'
+),
+d2 AS (
+    SELECT sat_id FROM reading WHERE substr(ts, 1, 10) = '2026-04-02'
+),
+steady AS (
+    SELECT sat_id FROM d1 INTERSECT SELECT sat_id FROM d2
+),
+dropped AS (
+    SELECT sat_id FROM d1 EXCEPT SELECT sat_id FROM d2
+),
+fresh AS (
+    SELECT sat_id FROM d2 EXCEPT SELECT sat_id FROM d1
+)
+SELECT sat_id, 'steady' AS status FROM steady
+UNION ALL
+SELECT sat_id, 'dropped' FROM dropped
+UNION ALL
+SELECT sat_id, 'new' FROM fresh
+ORDER BY sat_id;
+--- hint
+Run the starter. SQLite reads it as ((A INTERSECT B) UNION ALL C) EXCEPT D, which is not what it looks like, and no satellite is ever called dropped.
+--- hint
+Make a CTE for each day's list, one for each status (`d1 INTERSECT d2`, `d1 EXCEPT d2`, `d2 EXCEPT d1`), and stack the three with UNION ALL, each tagged with its status.
+--- check result | Vega steady, Lyra and Draco dropped, Orion new
+ordered
+[["SAT-101", "steady"], ["SAT-102", "dropped"], ["SAT-103", "new"], ["SAT-104", "dropped"]]
+--- check source | Builds the parts as CTEs
+[Ww][Ii][Tt][Hh]\s+\w+\s+[Aa][Ss]\s*\(
+--- check source | Uses INTERSECT
+[Ii][Nn][Tt][Ee][Rr][Ss][Ee][Cc][Tt]
+--- check source | Uses EXCEPT
+[Ee][Xx][Cc][Ee][Pp][Tt]
+
++++ question | How many rows UNION keeps
+--- ask
+In `reading`, the distinct `(sat_id, channel)` pairs are: SAT-101 with both `BUS_TEMP` and `BATT_V`, SAT-102 with both, SAT-103 with both, and SAT-104 with `BATT_V`, from 13 rows in all. `reading_archive` has 5 rows, whose pairs are SAT-101 `BUS_TEMP` (three rows), SAT-102 `BUS_TEMP` and SAT-104 `BATT_V`. How many rows does this return?
+
+```sql
+SELECT sat_id, channel FROM reading
+UNION
+SELECT sat_id, channel FROM reading_archive;
+```
+--- answer
+7
+seven
+--- why
+UNION stacks the 18 rows and keeps each different row once. The live table already has 7 different pairs, and every pair in the archive is one of them, so the answer is 7. UNION ALL would return all $13 + 5 = 18$ rows. Removing the duplicates costs a sort or a hash over everything, which is why UNION ALL is the default choice when you do not need it.
+
+=== sql02-test | Joins, aggregation and subqueries: module test
+--- teach
+The test covers the whole module on a new fleet: joins of every kind and where their conditions belong, join keys and how many rows come out, grouping and the aggregates, the fan-out trap, conditional aggregates, subtotals, subqueries, EXISTS and the anti-join, chained and recursive CTEs, and set operations. Its ten problems are new, most combine several lessons, and there are no hints; twelve questions after them check that you know why a query gives the rows it gives. The test has its own database: read each task's list of tables, and look at the rows with `SELECT *` before you write. To get ready, redo the practice problems of lessons 4, 8 and 10 without the hints.
+--- gate
+pass 7
+questions 10
+minutes 112
+--- schema
+CREATE TABLE satellite (
+    sat_id   TEXT PRIMARY KEY,
+    name     TEXT NOT NULL,
+    plane    INTEGER NOT NULL,
+    launched TEXT NOT NULL
+);
+INSERT INTO satellite VALUES
+  ('SAT-201', 'Kestrel', 1, '2025-03-01'),
+  ('SAT-202', 'Merlin',  1, '2025-03-01'),
+  ('SAT-203', 'Osprey',  2, '2025-07-15'),
+  ('SAT-204', 'Falcon',  2, '2025-11-02'),
+  ('SAT-205', 'Harrier', 3, '2026-04-20'),
+  ('SAT-206', 'Condor',  3, '2026-04-20');
+CREATE TABLE reading (
+    sat_id  TEXT NOT NULL REFERENCES satellite(sat_id),
+    ts      TEXT NOT NULL,
+    channel TEXT NOT NULL,
+    value   REAL NOT NULL
+);
+INSERT INTO reading VALUES
+  ('SAT-201', '2026-05-01T00:00:00Z', 'BUS_TEMP', 22),
+  ('SAT-201', '2026-05-01T06:00:00Z', 'BUS_TEMP', 26),
+  ('SAT-201', '2026-05-01T12:00:00Z', 'BUS_TEMP', 24),
+  ('SAT-201', '2026-05-02T00:00:00Z', 'BUS_TEMP', 30),
+  ('SAT-201', '2026-05-01T00:00:00Z', 'BATT_V',   28.0),
+  ('SAT-201', '2026-05-02T00:00:00Z', 'BATT_V',   27.4),
+  ('SAT-202', '2026-05-01T03:00:00Z', 'BUS_TEMP', 18),
+  ('SAT-202', '2026-05-02T03:00:00Z', 'BUS_TEMP', 22.5),
+  ('SAT-202', '2026-05-03T03:00:00Z', 'BUS_TEMP', 19),
+  ('SAT-202', '2026-05-01T03:00:00Z', 'BATT_V',   28.3),
+  ('SAT-203', '2026-05-02T09:00:00Z', 'BUS_TEMP', 25),
+  ('SAT-203', '2026-05-02T21:00:00Z', 'BUS_TEMP', 27),
+  ('SAT-203', '2026-05-02T09:00:00Z', 'BATT_V',   27.1),
+  ('SAT-203', '2026-05-03T09:00:00Z', 'BATT_V',   26.9),
+  ('SAT-204', '2026-05-01T15:00:00Z', 'BATT_V',   28.6),
+  ('SAT-205', '2026-05-03T12:00:00Z', 'BUS_TEMP', 16);
+CREATE TABLE pass (
+    pass_id INTEGER PRIMARY KEY,
+    sat_id  TEXT NOT NULL,
+    station TEXT NOT NULL,
+    aos     TEXT NOT NULL,
+    los     TEXT NOT NULL
+);
+INSERT INTO pass VALUES
+  (1, 'SAT-201', 'Kiruna',   '2026-05-01T05:50:00Z', '2026-05-01T06:05:00Z'),
+  (2, 'SAT-201', 'Hawaii',   '2026-05-02T00:00:00Z', '2026-05-02T00:12:00Z'),
+  (3, 'SAT-202', 'Kiruna',   '2026-05-01T03:00:00Z', '2026-05-01T03:10:00Z'),
+  (4, 'SAT-203', 'Santiago', '2026-05-02T09:00:00Z', '2026-05-02T09:15:00Z'),
+  (5, 'SAT-203', 'Kiruna',   '2026-05-03T01:00:00Z', '2026-05-03T01:10:00Z'),
+  (6, 'SAT-205', 'Hawaii',   '2026-05-03T12:00:00Z', '2026-05-03T12:08:00Z'),
+  (7, 'SAT-209', 'Santiago', '2026-05-03T02:00:00Z', '2026-05-03T02:10:00Z'),
+  (8, 'SAT-204', 'Kiruna',   '2026-05-01T15:00:00Z', '2026-05-01T15:10:00Z');
+CREATE TABLE frame (
+    frame_id INTEGER PRIMARY KEY,
+    pass_id  INTEGER NOT NULL REFERENCES pass(pass_id),
+    sat_id   TEXT,
+    bytes    INTEGER NOT NULL
+);
+INSERT INTO frame VALUES
+  (1, 1, 'SAT-201', 500),
+  (2, 1, 'SAT-201', 700),
+  (3, 2, 'SAT-201', 400),
+  (4, 3, 'SAT-202', 300),
+  (5, 4, 'SAT-203', 800),
+  (6, 4, NULL,      200),
+  (7, 4, 'SAT-203', 600),
+  (8, 6, 'SAT-205', 250),
+  (9, 8, NULL,      150);
+CREATE TABLE burn (
+    burn_id INTEGER PRIMARY KEY,
+    sat_id  TEXT NOT NULL REFERENCES satellite(sat_id),
+    ts      TEXT NOT NULL,
+    dv_ms   REAL NOT NULL
+);
+INSERT INTO burn VALUES
+  (1, 'SAT-201', '2026-05-01T04:00:00Z', 0.6),
+  (2, 'SAT-201', '2026-05-02T04:00:00Z', 0.6),
+  (3, 'SAT-203', '2026-05-02T08:00:00Z', 1.4),
+  (4, 'SAT-204', '2026-05-01T12:00:00Z', 0.9);
+CREATE TABLE part (
+    part_id   TEXT PRIMARY KEY,
+    parent_id TEXT REFERENCES part(part_id),
+    name      TEXT NOT NULL,
+    mass_kg   REAL NOT NULL
+);
+INSERT INTO part VALUES
+  ('OSP',   NULL,  'Osprey spacecraft', 55.0),
+  ('EPS',   'OSP', 'Power',              3.0),
+  ('BAT',   'EPS', 'Battery',            8.0),
+  ('SOL',   'EPS', 'Solar wings',        2.0),
+  ('SOL-L', 'SOL', 'Left wing',          4.5),
+  ('SOL-R', 'SOL', 'Right wing',         4.5),
+  ('AOC',   'OSP', 'Attitude control',   2.0),
+  ('RW',    'AOC', 'Reaction wheels',    6.0),
+  ('STR',   'AOC', 'Star tracker',       1.5),
+  ('TTC',   'OSP', 'Radio',              1.8);
+CREATE TABLE reading_archive (
+    sat_id  TEXT NOT NULL,
+    ts      TEXT NOT NULL,
+    channel TEXT NOT NULL,
+    value   REAL NOT NULL
+);
+INSERT INTO reading_archive VALUES
+  ('SAT-201', '2026-04-30T00:00:00Z', 'BUS_TEMP', 21),
+  ('SAT-202', '2026-04-30T03:00:00Z', 'BUS_TEMP', 17),
+  ('SAT-201', '2026-05-01T00:00:00Z', 'BUS_TEMP', 22),
+  ('SAT-204', '2026-04-30T15:00:00Z', 'BATT_V',   28.7),
+  ('SAT-202', '2026-05-01T03:00:00Z', 'BATT_V',   28.3);
+
++++ problem | Station traffic
+--- task
+`pass` (`pass_id`, `sat_id`, `station`, `aos`, `los`) has one row per ground-station pass. `frame` (`frame_id`, `pass_id`, `sat_id`, `bytes`) has one row per radio frame received during a pass; a pass can have many frames or none.
+
+For each station, return:
+
+- `station`
+- `passes`: its number of passes
+- `sats`: the number of different satellites it was booked for (the pass's `sat_id`)
+- `frames`: the number of frames it received
+- `bytes`: their total bytes; 0 if none
+- `per_pass`: bytes per pass, `bytes / passes` worked out as a decimal (not a whole-number division), rounded to 1 decimal
+
+Every station with a pass appears, even if a pass of it received nothing. Sort by `station`.
+--- starter
+SELECT station, COUNT(*) AS passes, 0 AS sats, 0 AS frames, 0 AS bytes, 0 AS per_pass
+FROM pass
+GROUP BY station
+ORDER BY station;
+--- solution
+SELECT p.station,
+       COUNT(DISTINCT p.pass_id)        AS passes,
+       COUNT(DISTINCT p.sat_id)         AS sats,
+       COUNT(f.frame_id)                AS frames,
+       COALESCE(SUM(f.bytes), 0)        AS bytes,
+       ROUND(1.0 * COALESCE(SUM(f.bytes), 0) / COUNT(DISTINCT p.pass_id), 1) AS per_pass
+FROM pass AS p
+LEFT JOIN frame AS f ON f.pass_id = p.pass_id
+GROUP BY p.station
+ORDER BY p.station;
+--- check result | Hawaii, Kiruna and Santiago, each pass and frame counted once
+ordered
+[["Hawaii", 2, 2, 2, 650, 325.0], ["Kiruna", 4, 4, 4, 1650, 412.5], ["Santiago", 2, 2, 3, 1600, 800.0]]
+--- check source absent | Does not type the byte totals
+\b(650|1650|1600)\b
+--- check source absent | Does not add up distinct byte counts
+[Ss][Uu][Mm]\s*\(\s*[Dd][Ii][Ss][Tt][Ii][Nn][Cc][Tt]
+
++++ problem | Wasted passes
+--- task
+Create a view named `wasted_pass` listing every pass (from `pass`) that received no frame from its own satellite, that is, no row of `frame` with the pass's `pass_id` *and* the pass's `sat_id`. A frame that could not be identified has a NULL `sat_id`. The view has four columns:
+
+- `pass_id`, `station`, `sat_id`
+- `reason`: `'no frames'` if the pass received no frame at all, otherwise `'none of its own'`
+
+Then finish with `SELECT * FROM wasted_pass ORDER BY pass_id;`. The view must stay right as frames arrive.
+--- starter
+CREATE VIEW wasted_pass AS
+SELECT p.pass_id, p.station, p.sat_id, 'no frames' AS reason
+FROM pass AS p
+WHERE p.sat_id NOT IN (SELECT f.sat_id FROM frame AS f WHERE f.pass_id = p.pass_id);
+SELECT * FROM wasted_pass ORDER BY pass_id;
+--- solution
+CREATE VIEW wasted_pass AS
+SELECT p.pass_id, p.station, p.sat_id,
+       CASE
+           WHEN EXISTS (SELECT 1 FROM frame AS f WHERE f.pass_id = p.pass_id) THEN 'none of its own'
+           ELSE 'no frames'
+       END AS reason
+FROM pass AS p
+WHERE NOT EXISTS (SELECT 1
+                  FROM frame AS f
+                  WHERE f.pass_id = p.pass_id
+                    AND f.sat_id = p.sat_id);
+SELECT * FROM wasted_pass ORDER BY pass_id;
+--- check result | Passes 5 and 7 got nothing; pass 8 got only an unidentified frame
+ordered
+[[5, "Kiruna", "SAT-203", "no frames"], [7, "Santiago", "SAT-209", "no frames"], [8, "Kiruna", "SAT-204", "none of its own"]]
+--- check query | An unidentified frame arrives for pass 5
+INSERT INTO frame VALUES (10, 5, NULL, 90);
+SELECT pass_id, reason FROM wasted_pass ORDER BY pass_id
+=> [[5, "none of its own"], [7, "no frames"], [8, "none of its own"]]
+--- check query | A frame from its own satellite arrives for pass 7
+INSERT INTO frame VALUES (11, 7, 'SAT-209', 120);
+SELECT pass_id, reason FROM wasted_pass ORDER BY pass_id
+=> [[5, "none of its own"], [8, "none of its own"]]
+
++++ problem | Readings captured during passes
+--- task
+A reading is captured during a pass when it comes from the pass's satellite and its `ts` is at or after the pass's `aos` (acquisition of signal) and before its `los` (loss of signal).
+
+For every pass in `pass`, return:
+
+- `pass_id` and `sat_id`
+- `n_readings`: how many readings, of any channel, were captured during it; 0 if none
+- `max_temp`: the highest `BUS_TEMP` reading among them; NULL if there is none
+
+Sort by `pass_id`.
+--- starter
+SELECT p.pass_id, p.sat_id, COUNT(*) AS n_readings, MAX(r.value) AS max_temp
+FROM pass AS p
+JOIN reading AS r ON r.sat_id = p.sat_id
+GROUP BY p.pass_id, p.sat_id
+ORDER BY p.pass_id;
+--- solution
+SELECT p.pass_id,
+       p.sat_id,
+       COUNT(r.sat_id)                                   AS n_readings,
+       MAX(r.value) FILTER (WHERE r.channel = 'BUS_TEMP') AS max_temp
+FROM pass AS p
+LEFT JOIN reading AS r
+       ON r.sat_id = p.sat_id
+      AND r.ts >= p.aos
+      AND r.ts <  p.los
+GROUP BY p.pass_id, p.sat_id
+ORDER BY p.pass_id;
+--- check result | Eight passes; pass 8 caught a voltage but no temperature
+ordered
+[[1, "SAT-201", 1, 26.0], [2, "SAT-201", 2, 30.0], [3, "SAT-202", 2, 18.0], [4, "SAT-203", 2, 25.0], [5, "SAT-203", 0, null], [6, "SAT-205", 1, 16.0], [7, "SAT-209", 0, null], [8, "SAT-204", 1, null]]
+--- check source absent | Does not pick passes by id
+pass_id\s*(=|[Ii][Nn]\b)\s*\(?\s*\d
+
++++ problem | Assembly masses
+--- task
+`part` (`part_id`, `parent_id`, `name`, `mass_kg`) stores Osprey's parts as a tree: `parent_id` is the part each one sits inside, and the spacecraft has a NULL parent. A part's own `mass_kg` does not include the parts inside it.
+
+Create a view named `assembly_mass` with one row for every part that has at least one part inside it, and four columns:
+
+- `part_id` and `name`
+- `parts_inside`: how many parts are inside it, at any depth
+- `total_kg`: its own mass plus the mass of every part inside it, rounded to 1 decimal
+
+Then finish with `SELECT * FROM assembly_mass ORDER BY total_kg DESC, part_id;`. The view must stay right however deep the tree grows.
+--- starter
+CREATE VIEW assembly_mass AS
+SELECT p.part_id, p.name, COUNT(c.part_id) AS parts_inside,
+       ROUND(p.mass_kg + SUM(c.mass_kg), 1) AS total_kg
+FROM part AS p
+JOIN part AS c ON c.parent_id = p.part_id
+GROUP BY p.part_id, p.name, p.mass_kg;
+SELECT * FROM assembly_mass ORDER BY total_kg DESC, part_id;
+--- solution
+CREATE VIEW assembly_mass AS
+WITH RECURSIVE below (top_id, part_id, mass_kg) AS (
+    SELECT part_id, part_id, mass_kg
+    FROM part
+    UNION ALL
+    SELECT b.top_id, p.part_id, p.mass_kg
+    FROM part AS p
+    JOIN below AS b ON p.parent_id = b.part_id
+)
+SELECT t.part_id,
+       t.name,
+       COUNT(*) - 1               AS parts_inside,
+       ROUND(SUM(b.mass_kg), 1)   AS total_kg
+FROM below AS b
+JOIN part AS t ON t.part_id = b.top_id
+GROUP BY t.part_id, t.name
+HAVING COUNT(*) > 1;
+SELECT * FROM assembly_mass ORDER BY total_kg DESC, part_id;
+--- check result | The spacecraft, power, solar wings and attitude control
+ordered
+[["OSP", "Osprey spacecraft", 9, 88.3], ["EPS", "Power", 4, 22.0], ["SOL", "Solar wings", 2, 11.0], ["AOC", "Attitude control", 2, 9.5]]
+--- check query | A hinge added under the left wing counts all the way up
+INSERT INTO part VALUES ('HNG', 'SOL-L', 'Hinge', 0.5);
+SELECT part_id, parts_inside, total_kg FROM assembly_mass ORDER BY total_kg DESC, part_id
+=> [["OSP", 10, 88.8], ["EPS", 5, 22.5], ["SOL", 3, 11.5], ["AOC", 2, 9.5], ["SOL-L", 1, 5.0]]
+
++++ problem | A six-hour grid
+--- task
+For the satellites in plane 1 and the four 6-hour slots of 2026-05-01 (starting at 00:00, 06:00, 12:00 and 18:00; each slot runs from its start up to, but not including, the next start), return one row per satellite and slot:
+
+- `name`
+- `slot_start`, written like `2026-05-01T06:00:00Z`
+- `n_temp`: that satellite's `BUS_TEMP` readings in the slot
+- `n_volt`: its `BATT_V` readings in the slot
+
+Every satellite-slot pair appears, with 0 where there is nothing. Generate the slots rather than typing them. Sort by `name`, then `slot_start`.
+--- starter
+SELECT s.name, substr(r.ts, 1, 13) || ':00:00Z' AS slot_start, COUNT(*) AS n_temp, 0 AS n_volt
+FROM satellite AS s
+JOIN reading AS r ON r.sat_id = s.sat_id
+WHERE s.plane = 1 AND substr(r.ts, 1, 10) = '2026-05-01'
+GROUP BY s.name, substr(r.ts, 1, 13)
+ORDER BY s.name, slot_start;
+--- solution
+WITH RECURSIVE slots (slot_start) AS (
+    SELECT '2026-05-01T00:00:00Z'
+    UNION ALL
+    SELECT strftime('%Y-%m-%dT%H:%M:%SZ', slot_start, '+6 hours')
+    FROM slots
+    WHERE slot_start < '2026-05-01T18:00:00Z'
+)
+SELECT s.name,
+       sl.slot_start,
+       COUNT(r.sat_id) FILTER (WHERE r.channel = 'BUS_TEMP') AS n_temp,
+       COUNT(r.sat_id) FILTER (WHERE r.channel = 'BATT_V')   AS n_volt
+FROM satellite AS s
+CROSS JOIN slots AS sl
+LEFT JOIN reading AS r
+       ON r.sat_id = s.sat_id
+      AND r.ts >= sl.slot_start
+      AND r.ts <  strftime('%Y-%m-%dT%H:%M:%SZ', sl.slot_start, '+6 hours')
+WHERE s.plane = 1
+GROUP BY s.sat_id, s.name, sl.slot_start
+ORDER BY s.name, sl.slot_start;
+--- check result | Eight rows: Kestrel reports in three slots, Merlin in one
+ordered
+[["Kestrel", "2026-05-01T00:00:00Z", 1, 1], ["Kestrel", "2026-05-01T06:00:00Z", 1, 0], ["Kestrel", "2026-05-01T12:00:00Z", 1, 0], ["Kestrel", "2026-05-01T18:00:00Z", 0, 0], ["Merlin", "2026-05-01T00:00:00Z", 1, 1], ["Merlin", "2026-05-01T06:00:00Z", 0, 0], ["Merlin", "2026-05-01T12:00:00Z", 0, 0], ["Merlin", "2026-05-01T18:00:00Z", 0, 0]]
+--- check source | Generates the slots recursively
+[Rr][Ee][Cc][Uu][Rr][Ss][Ii][Vv][Ee]
+--- check source absent | Does not type the later slots
+'2026-05-01T(06|12)
+
++++ problem | Burns with subtotals
+--- task
+Build in SQLite what `GROUP BY ROLLUP (s.plane, s.name)` would give for the burns in `burn` (`burn_id`, `sat_id`, `ts`, `dv_ms`), over every satellite, including those that never burned:
+
+- one row per satellite: its `plane`, `name`, `burns` (0 if none) and `dv_ms`, its total velocity change (0 if none);
+- one subtotal per plane, with `name` NULL;
+- one fleet total, with `plane` and `name` NULL.
+
+Return `plane`, `name`, `burns`, `dv_ms` and `lvl`: 0 for a satellite, 1 for a plane's subtotal, 2 for the fleet total. Sort by `lvl`, `plane`, then `name`.
+--- starter
+SELECT s.plane, s.name, COUNT(b.burn_id) AS burns, SUM(b.dv_ms) AS dv_ms, 0 AS lvl
+FROM satellite AS s
+JOIN burn AS b ON b.sat_id = s.sat_id
+GROUP BY s.plane, s.name
+ORDER BY lvl, plane, name;
+--- solution
+SELECT s.plane, s.name, COUNT(b.burn_id) AS burns, COALESCE(SUM(b.dv_ms), 0) AS dv_ms, 0 AS lvl
+FROM satellite AS s
+LEFT JOIN burn AS b ON b.sat_id = s.sat_id
+GROUP BY s.plane, s.sat_id, s.name
+UNION ALL
+SELECT s.plane, NULL, COUNT(b.burn_id), COALESCE(SUM(b.dv_ms), 0), 1
+FROM satellite AS s
+LEFT JOIN burn AS b ON b.sat_id = s.sat_id
+GROUP BY s.plane
+UNION ALL
+SELECT NULL, NULL, COUNT(*), COALESCE(SUM(dv_ms), 0), 2
+FROM burn
+ORDER BY lvl, plane, name;
+--- check result | Six satellites, three plane subtotals, one fleet total
+ordered
+[[1, "Kestrel", 2, 1.2, 0], [1, "Merlin", 0, 0, 0], [2, "Falcon", 1, 0.9, 0], [2, "Osprey", 1, 1.4, 0], [3, "Condor", 0, 0, 0], [3, "Harrier", 0, 0, 0], [1, null, 2, 1.2, 1], [2, null, 2, 2.3, 1], [3, null, 0, 0, 1], [null, null, 4, 3.5, 2]]
+--- check source | Stacks the levels
+[Uu][Nn][Ii][Oo][Nn]\s+[Aa][Ll][Ll]
+--- check source absent | Does not type the totals
+\b(3\.5|2\.3)\b
+
++++ problem | The first temperature after each burn
+--- task
+For every burn in `burn`, return:
+
+- `burn_id` and `sat_id`
+- `next_ts`: the time of the first `BUS_TEMP` reading from the same satellite after the burn (strictly later); NULL if there is none
+- `next_temp`: that reading's value; NULL if there is none
+- `wait_h`: the hours from the burn to that reading, `(unixepoch(next_ts) - unixepoch(burn ts)) / 3600.0`, rounded to 1 decimal; NULL if there is none
+
+Every burn appears. Sort by `burn_id`.
+--- starter
+SELECT b.burn_id, b.sat_id, MIN(r.ts) AS next_ts, MIN(r.value) AS next_temp, NULL AS wait_h
+FROM burn AS b
+JOIN reading AS r ON r.sat_id = b.sat_id
+GROUP BY b.burn_id, b.sat_id
+ORDER BY b.burn_id;
+--- solution
+SELECT x.burn_id,
+       x.sat_id,
+       x.next_ts,
+       (SELECT r.value
+        FROM reading AS r
+        WHERE r.sat_id = x.sat_id
+          AND r.channel = 'BUS_TEMP'
+          AND r.ts = x.next_ts) AS next_temp,
+       ROUND((unixepoch(x.next_ts) - unixepoch(x.ts)) / 3600.0, 1) AS wait_h
+FROM (SELECT b.burn_id, b.sat_id, b.ts,
+             (SELECT MIN(r.ts)
+              FROM reading AS r
+              WHERE r.sat_id = b.sat_id
+                AND r.channel = 'BUS_TEMP'
+                AND r.ts > b.ts) AS next_ts
+      FROM burn AS b) AS x
+ORDER BY x.burn_id;
+--- check result | Burns 1 and 3 were followed by a reading; burns 2 and 4 were not
+ordered
+[[1, "SAT-201", "2026-05-01T06:00:00Z", 26.0, 2.0], [2, "SAT-201", null, null, null], [3, "SAT-203", "2026-05-02T09:00:00Z", 25.0, 1.0], [4, "SAT-204", null, null, null]]
+--- check source absent | Does not type the times
+'2026-05-0[12]T0[69]
+
++++ problem | Hot days against the fleet baseline
+--- task
+Write this as chained CTEs, in steps:
+
+1. each satellite's mean `BUS_TEMP` reading per day (`substr(ts, 1, 10)`);
+2. the fleet baseline: the mean of those daily means (not the mean of the raw readings);
+3. per satellite, how many days it has in step 1 and on how many its daily mean was above the baseline;
+4. each satellite's number of passes in `pass`.
+
+For every satellite with at least one `BUS_TEMP` reading, return `name`, `days`, `hot_days` and `passes` (0 if none). Sort by `name`.
+--- starter
+SELECT s.name,
+       COUNT(DISTINCT substr(r.ts, 1, 10)) AS days,
+       0 AS hot_days,
+       COUNT(p.pass_id) AS passes
+FROM satellite AS s
+JOIN reading AS r ON r.sat_id = s.sat_id AND r.channel = 'BUS_TEMP'
+LEFT JOIN pass AS p ON p.sat_id = s.sat_id
+GROUP BY s.sat_id, s.name
+ORDER BY s.name;
+--- solution
+WITH daily AS (
+    SELECT sat_id, substr(ts, 1, 10) AS day, AVG(value) AS mean_temp
+    FROM reading
+    WHERE channel = 'BUS_TEMP'
+    GROUP BY sat_id, substr(ts, 1, 10)
+),
+baseline AS (
+    SELECT AVG(mean_temp) AS fleet_mean
+    FROM daily
+),
+per_sat AS (
+    SELECT d.sat_id,
+           COUNT(*) AS days,
+           COUNT(*) FILTER (WHERE d.mean_temp > b.fleet_mean) AS hot_days
+    FROM daily AS d
+    CROSS JOIN baseline AS b
+    GROUP BY d.sat_id
+),
+passes AS (
+    SELECT sat_id, COUNT(*) AS passes
+    FROM pass
+    GROUP BY sat_id
+)
+SELECT s.name, ps.days, ps.hot_days, COALESCE(p.passes, 0) AS passes
+FROM per_sat AS ps
+JOIN satellite AS s ON s.sat_id = ps.sat_id
+LEFT JOIN passes AS p ON p.sat_id = ps.sat_id
+ORDER BY s.name;
+--- check result | Merlin's 22.5 day is above the baseline of daily means
+ordered
+[["Harrier", 1, 0, 1], ["Kestrel", 2, 2, 2], ["Merlin", 3, 1, 1], ["Osprey", 1, 1, 2]]
+--- check source | Built as named steps
+[Ww][Ii][Tt][Hh]\s+\w+\s+[Aa][Ss]\s*\(
+--- check source absent | Does not type the baseline
+22\.2|22\.9
+
++++ problem | Live against archive
+--- task
+A nightly job copies readings into `reading_archive` (same columns as `reading`) and should then delete them from `reading`; some copies were never deleted. Two rows are the same reading only when `sat_id`, `ts`, `channel` and `value` all match.
+
+For every satellite that has at least one row in either table, return:
+
+- `sat_id`
+- `live_n`: its rows in `reading`
+- `archive_n`: its rows in `reading_archive`
+- `both_n`: its readings that are in both tables
+- `real_n`: its different readings across the two tables, each counted once
+
+Use set operations for `both_n` and `real_n`. Missing counts are 0. Sort by `sat_id`.
+--- starter
+SELECT sat_id, COUNT(*) AS live_n, 0 AS archive_n, 0 AS both_n, COUNT(*) AS real_n
+FROM reading
+GROUP BY sat_id
+ORDER BY sat_id;
+--- solution
+WITH both_rows AS (
+    SELECT sat_id, ts, channel, value FROM reading
+    INTERSECT
+    SELECT sat_id, ts, channel, value FROM reading_archive
+),
+all_rows AS (
+    SELECT sat_id, ts, channel, value FROM reading
+    UNION
+    SELECT sat_id, ts, channel, value FROM reading_archive
+),
+live AS (SELECT sat_id, COUNT(*) AS n FROM reading GROUP BY sat_id),
+arch AS (SELECT sat_id, COUNT(*) AS n FROM reading_archive GROUP BY sat_id),
+bth  AS (SELECT sat_id, COUNT(*) AS n FROM both_rows GROUP BY sat_id),
+rl   AS (SELECT sat_id, COUNT(*) AS n FROM all_rows GROUP BY sat_id)
+SELECT rl.sat_id,
+       COALESCE(live.n, 0) AS live_n,
+       COALESCE(arch.n, 0) AS archive_n,
+       COALESCE(bth.n, 0)  AS both_n,
+       rl.n                AS real_n
+FROM rl
+LEFT JOIN live ON live.sat_id = rl.sat_id
+LEFT JOIN arch ON arch.sat_id = rl.sat_id
+LEFT JOIN bth  ON bth.sat_id  = rl.sat_id
+ORDER BY rl.sat_id;
+--- check result | Kestrel and Merlin each have one row in both tables
+ordered
+[["SAT-201", 6, 2, 1, 7], ["SAT-202", 4, 2, 1, 5], ["SAT-203", 4, 0, 0, 4], ["SAT-204", 1, 1, 0, 2], ["SAT-205", 1, 0, 0, 1]]
+--- check source | Finds the shared rows with INTERSECT
+[Ii][Nn][Tt][Ee][Rr][Ss][Ee][Cc][Tt]
+--- check source | Counts each reading once with UNION
+[Uu][Nn][Ii][Oo][Nn](?!\s+[Aa][Ll][Ll])
+
++++ problem | Fix the silence dashboard
+--- task
+The view `silence` should list every satellite with `n_recent`, its number of readings (any channel) at or after `'2026-05-02T12:00:00Z'`, and `silent`, `'yes'` when `n_recent` is 0 and `'no'` otherwise. It shows only three satellites and never says `'yes'`.
+
+Fix the view, then finish with `SELECT * FROM silence ORDER BY name;`. Keep its three columns: `name`, `n_recent`, `silent`.
+--- starter
+CREATE VIEW silence AS
+SELECT s.name,
+       COUNT(*) AS n_recent,
+       CASE WHEN COUNT(*) = 0 THEN 'yes' ELSE 'no' END AS silent
+FROM satellite AS s
+LEFT JOIN reading AS r ON r.sat_id = s.sat_id
+WHERE r.ts >= '2026-05-02T12:00:00Z'
+GROUP BY s.sat_id, s.name;
+SELECT * FROM silence ORDER BY name;
+--- solution
+CREATE VIEW silence AS
+SELECT s.name,
+       COUNT(r.sat_id) AS n_recent,
+       CASE WHEN COUNT(r.sat_id) = 0 THEN 'yes' ELSE 'no' END AS silent
+FROM satellite AS s
+LEFT JOIN reading AS r
+       ON r.sat_id = s.sat_id
+      AND r.ts >= '2026-05-02T12:00:00Z'
+GROUP BY s.sat_id, s.name;
+SELECT * FROM silence ORDER BY name;
+--- check result | Six satellites; Condor, Falcon and Kestrel are silent
+ordered
+[["Condor", 0, "yes"], ["Falcon", 0, "yes"], ["Harrier", 1, "no"], ["Kestrel", 0, "yes"], ["Merlin", 1, "no"], ["Osprey", 2, "no"]]
+--- check query | Condor reports, and is no longer silent
+INSERT INTO reading VALUES ('SAT-206', '2026-05-03T00:00:00Z', 'BATT_V', 28.1);
+SELECT name, n_recent, silent FROM silence WHERE name = 'Condor'
+=> [["Condor", 1, "no"]]
+--- check query | An old reading does not count as recent
+INSERT INTO reading VALUES ('SAT-204', '2026-05-02T11:59:00Z', 'BATT_V', 28.5);
+SELECT name, n_recent, silent FROM silence WHERE name = 'Falcon'
+=> [["Falcon", 0, "yes"]]
+
++++ question | What NATURAL JOIN matched
+--- ask
+`pass` has the columns `pass_id`, `sat_id`, `station`, `aos` and `los`. `frame` has `frame_id`, `pass_id`, `sat_id` and `bytes`, and a frame that could not be identified has a NULL `sat_id`. What does this add up?
+
+```sql
+SELECT SUM(bytes) FROM pass NATURAL JOIN frame;
+```
+--- choice correct
+Only the frames whose `pass_id` and `sat_id` both equal their pass's. The two tables share two column names, so it joins on both, and a NULL `sat_id` equals nothing, so unidentified frames are left out without a word.
+--- choice
+Every frame's bytes: NATURAL JOIN follows the foreign key from `frame.pass_id` to `pass`.
+--- choice
+Every frame's bytes: NATURAL JOIN joins on the columns whose names end in `_id` and are keys.
+--- choice
+Nothing: NATURAL JOIN needs the two tables to have all their column names in common.
+--- why
+NATURAL JOIN means USING every column name the tables happen to share, here `(pass_id, sat_id)`. Nobody wrote that key down, and it silently adds a second condition that throws away the unidentified frames, because `NULL = NULL` is not true. `JOIN frame USING (pass_id)` or an explicit ON says what was meant.
+
++++ question | COUNT after a left join
+--- ask
+Condor has no burns. What are `a` and `b` in the row this returns?
+
+```sql
+SELECT s.name, COUNT(*) AS a, COUNT(b.burn_id) AS b
+FROM satellite AS s
+LEFT JOIN burn AS b ON b.sat_id = s.sat_id
+WHERE s.name = 'Condor'
+GROUP BY s.sat_id, s.name;
+```
+--- answer
+1, 0
+1,0
+1 0
+1 and 0
+a = 1, b = 0
+a=1, b=0
+a = 1 and b = 0
+a is 1 and b is 0
+1; 0
+a = 1; b = 0
+--- why
+The left join keeps Condor as one row with every `burn` column NULL. `COUNT(*)` counts rows, so it says 1, as if Condor had a burn. `COUNT(b.burn_id)` counts only non-NULL values, so it gives the honest 0. After an outer join, count a right-hand column that is never NULL in a real row.
+
++++ question | A sum after two joins
+--- ask
+A satellite has 4 planned passes and 3 burns, of 0.5, 0.5 and 1.0 m/s. What does `SUM(b.dv_ms)` give for it here?
+
+```sql
+SELECT s.sat_id, SUM(b.dv_ms)
+FROM satellite AS s
+JOIN burn AS b ON b.sat_id = s.sat_id
+JOIN pass AS p ON p.sat_id = s.sat_id
+GROUP BY s.sat_id;
+```
+--- answer
+8
+8.0
+8.00
+8 m/s
+--- why
+Each burn is paired with each of the 4 passes, so every burn appears 4 times: $4 \times (0.5 + 0.5 + 1.0) = 4 \times 2 = 8$, four times the true 2 m/s. `SUM(DISTINCT b.dv_ms)` would give 1.5, too small, because the two 0.5 burns share a value. Summing `burn` per satellite before joining gives 2.
+
++++ question | What the correlated subquery costs
+--- ask
+`reading` has $n$ rows and no index. Query A keeps the readings above their own satellite's mean with `WHERE r.value > (SELECT AVG(r2.value) FROM reading AS r2 WHERE r2.sat_id = r.sat_id)`, run the way it reads: the subquery once per outer row. Query B computes the per-satellite means once in a derived table and joins them with a hash join. Roughly how many row reads does each need?
+--- choice correct
+A about $n^2$, B about $2n$.
+--- choice
+Both about $n$: the database remembers each satellite's mean after the first time.
+--- choice
+A about $n \log n$, because the inner query sorts; B about $n$.
+--- choice
+Both about $n^2$: a join also compares every row with every row.
+--- why
+Run literally, A scans all $n$ rows for each of the $n$ outer rows: $n + n \times n$. B reads the table once to build the means and once more to test each reading, and a hash join finds each satellite's mean in about one step. Planners sometimes rewrite A into B, but not always, which is why a correlated subquery on a big table deserves a look at its plan.
+
++++ question | A quartile by hand
+--- ask
+A channel's four samples, sorted, are 10, 12, 15 and 20. What does `PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY value)` return in PostgreSQL?
+--- answer
+11.5
+11.50
+--- why
+With $n = 4$ values at positions 0 to 3, the 0.25 percentile sits at position $0.25 \times (4 - 1) = 0.75$: three quarters of the way from position 0 (10) to position 1 (12). $10 + 0.75 \times (12 - 10) = 11.5$.
+
++++ question | GROUPING values a ROLLUP can give
+--- ask
+Which values can `GROUPING(plane, name)` take on the rows of `GROUP BY ROLLUP (plane, name)`?
+--- choice correct
+0, 1 and 3.
+--- choice
+0, 1, 2 and 3.
+--- choice
+Only 0 and 3.
+--- choice
+Only 1 and 2.
+--- why
+`GROUPING(plane, name)` is $2 \times$ GROUPING(plane) $+$ GROUPING(name). ROLLUP makes the sets `(plane, name)`, `(plane)` and `()`, which give 0, 1 and 3. The value 2 would mean "plane rolled up but name kept", the set `(name)`, which only CUBE makes.
+
++++ question | The left join that stopped keeping rows
+--- ask
+This query is meant to list every satellite with its number of battery readings, 0 for none. Which line is wrong?
+
+```sql
+SELECT s.name, COUNT(r.value) AS n_volt       -- line 1
+FROM satellite AS s                           -- line 2
+LEFT JOIN reading AS r ON r.sat_id = s.sat_id -- line 3
+WHERE r.channel = 'BATT_V'                    -- line 4
+GROUP BY s.sat_id, s.name;                    -- line 5
+```
+--- choice correct
+Line 4: on a satellite with no battery reading the test is FALSE or UNKNOWN, so WHERE drops it; the channel test belongs in the ON clause on line 3.
+--- choice
+Line 1: it should be `COUNT(*)`, so that satellites with no readings count as 0.
+--- choice
+Line 3: it should be an inner join, because the query filters on `reading`.
+--- choice
+Line 5: grouping by `s.sat_id` as well as the name splits each satellite in two.
+--- why
+A condition on the right-hand table in WHERE turns a left join back into an inner join: the NULL-filled rows fail the test, and so do satellites whose readings are all on other channels. In ON, the channel test decides what counts as a match, so every satellite keeps a row, and `COUNT(r.value)` gives 0 for those with no battery reading. `COUNT(*)` would say 1 there.
+
++++ question | One unidentified frame
+--- ask
+A dashboard lists silent satellites with `WHERE s.sat_id NOT IN (SELECT f.sat_id FROM frame AS f)`. Tonight a frame arrives that could not be decoded, so its `sat_id` is NULL. What does the dashboard show from then on?
+--- choice correct
+No satellites at all, with no error: every `NOT IN` test is now UNKNOWN.
+--- choice
+The same satellites as before: NOT IN skips NULLs, as aggregates do.
+--- choice
+Every satellite, because the NULL could be any of them.
+--- choice
+An error, until the NULL row is deleted.
+--- why
+`x NOT IN (…, NULL)` means `x <> … AND x <> NULL`, and `x <> NULL` is UNKNOWN, so no row can be TRUE. The dashboard says "all satellites heard" and nobody is warned. `NOT EXISTS (SELECT 1 FROM frame AS f WHERE f.sat_id = s.sat_id)` never compares with the NULL and keeps working.
+
++++ question | Counting the slots
+--- ask
+How many rows does this generate?
+
+```sql
+WITH RECURSIVE s (t) AS (
+    SELECT 0
+    UNION ALL
+    SELECT t + 15 FROM s WHERE t <= 60
+)
+SELECT COUNT(*) FROM s;
+```
+--- answer
+6
+six
+--- why
+The rows are 0, 15, 30, 45, 60 and 75. The round that reads 60 passes `60 <= 60` and makes 75; the round that reads 75 fails and makes nothing. The stop test looks at the row being read, so `<=` goes one step past the limit. To stop at 60, write `t < 60`.
+
++++ question | The same compound, two databases
+--- ask
+What does this return in PostgreSQL, and in SQLite?
+
+```sql
+SELECT 1 AS k UNION SELECT 2 EXCEPT SELECT 2 INTERSECT SELECT 3;
+```
+--- choice correct
+PostgreSQL: two rows, 1 and 2. SQLite: no rows.
+--- choice
+Both: one row, 1.
+--- choice
+PostgreSQL: one row, 1. SQLite: two rows, 1 and 2.
+--- choice
+Both: no rows.
+--- why
+PostgreSQL binds INTERSECT tighter: `2 INTERSECT 3` is empty, so the query is `{1} UNION {2} EXCEPT {}`, which is {1, 2}. SQLite runs all set operators left to right: `{1, 2} EXCEPT {2}` is {1}, and `{1} INTERSECT {3}` is empty. Whenever a query mixes the operators, give each part its own CTE so the order is written down.
+
++++ question | The key of a full join with USING
+--- ask
+What is `sat_id` on a row that is found only in `power` here?
+
+```sql
+SELECT sat_id, d.mb, p.wh
+FROM downlink AS d
+FULL JOIN power AS p USING (sat_id);
+```
+--- choice correct
+The id from `power`: a column merged by USING holds whichever side's value is not NULL.
+--- choice
+NULL, because the row has no partner in `downlink`, the table named first.
+--- choice
+An error: `sat_id` is ambiguous in a full join.
+--- choice
+The id from `power` only in PostgreSQL; SQLite always takes the left table's copy.
+--- why
+USING merges each named pair of columns into one. In an outer join the merged value is the non-NULL side, the same as `COALESCE(d.sat_id, p.sat_id)`, so the key is filled on every row, in PostgreSQL and SQLite alike. Selecting `d.sat_id` instead would give NULL there.
+
++++ question | A parent lookup
+--- ask
+`part` has 10 rows and `part_id` is its primary key; exactly one part, the spacecraft, has a NULL `parent_id`. How many rows does this return?
+
+```sql
+SELECT c.part_id, p.name AS parent_name
+FROM part AS c
+LEFT JOIN part AS p ON p.part_id = c.parent_id;
+```
+--- answer
+10
+ten
+--- why
+Each child row looks up its parent by the parent's primary key, so it matches at most one row: the join cannot fan out. The left join keeps the spacecraft, whose NULL parent matches nothing, with a NULL `parent_name`. So exactly one row per part: 10. An inner join would return 9.

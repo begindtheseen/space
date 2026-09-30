@@ -330,9 +330,11 @@ You build a solver with `./configure && make && sudo make install` and a colleag
 :::
 
 ::: answer
-Without `--prefix`, autotools installs into `/usr/local`, which is fine. The trouble starts when the files land in `/usr` — for example because build instructions said `--prefix=/usr`. That is territory the package manager believes it owns. `dpkg` still has a record saying it installed `/usr/bin/solver` at, say, version 2.1, while the bytes on disk are your build. An upgrade will overwrite yours without warning, and a removal may delete files your build depends on. It also makes `dpkg -S` misleading: it names a package for a file that package did not produce.
+Without `--prefix`, autotools installs into `/usr/local`. The package manager never touches that, so the upgrade itself succeeds: the new version lands in `/usr/bin/solver`. But `/usr/local/bin` comes **before** `/usr/bin` on `PATH`, so typing `solver` still runs your old build in `/usr/local/bin`, and to your colleague it looks as if the upgrade did nothing. `which -a solver` shows both copies, in the order the shell tries them.
 
-What you should have done: keep the default `/usr/local`, or better, stay out of system directories entirely — `--prefix=$HOME/.local` or `--prefix=/opt/solver-2.1`, with `PATH` pointing at it. A versioned prefix under `/opt` lets several versions live side by side, which is what you want when you must reproduce last quarter's results with last quarter's solver.
+It is worse when the files land in `/usr` itself, for example because build instructions said `--prefix=/usr`. That is territory the package manager believes it owns: `dpkg` still has a record saying it installed `/usr/bin/solver` at, say, version 2.1, while the bytes on disk are your build. An upgrade will overwrite yours without warning, a removal may delete files your build depends on, and `dpkg -S` names a package for a file that package did not produce.
+
+What you should have done: stay out of the directories on everyone's default `PATH` — `--prefix=$HOME/.local` or `--prefix=/opt/solver-2.1`, with `PATH` pointing at it. A versioned prefix under `/opt` lets several versions live side by side, which is what you want when you must reproduce last quarter's results with last quarter's solver.
 
 To find out what is where: `dpkg -S $(which solver)` says whether any package claims the file, and comparing the file's `ls -l` date with the version `dpkg -l` reports tells you whose bytes they are.
 :::
@@ -366,7 +368,7 @@ You install a tool into `$HOME/.local` on a cluster. It works from your login sh
 ::: answer
 `$HOME/.local/bin` is on `PATH` only because a line in `~/.bashrc` put it there, below the interactivity guard from lesson 10. So that line never runs for the non-interactive shell the scheduler uses. The tool is installed correctly; nothing can find it.
 
-Fix one: move `export PATH="$HOME/.local/bin:$PATH"` into `~/.bash_profile` above the line that sources `~/.bashrc`, or into `~/.profile`. Test with the same kind of shell the queue uses — `ssh node01 'echo $PATH'` — not with a login session.
+Fix one: move `export PATH="$HOME/.local/bin:$PATH"` above the interactivity guard in `~/.bashrc`, the one file a non-login, non-interactive shell such as `ssh node01 'cmd'` reads. If the queue starts a login shell instead, `~/.bash_profile` above the line that sources `~/.bashrc`, or `~/.profile`, also works. Test with the same kind of shell the queue uses (`ssh node01 'echo $PATH'` for ssh-started jobs), not with a login session.
 
 Fix two, sturdier for a batch job: do not rely on inheritance at all. Have the job script set its own `PATH` and `LD_LIBRARY_PATH` at the top, or call the tool by its absolute path. A job that states its own environment is reproducible six months later; one that depends on a login file is reproducible only on the day.
 

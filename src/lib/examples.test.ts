@@ -55,13 +55,19 @@ describe('runnable lesson code', () => {
     const cpp = blocks.map((b, i) => (b.lang === 'cpp' ? name(b, i) : '')).filter(Boolean)
     const failed = execFileSync(
       'bash',
-      ['-c', 'printf "%s\\n" "$@" | xargs -P "$(nproc)" -I{} sh -c \'g++ -std=c++20 -fsyntax-only -w "{}" 2>/dev/null || echo "{}"\'', '_', ...cpp],
+      ['-c', 'printf "%s\\n" "$@" | xargs -P "$(nproc)" -I{} sh -c \'g++ -std=c++20 -fno-exceptions -fsyntax-only -w "{}" 2>/dev/null || echo "{}"\'', '_', ...cpp],
       { encoding: 'utf8', maxBuffer: 1 << 24 },
     )
       .split('\n')
       .filter(Boolean)
     expect(failed.map(where), 'fence it `cpp fragment` (no Run), `cpp error` (shows an error on purpose), or fix it').toEqual([])
   }, 600_000)
+
+  it('no runnable C++ block needs threads, signals or OS calls, which the in-browser build cannot run', () => {
+    const needsOs = /std::j?thread|pthread|\bsignal\s*\(|sigaction|\bfork\s*\(|std::async|<csignal>|<signal\.h>|<unistd\.h>|<sys\//
+    const bad = blocks.filter((b) => b.lang === 'cpp' && needsOs.test(b.code)).map((b) => `${b.file}: ${b.code.trim().split('\n')[0]}`)
+    expect(bad, 'fence it `cpp laptop` (shown with a note, no Run)').toEqual([])
+  })
 
   it.skipIf(!has('python3'))('every runnable Python block parses', () => {
     const py = blocks.map((b, i) => (b.lang === 'python' ? name(b, i) : '')).filter(Boolean)

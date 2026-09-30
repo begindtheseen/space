@@ -111,7 +111,7 @@ A reaction-wheel housing has an inside depth of $62.0 \pm 0.12\,\mathrm{mm}$. St
 
 **RSS.** Square each: $0.0144$, $0.0009$, $0.0025$, $0.0016$. They add to $0.0194$. The square root is about $0.139\,\mathrm{mm}$. The gap is $0.6 \pm 0.14$, from $0.46$ to $0.74\,\mathrm{mm}$.
 
-**Sanity check.** RSS came out smaller than worst case, as it always must, and bigger than the single largest tolerance ($0.12$), as it always must too. Notice that the housing's $0.12$ alone makes up most of the RSS answer. When one tolerance dominates, RSS is close to that one tolerance, and tightening the small ones buys almost nothing.
+**Sanity check.** RSS came out smaller than worst case, as it always must, and at least as big as the single largest tolerance ($0.12$), as it always must be too (equal only when every other tolerance is zero). Notice that the housing's $0.12$ alone makes up most of the RSS answer. When one tolerance dominates, RSS is close to that one tolerance, and tightening the small ones buys almost nothing.
 :::
 
 ## How much does RSS save?

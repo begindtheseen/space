@@ -6,6 +6,7 @@
      @track python
      @course python-advanced             (optional: the course id; default the language)
      @level advanced                     (optional: basics, intermediate, advanced, expert, projects)
+     @requires cs-dsa1 cs-disc           (optional: the courses whose gates open this one)
      @title Python
      @name Python, a first language      (optional: the course's full name)
      @blurb One line on what this track covers.
@@ -60,14 +61,14 @@
    the known `--- ` headers above are structure; anything else is content, so
    a SQL comment or a markdown rule never breaks a lesson.
    ========================================================================== */
-import type { Cell, LearnCheck, LearnLang, LearnLesson, LearnLevel, LearnTrack } from './types'
+import type { Cell, LearnCheck, LearnExercise, LearnLang, LearnLesson, LearnLevel, LearnQuestion, LearnTrack } from './types'
 
 // Types only from ./types: this file is also loaded straight into Node by
 // the browser suite, where an extensionless runtime import cannot resolve.
 const LEVELS: readonly LearnLevel[] = ['basics', 'intermediate', 'advanced', 'expert', 'projects']
 
 const LANGS: readonly LearnLang[] = ['javascript', 'typescript', 'python', 'sql', 'cpp', 'html', 'bash', 'git']
-const SECTIONS = new Set(['teach', 'task', 'starter', 'solution', 'hint', 'stdin', 'schema', 'check'])
+const SECTIONS = new Set(['teach', 'task', 'starter', 'solution', 'hint', 'stdin', 'schema', 'check', 'gate', 'ask', 'choice', 'answer', 'why', 'for'])
 
 export class LessonFormatError extends Error {}
 
@@ -171,6 +172,64 @@ function parseCheck(header: string, body: string[], where: string): LearnCheck {
   }
 }
 
+type Section = { header: string; body: string[] }
+
+function only(sections: Section[], name: string, where: string): string[] | undefined {
+  const found = sections.filter((s) => s.header === name)
+  if (found.length > 1) fail(where, `more than one "--- ${name}"`)
+  return found[0]?.body
+}
+
+/** The graded part every lesson, practice problem and gate problem has: code, hints, checks. */
+function body(sections: Section[], where: string, inherited: string | undefined): Omit<LearnExercise, 'id' | 'title'> {
+  const one = (name: string) => only(sections, name, where)
+  const task = one('task')
+  const starter = one('starter')
+  const solution = one('solution')
+  if (!solution) fail(where, 'needs teach, task and solution')
+  const checks = sections.filter((s) => s.header.startsWith('check')).map((s) => parseCheck(s.header, s.body, where))
+  if (!checks.length) fail(where, 'needs at least one check')
+  const stdin = one('stdin')
+  const own = one('schema')
+  const schema = own ? trimBlock(own) : inherited
+  return {
+    task: task ? trimBlock(task) : '',
+    starter: starter ? code(starter) : '',
+    solution: code(solution),
+    hints: sections.filter((s) => s.header === 'hint').map((s) => trimBlock(s.body)),
+    checks,
+    ...(stdin ? { stdin: code(stdin) } : {}),
+    ...(schema ? { schema } : {}),
+  }
+}
+
+/** A gate question: `--- ask`, then `--- choice` / `--- choice correct` lines, or `--- answer` lines; `--- why`. */
+function question(sections: Section[], id: string, title: string, where: string): LearnQuestion {
+  const ask = only(sections, 'ask', where)
+  const why = only(sections, 'why', where)
+  if (!ask || !trimBlock(ask)) fail(where, 'a question needs "--- ask"')
+  if (!why || !trimBlock(why)) fail(where, 'a question needs "--- why": what to understand after answering')
+  const choices = sections.filter((s) => /^choice(\s+correct)?$/.test(s.header)).map((s) => ({ text: trimBlock(s.body), correct: s.header !== 'choice' }))
+  const answer = only(sections, 'answer', where)
+  const answers = answer ? trimBlock(answer).split('\n').map((a) => a.trim()).filter(Boolean) : []
+  const stray = sections.find((s) => !['ask', 'why', 'answer'].includes(s.header) && !/^choice(\s+correct)?$/.test(s.header))
+  if (stray) fail(where, `a question has ask, choice, answer and why, not "--- ${stray.header}"`)
+  if (choices.length && answers.length) fail(where, 'a question has choices or typed answers, not both')
+  if (choices.length) {
+    if (choices.length < 3) fail(where, 'a multiple-choice question needs at least three choices')
+    if (!choices.some((c) => c.correct)) fail(where, 'mark the right choice "--- choice correct"')
+    if (choices.every((c) => c.correct)) fail(where, 'not every choice can be right')
+    if (choices.some((c) => !c.text)) fail(where, 'an empty choice')
+  } else if (!answers.length) fail(where, 'a question needs choices or "--- answer" lines')
+  return { id, title, ask: trimBlock(ask), ...(choices.length ? { choices } : { answers }), why: trimBlock(why) }
+}
+
+/** Whether a typed answer is one of the accepted ones: case, surrounding space and inner runs of space do not matter. */
+export function answerMatches(q: LearnQuestion, given: string): boolean {
+  const norm = (x: string) => x.trim().replace(/\s+/g, ' ').toLowerCase()
+  return (q.answers ?? []).some((a) => norm(a) === norm(given))
+}
+
 /** Parses one track file. Throws LessonFormatError naming the lesson at fault. */
 export function parseTrack(source: string, file = 'track'): LearnTrack {
   const lines = source.replace(/\r\n?/g, '\n').split('\n')
@@ -201,9 +260,16 @@ export function parseTrack(source: string, file = 'track'): LearnTrack {
     const where = `${file} ${id}`
     i++
 
-    const sections: { header: string; body: string[] }[] = []
+    // The lesson's own sections, then any `+++ practice | …` or `+++ problem | …` blocks, each with sections of its own.
+    const blocks: { kind: 'lesson' | 'practice' | 'problem' | 'question'; title: string; sections: Section[] }[] = [{ kind: 'lesson', title: head[2]!.trim(), sections: [] }]
     for (; i < lines.length && !lines[i]!.startsWith('=== '); i++) {
       const line = lines[i]!
+      const pm = /^\+\+\+ (practice|problem|question)\s*\|\s*(.+)$/.exec(line)
+      if (pm) {
+        blocks.push({ kind: pm[1] as 'practice' | 'problem' | 'question', title: pm[2]!.trim(), sections: [] })
+        continue
+      }
+      const sections = blocks[blocks.length - 1]!.sections
       const sm = /^--- (.+)$/.exec(line)
       const word = sm?.[1]!.split(/\s/)[0]
       if (sm && word && SECTIONS.has(word)) sections.push({ header: sm[1]!.trim(), body: [] })
@@ -211,35 +277,101 @@ export function parseTrack(source: string, file = 'track'): LearnTrack {
       else if (line.trim()) fail(where, `text before the first "--- " section: ${line.slice(0, 40)}`)
     }
 
-    const one = (name: string) => {
-      const found = sections.filter((s) => s.header === name)
-      if (found.length > 1) fail(where, `more than one "--- ${name}"`)
-      return found[0]?.body
-    }
+    const [own, ...extra] = blocks
+    const sections = own!.sections
+    const one = (name: string) => only(sections, name, where)
     const teach = one('teach')
+    const gateSpec = one('gate')
+    const lessonSchema = one('schema')
+    const schema = lessonSchema ? trimBlock(lessonSchema) : trackSchema
+
+    const practiceBlocks = extra.filter((b) => b.kind === 'practice')
+    const problemBlocks = extra.filter((b) => b.kind === 'problem')
+    const questionBlocks = extra.filter((b) => b.kind === 'question')
+    const exercise = (b: (typeof blocks)[number], n: number, tag: string): LearnExercise => {
+      const at = `${where} ${tag}${n} "${b.title}"`
+      const ex = body(b.sections, at, schema)
+      return { id: `${id}.${tag}${n}`, title: b.title, ...ex }
+    }
+    const practice = practiceBlocks.map((b, n) => exercise(b, n + 1, 'p'))
+
+    if (gateSpec) {
+      if (!teach) fail(where, 'a gate needs a teach section saying what it covers')
+      if (practiceBlocks.length) fail(where, 'a gate has problems, not practice')
+      if (sections.some((s) => s.header !== 'teach' && s.header !== 'gate' && s.header !== 'schema')) fail(where, 'a gate has no task of its own: only teach, gate and schema, then its problems')
+      const spec = Object.fromEntries(trimBlock(gateSpec).split('\n').map((l) => l.trim().split(/\s+/)).filter((w) => w.length === 2).map(([k, v]) => [k, Number(v)]))
+      const problems = problemBlocks.map((b, n) => exercise(b, n + 1, 'g'))
+      const questions = questionBlocks.map((b, n) => question(b.sections, `${id}.q${n + 1}`, b.title, `${where} q${n + 1} "${b.title}"`))
+      // A test of what cannot run here (Rust, MATLAB, CAD) is questions only: then there is no problem mark.
+      const pass = spec.pass ?? (problems.length ? NaN : 0)
+      const questionPass = spec.questions ?? 0
+      const minutes = spec.minutes ?? NaN
+      if (!Number.isInteger(pass) || pass > problems.length || (problems.length ? pass < 1 : pass !== 0)) fail(where, `"pass N" must be between 1 and the ${problems.length} problems`)
+      if (!Number.isInteger(questionPass) || questionPass < 0 || questionPass > questions.length) fail(where, `"questions N" must be between 0 and the ${questions.length} questions`)
+      if (questions.length && !questionPass) fail(where, 'a gate with questions says how many must be right: "questions N"')
+      if (!Number.isInteger(minutes) || minutes < 5) fail(where, '"minutes N" must be a whole number, at least 5')
+      if (problems.length ? problems.length < 5 : questions.length < 10) fail(where, 'a gate needs at least five problems, or at least ten questions when it has no problems')
+      lessons.push({
+        id,
+        lang,
+        title: own!.title,
+        teach: trimBlock(teach),
+        task: '',
+        starter: '',
+        solution: '',
+        hints: [],
+        checks: [],
+        ...(schema ? { schema } : {}),
+        practice: [],
+        gate: { pass, questionPass, minutes, problems, questions },
+      })
+      continue
+    }
+    if (problemBlocks.length) fail(where, '"+++ problem" belongs in a gate (a lesson with "--- gate"); use "+++ practice" here')
+    const quiz = questionBlocks.map((b, n) => question(b.sections, `${id}.q${n + 1}`, b.title, `${where} q${n + 1} "${b.title}"`))
+
+    const forSpec = one('for')
+    if (forSpec) {
+      // A module's practice set: nothing but practice under a lesson the module already teaches.
+      const forLesson = trimBlock(forSpec)
+      if (!/^[\w-]+$/.test(forLesson)) fail(where, '"--- for" names one lesson id')
+      if (sections.some((s) => !['for', 'schema', 'teach'].includes(s.header))) fail(where, 'a practice set has only "--- for" (and "--- schema"), then its practice')
+      if (!practice.length && !quiz.length) fail(where, 'a practice set needs practice problems or questions')
+      lessons.push({
+        id,
+        lang,
+        title: own!.title,
+        teach: teach ? trimBlock(teach) : '',
+        task: '',
+        starter: '',
+        solution: '',
+        hints: [],
+        checks: [],
+        ...(schema ? { schema } : {}),
+        practice,
+        ...(quiz.length ? { quiz } : {}),
+        forLesson,
+      })
+      continue
+    }
+
     const task = one('task')
-    const starter = one('starter')
-    const solution = one('solution')
-    if (!teach || !task || !solution) fail(where, 'needs teach, task and solution')
-
-    const checks = sections.filter((s) => s.header.startsWith('check')).map((s) => parseCheck(s.header, s.body, where))
-    if (!checks.length) fail(where, 'needs at least one check')
-
-    const stdin = one('stdin')
-    const own = one('schema')
-    const schema = own ? trimBlock(own) : trackSchema
+    if (!teach || !task) fail(where, 'needs teach, task and solution')
+    const main = body(sections.filter((s) => s.header !== 'teach' && s.header !== 'task'), where, schema)
     lessons.push({
       id,
       lang,
-      title: head[2]!.trim(),
+      title: own!.title,
       teach: trimBlock(teach),
       task: trimBlock(task),
-      starter: starter ? code(starter) : '',
-      solution: code(solution),
-      hints: sections.filter((s) => s.header === 'hint').map((s) => trimBlock(s.body)),
-      checks,
-      ...(stdin ? { stdin: code(stdin) } : {}),
-      ...(schema ? { schema } : {}),
+      starter: main.starter,
+      solution: main.solution,
+      hints: main.hints,
+      checks: main.checks,
+      ...(main.stdin ? { stdin: main.stdin } : {}),
+      ...(main.schema ? { schema: main.schema } : {}),
+      practice,
+      ...(quiz.length ? { quiz } : {}),
     })
   }
 
@@ -247,11 +379,29 @@ export function parseTrack(source: string, file = 'track'): LearnTrack {
   for (const l of lessons) {
     if (ids.has(l.id)) fail(file, `duplicate lesson id ${l.id}`)
     ids.add(l.id)
+    for (const p of l.practice) {
+      if (!p.task) fail(`${file} ${p.id}`, 'a practice problem needs a task')
+    }
+    for (const p of l.gate?.problems ?? []) {
+      if (!p.task) fail(`${file} ${p.id}`, 'a gate problem needs a task')
+    }
   }
   if (!lessons.length) fail(file, 'no lessons')
   const level = (meta.level ?? 'basics') as LearnLevel
   if (!LEVELS.includes(level)) fail(file, `"@level" must be one of ${LEVELS.join(', ')}`)
   const id = meta.course ?? (level === 'basics' ? lang : `${lang}-${level}`)
   if (lessons.some((l) => l.checks.some((c) => c.kind === 'type-error')) && lang !== 'typescript') fail(file, 'type-error checks are for TypeScript tracks')
-  return { id, lang, level, title: meta.title!, name: meta.name ?? meta.title!, blurb: meta.blurb ?? '', lessons, plainVoice: meta.plainvoice === 'true' }
+  return {
+    id,
+    lang,
+    level,
+    title: meta.title!,
+    name: meta.name ?? meta.title!,
+    blurb: meta.blurb ?? '',
+    lessons,
+    plainVoice: meta.plainvoice === 'true',
+    ...(meta.subject ? { subject: meta.subject } : {}),
+    ...(meta.requires ? { requires: meta.requires.split(/\s+/).filter(Boolean) } : {}),
+    ...(meta.module ? { module: meta.module } : {}),
+  }
 }

@@ -148,15 +148,15 @@ For your car at $30\,\mathrm{m/s}$ (about $108\,\mathrm{km/h}$) at sea level, $\
 A rocket climbing through the atmosphere has two things changing at once: speed rises, and density falls as the air thins. Early on, speed wins and $q$ climbs. Higher up, thin air wins and $q$ falls. The peak in between is called **[[max-q|max-q]]**.
 
 ::: example Dynamic pressure at max-q
-Assume (stated out loud) a launcher reaches max-q at about $12\,\mathrm{km}$ altitude, where standard-atmosphere density is $\rho \approx 0.311\,\mathrm{kg/m^3}$, moving at $v = 400\,\mathrm{m/s}$.
+Assume (stated out loud) a launcher reaches max-q at about $12\,\mathrm{km}$ altitude, where standard-atmosphere density is $\rho \approx 0.312\,\mathrm{kg/m^3}$, moving at $v = 400\,\mathrm{m/s}$.
 
 **Square the speed.** $400^2 = 160\,000\,\mathrm{m^2/s^2}$.
 
-**Multiply.** $q = 0.5 \times 0.3108 \times 160\,000 \approx 24\,900\,\mathrm{Pa}$, about $25\,\mathrm{kPa}$.
+**Multiply.** $q = 0.5 \times 0.312 \times 160\,000 \approx 24\,960\,\mathrm{Pa}$, about $25\,\mathrm{kPa}$.
 
 **Compare.** The same speed at sea level would give $0.5 \times 1.225 \times 160\,000 = 98\,000\,\mathrm{Pa}$ — four times more. Climbing before going fast is what keeps $q$ down.
 
-**Drag force.** With a $3.66\,\mathrm{m}$ diameter body, $A = \pi \times 1.83^2 \approx 10.5\,\mathrm{m^2}$. With an assumed $C_D \approx 0.5$ near this speed, $D \approx 24\,900 \times 0.5 \times 10.5 \approx 131\,\mathrm{kN}$.
+**Drag force.** With a $3.66\,\mathrm{m}$ diameter body, $A = \pi \times 1.83^2 \approx 10.5\,\mathrm{m^2}$. With an assumed $C_D \approx 0.5$ near this speed, $D \approx 24\,960 \times 0.5 \times 10.5 \approx 131\,\mathrm{kN}$.
 
 **Sanity check.** The speed of sound at $12\,\mathrm{km}$ is about $295\,\mathrm{m/s}$, so this is about Mach $1.36$ — max-q near Mach one to one and a half is the usual picture. Tens of kilopascals is the right size for a large launcher.
 :::

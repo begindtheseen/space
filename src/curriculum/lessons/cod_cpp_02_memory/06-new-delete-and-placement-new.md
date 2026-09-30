@@ -21,7 +21,7 @@ The allocation and deallocation functions have names: `operator new` and `operat
 ::: example Watching allocation and construction separately
 Each replacement gets its bytes from **[[`malloc`|malloc-free]]**, the C library's allocator, and prints what it was asked for:
 
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <cstdlib>
 #include <new>
@@ -178,7 +178,7 @@ And the same program built at `-O1` with no sanitizer printed `buf[0] = -9.81` a
 
 `new` does not return null when memory runs out. It throws an exception, `std::bad_alloc`. If you want a null pointer instead, write `new (std::nothrow) T`: it returns `nullptr` on failure. That form is what code built **[[without exceptions|no-exceptions]]** uses.
 
-```cpp
+```cpp laptop
 #include <cstddef>
 #include <cstdio>
 #include <new>

@@ -676,7 +676,7 @@ export const COMMANDS: CommandRef[] = [
   },
   {
     name: 'datetime.date.fromisoformat',
-    aliases: ['date.fromisoformat'],
+    aliases: ['date.fromisoformat', 'fromisoformat'],
     lang: 'python',
     kind: 'function',
     official: 'Construct a date from a string in ISO 8601 format.',

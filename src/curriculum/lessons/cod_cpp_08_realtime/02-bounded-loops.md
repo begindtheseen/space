@@ -135,7 +135,7 @@ M = 1.00  e = nan     ->  E = nan  in 12 steps  FAULT
 
 Now remove the bound and see what the same NaN does.
 
-```cpp
+```cpp laptop
 #include <cmath>
 #include <cstdio>
 

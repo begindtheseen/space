@@ -304,7 +304,7 @@ Five details worth copying:
 
 **Reporting failure only in text.** `echo "ERROR: 3 cases failed"` followed by a normal ending forces the caller to search your output for words — and it will break the day you reword the message. Print the message *and* exit non-zero.
 
-There is also a trap in the other direction. Under `set -e`, if a command fails inside a `trap … EXIT` handler (lesson 07), the handler stops there and the script exits with status 1 — even if it was about to exit 0, or 4. Make every command in an exit handler one that cannot fail.
+There is also a trap in the other direction. Under `set -e`, if a command fails inside a `trap … EXIT` handler (lesson 07), the handler stops there and the script exits with that command's status — even if it was about to exit 0, or 4. Make every command in an exit handler one that cannot fail.
 :::
 
 ::: key

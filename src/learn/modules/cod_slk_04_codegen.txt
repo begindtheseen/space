@@ -1,0 +1,1353 @@
+@track python
+@course mod-cod_slk_04_codegen
+@module cod_slk_04_codegen
+@title Verification and Embedded Coder: practice and test
+
+=== slk04-l01 | Practice: MIL, SIL, PIL and HIL
+--- for
+l01-mil-sil-pil-hil
+
++++ question | Naming the stage from the setup
+--- ask
+A roll controller's generated C is compiled with the cross-compiler and loaded onto an evaluation board that carries the flight processor. The plant model stays in Simulink on the PC. Each sample, the two swap data over an Ethernet cable. Which stage is this, and which claim can its results support?
+--- choice
+HIL, because the real flight processor is running the code. It shows the controller meets its deadlines in real time.
+--- choice correct
+PIL. It can show that the code gives the right answers on the target's own arithmetic and compiler, and give a first measure of how long a step takes. It cannot show real-time behavior over the real interfaces.
+--- choice
+SIL, because the plant is still a Simulink model on the PC. It shows the code matches the model on the host.
+--- choice
+PIL. It shows the step meets its deadline with every other flight task running, because the chip is the real one.
+--- why
+The controller is generated C cross-compiled for the target chip, and the plant is a Simulink model on the PC: that is processor-in-the-loop. What changed from SIL is the processor and compiler, so PIL speaks to word sizes, floating point, byte order and execution time on that chip. It is not HIL: there is no real flight computer with its real connectors, drivers and other tasks, and the two sides take turns instead of running on a clock. So PIL cannot say anything about deadlines under load or about real interfaces.
+
++++ question | A faster cable for PIL
+--- ask
+A PIL run uses a slow serial link and takes 40 minutes. The team switches the link to Ethernet, and the same run now takes 2 minutes. What happens to the controller outputs that PIL logs?
+--- choice
+They change slightly, because the controller now receives its inputs with less delay, closer to how it will fly.
+--- choice correct
+They stay exactly the same. The PC and the board take turns each sample, so the link's speed changes how long the run takes on the wall clock, not what either side computes.
+--- choice
+They become the same as the HIL results, because a fast link makes PIL run in real time.
+--- choice
+They change, because the board now runs more controller steps per plant step.
+--- why
+In PIL the plant takes a step, sends its outputs, and waits for the board to run exactly one controller step and send the result back. Nothing in that exchange depends on how long the wait was, so the numbers are the same with a slow or a fast link. That turn-taking is exactly why PIL is not real time, and why real delays from buses, drivers and schedules only show up on a HIL rig.
+
++++ question | Which cause is ruled out
+--- ask
+A test passes in MIL, SIL and PIL, and fails on the HIL rig. Which of these can you rule out as the cause, using only what the earlier stages already showed?
+--- choice
+A driver that loses a gyro message when two arrive in the same millisecond.
+--- choice
+A sensor cable wired with its sign reversed.
+--- choice
+The control task missing its deadline when telemetry and navigation are busy at the same time.
+--- choice correct
+A block whose generated code uses a different data type from the model.
+--- why
+Each stage catches what changed at that stage. A data type that differs between the model and its generated code is a code generation problem, and SIL compares the code with the model on the same inputs, so SIL would already have failed. The other three need things that only exist on the HIL rig: hand-written drivers, real wires, and real time with every flight task running. That is how a failure at one stage points you to where to look.
+
++++ question | What a clean PIL run proves
+--- ask
+A PIL run of a 1 kHz controller matches SIL bit for bit on every sample, and the measured step time on the flight chip is at most 0.35 ms of the 1 ms period. Which conclusion is justified?
+--- choice
+The controller will meet its deadline in flight with 65% of the processor to spare, so timing needs no more testing.
+--- choice correct
+The code computes the same answers on the target's arithmetic, and 0.35 ms is a good first estimate of the step time. The final timing evidence still has to come from the real flight computer under load.
+--- choice
+The PIL time is meaningless, because the link sets the pace of a PIL run.
+--- choice
+Since PIL used the real processor, the HIL rig only needs to check the plant model.
+--- why
+PIL runs the real code on the real chip, so both its numbers and its execution time are honest in that setting. But the test link is attached, the memory setup may differ, and no other flight task competes for the processor. The link sets the pace of the turns, not the time the step itself takes, so the measurement is useful. It is an early estimate, and the real budget is confirmed on the flight computer with everything running.
+
++++ question | Looking in the wrong place
+--- ask
+A controller passed MIL, and in SIL it matched the model to within $10^{-16}$. In PIL, one output is wrong by about 30% of its size. An engineer opens the Simulink model and starts reviewing its blocks one by one. Why is that the wrong place to start?
+--- choice
+Because a 30% difference is only rounding, so nothing needs to be reviewed at all.
+--- choice correct
+Because the model passed MIL and the code matched it in SIL. What changed from SIL to PIL is the compiler, the processor and the hardware settings, so the fault is most likely in the target's arithmetic or those settings.
+--- choice
+Because PIL can never reveal a real bug; only HIL can.
+--- choice
+Because the problem must be in the plant model, which is the only thing PIL changes.
+--- why
+The stages change one or two things at a time, so a new failure points at whatever just changed. From SIL to PIL, the model, the generated C and the plant stay the same, and only the compiler and the chip change. A signal-sized difference there points to something like a 16-bit `int`, a 32-bit `double`, the byte order, or hardware settings that do not match the real target. Reviewing the model again repeats work that MIL and SIL already did.
+
++++ question | A delay budget for the rig
+--- ask
+A pitch loop's crossover is 25 rad/s. In MIL its phase margin is 34°, and the requirement says the margin must be at least 30°. A pure delay $\tau$ costs $\omega\tau$ radians of phase at frequency $\omega$. What is the largest total delay, in milliseconds, that the real interfaces (bus, drivers, output frames) may add before the requirement is broken? Give it to one decimal place.
+--- answer
+2.8
+2.8 ms
+2.8ms
+2.8 milliseconds
+2.79
+2.79 ms
+--- why
+The margin that may be spent is $34° - 30° = 4°$. In radians that is $4 \times \pi / 180 \approx 0.0698$ rad. Setting $\omega\tau = 0.0698$ with $\omega = 25$ rad/s gives $\tau \approx 0.00279$ s, about 2.8 ms. This is the kind of number a HIL rig checks: the bus, polling and output-frame delays it measures must add up to less than this. If they do not, the delay goes into the MIL model and the design is re-tuned.
+
+=== slk04-l02 | Practice: Simulink Test
+--- for
+l02-simulink-test
+
++++ question | A refactor that must change nothing
+--- ask
+You split a large controller subsystem into three smaller ones to make it easier to review. Nothing about its behavior is supposed to change. Last month's run of the same test inputs was checked and accepted. Which kind of test case fits best?
+--- choice
+A simulation test, because it passes when the simulation runs without error.
+--- choice correct
+A baseline test, comparing today's outputs with the accepted run within tolerances.
+--- choice
+An equivalence test between the model in Normal mode and the model in SIL mode.
+--- choice
+No test is needed, because splitting a subsystem cannot change what it computes.
+--- why
+The question is "has anything changed since the accepted run?", which is exactly what a baseline test answers: a regression test against stored, reviewed outputs. A simulation test passes as long as the run completes and its assessments pass, so it might not notice a small change in a signal that no assessment checks. An equivalence test compares two ways of running the same model today, such as blocks and generated code, not today against last month. And a refactor can change behavior by accident, for example when a signal is reconnected to the wrong port.
+
++++ question | A negative baseline value
+--- ask
+At one instant a baseline pitch rate is $-0.8000$ rad/s, and the new run gives $-0.8012$ rad/s. The test has an absolute tolerance of 0.001 and a relative tolerance of 0.002. What is the allowed difference at that instant? Type the number.
+--- answer
+0.0016
+.0016
+1.6e-3
+0.0016 rad/s
+--- why
+The relative allowance uses the size of the baseline, $|{-0.8}| = 0.8$, so it is $0.002 \times 0.8 = 0.0016$. The allowed difference is the larger of the absolute and relative allowances, $\max(0.001, 0.0016) = 0.0016$. The actual difference is $|-0.8012 - (-0.8000)| = 0.0012$, which is below 0.0016, so this point passes. A sign never makes the allowance negative: the formula takes the absolute value of the baseline.
+
++++ question | A fault that arrives too early
+--- ask
+A Test Sequence commands a pitch step, and its next step injects a gyro fault. The transition between them is `after(2.0, sec)`, chosen because the pitch used to reach 4° about 2 s after the command. After a retune the vehicle reaches 4° at 1.3 s, so the fault now arrives at a different point of the maneuver. Which change keeps the fault at the same point in the maneuver, whatever the tuning?
+--- choice
+Change the transition to `after(1.3, sec)`.
+--- choice correct
+Change the transition to the condition `theta > 4`, so the fault step starts when the pitch actually passes 4°.
+--- choice
+Add a `verify(theta > 4)` to the command step.
+--- choice
+Replace the Test Sequence with an Assertion block that stops the run at 4°.
+--- why
+A Test Sequence can react to signals, not only to time. A transition on `theta > 4` fires at the moment the condition becomes true, so the fault always meets the vehicle in the same state, even after the next retune. Changing the time to 1.3 s fixes today's tuning and breaks again at the next one. A `verify` only judges a signal, it does not move the sequence on, and an Assertion block would stop the simulation instead of injecting anything.
+
++++ question | A verdict for a step that never ran
+--- ask
+A Test Sequence has these steps:
+
+| Step | Action | Transition | Next |
+|---|---|---|---|
+| Hold | `cmd = 0;` | `after(1, sec)` | Command |
+| Command | `cmd = 5;` | `theta > 5.2` | Settled |
+| Settled | `verify(abs(theta - 5) < 0.1)` | `after(2, sec)` | Done |
+
+The retuned loop now peaks at 5.1° and never goes higher. The run ends after 10 s. What does the report say about the `verify` in Settled?
+--- choice
+Passed, because the pitch did settle within 0.1° of 5°.
+--- choice
+Failed, because the step's transition was never taken.
+--- choice correct
+Untested, because Settled was never entered: `theta > 5.2` never became true, so the `verify` never ran.
+--- choice
+The whole run stops with an error at 10 s, because the sequence never reached Done.
+--- why
+A `verify` is only evaluated while its step is active. With a peak of 5.1°, the transition `theta > 5.2` is never true, so the sequence stays in Command until the run ends and Settled never starts. The report marks that `verify` as untested, which is its own warning: a rule you meant to check was never checked. The fix is a transition that does not depend on the overshoot, such as `after(3.5, sec)`.
+
++++ question | A CI job that never goes red
+--- ask
+A team's CI job runs `matlab -batch "run_tests"`, and `run_tests.m` holds:
+
+```matlab
+sltest.testmanager.clear;
+sltest.testmanager.load('att_ctrl_tests.mldatx');
+results = sltest.testmanager.run;
+sltest.testmanager.report(results, 'att_ctrl_report.pdf');
+fprintf('%d passed, %d failed\n', results.NumPassed, results.NumFailed);
+```
+
+The log says "31 passed, 2 failed", yet the job is green. Why?
+--- choice
+`-batch` ignores errors, so a MATLAB job can never fail in CI.
+--- choice correct
+Nothing in the script throws an error, so MATLAB finishes normally and exits with code 0. A line such as `assert(results.NumFailed == 0, 'Simulink Test failures')` is missing.
+--- choice
+`fprintf` returns the number of characters it printed, and the CI server reads that as the exit code.
+--- choice
+The report must be written before the tests run, or the failures are not recorded.
+--- why
+A CI server decides pass or fail from the exit code of the step. With `-batch`, MATLAB exits with a nonzero code only when the script throws an uncaught error. Failed test cases do not throw anything by themselves; they are only counted in `results`. So the script must turn the count into an error, which is what the `assert` does. Printing the numbers is useful for people reading the log, but the server never reads the text.
+
++++ question | A mode flag that jumps one sample late
+--- ask
+An equivalence test compares a mode signal that jumps from 0 to 3. In the second run the jump is logged one 10 ms sample later than in the first, and at every other instant the two runs are identical. The absolute tolerance is 0.001, so the test fails at one instant with a difference of 3. You have already checked that the one-sample shift is harmless for this signal. Which tolerance change is right?
+--- choice
+Raise the absolute tolerance to 3.
+--- choice
+Set a relative tolerance of 1, meaning 100%.
+--- choice correct
+Add a time tolerance of one sample, 0.01 s, and keep the absolute tolerance.
+--- choice
+Remove the mode signal from the comparison.
+--- why
+The two signals have the same values; only the moment of the jump moved by one sample. A time tolerance allows exactly that, and nothing more: a signal that arrives one sample earlier or later still passes. An absolute tolerance of 3, or a relative tolerance of 100%, would also accept a mode signal stuck at the wrong value, which is the very bug the test should catch. Removing the signal throws away the check completely.
+
+=== slk04-l03 | Practice: Coverage
+--- for
+l03-coverage
+
++++ question | Three tests for an AND
+--- ask
+A decision is $a \land b$, written `a && b`. Each test is written $(a, b)$ with 1 for true. Which set of tests gives full MC/DC?
+--- choice
+$(1,1)$ and $(0,0)$
+--- choice correct
+$(1,1)$, $(0,1)$ and $(1,0)$
+--- choice
+$(0,1)$, $(1,0)$ and $(0,0)$
+--- choice
+$(1,1)$, $(0,0)$ and $(0,1)$
+--- why
+For $a$ to matter, $b$ must be 1, because otherwise the AND is 0 whatever $a$ is: the pair is $(1,1) \to 1$ and $(0,1) \to 0$. For $b$ to matter, $a$ must be 1: the pair is $(1,1) \to 1$ and $(1,0) \to 0$. The row $(1,1)$ is shared, so three tests do it, $N + 1$ for $N = 2$. The set without $(1,1)$ never makes the decision true, and the sets with $(0,0)$ waste a test: $(0,0)$ pairs with nothing, because flipping one condition from there still leaves the AND false.
+
++++ question | Full decision and condition coverage, and still a gap
+--- ask
+The abort guard is $(a \land b) \lor c$. The tests so far are T1 $= (1,1,0)$, T2 $= (0,1,0)$ and T3 $= (0,0,1)$, written $(a, b, c)$. Decision coverage and condition coverage are both 100%. For how many of the three conditions has an independence pair been seen? Type the number.
+--- answer
+1
+one
+--- why
+Work out the outcomes: T1 gives 1, T2 gives 0, T3 gives 1. T1 and T2 differ only in $a$ and their outcomes differ, so $a$ is shown to matter. T2 and T3 differ in both $b$ and $c$, and T1 and T3 differ in all three, so neither pair isolates one condition. Only $a$ has a pair: MC/DC is 1 of 3. Yet each condition was true once and false once, and the decision took both outcomes. Adding $(0,1,1)$ would pair with T2 to show $c$, and adding $(1,0,0)$ would pair with T1 to show $b$.
+
++++ question | A table behind a saturation
+--- ask
+A 1-D lookup table has breakpoints 0, 20, 40, 60, 80 and 100. Its input comes straight from a Saturation block with limits 10 and 90. The tests sweep the input across its whole reachable range. What lookup-table coverage do the tests get, and what should happen to the regions they miss?
+--- choice
+100%. The tool knows about the saturation and leaves the other regions out by itself.
+--- choice correct
+5 of 7 regions, about 71%. The two extrapolation regions, below 0 and above 100, cannot be reached through the saturation, so each is recorded as a justification that names the Saturation block and its limits.
+--- choice
+5 of 7 regions, about 71%. Add harness tests that override the saturation limits so the table sees -5 and 105.
+--- choice
+5 of 6 regions, about 83%, because a table with 6 breakpoints has 6 regions.
+--- why
+Six breakpoints give 5 interpolation intervals plus 2 extrapolation regions, 7 in all. An input held between 10 and 90 visits all 5 intervals and never leaves the table's range, so 5 of 7 are covered. The two missed regions are unreachable in this design, so no honest test can reach them. Overriding the saturation in the harness would test a different design from the one that flies. The honest answer is a justification whose rationale names the mechanism, the upstream saturation, not "never happens".
+
++++ question | The value that exposes the bug
+--- ask
+A requirement says: "the overheat flag shall be set when the temperature is at or above 85 °C". The chart's guard is `temp_c > 85`, and `temp_c` is a whole number. The tests use 20, 60, 90 and 120, and they all pass. Which pair of values does relational-boundary coverage ask for, and which of them exposes the bug?
+--- choice
+84 and 85; 84 exposes it.
+--- choice correct
+85 and 86; 85 exposes it, because the guard gives false there while the requirement says the flag must be set.
+--- choice
+85 and 86; 86 exposes it.
+--- choice
+0 and 120, the ends of the test range; 120 exposes it.
+--- why
+For a whole-number comparison $x > 85$, the two values on either side of the edge are 85 (false) and 86 (true). At 86 the guard and the requirement agree. At 85 they disagree: `>` says no, "at or above" says yes. The existing tests jump straight over the edge, so `>` and `>=` look the same to them. That is exactly the kind of bug relational-boundary coverage exists to catch.
+
++++ question | Making a dead branch green
+--- ask
+A Switch after the thrust logic has the decision `thrust_pct > 105`, and its true branch is never covered. Its input comes from a Saturation block with limits 0 and 100. To reach 100% coverage, an engineer adds a harness test that overrides the saturation's upper limit to 120 and drives the thrust to 110. The report turns green. What is wrong?
+--- choice
+Nothing. Every outcome has now been reached by a test, which is what coverage asks for.
+--- choice correct
+The test ran a design that will never fly. With the real limits, the branch is dead logic: either the Switch should be removed, or, if the engine really can exceed 100%, the saturation is the bug.
+--- choice
+The test should have used 106 instead of 110, to give relational-boundary coverage too.
+--- choice
+The branch is a missing test, so the engineer should have added the test without changing the limits.
+--- why
+Coverage only means something about the design you ship. With limits 0 and 100, no input can ever make the thrust exceed 105, so no test of the real design can reach that branch: it is dead logic, and dead logic is a question about the design, not about the tests. The two honest outcomes are to delete the leftover Switch, or to find that the saturation is removing a real capability and fix it. Changing the design inside a test to turn a block green hides the question instead of answering it.
+
++++ question | One more test for four conditions
+--- ask
+A mode manager's ignition guard is `armed && pad_clear && (ground_go || auto_seq)`, four conditions written $(a, b, c, d)$ in that order. The tests so far are $(1,1,1,0)$, $(0,1,1,0)$, $(1,0,1,0)$ and $(1,1,0,0)$. Three conditions are already shown to matter. Which single added test completes MC/DC?
+--- choice
+$(1,1,1,1)$
+--- choice correct
+$(1,1,0,1)$
+--- choice
+$(0,0,0,1)$
+--- choice
+$(1,0,0,1)$
+--- why
+The outcomes are 1, 0, 0 and 0. $(1,1,1,0)$ pairs with $(0,1,1,0)$ for $a$, with $(1,0,1,0)$ for $b$, and with $(1,1,0,0)$ for $c$. For $d$ to matter, $a$ and $b$ must be 1 and $c$ must be 0, so the pair is $(1,1,0,1) \to 1$ against the existing $(1,1,0,0) \to 0$. $(1,1,1,1)$ differs from $(1,1,1,0)$ only in $d$, but both give 1, so $d$ did not change the outcome. The other two give 0 and have no partner that differs only in $d$ with a different outcome. MC/DC goes from 3 of 4 conditions, 75%, to 100% with five tests, $N + 1$ for $N = 4$.
+
+=== slk04-l04 | Practice: Requirements and the Model Advisor
+--- for
+l04-requirements-and-model-advisor
+
++++ question | The one line you can verify
+--- ask
+Which of these is a well-written software requirement?
+--- choice
+The pitch controller shall be stable and well-behaved in all conditions.
+--- choice
+The pitch controller should settle quickly after a step command.
+--- choice
+The navigation filter will provide attitude at 100 Hz.
+--- choice correct
+The pitch loop shall keep the steady-state error below 0.05 deg for a constant pitch command.
+--- why
+A requirement must be something a test can pass or fail against: an obligation ("shall") with a measurable quantity and a limit. "Stable and well-behaved" has no number, so nobody can tick it. "Should" marks a goal, not an obligation. "Will" usually states a fact about the surroundings, here what the navigation filter provides, not something this software must do. Only the last line names a quantity, a limit and the condition under which it is checked.
+
++++ question | Three links, three types
+--- ask
+Requirement SW-12 says the fin command shall be limited to ±15 deg, and it exists because of vehicle requirement SYS-4. A Saturation block is why the limit holds, and a `verify` in a Test Assessment block checks it. Which set of links is right?
+--- choice
+The Saturation block verifies SW-12; the `verify` implements SW-12; SW-12 derives SYS-4.
+--- choice correct
+The Saturation block implements SW-12; the `verify` verifies SW-12; SW-12 is linked to SYS-4 by a Derives link. The links are stored in a link set file (`.slmx`), and the model file does not change.
+--- choice
+The Saturation block implements SW-12; the `verify` verifies SW-12; SYS-4 implements SW-12.
+--- choice
+All three are Implements links, stored inside the model file.
+--- why
+An Implements link runs from the design item that meets the requirement, here the Saturation block. A Verifies link runs from the test that checks it, here the `verify`. A Derives link connects a lower requirement to the higher one it came from, so SW-12 is derived from SYS-4; one requirement never "implements" another. Requirements Toolbox keeps links in a separate `.slmx` link set next to the model, which is why adding a link does not touch the model.
+
++++ question | An unlinked block that is also uncovered
+--- ask
+The traceability matrix shows a block, Debug Limiter, whose column is empty: no requirement links to it. The coverage report of the requirement-based tests also shows its true outcome never covered. What is the best next step?
+--- choice
+Write a test that drives Debug Limiter's true outcome, so both reports turn green.
+--- choice correct
+Ask whether a requirement is missing. If one should exist, write it, link the block and add a requirement-based test with an assessment. If not, delete the block.
+--- choice
+Draw an Implements link from Debug Limiter to the nearest requirement, so the column is no longer empty.
+--- choice
+Record a coverage justification that says the block is for debugging.
+--- why
+The two reports point the same way: logic no requirement asks for is logic no requirement-based test is designed to reach. The gap is in the design or the requirements, not in the tests. A test added only to turn the block green proves nothing, a link to an unrelated requirement is a false claim, and a justification is for outcomes that are truly unreachable, not for design nobody asked for. Either the requirement exists and was never written down, or the block should go.
+
++++ question | A parent requirement changes
+--- ask
+Requirement SW-12 has two Implements links from blocks, one Verifies link from a test, and one Derives link to its parent, SYS-4. Change tracking is on. Someone edits the text of SYS-4, and SW-12 itself is not edited. How many of the links that touch SW-12 get a change issue? Type the number.
+--- answer
+1
+one
+--- why
+Change tracking flags a link when an item at one of its two ends has changed since the link was made. Of SW-12's four links, only the Derives link has the changed item, SYS-4, at an end. The Implements and Verifies links connect SW-12 to blocks and a test, and none of those changed. The flag asks someone to check SW-12 against the new SYS-4. If that review changes SW-12, its other three links are flagged in turn, so the change travels down the chain one reviewed step at a time.
+
++++ question | A flag cleared too early
+--- ask
+Requirement PC-3 changes from "at most 20 deg/s" to "at most 15 deg/s". Its Implements link from the Rate Limiter block and its Verifies link from the Rate Step test are both flagged. The engineer:
+
+1. sets the Rate Limiter's limit to 15 deg/s,
+2. re-runs the Rate Step test, which passes,
+3. clears both flags with the comment "limit updated, test passes".
+
+Which step is wrong, and why?
+--- choice
+Step 1: the Rate Limiter should be left at 20, because the test will catch the difference.
+--- choice
+Step 2: tests must not be re-run until the flags are cleared.
+--- choice correct
+Step 3: the Verifies flag was cleared without checking the test itself. If its assessment still checks 20 deg/s, it passes whether the limit is 15 or 20, so it proves nothing about the new requirement.
+--- choice
+Nothing is wrong, since both linked items were looked at.
+--- why
+A Verifies flag asks: does this test still check what the requirement now says? Here the test's `verify` needs to change from 20 to 15 deg/s. Until it does, a Rate Limiter left at 20 would pass too, so the green result carries no evidence for the new limit. The comment is also too thin: it should say what was checked in each linked item and what the result was, so an auditor can follow the reasoning.
+
++++ question | A requirement no block implements
+--- ask
+A new requirement reads: "PC-6: The pitch controller shall complete each step within 400 µs on the flight processor." How can it be linked and verified?
+--- choice
+With a Verifies link from a MIL test whose `verify` checks the step time, because MIL runs every step.
+--- choice correct
+With a Verifies link from a test that measures execution time on the target, first in PIL and finally on the flight computer. No single block implements it; it is a property of the whole controller and its code.
+--- choice
+With an Implements link from a Saturation block, since saturation keeps the numbers small and the step fast.
+--- choice
+It cannot be linked to anything, so it should be deleted from the requirement set.
+--- why
+The requirement is about time on a real processor. MIL computes no execution time at all, and even SIL runs on a PC with a different speed. PIL is the first stage that measures the step on the target chip, and the final evidence comes from the flight computer under load. Some requirements are met by the design as a whole rather than one block, so the Implements side may point at the controller subsystem, and the Verifies side at a timing test. Deleting a requirement because it is hard to link loses a real obligation.
+
+=== slk04-l05 | Practice: Polyspace
+--- for
+l05-polyspace
+
++++ question | Two checks in one function
+--- ask
+Code Prover analyzes this function on its own, so `k` can be any `uint8_t` value from 0 to 255. Here `int` is 32 bits.
+
+```c
+#include <stdint.h>
+
+int32_t f(uint8_t k) {
+    int16_t t = (int16_t)(k * 200);   /* A: conversion to 16 bits */
+    return t + 1000 / (k + 1);        /* B: division */
+}
+```
+
+What colors do checks A and B get?
+--- choice correct
+A is orange, B is green.
+--- choice
+A is red, B is green.
+--- choice
+A is green, B is orange.
+--- choice
+A is orange, B is orange.
+--- why
+Carry the ranges. `k * 200` is computed in 32-bit `int` and lies in $[0, 51\,000]$. An `int16_t` holds at most 32,767, so the conversion fails for some values of `k` (164 and up) and not for others: orange. It is not red, because most values fit. The divisor `k + 1` lies in $[1, 256]$, which never contains 0, so the division is proven safe: green.
+
++++ question | Orange on a safe line
+--- ask
+An analyzer that tracks only intervals meets this code, where `x` is known to lie in $[0, 10]$:
+
+```c
+int32_t y = x * (10 - x);     /* the true values are 0 to 25 */
+int32_t z = 100 / (26 - y);
+```
+
+What color does the division get, and can any real input make it fail?
+--- choice
+Green, because the true values of `y` never exceed 25.
+--- choice
+Red, because the interval for `26 - y` contains 0.
+--- choice correct
+Orange, but no real input can fail it. Interval arithmetic gives `y` in $[0, 100]$, so `26 - y` looks like $[-74, 26]$, which contains 0. The true divisor is always at least 1.
+--- choice
+Gray, because the division can never run.
+--- why
+`10 - x` is in $[0, 10]$, and multiplying two intervals $[0, 10] \times [0, 10]$ gives $[0, 100]$, because the interval forgets that both factors come from the same `x`. The real largest value is 25, at $x = 5$. This is over-approximation: the set is wider than the truth, never narrower, which keeps green trustworthy but can produce orange on safe code. The engineer can rewrite the code so the tool sees the bound, or write a justification that a reviewer signs.
+
++++ question | Green for the wrong processor
+--- ask
+Code Prover reports this line green. The analysis was set up with a 32-bit `int`. The flight processor's compiler uses a 16-bit `int`. Both `a` and `b` are `int16_t` values in $[0, 300]$.
+
+```c
+int32_t p = a * b;
+```
+
+Can the team sign off the green result?
+--- choice
+Yes. Green means proven safe for any input, on any processor.
+--- choice correct
+No. With a 16-bit `int`, `a * b` is computed in 16 bits, and 90,000 does not fit, so on the real target the check would be orange. The analysis must be rerun with the target's word sizes.
+--- choice
+Yes, because the result is stored in an `int32_t`, which holds 90,000.
+--- choice
+No, because a multiplication can never be proven safe by static analysis.
+--- why
+C promotes both operands to `int` before multiplying. With a 32-bit `int` the largest product, $300 \times 300 = 90\,000$, fits easily: green. With a 16-bit `int` the multiply happens in 16 bits, where the largest value is 32,767, and the overflow happens before the result is widened to 32 bits for `p`. A proof is only as good as its assumptions, and the target's word sizes are one of them, exactly like the code generator's hardware settings.
+
++++ question | After a red check
+--- ask
+Code Prover analyzes this function on its own, so `x` can be any `int32_t`.
+
+```c
+int32_t g(int32_t x) {
+    int32_t d = 0;
+    int32_t r = 1;
+    if (x > 0) {
+        r = 10 / d;      /* A */
+    }
+    if (x > 5) {
+        r = 7;           /* B */
+    }
+    return r;
+}
+```
+
+Check A is red. What color does Code Prover give line B? Type one word.
+--- answer
+gray
+grey
+--- why
+Line A divides by `d`, which is always 0 there, so it fails every time it runs: red. The analysis assumes no run survives a red error. Line B needs $x > 5$, and every such run also has $x > 0$, so it already died at line A. No run can reach B, so it is gray. Fixing A would change that, which is why red checks are fixed first and the gray ones re-examined afterwards.
+
++++ question | A review note that claims too much
+--- ask
+A pull request adds a guidance function. The review note says: "Bug Finder reports no defects, so the function is proven free of division by zero." What is wrong with the note?
+--- choice
+Nothing. Bug Finder follows the code's paths, so it would have found any division by zero.
+--- choice correct
+Bug Finder is built to be fast with few false alarms, and it does not explore every path and value, so "no defects found" is a very good review, not a proof. A proof needs Code Prover with the division checks green.
+--- choice
+Bug Finder only checks MISRA C rules, so it cannot find a division by zero at all.
+--- choice
+Division by zero cannot be analyzed statically; only testing can find it.
+--- why
+Bug Finder does look for divisions whose divisor may be zero, along with other defects and coding-rule breaks, but it is not sound: it can miss real bugs. Code Prover tracks the set of values each variable can take on every path, for every input, and only then colors a division green. So the note should say "no defects found by Bug Finder" and, if a proof is needed, point to a Code Prover run.
+
++++ question | The largest safe scale factor
+--- ask
+Two 12-bit sensor readings `u` and `v` each lie in $[0, 4095]$. The code computes
+
+```c
+int32_t p = (int32_t)u * v * C;
+```
+
+where `C` is a positive whole-number constant, and `int32_t` holds at most 2,147,483,647. What is the largest value of `C` for which Code Prover can prove this line safe (green)? Type the number.
+--- answer
+128
+--- why
+The largest product is $4095 \times 4095 = 16\,769\,025$, which fits. Multiplying by `C` must stay within 2,147,483,647, so $C \le 2\,147\,483\,647 / 16\,769\,025 \approx 128.06$. With $C = 128$ the top is $2\,146\,435\,200$, just under the limit: green. With $C = 129$ it is $2\,163\,204\,225$, over the limit for the largest inputs: orange. This is the range reasoning Code Prover does, pushed right to the edge.
+
+=== slk04-l06 | Practice: Coders, targets and solver constraints
+--- for
+l06-coders-targets-and-solver-constraints
+
++++ question | The right generator for the job
+--- ask
+A team needs two builds this month. First, a quick compiled version of a plant model that runs a 10,000-case Monte Carlo study faster on a lab PC. Second, the controller's code for the flight computer. Which system target files fit?
+--- choice correct
+`grt.tlc` (Simulink Coder) for the Monte Carlo build, and `ert.tlc` (Embedded Coder) for the flight code.
+--- choice
+`ert.tlc` for both, because Embedded Coder code is always faster.
+--- choice
+`grt.tlc` for both, because Simulink Coder generates C too.
+--- choice
+`ert.tlc` for the Monte Carlo build and `grt.tlc` for the flight code.
+--- why
+Simulink Coder with `grt.tlc` is built for rapid prototyping and fast standalone runs, where nobody cares what the code looks like, only that it runs. Flight code needs `ert.tlc`, which needs Embedded Coder: control over names and data interfaces, code shaped for a small processor, SIL and PIL from the model, and traceability back to the blocks for certification. The generic target cannot give a certification reviewer any of that.
+
++++ question | The base tick for three rates
+--- ask
+A controller model has rates of 3 ms, 4.5 ms and 9 ms, and the fixed-step size is left on `auto`. What fundamental sample time does it choose, in milliseconds? Type the number.
+--- answer
+1.5
+1.5 ms
+1.5ms
+1.5 milliseconds
+0.0015
+0.0015 s
+--- why
+The fundamental sample time is the largest step that divides every rate. In units of 0.5 ms the rates are 6, 9 and 18, whose greatest common divisor is 3, so the step is $3 \times 0.5 = 1.5$ ms. The 3 ms rate runs every 2 ticks, the 4.5 ms rate every 3 ticks and the 9 ms rate every 6 ticks. As in the lesson's check, no rate in the model runs on every tick; the base step exists so the rates line up.
+
++++ question | The product in PIL
+--- ask
+The hardware settings say `int` is 32 bits, but the flight processor's compiler uses a 16-bit `int`. The generated code multiplies two `int16_t` values, 150 and 250, and stores the product in an `int32_t`. Assume the overflow wraps, as it typically does. What value does PIL produce? Type the number.
+--- answer
+-28036
+−28036
+-28,036
+−28,036
+--- why
+The true product is $150 \times 250 = 37\,500$. SIL runs on the PC, where `int` really is 32 bits, so it gets 37,500 and passes. Believing that `int` is 32 bits, the code generator saw no need for a cast. On the target, both operands are promoted only to a 16-bit `int`, whose largest value is 32,767, so the product wraps: $37\,500 - 65\,536 = -28\,036$. Correcting the hardware settings makes the generator widen one operand first, and then both machines give 37,500.
+
++++ question | Division in C99
+--- ask
+Following the C99 rule, what are `-9 / 4` and `-9 % 4`? Type the two numbers separated by a space.
+--- answer
+-2 -1
+-2, -1
+-2,-1
+-2 and -1
+−2 −1
+−2, −1
+--- why
+Since C99, integer division rounds toward zero: $-9 / 4 = -2.25$ becomes $-2$. The remainder must agree with it, so that $(a / b) \times b + a \% b = a$: $-2 \times 4 + r = -9$ gives $r = -1$. Python floors instead: `-9 // 4` is `-3` and `-9 % 4` is `3`. A Simulink block that asks for one rounding on a target that does the other needs extra correction code, which is why the hardware settings record how the target's compiler rounds.
+
++++ question | A fix that still overflows
+--- ask
+On a 16-bit-`int` target, this line gave the wrong product in PIL:
+
+```c
+int32_t out = err * gain;          /* err, gain: int16_t */
+```
+
+A colleague changes it to
+
+```c
+int32_t out = (int32_t)(err * gain);
+```
+
+and PIL still fails. Why, and which line is right?
+--- choice
+The cast needs to be `(long)` instead of `(int32_t)`.
+--- choice correct
+The cast is applied after the multiply, which already happened, and overflowed, in 16-bit `int`. Widen an operand first: `int32_t out = (int32_t)err * gain;`.
+--- choice
+The product must be stored in an `int16_t` so it matches the operands.
+--- choice
+The multiply is fine; the problem must be in the hardware settings of the PIL connectivity.
+--- why
+C evaluates `err * gain` first, in `int`, after promoting both `int16_t` values. On a 16-bit-`int` target that multiply has no room, so the result has already wrapped by the time the cast widens it. Casting one operand to 32 bits makes C promote the other one to 32 bits too, so the multiply itself happens in 32 bits. This is the cast the code generator writes for you when the hardware settings describe the target correctly. A `(long)` cast after the multiply has the same flaw.
+
++++ question | Counting bytes on a C2000
+--- ask
+On a TI C2000 (C28x) processor, `char` is 16 bits. What does this line print there? Type the number.
+
+```c
+printf("%u\n", (unsigned)sizeof(uint32_t));
+```
+--- answer
+2
+--- why
+`sizeof` counts in units of `char`, not in 8-bit bytes. A `uint32_t` has 32 bits, and on the C28x one `char` is 16 bits, so `sizeof(uint32_t)` is $32 / 16 = 2$. On a PC or an ARM Cortex-M the same line prints 4. Code that copies `sizeof` bytes into a message buffer, assuming 8-bit bytes, packs the wrong layout on this chip. That is why the hardware settings record the size of `char` too, and why the generated code never assumes a byte is 8 bits.
+
+=== slk04-l07 | Practice: The data interface and code mappings
+--- for
+l07-data-interface-and-code-mappings
+
++++ question | Calls in one ascent
+--- ask
+A 200 Hz controller model is flown for a 90 s ascent. How many times is its `step` entry point called? Type the number.
+--- answer
+18000
+18,000
+18 000
+18000 times
+--- why
+At 200 Hz the step is $1 / 200 = 0.005$ s, so the scheduler calls `step` $90 / 0.005 = 18\,000$ times. `initialize` runs once before the first step and `terminate` once at shutdown. The generated code has no loop and no timer, so every one of those 18,000 calls comes from the hand-written scheduler, at exactly the rate the model was built for.
+
++++ question | Three variables, three storage classes
+--- ask
+A model must work with three variables:
+
+- `gyro_status`, a register that the gyro's hardware updates at any moment;
+- `att_err`, which the model computes and the hand-written telemetry code must read by name;
+- `nav_mode`, which the navigation code already defines and the model only reads.
+
+Which storage classes fit, in that order?
+--- choice
+ExportedGlobal, Volatile, ImportedExtern
+--- choice correct
+Volatile, ExportedGlobal, ImportedExtern
+--- choice
+Volatile, ImportedExtern, ExportedGlobal
+--- choice
+ImportedExtern, ExportedGlobal, Volatile
+--- why
+A hardware register can change without the code writing it, so the compiler must re-read it at every use: Volatile. A value the model owns and others read is defined by the generated `.c` file and declared `extern` in its header: ExportedGlobal. A variable that hand-written code already defines must only be declared by the model, never defined a second time: ImportedExtern. Swap the last two and the linker complains, with a duplicate definition for `nav_mode` and a missing one for `att_err`.
+
++++ question | Two rates as two tasks
+--- ask
+A model has a 1 ms inner loop and a 10 ms outer loop, and it is built in multitasking mode. Which entry points does the flight software call, and how?
+--- choice
+One `model_step()` every 1 ms; counters inside it decide when the 10 ms rate runs.
+--- choice correct
+`model_initialize()` once, then `model_step0()` every 1 ms and `model_step1()` every 10 ms, each from its own task with the fast one at higher priority, and `model_terminate()` at shutdown.
+--- choice
+`model_step0()` and `model_step1()` back to back every 10 ms.
+--- choice
+Only `model_step1()`, because the generated code calls `model_step0()` itself with its own timer.
+--- why
+In multitasking mode Embedded Coder generates one step function per rate, so the operating system can run the fast rate in a higher-priority task than the slow one. The first choice describes single-tasking mode, which has one step function with rate counters inside. Calling both every 10 ms would run the inner loop at a tenth of its design rate. And generated code never owns a timer: the scheduler calls every entry point.
+
++++ question | One global inside a reusable model
+--- ask
+A rate-loop model is built as Reusable function, and the flight software runs two instances, pitch and yaw. One internal signal, `err_peak`, has been given the ExportedGlobal storage class so telemetry can read it. Each cycle, pitch steps first and then yaw. What does telemetry read in `err_peak` after a cycle?
+--- choice
+The pitch value, because pitch was the first instance created.
+--- choice
+Two separate values, one per instance, because reusable code gives every signal its own copy.
+--- choice correct
+Only yaw's value, because both instances write the one shared global and yaw writes last. The instances are no longer fully independent.
+--- choice
+The build fails, because an ExportedGlobal is not allowed in any model.
+--- why
+Reusable code puts each instance's states and signals in a structure that the caller owns, but a signal with a global storage class sits outside those structures: there is only one `err_peak`, and every instance writes it. So its value is whichever instance ran last. If any instance also reads it, one controller is using the other's data. Embedded Coder's Multi-instance code error diagnostic can warn about this, or stop the build, and the report should be treated as a real defect.
+
++++ question | Two axes through one integrator
+--- ask
+This is the lesson's nonreusable `rate_pi` code ($K_p = 0.5$, $K_i = 0.2$, $T_s = 0.01$ s: each step outputs $0.5 e + I$, then adds $0.2 \times 0.01 \times e$ to the integrator $I$). A teammate uses it for both axes:
+
+```c
+rate_pi_initialize();
+/* one control cycle */
+rate_pi_U.err = 2.0;  rate_pi_step();  cmd_pitch = rate_pi_Y.cmd;
+rate_pi_U.err = -1.0; rate_pi_step();  cmd_yaw   = rate_pi_Y.cmd;
+```
+
+What is `cmd_yaw` after this first cycle? Type the number.
+--- answer
+-0.496
+-0.4960
+−0.496
+−0.4960
+--- why
+There is only one integrator, `rate_pi_DW.Integrator_DSTATE`. The pitch call outputs $0.5 \times 2.0 + 0 = 1.0$ and then adds $0.2 \times 0.01 \times 2.0 = 0.004$. The yaw call starts from that pitch integrator: $0.5 \times (-1.0) + 0.004 = -0.496$, where a yaw controller of its own would give $-0.5$. Every later cycle mixes the two errors further. Reusable code, with one instance structure per axis, keeps the two integrators apart.
+
++++ question | What Volatile fixes and what it does not
+--- ask
+Two problems appear in hand-written code around the model, on a 32-bit processor:
+
+1. `while (imu_ready == 0U) { }` waits for a flag that an interrupt sets, and at `-O2` the loop never ends.
+2. A 64-bit timestamp, written by a 1 kHz task, sometimes reads back as half an old value and half a new one in the 100 Hz task.
+
+Which does giving the variable the Volatile storage class fix?
+--- choice
+Both, because Volatile makes every access go to memory.
+--- choice correct
+Only problem 1. Volatile makes the compiler re-read `imu_ready` from memory on every pass, but a 64-bit value still takes two 32-bit reads, so problem 2 needs a real mechanism such as a rate transition, a lock or double buffering.
+--- choice
+Only problem 2, because Volatile makes reads atomic.
+--- choice
+Neither, because Volatile only affects parameters.
+--- why
+Without `volatile`, the optimizer may read `imu_ready` once, keep it in a register and loop forever on the stale copy; Volatile forbids that. It does not make an access indivisible. On a 32-bit processor a 64-bit value is read in two pieces, and the fast task can write between them, which gives the torn value. Data shared between tasks needs a mechanism that controls when each side reads and writes.
+
+=== slk04-l08 | Practice: Tunable parameters, fixed point and code replacement
+--- for
+l08-parameters-fixed-point-and-crl
+
++++ question | Storing a number in fixdt(1,16,12)
+--- ask
+A value of 2.7 is stored in `fixdt(1,16,12)`, rounding to the nearest step. What stored integer does the code hold? Type the number.
+--- answer
+11059
+11,059
+--- why
+The real value is the stored integer times $2^{-12}$, so the stored integer is $2.7 \times 2^{12} = 2.7 \times 4096 = 11\,059.2$, which rounds to 11,059. That integer means $11\,059 / 4096 = 2.699951171875$, off by about $0.00005$, less than half a step ($2^{-13} \approx 0.000122$). The type's range is $-8$ to just under $8$, so 2.7 fits comfortably.
+
++++ question | What the gain looks like in the code
+--- ask
+A model named `att` has Default parameter behavior set to Tunable. A Gain block named `Kd` has the value 0.8 typed straight into its dialog, and no storage class of its own. What does the generated step function contain for that gain?
+--- choice
+`0.8 * rtb_err`, because a value typed into a block is always inlined.
+--- choice correct
+`att_P.Kd_Gain * rtb_err`, a field of the global parameter structure `att_P`.
+--- choice
+`Kd * rtb_err`, where `Kd` is a global variable named after the block.
+--- choice
+`att_P.Gain_Kd * rtb_err`, a field named after the block type first.
+--- why
+With Default parameter behavior set to Tunable, block parameters without a storage class of their own go into one global structure, `model_P`. A value typed into the block gives a field named from the block and then the parameter, here `Kd_Gain`. So the code reads `att_P.Kd_Gain`, which sits at an address a calibration tool or external mode can write. With the default set to Inlined, the same gain would appear as the literal 0.8.
+
++++ question | Rescaling a product
+--- ask
+A signal in `fixdt(1,16,8)` is multiplied by a gain in `fixdt(1,16,12)`, into a 32-bit intermediate. The result must be stored in `fixdt(1,16,8)`. By how many bits must the intermediate be shifted right? Type the number.
+--- answer
+12
+--- why
+Multiplying adds the fraction lengths, so the 32-bit product has $8 + 12 = 20$ fraction bits. The output wants 8, so the product is shifted right by $20 - 8 = 12$ bits, which divides it by $2^{12}$. After the shift, the value must still fit in 16 bits, so the block either saturates or the ranges must prove that it cannot overflow.
+
++++ question | Wrapping below the bottom
+--- ask
+In `fixdt(1,16,10)`, a block computes $-30.0 - 4.0$ with wrapping on overflow. What real value does the output hold? Type the number.
+--- answer
+30
+30.0
++30
++30.0
+--- why
+The stored integers are $-30 \times 1024 = -30\,720$ and $4 \times 1024 = 4096$. Their difference, $-34\,816$, is below the smallest 16-bit value, $-32\,768$. Wrapping adds 65,536: $-34\,816 + 65\,536 = 30\,720$, which means $+30.0$. A command of $-34$ became $+30$, with no error raised. With saturation the output would be $-32\,768$, meaning $-32.0$: wrong by 2, but on the right side.
+
++++ question | A shift that forgot the gain's scaling
+--- ask
+A signal `x` is in `fixdt(1,16,10)`, and a gain `k` is in `fixdt(1,16,14)`. The result `y` should be in `fixdt(1,16,10)`. The code is
+
+```c
+int16_t y = (int16_t)(((int32_t)x * k) >> 10);
+```
+
+and its outputs come out wildly wrong. What is the bug?
+--- choice
+The product must be computed in 16 bits, not 32.
+--- choice correct
+The product has $10 + 14 = 24$ fraction bits, so it must be shifted right by 14 to leave 10. Shifting by 10 leaves 14 fraction bits, so the stored integer is 16 times too big and usually does not fit in 16 bits.
+--- choice
+The shift must be to the left, because the gain has more fraction bits than the signal.
+--- choice
+Nothing is wrong with the shift; the gain should have used the same scaling as the signal.
+--- why
+The rule is that fraction lengths add when you multiply, and the shift removes whatever the output does not keep. The signal brings 10 fraction bits and the gain 14, so the product has 24, and the output keeps 10: shift by 14. Giving the gain its own finer scaling is good practice, because it cuts quantization error, but every shift must then match the scalings actually used.
+
++++ question | A scaling that leaves room to tune
+--- ask
+A tunable gain is 0.7 today. It is stored as a signed 16-bit fixed-point number, `fixdt(1,16,f)`. On the test stand the team may retune it anywhere from 0.5 to 1.2. What is the largest fraction length $f$ that holds every value it may take? Type the number.
+--- answer
+14
+--- why
+A signed 16-bit type with fraction length $f$ reaches just below $2^{15 - f}$. With $f = 15$ the top is just below 1, which holds 0.7 but not the retuned 1.2. With $f = 14$ the top is just below 2, which holds the whole range from 0.5 to 1.2. More fraction bits give finer steps but a smaller range, and a tunable parameter's scaling must cover every value it may be tuned to, not only today's value.
+
+=== slk04-l09 | Practice: Traceability and code metrics
+--- for
+l09-traceability-and-code-metrics
+
++++ question | A statement with four blocks inside
+--- ask
+A generated file contains:
+
+```c
+/* Outport: '<Root>/fin_cmd' incorporates:
+ *  Gain: '<S2>/Kq'
+ *  Saturate: '<S2>/Limit'
+ *  Sum: '<S2>/Add'
+ */
+```
+
+followed by one assignment to `fcs_Y.fin_cmd`. What does the comment tell you?
+--- choice
+Only the Outport block produced this line; Kq, Limit and Add were eliminated.
+--- choice correct
+Expression folding merged the Kq gain, the Limit saturation and the Add sum into the one assignment written for the output. The three blocks are inside subsystem `<S2>`, whose full path is listed in the system hierarchy at the end of the model's header.
+--- choice
+The three blocks are virtual, so they appear only as comments.
+--- choice
+`<S2>` means the second statement of the step function.
+--- why
+"incorporates:" lists every block whose computation was folded into the statement that follows. So searching for Kq by the first word of each comment would miss it; you have to search the whole comment. `<S2>` is the code generator's tag for a subsystem, and the key to the tags is the "system hierarchy" comment at the end of the header file, for example `'<S2>' : 'fcs/Pitch'`. Eliminated blocks are listed separately, with a reason, when Show eliminated blocks is on.
+
++++ question | Flash from the size tool
+--- ask
+The `size` tool reports this for a compiled controller:
+
+```text
+   text    data     bss     dec     hex filename
+    512      24      40     576     240 ctrl.o
+```
+
+How many bytes of flash does it need, counting the starting values that are copied into RAM at start-up? Type the number.
+--- answer
+536
+536 bytes
+--- why
+Flash holds the instructions and constants (`text`, 512 bytes) and also a copy of the starting values of the initialized globals (`data`, 24 bytes), which start-up code copies into RAM. So flash is $512 + 24 = 536$ bytes. The `bss` globals start at zero, so they need no stored values: they take RAM only. RAM for globals is $24 + 40 = 64$ bytes, plus the stack.
+
++++ question | A literal where the gain should be
+--- ask
+You trace the Gain block `Kq` in the generated code and find:
+
+```c
+/* Gain: '<S2>/Kq' */
+rtb_q_cmd = 0.35 * rtb_q_err;
+```
+
+The team wanted to adjust Kq through external mode on the test stand. What does this line tell you?
+--- choice
+Kq is tunable, and 0.35 is its current value copied into the code for speed.
+--- choice correct
+Kq was inlined: it is a literal with no address in memory, so external mode or a calibration tool has nothing to write. To tune it, give Kq a storage class other than Auto, or set Default parameter behavior to Tunable, and regenerate.
+--- choice
+Kq was eliminated, so the block has no effect in the code.
+--- choice
+The comment is wrong, because a Gain block always appears as a field of the parameter structure.
+--- why
+Tracing the block to its line is how you find out how a parameter was generated. A tunable Kq would appear as a field such as `fcs_P.Kq_Gain`. A literal means the parameter was inlined: the compiler can fold it, it uses no RAM, and changing it means a new build. That is the warning from the parameters lesson, found here by reading the code before the test-stand day rather than on it.
+
++++ question | A gain of exactly one
+--- ask
+A model has Default parameter behavior set to Inlined and Show eliminated blocks turned on. A Gain block named `Unity` has the value 1. You search the generated code for `'<Root>/Unity'` and find it only in a list of removed blocks. Why?
+--- choice
+The block is virtual, like a Mux, so it could never produce code.
+--- choice correct
+With the gain inlined, multiplying by 1 changes nothing, so the code generator removed it and recorded it as eliminated, with the reason. A tunable gain would have kept a multiply by the parameter.
+--- choice
+The code generation failed for that block, and it must be fixed before flight.
+--- choice
+Gains of 1 are always kept, so the search must have a typo.
+--- why
+Every block is accounted for: it is in the code, it is marked virtual, or it is listed as eliminated. A Gain block is not virtual; it computes something. But an inlined gain of exactly 1 is folded away, like any multiply by a constant 1. If the gain were tunable, the code would have to keep the multiply, because the value might be changed to something else while the software runs.
+
++++ question | A budget built from the wrong run
+--- ask
+An engineer reports that a two-rate controller uses 4% of the processor, using SIL average times on a desktop PC. The PIL run on the flight processor gives these maximum times:
+
+| Task | Period | Maximum |
+|---|---|---|
+| Inner loop | 2 ms | 0.3 ms |
+| Outer loop | 20 ms | 3.1 ms |
+
+What share of the processor, in percent, should the budget show? Type the number.
+--- answer
+30.5
+30.5%
+30.5 %
+30.5 percent
+--- why
+Each task's share is its maximum time divided by its period: $0.3 / 2 = 15\%$ and $3.1 / 20 = 15.5\%$, so $30.5\%$ together. The report was wrong twice: SIL times come from a much faster PC, so they only compare one version of the code with another, and averages hide the slow steps that decide whether a deadline is missed. Even the PIL maximums are only the largest times seen in that test, not a guaranteed worst case, so the budget keeps a margin.
+
++++ question | The deepest call chain
+--- ask
+The Static Code Metrics Report gives these stack frames: `ctrl_step` uses 48 bytes itself and calls `nav_blend` (64 bytes) and `mode_logic` (120 bytes). `nav_blend` calls `quat_norm` (200 bytes), and the others call nothing. What is the worst-case stack depth of `ctrl_step`, in bytes? Type the number.
+--- answer
+312
+312 bytes
+--- why
+Stack is only in use along one chain of calls at a time, so the worst case is the deepest chain, not the sum of every function. `ctrl_step` → `nav_blend` → `quat_norm` needs $48 + 64 + 200 = 312$ bytes. `ctrl_step` → `mode_logic` needs $48 + 120 = 168$ bytes. Adding all four frames, 432 bytes, would overstate it; taking the largest single frame, 200 bytes, would understate it. The figure is an estimate from source, to be confirmed with the target compiler.
+
+=== slk04-l10 | Practice: SIL, PIL and integration
+--- for
+l10-sil-pil-and-integration
+
++++ question | Accelerator is not SIL
+--- ask
+An engineer sets a controller's Model block to Accelerator mode, runs the equivalence test against Normal mode, sees a perfect match, and records it as SIL evidence. Why is that not SIL evidence?
+--- choice
+Because Accelerator mode only runs on a real-time target.
+--- choice correct
+Because Accelerator compiles fast simulation code for speed. It is not the production code that Embedded Coder generates, so the flight code was never run. SIL needs the Simulation mode set to Software-in-the-loop (SIL).
+--- choice
+Because an equivalence test can only compare SIL with PIL.
+--- choice
+It is valid SIL evidence, since any compiled code counts as software in the loop.
+--- why
+SIL tests the code that will fly: Embedded Coder's production code, compiled for the host and run in place of the blocks. Accelerator mode also compiles the model, but into simulation code built to make runs faster, with none of the production settings, storage classes or code mappings. So a match between Normal and Accelerator says the simulation is fast, not that the flight code matches the model.
+
++++ question | Counting ulps near 6
+--- ask
+An equivalence test between Normal mode and SIL finds a largest difference of $1.78 \times 10^{-15}$, on a signal near 6.0. Between 4 and 8, neighboring doubles are $2^{-50} \approx 8.88 \times 10^{-16}$ apart. How many ulps is the difference? Type the number.
+--- answer
+2
+two
+--- why
+$1.78 \times 10^{-15} / 8.88 \times 10^{-16} \approx 2$, so the two runs are two rungs apart on the number ladder. That is rounding, such as sums done in a different order, a fused multiply-add, or a math library that rounds its last bit differently. Note that the same difference on a signal near 1, where the gap is $2.2 \times 10^{-16}$, would be 8 ulps: tolerances depend on the signal's size, which is why relative tolerances exist.
+
++++ question | Copying the controller wrapper
+--- ask
+The lesson's `PidController` wrapper calls `pid_initialize()` in its constructor and `pid_terminate()` in its destructor, and deletes its copy constructor and copy assignment. Suppose the two `= delete` lines were removed, and a logging helper took the controller by value: `void log_state(PidController c)`. What would happen each time the loop called `log_state(ctrl)`?
+--- choice
+Nothing, because the class has no data members to copy.
+--- choice
+A second, independent controller would be created, with its own integrator.
+--- choice correct
+The compiler-made copy constructor would copy nothing and call nothing, and then the copy's destructor would call `pid_terminate()` when the helper returns, while the real controller is still running. Both objects drive the one set of global data.
+--- choice
+The copy would call `pid_initialize()` again, resetting the integrator.
+--- why
+The wrapper owns something that is not a member: the one global model. A copy does not create a second model, because nonreusable code has only one set of data, and the default copy constructor does not call `pid_initialize()`. But every object's destructor runs, so each temporary copy calls `pid_terminate()` in the middle of the run. Deleting the copy operations makes that mistake a compile error, which is the RAII module's rule for classes that hold a unique resource.
+
++++ question | Steps lost to sleep_for
+--- ask
+A 200 Hz loop calls `sleep_for(5 ms)` after each step, and each step, with its I/O, takes 0.6 ms. How many complete steps run in 30 s of real time? Type the number.
+--- answer
+5357
+5,357
+5357 steps
+--- why
+Each cycle takes the step plus the sleep: $5 + 0.6 = 5.6$ ms. In 30 s that is $30 / 0.0056 \approx 5357.1$, so 5,357 complete steps instead of the 6,000 the design assumes. The controller believes each call is 5 ms apart, so it thinks $5357 \times 0.005 = 26.785$ s have passed, over 3 s behind. With `sleep_until` on a schedule advanced by 5 ms each tick, the 0.6 ms only moves the work inside each slot, and 6,000 steps run.
+
++++ question | A schedule that restarts every tick
+--- ask
+This loop is meant to run the controller every 10 ms without drift:
+
+```cpp
+auto next = clock::now() + period;
+for (int k = 0; k < 6000; ++k) {
+    const double u = ctrl.step(ref, meas);   // line 1
+    apply(u);                                // line 2
+    std::this_thread::sleep_until(next);     // line 3
+    next = clock::now() + period;            // line 4
+}
+```
+
+Over a minute it runs noticeably fewer than 6,000 steps. Which line is wrong, and what should it be?
+--- choice
+Line 3 should be `sleep_for(period)`.
+--- choice correct
+Line 4 should be `next += period;`. Setting `next` from "now" restarts the schedule after every wake-up, so the step time and every late wake-up are added to each period.
+--- choice
+Line 1 should come after line 3, so the step starts exactly on the tick.
+--- choice
+Line 4 should be `next = clock::now();` so the next sleep ends at once.
+--- why
+An absolute schedule is a fixed sequence of deadlines: 10 ms, 20 ms, 30 ms and so on, reached by adding one period to the previous deadline. Line 4 instead measures from the moment the loop woke up, so the next deadline slides later by the time the step and `apply` take, plus any wake-up delay. That is the `sleep_for` mistake in disguise. With `next += period`, a slow step only moves the work within its slot.
+
++++ question | Arithmetic or timing?
+--- ask
+The integrated C++ application drifts away from the model's log over a 60 s run. A test build of the same program, with the sleeps removed, printing every sample with 17 digits, matches the model's log bit for bit on the same inputs. Where is the defect most likely?
+--- choice
+In the generated arithmetic, for example a fused multiply-add on the target.
+--- choice correct
+In the timing: the real-time build calls the step at the wrong period, misses ticks, or uses `sleep_for`. The arithmetic has already been shown to match.
+--- choice
+In the model, which needs a new MIL run.
+--- choice
+In the equivalence test's tolerance, which should be widened for real-time runs.
+--- why
+Splitting timing from arithmetic is the whole point of the test build. With no sleeps, the program feeds the step function the same inputs as the model, sample by sample, and it matches exactly, so the code computes correctly. What the real-time build adds is the scheduler, and the step function has no clock of its own: if it is called at the wrong period, every integral and filter inside is off by that ratio. Widening a tolerance would hide a real defect.
+
+=== slk04-l11 | Practice: Legacy code and tool qualification
+--- for
+l11-legacy-code-and-tool-qualification
+
++++ question | A spec with a block parameter
+--- ask
+A heritage function has the prototype `int16_t sat16(int32_t x, int16_t lim)`. The value `x` comes from the model each step, and `lim` is set once in the block's dialog. Which Legacy Code Tool function specification is right?
+--- choice
+`'int16 y1 = sat16(int32 u1, int16 u2)'`
+--- choice correct
+`'int16 y1 = sat16(int32 u1, int16 p1)'`
+--- choice
+`'int16 y1 = sat16(int32 p1, int16 u1)'`
+--- choice
+`'int32 y1 = sat16(int32 u1, int16 p1)'`
+--- why
+In the spec, arguments are renamed by role: `u1`, `u2` are block inputs, `p1` is a dialog parameter, and `y1` is the first output. `x` arrives every step, so it is `u1`; `lim` is set in the dialog, so it is `p1`. The first choice would give the block a second input port, and the third swaps the roles. The types must match the C exactly: the function returns `int16_t`, so the output is `int16`, and declaring it `int32` misdescribes the function.
+
++++ question | Where a running sum goes
+--- ask
+A C MEX S-function keeps a running sum of its input as a discrete state, and outputs the sum from before this step's input is added. Which callback adds the input to the sum?
+--- choice
+`mdlOutputs`, since it runs every step.
+--- choice correct
+`mdlUpdate`, which runs every step after `mdlOutputs`, so the output uses the state from the start of the step and the state then moves on.
+--- choice
+`mdlStart`, since the sum must exist before the first step.
+--- choice
+`mdlInitializeSizes`, since it is where the state is declared.
+--- why
+Each step, Simulink calls outputs first and updates after, so every block's output is computed from this step's states before any state moves on. Output logic goes in `mdlOutputs`; the change to a discrete state goes in `mdlUpdate`. `mdlInitializeSizes` is where you declare that the block has one discrete state, and `mdlStart` runs only once. Because this output does not use this step's input, its input port would also be declared not direct feedthrough.
+
++++ question | A wrapper with swapped arguments
+--- ask
+The lesson's heritage function is `gyro_comp(rate_dps, temp_c)`, which returns `rate_dps - bias`, with `dT = temp_c - 25.0` and `bias = 0.020 + 0.0015*dT - 0.00002*dT*dT`. The hand-written S-function's `mdlOutputs` calls it correctly, but its hand-written TLC file emits `gyro_comp(temp, rate)`. For a rate of 1.542 deg/s at 45 °C, the simulation outputs 1.500. What does the generated code output? Give it to three decimal places.
+--- answer
+45.026
+45.0262
+--- why
+The generated call passes 45 as the rate and 1.542 as the temperature. Then $dT = 1.542 - 25 = -23.458$, and the bias is $0.020 + 0.0015 \times (-23.458) - 0.00002 \times 23.458^2 \approx 0.020 - 0.03519 - 0.01101 = -0.02619$. The output is $45 - (-0.02619) \approx 45.026$ deg/s. An equivalence test between Normal mode and SIL catches this at once, because simulation and code disagree. It could not catch a mistake made the same way in both wrappers, which is why the block is also tested against known values.
+
++++ question | Choosing a door for old C
+--- ask
+A heritage ring-buffer filter needs `ring_init()` called once at start, keeps a work buffer between steps, and has `ring_step(double x)` called every step. Which way of bringing it into the model fits best?
+--- choice
+A C Caller block, because it reads the header and needs no wrapper.
+--- choice correct
+The Legacy Code Tool, using `StartFcnSpec` for `ring_init()` and `OutputFcnSpec` for `ring_step`, plus work data kept between steps.
+--- choice
+A hand-written Level-2 S-function, because any C with state needs one.
+--- choice
+An Interpreted MATLAB Function block that calls the C through MATLAB.
+--- why
+The C Caller suits plain functions with no state that Simulink must manage and no start or terminate routine. The Legacy Code Tool covers start and terminate functions and persistent work data, so it fits here and writes the S-function and its TLC file for you. A hand-written S-function is the last resort, for needs such as continuous states. An Interpreted MATLAB Function block cannot become code at all.
+
++++ question | A qualification borrowed from someone else
+--- ask
+A certification plan says: "Simulink Coverage is qualified, because MathWorks ran the DO Qualification Kit tests for this release." What is wrong?
+--- choice
+Nothing. The kit's results from MathWorks qualify the tool for every project.
+--- choice correct
+The applicant does the qualifying: it states how it relies on the tool, runs the kit's test cases on its own installation and configuration, reviews the tool's known bugs for that version, and submits the results. Qualification belongs to a tool's use in one project.
+--- choice
+Coverage tools can never be qualified, because they only report numbers.
+--- choice
+Only the code generator can be qualified, so Simulink Coverage needs no mention in the plan.
+--- why
+A qualification kit supplies documents such as the Tool Operational Requirements and test cases with procedures. It does not qualify anything by itself. The same tool can need TQL-5 on one program and nothing on another where people re-check every result. So the plan states the use and the TQL, and the applicant produces the evidence on its own setup, and repeats part of the work when the tool version or its use changes.
+
++++ question | A generator that is trusted
+--- ask
+A team builds Level C software. Its code generator's output goes straight into the flight software, and the team plans no other check of that code: no code review, no inspection tool and no equivalence tests. What Tool Qualification Level does the code generator need? Type it as written in the table, for example TQL-2.
+--- answer
+TQL-3
+TQL3
+TQL 3
+--- why
+A tool whose output becomes part of the flight software can insert an error, so it is Criteria 1. The team relies on it, because nothing else checks its output. Criteria 1 at Level C gives TQL-3 in the table. That is why most teams leave the generator unqualified and instead verify its output with qualified checkers: tools that can only miss an error sit at Criteria 2 or 3, which means TQL-4 or TQL-5.
+
+=== slk04-l12 | Practice: Real-time targets and HIL
+--- for
+l12-real-time-targets-and-hil
+
++++ question | The unit that will fly
+--- ask
+The flight computer for a new launcher has just been built. The team must show that its software responds correctly when a fin actuator sticks at 8°, without a vehicle. Which setup fits?
+--- choice
+Rapid control prototyping: compile the control law onto a MicroAutoBox and wire it to a real fin actuator.
+--- choice correct
+Hardware-in-the-loop: the real flight computer with its flight software, connected to a real-time target that runs the vehicle and actuator models and injects the stuck fin.
+--- choice
+PIL: the flight processor on an evaluation board, with the stuck fin added to the plant model in Simulink.
+--- choice
+MIL with a stuck-actuator block, since the logic is the same in every stage.
+--- why
+The question is about the unit that will fly, so the controller must be the real flight computer and the vehicle must be simulated around it: that is HIL. RCP runs the control law on a lab computer, so it never touches the flight computer. PIL and MIL can test the fault-management logic, but not the real drivers, timeouts and timing of the response on the real hardware, which a HIL rig adds.
+
++++ question | Load on a 4 kHz plant
+--- ask
+A HIL rig runs a plant model at 4 kHz. Its worst-case task execution time is 0.19 ms. What is the target's load in its worst step, in percent? Type the number.
+--- answer
+76
+76%
+76 %
+76 percent
+0.76
+--- why
+At 4 kHz the period is $1/4000$ s $= 0.25$ ms, and the load is TET divided by period: $0.19 / 0.25 = 0.76$, or 76%. Only 0.06 ms per step is left for I/O and future model upgrades. A lab rule of 80% would allow just 0.01 ms more, so the next model change probably needs a faster target, a second core or a simpler model.
+
++++ question | The rig's own delay
+--- ask
+A HIL plant model runs at 500 Hz, and the flight computer's control loop, with its crossover at 15 rad/s, runs at 100 Hz. The rig itself can add up to one plant step of delay. How much phase can that cost at crossover, in degrees? Give it to one decimal place.
+--- answer
+1.7
+1.7 degrees
+1.7°
+1.72
+1.72 degrees
+1.72°
+--- why
+One plant step at 500 Hz is 2 ms. A delay $\tau$ costs $\omega\tau$ radians: $15 \times 0.002 = 0.03$ rad, and $0.03 \times 180 / \pi \approx 1.7°$. That is small, which is the reason to run the plant several times faster than the controller. Had the plant run at the controller's 100 Hz, the rig could add up to 10 ms, about $8.6°$, and the test would be judging the rig as much as the flight computer.
+
++++ question | A bias below the threshold
+--- ask
+Fault management compares each of three gyros with their median every 10 ms, and declares one failed after it differs by more than 0.3 deg/s on 5 steps in a row. On the rig, a constant bias of 0.2 deg/s is injected into gyro A, the one the control law uses. What happens over the next 60 s?
+--- choice
+Gyro A is declared failed at 50 ms, and the attitude estimate drifts by 0.01°.
+--- choice correct
+Gyro A is never declared failed, because 0.2 deg/s never exceeds the 0.3 deg/s threshold, and the attitude estimate drifts by $0.2 \times 60 = 12°$.
+--- choice
+Gyro A is declared failed after about 1.5 s, when its accumulated error passes 0.3.
+--- choice
+Gyro A is declared failed at once, because the median of the three moves toward it.
+--- why
+The check compares rates, not accumulated angles, and a 0.2 deg/s difference never passes 0.3 deg/s, however long it lasts. Drift is bias times the time it went unnoticed, and here that is the whole run: 12° in a minute. The median stays with the two healthy gyros, so it does not move toward gyro A. The rig has just shown that every bias under the threshold is invisible to this check, and the requirements must say whether some other monitor covers that range.
+
++++ question | A rate that assumes the period
+--- ask
+The flight software estimates the turn rate from two attitude samples:
+
+```c
+rate_dps = (att_deg - att_prev_deg) / 0.010;   /* 100 Hz task */
+```
+
+On the HIL rig the vehicle turns at a true 3.0 deg/s, and one period stretches to 9.8 ms because of jitter. What rate does that sample report, in deg/s? Type the number.
+--- answer
+2.94
+2.94 deg/s
+--- why
+In 9.8 ms the attitude changes by $3.0 \times 0.0098 = 0.0294°$. Dividing by the assumed 0.010 s gives $2.94$ deg/s, a 2% error, because the code divides by the design period instead of the real gap. The fix is to divide by the measured time between the two samples, from a timestamp on the real clock, or to have the hardware sample on a fixed clock so the gap cannot vary. In MIL and SIL every period is exactly 10 ms, so the bug is invisible there.
+
++++ question | When the real part disagrees with the model
+--- ask
+A HIL rig tests the flight software with a simulated inertial unit. For one test campaign, a real inertial unit is mounted on a rate table in the loop. For the same 10 deg/s rotation, the real unit reports +10 deg/s where the simulated one reports −10 deg/s, on the same channel. The flight software passed every earlier test with the simulated unit. What should happen?
+--- choice
+Nothing. The flight software passed all its tests, so the difference does not matter.
+--- choice
+Flip the real unit's sign in the flight software, so it agrees with the simulated one.
+--- choice correct
+Find out which sign is right, from the unit's interface document and the vehicle's axis definitions. If the rig's model is wrong, fix it and review or rerun every test that relied on it. If the flight software is wrong, fix it and rerun those tests too.
+--- choice
+Stop using real hardware in the loop, because it makes results depend on the rig.
+--- why
+Every real part on a rig also checks the rig's own models. Here the model and the hardware disagree, so one of them is wrong, and tests that passed against a wrong model prove nothing about the real unit. Changing the flight software to agree with the model, before knowing which is right, could build the rig's error into the flight code. The interface document and axis conventions settle it, and then everything that leaned on the wrong side gets reviewed and rerun.
+
+=== slk04-test | Verification and Embedded Coder: module test
+--- teach
+The test covers the whole module: MIL, SIL, PIL and HIL; Simulink Test and headless runs; coverage up to MC/DC; requirements and the Model Advisor; Polyspace; the code generators, hardware settings and solver rules; the data interface and entry points; parameters, fixed point and code replacement; traceability and code metrics; SIL, PIL and integration into a C++ program; legacy code and tool qualification; and HIL rigs. Most questions combine two or more lessons, and many ask you to compute a number or find the step that was wrong. To get ready, redo the practice questions of the lessons that felt hard, and work each number out on paper before you answer.
+--- gate
+questions 13
+minutes 25
+
++++ question | A negative product in PIL only
+--- ask
+A fixed-point filter passes MIL and SIL. In PIL on the flight processor, one intermediate reads $-26\,536$ where SIL gave $39\,000$. The generated code multiplies two `int16_t` values into an `int32_t` with no cast. The hardware settings describe a 32-bit `int`. What is the most likely cause, and the right fix?
+--- choice
+A rounding difference from a fused multiply-add; widen the equivalence tolerance.
+--- choice correct
+The target's compiler uses a 16-bit `int`, so the product wraps: $39\,000 - 65\,536 = -26\,536$. Correct the hardware settings to the target's real word sizes, regenerate so the generator adds the cast, and rerun SIL and PIL.
+--- choice
+The model has a bug that MIL missed; fix the model's gain and rerun MIL.
+--- choice
+Edit the generated C by hand to add the cast, and rerun PIL only.
+--- why
+The difference is exactly 65,536, the signature of a 16-bit wrap, and it appears only where the target's arithmetic is used, which is PIL. The generator left out the cast because the hardware settings told it `int` is 32 bits. The fix belongs in the settings, not in the generated file: a hand edit is overwritten by the next build and breaks the traceability between model and code. A difference of $65\,536$ is signal-sized, so it can never be treated as rounding.
+
++++ question | Dropping one test from an MC/DC set
+--- ask
+A Stateflow transition in a mode manager has the guard $(a \lor b) \land c$. These four tests give 100% MC/DC: $(1,0,1)$, $(0,0,1)$, $(0,1,1)$ and $(1,0,0)$, written $(a, b, c)$. To save time, someone deletes the test $(1,0,0)$. Which statement is right for the three tests that remain?
+--- choice
+Nothing changes: the other three tests still show every condition matters.
+--- choice correct
+Decision coverage is still 100%, but $c$ is never false, so condition coverage is incomplete and MC/DC drops to 2 of 3 conditions: nothing now shows that $c$ matters.
+--- choice
+Decision coverage drops to 50%, because the decision is never false.
+--- choice
+MC/DC drops to 2 of 3, but condition coverage is still 100%.
+--- why
+The remaining outcomes are $1$, $0$ and $1$, so the decision is still both true and false. But $c$ is 1 in all three, so it was never false, and condition coverage is 5 of 6 condition outcomes. $c$'s only pair here was $(1,0,1) \to 1$ with $(1,0,0) \to 0$: for $c$ to matter, $a \lor b$ must be 1. Without that test, a bug that dropped $c$ from the guard would pass every remaining test. Full MC/DC shows each condition independently changes the outcome, which is exactly what was lost.
+
++++ question | A difference that starts at a limit
+--- ask
+An equivalence test between Normal mode and SIL fails. The difference is about $10^{-16}$ until $t = 12.3$ s, when the rate limiter first engages; from then on it is about 0.004 on a signal near 5. A relative tolerance of $10^{-3}$ would make the test pass. What should the team do?
+--- choice
+Set the relative tolerance to $10^{-3}$, since 0.004 on 5 is under 0.1%.
+--- choice correct
+Treat it as a defect. The difference starts at a particular event and is far larger than rounding, so find why the rate limiter's generated code behaves differently from the block, for example a data type or an edge case at the limit.
+--- choice
+Treat it as rounding from a fused multiply-add and record a justification.
+--- choice
+Rerun the test in PIL, which is the stage that counts.
+--- why
+Rounding noise stays near a few ulps, about $10^{-16}$ times the signal, and wanders. This difference is many orders of magnitude larger and starts exactly when one block starts acting, which is the pattern of a real mismatch between the block and its code. Tolerances are set from the arithmetic before the test runs, not loosened afterwards to fit a result. PIL would only add the target's arithmetic to a problem that already exists on the host.
+
++++ question | A proof that rests on an old encoder
+--- ask
+Code Prover shows the line `rate = (count * 1000) / dt_ms;` green, using an input constraint `count` in $[0, 65\,535]$ that is traced to the old encoder's interface document. The encoder is being replaced by one whose counter reaches $4\,000\,000$ in a window. What must happen?
+--- choice
+Nothing. The line was proven green, and a proof does not expire.
+--- choice correct
+Review the constraint against the new interface document and rerun Code Prover. With `count` up to $4\,000\,000$, the product reaches $4 \times 10^9$, above the `int32_t` limit, so the check turns orange, and the code must change, for example by computing in a wider type.
+--- choice
+Widen the constraint to $[0, 4\,000\,000]$ and sign off the green result that is already in the report.
+--- choice
+Remove the constraint, since constraints only hide problems.
+--- why
+A green result under a constraint means "safe, provided this promise holds". The new encoder breaks the promise, so the old proof no longer applies, which is the Ariane 501 lesson: a range assumption reused on a new vehicle. The largest product is $4\,000\,000 \times 1000 = 4 \times 10^9$, above 2,147,483,647, so this is a real overflow for large counts, not an over-approximation. Tracing each constraint to a document is what flags it for review when the hardware changes.
+
++++ question | A link error from C++
+--- ask
+A C++ flight application includes a generated header, `pid.h`, that has no `extern "C"` guard. It compiles, but linking fails with:
+
+```text
+main.cpp:(.text+0x1f): undefined reference to `pid_step()'
+```
+
+`pid.c` was compiled with a C compiler and does define `pid_step`. What is the cause, and the fix?
+--- choice
+`pid_step` has the wrong storage class; make it ImportedExtern.
+--- choice
+The C file must be recompiled with a C++ compiler, because the two languages cannot be linked.
+--- choice correct
+The C++ compiler mangled the name of `pid_step` to include its argument types, so the linker looks for a name the C file never made. Put the `#include "pid.h"` line inside an `extern "C" { ... }` block, or add the guard to the header.
+--- choice
+`pid_initialize()` was not called before `pid_step()`, so the linker cannot find it.
+--- why
+C++ allows two functions with the same name and different arguments, so it encodes the argument types into each name in the object file. A C compiler does not. The `()` in the error message shows that the linker wanted the C++ form of the name. `extern "C"` tells the C++ compiler to use the plain C name, which is what the guard in Embedded Coder's headers does. The order of calls at run time has nothing to do with linking.
+
++++ question | Wrapping an unsigned sum
+--- ask
+Two values in `fixdt(0,16,8)`, an unsigned 16-bit type with 8 fraction bits, are added with wrapping on overflow: $230.0 + 60.0$. What real value does the result hold? Type the number.
+--- answer
+34
+34.0
+--- why
+The stored integers are $230 \times 256 = 58\,880$ and $60 \times 256 = 15\,360$, which sum to $74\,240$. An unsigned 16-bit integer holds at most 65,535, so wrapping subtracts 65,536: $74\,240 - 65\,536 = 8704$, which means $8704 / 256 = 34.0$. The range of this type is 0 to about 255.996, so 290 cannot be held at all. Saturation would give about 255.996, wrong but on the right side; wrapping gives 34, silently.
+
++++ question | Tuning on the rig
+--- ask
+On the HIL rig, the team wants to adjust the pitch-rate gain `Kq` through external mode. Tracing the block to its generated line shows `/* Gain: '<S2>/Kq' */` above `rtb_u = 0.35 * rtb_q;`. The model's Default parameter behavior is Inlined, and `Kq` has storage class Auto. What must change for external mode to reach `Kq`?
+--- choice
+Nothing; external mode rewrites the literal 0.35 in the running code.
+--- choice correct
+Give `Kq` a storage class other than Auto, on its Simulink.Parameter object or in the Code Mappings editor, then regenerate and rebuild. Its value then lives in a variable at a known address that external mode can write.
+--- choice
+Switch the model to `grt.tlc`, because only Simulink Coder supports external mode.
+--- choice
+Turn on Show eliminated blocks, so the gain is kept in the code.
+--- why
+A literal has no address: it is part of the instructions, and the compiler may have folded it into other constants. External mode and calibration tools can only change parameters that live in memory. With the default Inlined, a non-Auto storage class on one parameter keeps just that one tunable, which costs a few bytes of RAM and gives up folding for it. The traceability comment is how you found out before the test day was lost.
+
++++ question | Skipping HIL after a good prototype
+--- ask
+A new thrust-vector control law ran perfectly on a MicroAutoBox wired to the real gimbal actuator (rapid control prototyping). The same law then passed MIL, SIL and PIL. A manager proposes skipping HIL for this law. What is the strongest reason not to?
+--- choice
+RCP already tested the flight computer, so HIL would only repeat it.
+--- choice correct
+Neither RCP nor PIL ran the real flight computer with its scheduler, drivers, real interfaces and other tasks in real time. RCP used a lab computer, and PIL took turns over a test link. Only HIL shows interface delays, jitter, load, driver bugs and the response to injected faults.
+--- choice
+HIL is the only stage where the control law's arithmetic is checked.
+--- choice
+HIL is needed because the plant model in MIL was wrong.
+--- why
+RCP proves the control law against real hardware, on a powerful lab computer. PIL proves the code's arithmetic and gives first step times on the flight chip, without real time. The shipped unit, running its real software through real connectors with every task competing, is only exercised on a HIL rig. That is where timing, electrical and driver defects, and the timing of fault responses, can finally appear.
+
++++ question | A utilization budget
+--- ask
+A PIL run on the flight processor gives these maximum step times: 0.28 ms for a 1 kHz task and 4.5 ms for a 50 Hz task. The program allows the control software at most 60% of the processor. What share does it use, in percent? Type the number.
+--- answer
+50.5
+50.5%
+50.5 %
+50.5 percent
+--- why
+At 1 kHz the period is 1 ms, so the fast task uses $0.28 / 1 = 28\%$. At 50 Hz the period is 20 ms, so the slow task uses $4.5 / 20 = 22.5\%$. Together that is $50.5\%$, within the 60% limit with 9.5 points to spare. The budget uses maximums, because deadlines are missed by the slowest step, and PIL maximums are still only a first estimate before the flight computer runs under full load.
+
++++ question | A prover's result used to drop tests
+--- ask
+A team building Level C software uses Polyspace Code Prover's "no run-time errors proven" results to drop some of its robustness tests. What Tool Qualification Level does that use of Code Prover need? Type it as written in the table, for example TQL-2.
+--- answer
+TQL-5
+TQL5
+TQL 5
+--- why
+Code Prover cannot put an error into the flight code, but it could fail to detect one, and here its output is used to drop other verification work, the robustness tests. That is Criteria 2. In the table, Criteria 2 gives TQL-4 at Levels A and B and TQL-5 at Levels C and D, so at Level C it is TQL-5. If the team took no credit from the tool and re-checked everything by hand, no qualification would be needed at all.
+
++++ question | Red in one report, gray in another
+--- ask
+A controller's coverage report shows the true branch of `if (mode == 7)` never covered. Code Prover, run on the generated code, marks the statement inside that branch gray. Upstream, `mode` is clamped to the range 0 to 3. What is the right conclusion?
+--- choice
+A missing test: add a test that sets `mode` to 7.
+--- choice correct
+Dead logic. Both tools say the branch cannot be reached, and the clamp is the reason. Find out why the branch exists: remove it if it is a leftover, or, if mode 7 is a real mode, fix the clamp that is blocking it.
+--- choice
+Code Prover is wrong, because gray is a tool error, so trust the coverage report instead.
+--- choice
+Record a justification that the branch "never happens" and move on.
+--- why
+Coverage says no test reached the branch; gray says no input can. Together, with the clamp explaining why, that is dead logic, and no test can reach it without changing the design. Dead logic is a question about the design: either leftover code that must go, or a sign that something upstream is removing a capability. A justification is only for outcomes unreachable for a good reason, and its rationale must name the mechanism, not "never happens".
+
++++ question | A baseline that cannot see a new requirement
+--- ask
+Requirement PC-2 changes from "overshoot at most 10%" to "overshoot at most 4%". The only test linked to PC-2 is a baseline test against last year's accepted run, and it still passes after the change. The loop overshoots by 4.6%. What is wrong?
+--- choice
+Nothing. The test passes, so PC-2 is still verified.
+--- choice correct
+A baseline test compares the run with an earlier accepted run, not with the requirement, so it passes as long as nothing changed, including the 4.6% overshoot that now breaks PC-2. The Verifies link was flagged by the change, and the test needs an assessment that checks overshoot against 4%.
+--- choice
+The baseline should be re-captured today so it includes the new requirement.
+--- choice
+Baseline tests cannot be linked to requirements with Verifies links.
+--- why
+A baseline records what the model did, not what it should do. When a requirement tightens, a baseline keeps passing on the old behavior. Change tracking flags the Verifies link exactly so someone checks that the test still checks the requirement. Here it does not, so it needs an assessment such as a `verify` on the peak, which fails at 4.6%, and then the design must be retuned. Re-capturing the baseline would only preserve the same 4.6%.
+
++++ question | A green nightly build
+--- ask
+A nightly CI log for a controller model reads:
+
+```text
+Model Advisor (MAB and DO-178C checks): 214 passed, 0 failed
+Simulink Test: 0 passed, 0 failed
+```
+
+The job is green. What does tonight's run show about the controller's behavior?
+--- choice
+That it meets its requirements, because every Model Advisor check passed.
+--- choice
+That it behaves correctly, because no test failed.
+--- choice correct
+Nothing. The Model Advisor checks how the model is built, not whether it behaves correctly, and zero tests ran. The job should also fail when the number of tests run is lower than expected.
+--- choice
+That it is ready for code generation and flight, because both tools report no failures.
+--- why
+Model Advisor checks naming, layout, block use and modeling practices that safety standards rely on: whether the model is built so it can be trusted and reviewed. It never runs the model against its requirements. Tests do, and none ran, perhaps because of a wrong file or disabled tests. A failure count of zero out of zero looks like success, which is why the script should also check the total against the expected count.
+
++++ question | A value read with the wrong byte order
+--- ask
+A big-endian flight computer copies a `uint16_t` value of `0x1234` into a bus message with `memcpy`. On the HIL rig, the little-endian simulator reads those two bytes back as a `uint16_t`, again with `memcpy`. What value does the simulator read, in decimal? Type the number.
+--- answer
+13330
+13,330
+0x3412
+--- why
+The big-endian machine stores the most significant byte first, so the bytes on the bus are `12` then `34`. The little-endian machine treats the first byte as the least significant, so it reads `0x3412`, which is $3 \times 4096 + 4 \times 256 + 1 \times 16 + 2 = 13\,330$ instead of 4660. This is why a message's byte order belongs in the interface document and bytes are packed explicitly by shifting, rather than by copying raw memory. A HIL rig is where two real machines first exchange such messages.
+
++++ question | A replacement library, two results
+--- ask
+After selecting a code replacement library for the Cortex-M4 target, the Normal-versus-SIL equivalence test still matches bit for bit, but Normal versus PIL shows differences: a few ulps in square-root outputs, and one saturating multiply-accumulate that sticks at its limit where the model wrapped. Which statement is right?
+--- choice
+PIL must be misconfigured, because SIL ran the same generated code and matched.
+--- choice correct
+SIL on the host may not have used the real intrinsics at all, so PIL is the test that counts. The ulp differences in square roots are rounding and can be accepted with a stated tolerance, but the saturation is a behavior change that must be resolved, for example by making the model saturate too or choosing a different replacement.
+--- choice
+Both differences are rounding, so a relative tolerance of $10^{-3}$ covers them.
+--- choice
+Remove the code replacement library, since replacements can never be verified.
+--- why
+A code replacement library swaps the portable C for vendor functions and intrinsics, and a host build may use a stand-in that behaves like plain C. The replacement is only really exercised on the target. There, a few ulps in a square root is the vendor's rounding, while a value that saturates where the model wrapped is a different answer, sometimes by the whole range of the type. The Code Replacements Report shows which block each replacement came from, which tells you where to look.
+
++++ question | Initialize inside the loop
+--- ask
+The lesson's nonreusable `rate_pi` controller outputs $0.5 e + I$ and then adds $0.2 \times 0.01 \times e$ to its integrator $I$, which `rate_pi_initialize()` sets to 0. A teammate's scheduler does this every 10 ms, with a constant error of 2.0:
+
+```c
+rate_pi_initialize();
+rate_pi_U.err = 2.0;
+rate_pi_step();
+send(rate_pi_Y.cmd);
+```
+
+What command does the third tick send? Type the number.
+--- answer
+1
+1.0
+1.0000
+--- why
+Every tick starts by resetting the integrator to 0, so every step computes $0.5 \times 2.0 + 0 = 1.0$ and then adds 0.004 to an integrator that the next initialize wipes out. Correctly integrated, the third step would output 1.008 and keep climbing. The PI controller has become a pure P controller that can never remove a steady error. A RAII wrapper that calls `initialize` only in its constructor, outside the loop, makes this mistake impossible to write.

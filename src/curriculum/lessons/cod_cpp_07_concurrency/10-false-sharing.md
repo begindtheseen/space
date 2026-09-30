@@ -61,7 +61,7 @@ The word "false" is there to set it apart from **true sharing**, where two threa
 Here are two counters, each bumped by its own thread 100 million times. The only difference between the two structs is where the second counter sits. `alignas(64)` (read "align as 64") tells the compiler to start that member at an address that is a multiple of 64, which puts it at the start of a fresh cache line.
 
 ::: example Two counters, one line or two
-```cpp
+```cpp laptop
 #include <atomic>
 #include <chrono>
 #include <cstdio>
@@ -240,7 +240,7 @@ The trick that makes padding pay is to read the other side's index **rarely**. E
 ::: example Padding a ring buffer that caches the other index
 `Pad` is a template parameter so one program can build both layouts. With `Pad = 8` every field is packed into the first line; with `Pad = 64` the producer's fields, the consumer's fields and the data each start on their own line.
 
-```cpp
+```cpp laptop
 #include <array>
 #include <atomic>
 #include <chrono>

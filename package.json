@@ -2,7 +2,7 @@
   "name": "orbit-gnc",
   "productName": "ORBIT",
   "private": true,
-  "version": "1.1.14",
+  "version": "1.2.0",
   "type": "module",
   "description": "A local-first curriculum platform that takes a complete beginner to guidance, navigation and control engineering readiness.",
   "author": "begindtheseen",
@@ -56,6 +56,7 @@
     "playwright": "^1.63.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "sql.js": "1.14.2",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vitest": "^4.1.11"

@@ -1,0 +1,3157 @@
+@track git
+@course mod-cod_git_01_basics
+@module cod_git_01_basics
+@title Git basics: practice and test
+
+=== git01-l01 | Practice: Snapshots, objects and the commit graph
+--- for
+l01-snapshots-and-the-object-model
+
++++ practice | Two snapshots for the tracker
+--- task
+A ground-station tracker lives in `~/project`: a station list, `stations.csv`, and a pass predictor, `predict.py`. Nothing is saved yet. Turn the folder into a repository and record two snapshots, one file at a time.
+
+1. Make `~/project` a repository.
+2. For this repository only (no `--global`), set the name `Leo Park` and the email `leo@example.com`.
+3. Commit `stations.csv` on its own, with the message `Add ground station list`.
+4. Then commit `predict.py`, with the message `Add pass predictor`.
+
+The first snapshot must hold only the station list. The second holds both files.
+--- starter
+printf 'id,name\nKRU,Kourou\nSVB,Svalbard\n' > stations.csv
+printf 'STATIONS = "stations.csv"\nMIN_ELEVATION_DEG = 10\n' > predict.py
+--- solution
+git init
+git config user.name "Leo Park"
+git config user.email "leo@example.com"
+git add stations.csv
+git commit -m "Add ground station list"
+git add predict.py
+git commit -m "Add pass predictor"
+--- hint
+`git init` makes the repository, and `git config user.name "…"` (with no `--global`) sets the name for this one repository. The email works the same way.
+--- hint
+Name one file after `git add`, so only that file goes into the next commit. Then commit, add the second file, and commit again.
+--- check shell | A repository with two commits
+git . repo
+git . commits == 2
+--- check shell | Both commits carry Leo's name, and the email is set
+git . at HEAD author == Leo Park
+git . at HEAD~1 author == Leo Park
+used user.email
+--- check shell | The first snapshot holds only the station list
+git . at HEAD~1 message == Add ground station list
+git . at HEAD~1 file stations.csv contains SVB,Svalbard
+git . at HEAD~1 missing predict.py
+--- check shell | The second snapshot holds both files
+git . at HEAD message == Add pass predictor
+git . at HEAD file stations.csv contains KRU,Kourou
+git . at HEAD file predict.py contains MIN_ELEVATION_DEG = 10
+
++++ practice | Rename without touching the contents
+--- task
+The team wants `gravity.py` renamed to `earth_gravity.py`, because a Mars model is coming. The file's two lines must stay exactly as they are.
+
+Rename the file with `mv`, stage the change, and commit it with the message `Rename gravity module to earth_gravity`.
+
+- In the new snapshot, `earth_gravity.py` holds the same two lines, and `gravity.py` is gone.
+- The first commit must still hold `gravity.py`: an old snapshot never changes.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\nG0 = 9.80665\n' > gravity.py
+printf '# orbit-sim\n' > README.md
+git add gravity.py README.md
+git commit -m "Add point-mass gravity model"
+--- solution
+mv gravity.py earth_gravity.py
+git add gravity.py earth_gravity.py
+git commit -m "Rename gravity module to earth_gravity"
+--- hint
+After the `mv`, the next snapshot must record two facts: `earth_gravity.py` exists, and `gravity.py` does not.
+--- hint
+`git add` records a file as it is now, and "gone" counts. Give `git add` both names, the old one and the new one, before you commit.
+--- check shell | The new snapshot has the new name, with the same two lines
+git . commits == 2
+git . at HEAD message == Rename gravity module to earth_gravity
+git . at HEAD file earth_gravity.py contains MU_EARTH = 3.986004418e14
+git . at HEAD file earth_gravity.py contains G0 = 9.80665
+--- check shell | The old name is gone from the new snapshot
+git . at HEAD missing gravity.py
+?? If gravity.py is still in the latest commit, the deletion was never staged. Run git add on the old name too.
+--- check shell | The first snapshot still has the old name
+git . at HEAD~1 file gravity.py
+git . at HEAD~1 missing earth_gravity.py
+--- check shell | Not one byte changed, and nothing is left staged
+file earth_gravity.py ~= MU_EARTH = 3.986004418e14\nG0 = 9.80665
+missing gravity.py
+git . clean
+
++++ practice | A deep folder, and an empty one
+--- task
+orbit-sim is getting a `models` folder. Make the next commit hold these two things:
+
+- the file `models/atmosphere/density.py`, whose one line is `RHO0 = 1.225`;
+- the folder `models/gravity/`, which has no code yet.
+
+A tree is a list of the files and folders inside it, so Git has no way to store a folder with nothing in it. The usual answer is an empty file named `.keep` inside the folder: then the folder has one entry, and its tree can be written.
+
+Stage everything with one `git add models`, and commit with the message `Add models folder with atmosphere density`.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Add README"
+--- solution
+mkdir -p models/atmosphere models/gravity
+echo "RHO0 = 1.225" > models/atmosphere/density.py
+touch models/gravity/.keep
+git add models
+git commit -m "Add models folder with atmosphere density"
+--- hint
+`mkdir -p` makes a folder and every folder above it that is missing, in one command. `touch` makes an empty file.
+--- hint
+An empty folder gives `git add` nothing to record. Once `models/gravity/.keep` exists, `git add models` picks the folder up.
+--- check shell | The density file is in the new snapshot, two folders down
+git . commits == 2
+git . at HEAD message == Add models folder with atmosphere density
+git . at HEAD file models/atmosphere/density.py == RHO0 = 1.225
+--- check shell | The empty folder made it in, through .keep
+git . at HEAD file models/gravity/.keep
+?? An empty folder never reaches a commit. Put an empty file named .keep inside models/gravity.
+--- check shell | The README came along unchanged, and the first snapshot is untouched
+git . at HEAD file README.md == # orbit-sim
+git . at HEAD~1 missing models/atmosphere/density.py
+
++++ practice | The commit that left its test behind
+--- task
+Ravi wrote a drag model and its test, then typed `git add drag.py` and `git commit -m "Add drag model and its test"`. The message promises a test, but the snapshot has only `drag.py`. The test file is still in the folder, untracked.
+
+A commit can never be edited: its name is a fingerprint of everything in it. So fix it forward. Make a new commit that adds `tests/test_drag.py`, with the message `Add the drag test left out of the last commit`.
+
+- The new snapshot holds both files.
+- Ravi's commit stays exactly as it is.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf 'def drag_accel(rho, v, cd, area, mass):\n    return 0.5 * rho * v**2 * cd * area / mass\n' > drag.py
+mkdir tests
+printf 'from drag import drag_accel\n' > tests/test_drag.py
+git add drag.py
+git commit -m "Add drag model and its test"
+--- solution
+git add tests/test_drag.py
+git commit -m "Add the drag test left out of the last commit"
+--- hint
+A commit holds only what was added before it. `ls tests` shows the test is still in the folder, waiting.
+--- hint
+Stage the test file by its path (or the whole `tests` folder), then commit with the new message.
+--- check shell | A second commit, with the right message
+git . commits == 2
+git . at HEAD message == Add the drag test left out of the last commit
+--- check shell | The newest snapshot has the model and the test
+git . at HEAD file tests/test_drag.py contains from drag import drag_accel
+git . at HEAD file drag.py contains def drag_accel
+git . clean
+--- check shell | Ravi's snapshot is unchanged
+git . at HEAD~1 message == Add drag model and its test
+git . at HEAD~1 missing tests/test_drag.py
+
++++ question | One file copied
+--- ask
+orbit-sim's newest commit holds `README.md`, `gravity.py` and `tests/test_gravity.py`. You copy `gravity.py` to `gravity_backup.py` without changing a byte, run `git add gravity_backup.py`, and commit.
+
+How many **new blob** objects does that commit write into `.git/objects`? Type the number.
+--- answer
+0
+zero
+none
+no new blobs
+no new blob
+0 blobs
+0 new blobs
+--- why
+None. A blob is named by the hash of its contents alone, and those exact contents are already stored as `gravity.py`'s blob. Git finds the same hash and reuses the object. The commit still writes two objects: a new root tree, whose list now has a fourth entry, `gravity_backup.py`, pointing at the old blob, and the new commit. The file name lives in the tree, never in the blob.
+
++++ question | One line in a test, three levels of objects
+--- ask
+orbit-sim's newest commit holds `README.md`, `gravity.py` and `tests/test_gravity.py`. You change one line in `tests/test_gravity.py` and commit. Which objects does the new commit write?
+--- choice
+Only a new blob for the test file. The trees are reused, because no file was added, removed or renamed.
+--- choice correct
+A new blob for the test file, a new tree for `tests`, a new root tree and the new commit.
+--- choice
+A new blob, a new tree for `tests` and the new commit. The root tree is reused, because `README.md` and `gravity.py` did not change.
+--- choice
+New blobs for all three files, new trees and a new commit, because every commit is a complete snapshot.
+--- why
+The changed file gets a new blob. The `tests` tree lists that blob's hash, so its text changes and it gets a new hash too. The root tree lists the `tests` tree's hash, so it changes as well. That is 4 new objects, counting the commit. `README.md` and `gravity.py` are reused: the new root tree points at their old blobs. A complete snapshot does not mean stored again, and a change always climbs every tree on its way up to the root.
+
+=== git01-l02 | Practice: The three areas and your first commits
+--- for
+l02-the-three-areas-and-your-first-commit
+
++++ practice | Two of three files
+--- task
+Three files in orbit-sim are modified. Two of them, `gravity.py` and `drag.py`, now use the WGS 84 value of mu. The third, `README.md`, holds a draft note you are not ready to share.
+
+Make one commit with the changes to `gravity.py` and `drag.py`, and nothing else. Use the message `Use the WGS 84 value of mu in both models`.
+
+Afterwards, `README.md` must still be modified in your folder, and not staged.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986e14\n' > gravity.py
+printf 'MU_EARTH = 3.986e14\nRHO0 = 1.225\n' > drag.py
+printf '# orbit-sim\n' > README.md
+git add gravity.py drag.py README.md
+git commit -m "Add gravity and drag models"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+printf 'MU_EARTH = 3.986004418e14\nRHO0 = 1.225\n' > drag.py
+printf '# orbit-sim\n\nDraft: notes on units\n' > README.md
+--- solution
+git status -s
+git add gravity.py drag.py
+git diff --staged --stat
+git commit -m "Use the WGS 84 value of mu in both models"
+--- hint
+`git status -s` lists all three files with ` M`: modified, nothing staged yet.
+--- hint
+Give `git add` only the two model files. Then `git diff --staged` shows exactly what the commit will hold.
+--- check shell | One new commit, with the message
+git . commits == 2
+git . at HEAD message == Use the WGS 84 value of mu in both models
+--- check shell | Both models are in it with the new value
+git . at HEAD file gravity.py == MU_EARTH = 3.986004418e14
+git . at HEAD file drag.py contains MU_EARTH = 3.986004418e14
+--- check shell | The README draft stayed out, and is still in your folder
+git . at HEAD file README.md excludes Draft
+git . modified README.md
+git . clean
+file README.md contains Draft: notes on units
+
++++ practice | The staged version goes first
+--- task
+You added an `orbital_period` function to `gravity.py` and ran `git add gravity.py`. Then you added one more line to the same file: `PERIOD_UNITS = "s"`. `git status -s` shows `MM gravity.py`.
+
+Record them as two commits, in this order:
+
+1. `Add orbital period helper`: the function, **without** the `PERIOD_UNITS` line.
+2. `Record the unit of orbital periods`: the `PERIOD_UNITS` line.
+
+Do not edit the file. Everything you need is already in the index and the working tree.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add Earth's gravitational parameter"
+printf 'def orbital_period(a):\n    return 6.283185307 * (a**3 / MU_EARTH) ** 0.5\n' >> gravity.py
+git add gravity.py
+printf 'PERIOD_UNITS = "s"\n' >> gravity.py
+--- solution
+git diff --staged
+git commit -m "Add orbital period helper"
+git add gravity.py
+git commit -m "Record the unit of orbital periods"
+--- hint
+`git diff --staged` shows what the next commit holds right now: the version you added, before the `PERIOD_UNITS` line.
+--- hint
+A plain `git commit` records the index as it is. Commit first, and only then `git add` the file again for the second commit.
+--- check shell | Two new commits, in order
+git . commits == 3
+git . at HEAD~1 message == Add orbital period helper
+git . at HEAD message == Record the unit of orbital periods
+--- check shell | The first holds the function but not the unit line
+git . at HEAD~1 file gravity.py contains def orbital_period(a):
+git . at HEAD~1 file gravity.py excludes PERIOD_UNITS
+?? If the first commit already has PERIOD_UNITS, you ran git add before committing, which replaced the staged version.
+--- check shell | The second holds the unit line, and nothing is left behind
+git . at HEAD file gravity.py contains PERIOD_UNITS = "s"
+git . at HEAD file gravity.py contains def orbital_period(a):
+git . clean
+file gravity.py contains PERIOD_UNITS
+
++++ practice | Work in a clone
+--- task
+The shared copy of orbit-sim is in `~/orbit-sim`, and you are in your home folder. Never experiment in the shared copy: work in a clone.
+
+1. Clone `~/orbit-sim` into `~/orbit-work`.
+2. In the clone, create `tests/test_gravity.py` with the one line `from gravity import accel`.
+3. Commit it in the clone, with the message `Add a test for accel`.
+
+The shared copy must still have exactly one commit and no `tests` folder.
+--- starter
+mkdir ~/orbit-sim
+cd ~/orbit-sim
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\n\n\ndef accel(r):\n    return MU_EARTH / r**2\n' > gravity.py
+git add gravity.py
+git commit -m "Add point-mass gravity model"
+cd ~
+--- solution
+git clone ~/orbit-sim ~/orbit-work
+cd ~/orbit-work
+mkdir tests
+echo "from gravity import accel" > tests/test_gravity.py
+git add tests
+git commit -m "Add a test for accel"
+--- hint
+`git clone <source> <new folder>` copies the whole repository, history and all. Then `cd` into the new folder before you change anything.
+--- hint
+In the clone: `mkdir tests`, write the line with `echo "…" > tests/test_gravity.py`, then `git add tests` and commit.
+--- check shell | The clone has the shared history plus your commit
+git ~/orbit-work repo
+git ~/orbit-work commits == 2
+git ~/orbit-work at HEAD~1 message == Add point-mass gravity model
+--- check shell | Your commit holds the test
+git ~/orbit-work at HEAD message == Add a test for accel
+git ~/orbit-work at HEAD file tests/test_gravity.py == from gravity import accel
+git ~/orbit-work at HEAD file gravity.py contains def accel(r):
+--- check shell | The shared copy is untouched
+git ~/orbit-sim commits == 1
+git ~/orbit-sim at HEAD missing tests/test_gravity.py
+missing ~/orbit-sim/tests
+
++++ practice | What commit -a would leave out
+--- task
+You have been working on a drag model. `git status -s` shows four things:
+
+- `gravity.py`, modified: it now imports the drag model;
+- `drag.py`, new;
+- `tests/test_drag.py`, new;
+- `gravity.py.bak`, a backup copy your editor left behind.
+
+Make **one** commit, with the message `Add drag model with its test`, holding the `gravity.py` change, `drag.py` and `tests/test_drag.py`. The backup must not go in; leave it untracked.
+
+`git commit -a` alone would miss the two new files, and `git add .` would sweep in the backup.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity model"
+cp gravity.py gravity.py.bak
+printf 'from drag import drag_accel\nMU_EARTH = 3.986004418e14\n' > gravity.py
+printf 'def drag_accel(rho, v, cd, area, mass):\n    return 0.5 * rho * v**2 * cd * area / mass\n' > drag.py
+mkdir tests
+printf 'from drag import drag_accel\n' > tests/test_drag.py
+--- solution
+git status -s
+git add gravity.py drag.py tests
+git status -s
+git commit -m "Add drag model with its test"
+--- hint
+`git status -s` shows ` M` for the changed file and `??` for the three untracked ones. Only two of the `??` lines belong in this commit.
+--- hint
+Name what goes in: `git add gravity.py drag.py tests`. Check `git status -s` again before you commit: the backup should still show `??`.
+--- check shell | One commit, with the message
+git . commits == 2
+git . at HEAD message == Add drag model with its test
+--- check shell | The change and both new files are in it
+git . at HEAD file gravity.py contains from drag import drag_accel
+git . at HEAD file drag.py contains def drag_accel
+git . at HEAD file tests/test_drag.py
+--- check shell | The backup stayed out, untracked
+git . at HEAD missing gravity.py.bak
+git . untracked gravity.py.bak
+git . clean
+
++++ practice | git add . caught too much
+--- task
+A teammate created `drag.py` and then ran `git add .`, which also staged a simulation output, `out/run_0001.csv`, and a log, `sim.log`. Nothing is committed yet.
+
+Make the next commit hold `drag.py` only, with the message `Add drag model`. The output and the log must stay on disk, untracked.
+
+Read `git status` first: for a new file that is staged, it tells you the command that unstages it.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Add README"
+printf 'RHO0 = 1.225\nH_SCALE = 8500.0\n' > drag.py
+mkdir out
+printf 't,alt\n0,550000\n' > out/run_0001.csv
+printf 'step 1 ok\n' > sim.log
+git add .
+--- solution
+git status
+git rm --cached out/run_0001.csv sim.log
+git status -s
+git commit -m "Add drag model"
+--- hint
+`git status` lists all three files under "Changes to be committed", with the hint `git rm --cached <file>...` to unstage.
+--- hint
+`git rm --cached` takes a file out of the index only; the file on disk is not touched. Give it both unwanted paths, then commit.
+--- check shell | One commit, with drag.py
+git . commits == 2
+git . at HEAD message == Add drag model
+git . at HEAD file drag.py contains H_SCALE = 8500.0
+--- check shell | The output and the log are not in the commit
+git . at HEAD missing out/run_0001.csv
+git . at HEAD missing sim.log
+--- check shell | Both are still on disk, untracked
+file out/run_0001.csv
+file sim.log
+git . untracked out/run_0001.csv
+git . untracked sim.log
+
++++ question | Two letters: AM
+--- ask
+`git status -s` prints `AM tests/test_drag.py`. What does that mean, and what would `git commit` record for this file right now?
+--- choice correct
+The file is new and staged, and it was edited again after `git add`. The commit records it as it was at the `git add`.
+--- choice
+The file is new and staged. The commit records its current contents, because a commit reads the files on disk.
+--- choice
+The file was added on two branches and merged. The commit records both versions.
+--- choice
+The file is untracked but modified. The commit leaves it out until you run `git add`.
+--- why
+The left letter compares the index with the last commit: `A` means the index holds a file the last commit does not have, so it is new and staged. The right letter compares the working tree with the index: `M` means the file on disk has changed since it was staged. `git commit` builds its snapshot from the index, so it records the version from the moment of `git add`, and the newer edit stays behind in the working tree until you add the file again.
+
+=== git01-l03 | Practice: Reading history and writing good commit messages
+--- for
+l03-reading-history-and-writing-messages
+
++++ practice | Who set the step size?
+--- task
+In `integrator.py`, the line `STEP_S = 10.0` sets the integrator's time step. Find out who last changed that line, and in which commit.
+
+1. Run `git blame integrator.py` to find the commit and author of the `STEP_S` line.
+2. Run `git show` on that commit's hash to read its message.
+3. Write two lines into a new file `step_owner.txt`: the author's name, then the commit's subject line (the first line of its message). For example:
+
+```
+Ada Lovelace
+Add a thing
+```
+
+Do not commit `step_owner.txt`.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'STEP_S = 60.0\nT_END_S = 5400.0\n' > integrator.py
+git add integrator.py
+git commit -m "Add fixed-step integrator settings"
+git config user.name "Ravi Patel"
+printf 'STEP_S = 60.0\nT_END_S = 86400.0\n' > integrator.py
+git commit -am "Propagate for a full day"
+git config user.name "Leo Park"
+printf 'STEP_S = 10.0\nT_END_S = 86400.0\n' > integrator.py
+git commit -am "Shrink integrator step to 10 s for drag runs"
+git config user.name "Maya Chen"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Add README"
+--- solution
+git blame integrator.py
+git show HEAD~1
+printf 'Leo Park\nShrink integrator step to 10 s for drag runs\n' > step_owner.txt
+--- hint
+Each line of `git blame` starts with a short hash and an author. Find the line that reads `STEP_S = 10.0`.
+--- hint
+`git show <hash>` prints that commit's author and message. Write both lines with `printf 'name\nsubject\n' > step_owner.txt`.
+--- check shell | step_owner.txt names the author and the subject
+file step_owner.txt ~= Leo Park\nShrink integrator step to 10 s for drag runs
+--- check shell | You used blame, and read the commit's message
+ran git blame
+printed Shrink integrator step to 10 s for drag runs
+--- check shell | Nothing was committed
+git . commits == 4
+git . untracked step_owner.txt
+
++++ practice | Put back the old tolerance
+--- task
+Two commits ago, someone changed the surface-gravity test's tolerance from `0.05` to `0.001`, and the test has failed ever since. A README commit came after it.
+
+Make `tests/test_gravity.py` exactly as it was in the commit **before** the tolerance change, which is `HEAD~2`, and commit it with the message `Restore the 0.05 tolerance in the surface test`.
+
+- Get the old file from Git with `git show`. Do not retype it.
+- The README commit must stay in history.
+--- starter
+git init
+git config user.name "Maya Chen"
+mkdir tests
+printf 'from gravity import G0, accel\n\n\ndef test_surface_gravity():\n    assert abs(accel(6.371e6) - G0) < 0.05\n' > tests/test_gravity.py
+git add tests
+git commit -m "Add surface gravity test"
+git config user.name "Ravi Patel"
+printf 'from gravity import G0, accel\n\n\ndef test_surface_gravity():\n    assert abs(accel(6.371e6) - G0) < 0.001\n' > tests/test_gravity.py
+git commit -am "Tighten surface gravity tolerance"
+printf '# orbit-sim\n\nRun the tests with pytest.\n' > README.md
+git add README.md
+git commit -m "Explain how to run the tests"
+--- solution
+git show HEAD~2:tests/test_gravity.py
+git show HEAD~2:tests/test_gravity.py > tests/test_gravity.py
+git diff
+git commit -am "Restore the 0.05 tolerance in the surface test"
+--- hint
+`git show <commit>:<path>` prints a file as it was in that commit. Try it first, and read what it prints.
+--- hint
+Send that output into the file with `>`, check with `git diff`, then commit the change.
+--- check shell | One new commit, with the message
+git . commits == 4
+git . at HEAD message == Restore the 0.05 tolerance in the surface test
+--- check shell | The test has its old tolerance back
+git . at HEAD file tests/test_gravity.py contains < 0.05
+git . at HEAD file tests/test_gravity.py excludes 0.001
+git . at HEAD file tests/test_gravity.py contains def test_surface_gravity():
+--- check shell | The README commit is still in history
+git . at HEAD file README.md contains pytest
+git . at HEAD~1 message == Explain how to run the tests
+git . clean
+
++++ practice | Blame past the reformat
+--- task
+`integrator.py` sets `STEP_S = 10.0`. You want to ask the person who **chose** 10 seconds why they did. But the last commit reformatted the whole file, adding spaces around every `=`, so `git blame integrator.py` names that commit on every line.
+
+Find the author who changed the step to 10, and write only their name into `chooser.txt`. Do not commit anything.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'STEP_S=60.0\nT_END_S=86400.0\n' > integrator.py
+git add integrator.py
+git commit -m "Add integrator settings"
+git config user.name "Ravi Patel"
+printf 'STEP_S=10.0\nT_END_S=86400.0\n' > integrator.py
+git commit -am "Shrink the step to 10 s so drag stays stable"
+git config user.name "Leo Park"
+printf 'STEP_S = 10.0\nT_END_S = 86400.0\n' > integrator.py
+git commit -am "Put spaces around = in integrator settings"
+--- solution
+git blame integrator.py
+git blame HEAD~1 integrator.py
+echo "Ravi Patel" > chooser.txt
+--- hint
+Blame names the last commit that touched each line, even when the touch was only spacing. You need the history from before that commit.
+--- hint
+`git blame` also takes a commit: `git blame <commit> integrator.py` blames the file as it was there. Try the parent of the reformatting commit.
+--- check shell | chooser.txt names the right person
+file chooser.txt == Ravi Patel
+?? The reformat commit is the last touch, not the choice. Blame the file as it was one commit earlier.
+--- check shell | You looked at the file from before the reformat
+ran git blame
+printed STEP_S=10.0
+--- check shell | Nothing was committed
+git . commits == 3
+git . untracked chooser.txt
+
++++ practice | Off by one in the save script
+--- task
+`save_prev.sh` should save `params.txt` as it was in the commit just before `HEAD`, into `params_prev.txt`. Right now it saves an older version.
+
+`params.txt` has held `DT = 1.0`, then `DT = 0.5`, and now `DT = 0.1`, one commit each. So after the script runs, `params_prev.txt` must hold `DT = 0.5`.
+
+Fix the one wrong thing in the script, then run it with `bash save_prev.sh`.
+--- starter
+git init
+git config user.name "Leo Park"
+printf 'DT = 1.0\n' > params.txt
+git add params.txt
+git commit -m "Set time step to 1 s"
+printf 'DT = 0.5\n' > params.txt
+git commit -am "Halve the time step"
+printf 'DT = 0.1\n' > params.txt
+git commit -am "Use a 0.1 s time step"
+printf 'git show HEAD~2:params.txt > params_prev.txt\n' > save_prev.sh
+--- solution
+cat save_prev.sh
+printf 'git show HEAD~1:params.txt > params_prev.txt\n' > save_prev.sh
+bash save_prev.sh
+cat params_prev.txt
+--- hint
+`HEAD~1` is one parent back, `HEAD~2` two. Count along `git log --oneline`: which line holds `DT = 0.5`?
+--- hint
+Rewrite the script's one line with the right count (`sed -i 's/HEAD~2/HEAD~1/' save_prev.sh` works too), then run it.
+--- check shell | params_prev.txt holds the version just before HEAD
+file params_prev.txt == DT = 0.5
+--- check shell | The script itself is fixed, and you ran it
+file save_prev.sh excludes HEAD~2
+file save_prev.sh contains params_prev.txt
+ran bash save_prev.sh
+--- check shell | History is untouched
+git . commits == 3
+git . at HEAD file params.txt == DT = 0.1
+
++++ practice | Where the drag work split off
+--- task
+Ravi has been building an atmosphere model on a branch called `drag`, while `main` kept moving. Using `git log --oneline --graph --all`, work out:
+
+1. the subject of the last commit that `main` and `drag` share, where the two lines split;
+2. how many commits are on `drag` and not on `main`.
+
+Write the two answers, one per line, into `fork.txt`. For example:
+
+```
+Add a thing
+4
+```
+
+Do not commit anything.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add Earth's gravitational parameter"
+printf 'MU_EARTH = 3.986004418e14\nG0 = 9.80665\n' > gravity.py
+git commit -am "Add standard gravity"
+printf 'MU_EARTH = 3.986004418e14\nG0 = 9.80665\nJ2 = 1.08263e-3\n' > gravity.py
+git commit -am "Add J2 oblateness constant"
+git switch -c drag
+git config user.name "Ravi Patel"
+printf 'RHO0 = 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add sea-level air density"
+printf 'RHO0 = 1.225\nH_SCALE = 8500.0\n' > drag.py
+git commit -am "Add atmosphere scale height"
+printf 'RHO0 = 1.225\nH_SCALE = 8500.0\nCD = 2.2\n' > drag.py
+git commit -am "Add default drag coefficient"
+git switch main
+git config user.name "Maya Chen"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Add README"
+printf '# orbit-sim\n\nUnits are SI.\n' > README.md
+git commit -am "State that units are SI"
+--- solution
+git log --oneline --graph --all
+printf 'Add J2 oblateness constant\n3\n' > fork.txt
+--- hint
+Plain `git log` starts at HEAD and would never show `drag`. `--all` starts from every branch, and `--graph` draws where the lines join.
+--- hint
+Find the `|/` in the graph: the commit right under it is the one both lines share. Count the `*` marks in the right-hand column above it.
+--- check shell | fork.txt holds the shared commit and the count
+file fork.txt ~= Add J2 oblateness constant\n3
+--- check shell | You drew the whole graph
+ran git log
+used --all
+--- check shell | Nothing was committed
+git . commits == 5
+git . commits-on drag == 6
+
++++ question | Pick the message
+--- ask
+A commit fixes `accel_vector` in `gravity.py`: it returned a vector pointing away from Earth, so every orbit flew off. The fix flips one sign. Which message follows the rules for commit messages?
+--- choice
+`Fixed the sign bug in accel_vector.`, with no body.
+--- choice correct
+The subject `Fix sign of gravity vector in accel_vector`, a blank line, then a body saying that the vector pointed away from Earth so orbits escaped, and why the sign was flipped here and not in the callers.
+--- choice
+The subject `Update gravity.py`, then a body listing the line that changed and its old and new text.
+--- choice
+The subject `Fix bug`, a blank line, then a body explaining the symptom and the fix.
+--- why
+A good subject is imperative ("Fix", not "Fixed"), specific, about 50 characters or fewer, with no full stop, and a body after one blank line says *why*. The first choice is past tense, ends in a full stop and has no reason. The third wastes the subject on the file name and, in its body, repeats what the diff already shows. The fourth has a body, but "Fix bug" tells someone scanning `git log --oneline` nothing at all.
+
+=== git01-l04 | Practice: Branches are pointers
+--- for
+l04-branches-are-pointers
+
++++ practice | The J2 model gets its own branch
+--- task
+Leo wants to start a J2 model without touching `main`, which the team runs every morning.
+
+1. Make a branch called `j2-model` and move onto it.
+2. Create `j2.py` with the one line `J2 = 1.08263e-3`, and commit it with the message `Add J2 constant`.
+3. Go back to `main`.
+
+`main` must not move, and when you are back on it, `j2.py` should not be in your folder.
+--- starter
+git init
+git config user.name "Leo Park"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add Earth's gravitational parameter"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Add README"
+--- solution
+git switch -c j2-model
+echo "J2 = 1.08263e-3" > j2.py
+git add j2.py
+git commit -m "Add J2 constant"
+git switch main
+ls
+--- hint
+`git switch -c <name>` makes a branch where you are and moves onto it, in one command.
+--- hint
+Commit on the new branch as usual, then `git switch main`. The commit moves only the branch HEAD names.
+--- check shell | j2-model has one commit more than main, holding j2.py
+git . has-branch j2-model
+git . commits-on j2-model == 3
+git . at j2-model message == Add J2 constant
+git . at j2-model file j2.py == J2 = 1.08263e-3
+--- check shell | main did not move
+git . commits-on main == 2
+git . at main missing j2.py
+--- check shell | You are back on main, and the folder matches it
+git . branch main
+missing j2.py
+
++++ practice | A fix that starts from the flown build
+--- task
+The build that flew is the commit two before `main`'s tip, the one whose message is `Qualify flight build 1.0`. Its `G0` comment has the wrong unit, and the fix must start from that exact build, not from today's `main`.
+
+1. Make a branch called `fix/g0-comment` that starts at `main~2`.
+2. Move onto it, and change the `G0` line in `gravity.py` to `G0 = 9.80665  # m/s^2`.
+3. Commit with the message `Correct the unit in the G0 comment`.
+
+`main` must not change.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\nG0 = 9.80665  # m/s\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity constants"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Qualify flight build 1.0"
+printf 'RHO0 = 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+printf 'J2 = 1.08263e-3\n' > j2.py
+git add j2.py
+git commit -m "Add J2 constant"
+--- solution
+git branch fix/g0-comment main~2
+git switch fix/g0-comment
+printf 'MU_EARTH = 3.986004418e14\nG0 = 9.80665  # m/s^2\n' > gravity.py
+git commit -am "Correct the unit in the G0 comment"
+--- hint
+`git branch <name> <commit>` makes a branch at any commit, not only where you stand. `main~2` names the commit two parents back from `main`.
+--- hint
+After `git switch fix/g0-comment`, `ls` shows no `drag.py` or `j2.py`: you are standing on the old build. Rewrite `gravity.py` and commit.
+--- check shell | The fix branch starts at the flown build
+git . same fix/g0-comment~1 main~2
+git . at fix/g0-comment~1 message == Qualify flight build 1.0
+--- check shell | The fix commit holds the corrected comment, on the old snapshot
+git . at fix/g0-comment message == Correct the unit in the G0 comment
+git . at fix/g0-comment file gravity.py contains # m/s^2
+git . at fix/g0-comment missing drag.py
+?? If drag.py is in the fix, the branch started at today's main, not at main~2.
+--- check shell | main is unchanged
+git . commits-on main == 4
+git . at main file gravity.py excludes m/s^2
+
++++ practice | Pick the winning experiment
+--- task
+Three branches, `try-a`, `try-b` and `try-c`, each hold one experiment with the scale height in `drag.py`. The analysts chose the experiment where `H_SCALE = 8400.0`.
+
+1. Without switching branches, find which branch that is. `git show <branch>:drag.py` prints the file as it is on that branch.
+2. Make a branch `atmo-final` that points at the same commit as the winning branch.
+3. Delete the two losing branches. Their experiments are rejected, and their commits are on no other branch, so `-d` will refuse: use `-D`.
+4. Stay on `main`.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf 'RHO0 = 1.225\nH_SCALE = 8500.0\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+git switch -c try-a
+printf 'RHO0 = 1.225\nH_SCALE = 7200.0\n' > drag.py
+git commit -am "Try a lower scale height"
+git switch main
+git switch -c try-b
+printf 'RHO0 = 1.225\nH_SCALE = 8400.0\n' > drag.py
+git commit -am "Try a slightly lower scale height"
+git switch main
+git switch -c try-c
+printf 'RHO0 = 1.225\nH_SCALE = 9100.0\n' > drag.py
+git commit -am "Try a higher scale height"
+git switch main
+--- solution
+git show try-a:drag.py
+git show try-b:drag.py
+git show try-c:drag.py
+git branch atmo-final try-b
+git branch -D try-a try-c
+git branch -v
+--- hint
+`git show try-a:drag.py` walks from the branch to its commit, its tree and the blob, and prints the file. Do the same for the other two.
+--- hint
+`git branch atmo-final <branch>` makes a new branch at the commit another branch points to. Then `git branch -D` takes the two losing names.
+--- check shell | atmo-final points at the winning experiment
+git . same atmo-final try-b
+git . at atmo-final file drag.py contains H_SCALE = 8400.0
+--- check shell | The losers are deleted, the winner is kept
+git . no-branch try-a
+git . no-branch try-c
+git . has-branch try-b
+--- check shell | You stayed on main, and it did not move
+git . branch main
+git . commits-on main == 1
+printed H_SCALE = 8400.0
+
++++ practice | When switch refuses
+--- task
+You are on `drag-model` and have added the line `H_SCALE = 8500.0` to `drag.py`, not yet committed. Ravi asks for a new branch `units-fix`, starting from `main`, right now.
+
+`main` has no `drag.py`, so `git switch main` would have to delete your edited file, and Git refuses. Try it and read the message.
+
+1. Keep your edit: commit it on `drag-model` with the message `Add atmosphere scale height`.
+2. Then make `units-fix` from `main` and move onto it.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity model"
+git switch -c drag-model
+printf 'RHO0 = 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add sea-level air density"
+printf 'RHO0 = 1.225\nH_SCALE = 8500.0\n' > drag.py
+--- solution
+git switch main
+git commit -am "Add atmosphere scale height"
+git switch main
+git switch -c units-fix
+--- hint
+Git lists `drag.py` as a file your switch would overwrite. Committing the edit makes it safe: then the working tree matches `drag-model` again.
+--- hint
+After the commit, `git switch main` works. Then `git switch -c units-fix` makes the branch there and moves onto it.
+--- check shell | Your edit is committed on drag-model
+git . at drag-model message == Add atmosphere scale height
+git . at drag-model file drag.py contains H_SCALE = 8500.0
+git . commits-on drag-model == 3
+--- check shell | units-fix starts at main, and you are on it
+git . branch units-fix
+git . same units-fix main
+--- check shell | The folder matches main's snapshot
+missing drag.py
+git . commits-on main == 1
+
++++ practice | Committed on a detached HEAD
+--- task
+To try a rounded standard gravity, Maya stood on an older commit with `git switch --detach`, changed `G0` to `9.81` and committed `Try rounded g0`. She is still there, in detached HEAD. No branch points at her commit, so the moment she switches away, nothing will name it.
+
+Keep the experiment on a branch named `g0-experiment`, then go back to `main`. `main` must not change.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'G0 = 9.80665\n' > gravity.py
+git add gravity.py
+git commit -m "Add standard gravity"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Add README"
+printf 'RHO0 = 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+git switch --detach HEAD~1
+printf 'G0 = 9.81\n' > gravity.py
+git commit -am "Try rounded g0"
+--- solution
+git status
+git switch -c g0-experiment
+git switch main
+--- hint
+`git status` says `HEAD detached at …`. A branch made right now, where you stand, names the experiment.
+--- hint
+`git switch -c g0-experiment` makes the branch at HEAD and moves onto it. Then `git switch main` is safe.
+--- check shell | The experiment has a branch
+git . has-branch g0-experiment
+git . at g0-experiment message == Try rounded g0
+git . at g0-experiment file gravity.py == G0 = 9.81
+git . same g0-experiment~1 main~1
+--- check shell | You are back on main, attached
+git . branch main
+--- check shell | main did not change or take in the experiment
+git . commits-on main == 3
+git . not-ancestor g0-experiment main
+file gravity.py == G0 = 9.80665
+
++++ practice | Tidy the branches and cut a release line
+--- task
+`git branch -v` lists four branches. Tidy them up, and start a release line:
+
+1. Delete every branch whose work is already part of `main`.
+2. Keep any branch that has work `main` does not have.
+3. Make a branch `release/2.4` at the commit whose message is `Qualify flight build 2.4`.
+4. End on `main`.
+
+Use `git log --oneline --graph --all` to see where each branch points. Let `git branch -d` protect you: never use `-D` here.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity model"
+printf 'RHO0 = 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Qualify flight build 2.4"
+git branch spike-rk4
+printf 'J2 = 1.08263e-3\n' > j2.py
+git add j2.py
+git commit -m "Add J2 constant"
+git branch docs
+printf 'import csv\n' > export.py
+git add export.py
+git commit -m "Add CSV export"
+git branch csv-export
+git switch spike-rk4
+printf 'def rk4_step():\n    pass\n' > rk4.py
+git add rk4.py
+git commit -m "Sketch an RK4 step"
+git switch main
+--- solution
+git log --oneline --graph --all
+git branch -d docs
+git branch -d csv-export
+git branch -d spike-rk4
+git branch release/2.4 main~2
+git branch -v
+--- hint
+In the graph, a branch whose label sits on `main`'s own line (at `main` or below it) is already part of `main`. A branch on its own side line is not.
+--- hint
+`git branch -d` deletes only a branch whose commits `main` already has, and refuses the rest. The release commit is two parents back from `main`: `git branch release/2.4 main~2`.
+--- check shell | The merged branches are gone
+git . no-branch docs
+git . no-branch csv-export
+--- check shell | The spike and its unmerged commit survived
+git . has-branch spike-rk4
+git . at spike-rk4 message == Sketch an RK4 step
+--- check shell | release/2.4 marks the qualified build, and you are on main
+git . same release/2.4 main~2
+git . at release/2.4 message == Qualify flight build 2.4
+git . branch main
+git . commits-on main == 5
+
+=== git01-l05 | Practice: Merging and resolving a conflict
+--- for
+l05-merging-and-conflicts
+
++++ practice | Slide main forward
+--- task
+The branch `units` has two commits that switch orbit-sim to SI units. Nobody has touched `main` since `units` was made.
+
+On `main`, bring in `units`. Git needs no merge commit here. Then delete `units`, which is no longer needed.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'ALT_KM = 550\n' > orbit.py
+git add orbit.py
+git commit -m "Add orbit settings"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Add README"
+git switch -c units
+printf 'ALT_M = 550000\n' > orbit.py
+git commit -am "Store altitude in metres"
+printf '# orbit-sim\n\nUnits are SI.\n' > README.md
+git commit -am "State that units are SI"
+git switch main
+--- solution
+git merge units
+git log --oneline --graph --all
+git branch -d units
+--- hint
+`main`'s tip is an ancestor of `units`' tip, so `git merge units` on `main` only slides the pointer forward: a fast-forward.
+--- hint
+Once `main` holds every `units` commit, `git branch -d units` deletes the branch without complaint.
+--- check shell | main holds both units commits, with no merge commit
+git . branch main
+git . commits == 4
+git . merges == 0
+git . at HEAD message == State that units are SI
+--- check shell | The files match the units branch's last snapshot
+git . at HEAD file orbit.py == ALT_M = 550000
+file orbit.py == ALT_M = 550000
+--- check shell | units is deleted
+git . no-branch units
+
++++ practice | Keep a record of the branch
+--- task
+The branch `atmosphere` has two commits, and `main` has not moved since it was made, so a fast-forward is possible. The team wants the history to show forever that these commits arrived together as one feature.
+
+On `main`, merge `atmosphere` **with a merge commit**, keeping Git's own message, `Merge branch 'atmosphere'`. Do not delete the branch.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity model"
+git switch -c atmosphere
+printf 'RHO0 = 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add sea-level air density"
+printf 'RHO0 = 1.225\nH_SCALE = 8500.0\n' > drag.py
+git commit -am "Add atmosphere scale height"
+git switch main
+--- solution
+git merge --no-ff atmosphere --no-edit
+git log --oneline --graph --all
+--- hint
+A plain `git merge` would fast-forward. There is a flag that says "no fast-forward".
+--- hint
+`git merge --no-ff atmosphere` makes the merge commit. Add `--no-edit` to keep Git's message without opening an editor.
+--- check shell | A merge commit with two parents sits on top of main
+git . merges == 1
+git . at HEAD parents == 2
+git . at HEAD message == Merge branch 'atmosphere'
+--- check shell | Its first parent is the old main, its second the branch
+git . at HEAD^1 message == Add gravity model
+git . at HEAD^2 message == Add atmosphere scale height
+git . same HEAD^2 atmosphere
+--- check shell | The merged snapshot has the drag model
+git . at HEAD file drag.py contains H_SCALE = 8500.0
+git . branch main
+
++++ practice | Merge main into your branch first
+--- task
+You are on `drag-model`, which has two commits of its own. Meanwhile `main` gained a fix, `Correct the G0 value`, that your branch lacks.
+
+Test with the fix before your work lands:
+
+1. On `drag-model`, merge `main` into it (keep Git's message).
+2. Then switch to `main` and merge `drag-model`.
+
+The second merge needs no new commit. When you are done there is exactly one merge commit, and `main` and `drag-model` point at it.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf 'G0 = 9.81\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity constants"
+git switch -c drag-model
+printf 'RHO0 = 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add sea-level air density"
+printf 'RHO0 = 1.225\nH_SCALE = 8500.0\n' > drag.py
+git commit -am "Add atmosphere scale height"
+git switch main
+printf 'G0 = 9.80665\n' > gravity.py
+git commit -am "Correct the G0 value"
+git switch drag-model
+--- solution
+git merge main --no-edit
+git switch main
+git merge drag-model
+git log --oneline --graph --all
+--- hint
+`git merge main` while on `drag-model` moves `drag-model`. Both sides have moved since the fork, so this one makes a merge commit.
+--- hint
+After it, `main`'s tip is an ancestor of `drag-model`'s, so merging `drag-model` into `main` is a fast-forward.
+--- check shell | One merge commit, and both branches point at it
+git . merges == 1
+git . same main drag-model
+git . at main parents == 2
+--- check shell | Its first parent is your branch's work, its second the fix from main
+git . at main^1 message == Add atmosphere scale height
+git . at main^2 message == Correct the G0 value
+?? The first parent is the branch you were on when you merged. Merge main into drag-model first, not the other way round.
+--- check shell | The result has the fix and the drag model, and you are on main
+git . at main file gravity.py == G0 = 9.80665
+git . at main file drag.py contains H_SCALE
+git . branch main
+
++++ practice | Neighbouring lines
+--- task
+Two edits to `constants.py` touched lines right next to each other. On `main`, Maya changed line 1 to `MU_EARTH = 3.986004418e14`. On the branch `j2-update`, Leo changed line 2 to `J2 = 1.08263e-3`.
+
+On `main`, merge `j2-update`. Git will stop with a conflict, because the two changed lines touch. Both edits are right, so the resolved file must be exactly these three lines:
+
+```
+MU_EARTH = 3.986004418e14
+J2 = 1.08263e-3
+R_EARTH = 6378137.0
+```
+
+Remove every conflict marker, mark the file resolved, and finish the merge with the message `Merge branch 'j2-update'`.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986e14\nJ2 = 1.08e-3\nR_EARTH = 6378137.0\n' > constants.py
+git add constants.py
+git commit -m "Add Earth constants"
+git switch -c j2-update
+git config user.name "Leo Park"
+printf 'MU_EARTH = 3.986e14\nJ2 = 1.08263e-3\nR_EARTH = 6378137.0\n' > constants.py
+git commit -am "Use the full J2 value"
+git switch main
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\nJ2 = 1.08e-3\nR_EARTH = 6378137.0\n' > constants.py
+git commit -am "Use the WGS 84 value of mu"
+--- solution
+git merge j2-update
+cat constants.py
+printf 'MU_EARTH = 3.986004418e14\nJ2 = 1.08263e-3\nR_EARTH = 6378137.0\n' > constants.py
+grep -n '<<<<<<<' constants.py
+git add constants.py
+git commit -m "Merge branch 'j2-update'"
+--- hint
+Read the conflict with `cat constants.py`: `<<<<<<< HEAD` opens your side, `=======` separates, `>>>>>>> j2-update` closes theirs. Git cannot tell whether two touching edits depend on each other, so it asks.
+--- hint
+Write the three lines the file should hold (with `printf '…\n…\n…\n' > constants.py`), then `git add constants.py` and `git commit -m "Merge branch 'j2-update'"`.
+--- check shell | The merge is finished
+git . idle
+git . conflicts == 0
+git . merges == 1
+git . at HEAD parents == 2
+--- check shell | Both edits are in the result
+git . at HEAD file constants.py contains MU_EARTH = 3.986004418e14
+git . at HEAD file constants.py contains J2 = 1.08263e-3
+git . at HEAD file constants.py contains R_EARTH = 6378137.0
+--- check shell | No marker and no old value survived
+git . at HEAD file constants.py excludes <<<<<<<
+git . at HEAD file constants.py excludes =======
+git . at HEAD file constants.py excludes >>>>>>>
+git . at HEAD file constants.py excludes 1.08e-3
+git . at HEAD file constants.py excludes 3.986e14
+
++++ practice | Markers on main
+--- task
+Yesterday someone merged `egm96-mu` into `main`, got a conflict in `gravity.py`, ran `git add gravity.py` and committed without editing the file. The conflict markers are now in `main`, and `gravity.py` no longer runs.
+
+The team's decision: keep the WGS 84 line as `MU_EARTH`, and keep the EGM96 value under its own name. Fix `main` with one new commit whose `gravity.py` is exactly:
+
+```
+MU_EARTH = 3.986004418e14
+MU_EARTH_EGM96 = 3.986004415e14
+G0 = 9.80665
+```
+
+Use the message `Remove conflict markers from gravity.py`. The merge commit stays in history: it is already shared.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986e14\nG0 = 9.80665\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity constants"
+git switch -c egm96-mu
+printf 'MU_EARTH = 3.986004415e14\nG0 = 9.80665\n' > gravity.py
+git commit -am "Use the EGM96 value of mu"
+git switch main
+printf 'MU_EARTH = 3.986004418e14\nG0 = 9.80665\n' > gravity.py
+git commit -am "Use the WGS 84 value of mu"
+git merge egm96-mu
+git add gravity.py
+git commit -m "Merge branch 'egm96-mu'"
+--- solution
+cat gravity.py
+printf 'MU_EARTH = 3.986004418e14\nMU_EARTH_EGM96 = 3.986004415e14\nG0 = 9.80665\n' > gravity.py
+grep -c '<<<<<<<' gravity.py
+git commit -am "Remove conflict markers from gravity.py"
+--- hint
+`cat gravity.py` shows the three marker lines and both versions of the `MU_EARTH` line. `git add` never checks for markers, which is how they got in.
+--- hint
+Write the three lines the task gives, check with `grep` that no `<<<<<<<` is left, and commit.
+--- check shell | One new commit on top of the merge
+git . commits == 5
+git . at HEAD message == Remove conflict markers from gravity.py
+git . at HEAD~1 parents == 2
+--- check shell | No markers are left
+git . at HEAD file gravity.py excludes <<<<<<<
+git . at HEAD file gravity.py excludes =======
+git . at HEAD file gravity.py excludes >>>>>>>
+--- check shell | Both values are kept, under their own names
+git . at HEAD file gravity.py contains MU_EARTH = 3.986004418e14
+git . at HEAD file gravity.py contains MU_EARTH_EGM96 = 3.986004415e14
+git . at HEAD file gravity.py contains G0 = 9.80665
+
++++ practice | Three branches, three kinds of merge
+--- task
+Three branches are ready to join `main`. Merge them in this order, keeping Git's merge messages:
+
+1. `fix-sign`, which starts at `main`'s tip. It should fast-forward.
+2. `readme-models`, which started earlier and touches only `README.md`. It needs a merge commit.
+3. `egm96-mu`, which changes the same `MU_EARTH` line as `main`. Resolve the conflict by keeping `main`'s line, `MU_EARTH = 3.986004418e14`, exactly, and nothing from the other side.
+
+Then delete all three branches. You end with exactly two merge commits.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986e14\n\n\ndef accel(r):\n    return MU_EARTH / r**2\n' > gravity.py
+printf '# orbit-sim\n' > README.md
+git add gravity.py README.md
+git commit -m "Add gravity model"
+git branch readme-models
+git branch egm96-mu
+printf 'MU_EARTH = 3.986004418e14\n\n\ndef accel(r):\n    return MU_EARTH / r**2\n' > gravity.py
+git commit -am "Use the WGS 84 value of mu"
+git switch -c fix-sign
+printf 'MU_EARTH = 3.986004418e14\n\n\ndef accel(r):\n    return -MU_EARTH / r**2\n' > gravity.py
+git commit -am "Make accel point toward Earth"
+git switch readme-models
+printf '# orbit-sim\n\nModels: point-mass gravity.\n' > README.md
+git commit -am "List the models in the README"
+git switch egm96-mu
+printf 'MU_EARTH = 3.986004415e14\n\n\ndef accel(r):\n    return MU_EARTH / r**2\n' > gravity.py
+git commit -am "Use the EGM96 value of mu"
+git switch main
+--- solution
+git merge fix-sign
+git merge readme-models --no-edit
+git merge egm96-mu
+cat gravity.py
+printf 'MU_EARTH = 3.986004418e14\n\n\ndef accel(r):\n    return -MU_EARTH / r**2\n' > gravity.py
+git add gravity.py
+git commit -m "Merge branch 'egm96-mu'"
+git branch -d fix-sign readme-models egm96-mu
+git log --oneline --graph --all
+--- hint
+Look at `git log --oneline --graph --all` before each merge. Only the first has `main`'s tip as an ancestor of the branch.
+--- hint
+In the conflict, the `HEAD` side already holds the sign fix from step 1. Keep the whole file as `main` had it, then `git add` and `git commit`. `git branch -d` takes several names at once.
+--- check shell | Two merge commits, and every change from the branches
+git . merges == 2
+git . idle
+git . at HEAD file gravity.py contains return -MU_EARTH / r**2
+git . at HEAD file README.md contains Models: point-mass gravity.
+--- check shell | The conflict kept main's value, cleanly
+git . at HEAD file gravity.py contains MU_EARTH = 3.986004418e14
+git . at HEAD file gravity.py excludes 3.986004415e14
+git . at HEAD file gravity.py excludes <<<<<<<
+--- check shell | The sign fix came in by fast-forward, and all three branches are gone
+git . at HEAD~1~1 message == Make accel point toward Earth
+git . no-branch fix-sign
+git . no-branch readme-models
+git . no-branch egm96-mu
+
+=== git01-l06 | Practice: Undoing things: reset, revert and restore
+--- for
+l06-undoing-reset-revert-restore
+
++++ practice | Throw away one experiment, keep the other edit
+--- task
+Two files are modified, nothing is staged. In `drag.py` you tried a scale height of 7000 m, and it made things worse. In `README.md` you added a sentence you want to keep.
+
+1. Throw away the `drag.py` edit, so the file is back to its committed version.
+2. Commit the README edit with the message `Explain the scale height in the README`.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'RHO0 = 1.225\nH_SCALE = 8500.0\n' > drag.py
+printf '# orbit-sim\n' > README.md
+git add drag.py README.md
+git commit -m "Add drag model"
+printf 'RHO0 = 1.225\nH_SCALE = 7000.0\n' > drag.py
+printf '# orbit-sim\n\nThe scale height is 8500 m.\n' > README.md
+--- solution
+git diff drag.py
+git restore drag.py
+git commit -am "Explain the scale height in the README"
+--- hint
+`git restore <file>` copies the file from the index over your working copy, which throws the unstaged edit away for good. Read `git diff drag.py` first.
+--- hint
+Once `drag.py` is clean, `git status -s` shows only the README, so `git commit -am "…"` commits just that.
+--- check shell | drag.py is back to the committed version
+file drag.py contains H_SCALE = 8500.0
+file drag.py excludes 7000
+--- check shell | The README sentence is committed
+git . commits == 2
+git . at HEAD message == Explain the scale height in the README
+git . at HEAD file README.md contains The scale height is 8500 m.
+--- check shell | The experiment never reached a commit
+git . at HEAD file drag.py excludes 7000
+git . clean
+
++++ practice | Fold the forgotten file into the last commit
+--- task
+Your last commit, `Add drag model`, was meant to hold `drag.py` and its test, but you forgot to add `tests/test_drag.py`. Nobody else has this commit yet.
+
+Redo the last commit so that it holds both files, with the same message, `Add drag model`. History must still have exactly two commits.
+
+Use `git reset` to move the branch back one commit while keeping the commit's changes staged.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Add README"
+printf 'RHO0 = 1.225\n' > drag.py
+mkdir tests
+printf 'from drag import RHO0\n' > tests/test_drag.py
+git add drag.py
+git commit -m "Add drag model"
+--- solution
+git reset --soft HEAD~1
+git status -s
+git add tests/test_drag.py
+git commit -m "Add drag model"
+--- hint
+`git reset --soft HEAD~1` moves the branch to the parent and touches nothing else, so `drag.py` is still staged afterwards.
+--- hint
+Stage the test as well, then commit again with the same message.
+--- check shell | Still two commits, with the same messages
+git . commits == 2
+git . at HEAD message == Add drag model
+git . at HEAD~1 message == Add README
+--- check shell | The redone commit holds both files
+git . at HEAD file drag.py == RHO0 = 1.225
+git . at HEAD file tests/test_drag.py == from drag import RHO0
+--- check shell | Nothing is left staged
+git . clean
+
++++ practice | Split one commit into two
+--- task
+Your last commit, `Add drag model and fix README typo`, mixes two ideas: a new `drag.py`, and a typo fix in `README.md`. It is not shared yet. Split it into two commits, in this order:
+
+1. `Fix typo in README`: the README change only.
+2. `Add drag model`: `drag.py` only.
+
+Use `git reset` in the mode that moves the branch back and unstages the changes, but leaves your files alone.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf '# orbit-sim\n\nA tiny orbit simluator.\n' > README.md
+git add README.md
+git commit -m "Add README"
+printf '# orbit-sim\n\nA tiny orbit simulator.\n' > README.md
+printf 'RHO0 = 1.225\nH_SCALE = 8500.0\n' > drag.py
+git add README.md drag.py
+git commit -m "Add drag model and fix README typo"
+--- solution
+git reset HEAD~1
+git status -s
+git add README.md
+git commit -m "Fix typo in README"
+git add drag.py
+git commit -m "Add drag model"
+--- hint
+`git reset HEAD~1` is the `--mixed` mode: the branch moves back, the index matches the parent, and both changes wait in your folder, unstaged.
+--- hint
+Now stage and commit one file at a time, in the order the task gives.
+--- check shell | Three commits now, the two new ones in order
+git . commits == 3
+git . at HEAD~1 message == Fix typo in README
+git . at HEAD message == Add drag model
+--- check shell | The typo fix commit holds only the README change
+git . at HEAD~1 file README.md contains simulator
+git . at HEAD~1 missing drag.py
+--- check shell | The drag commit adds drag.py, and nothing is left over
+git . at HEAD file drag.py contains H_SCALE = 8500.0
+git . clean
+
++++ practice | Drop two commits, keep an uncommitted line
+--- task
+Your last two commits, `Print altitude in density()` and `Print speed in drag_accel()`, only added debugging prints to `drag.py`. Nobody else has them. You want them gone: from history and from `drag.py`.
+
+But you also have an uncommitted line in `README.md` that you want to keep, uncommitted. `git reset --hard HEAD~2` would destroy it.
+
+End with: the branch at `Add drag model`, `drag.py` exactly as it was there, and your README line still in your folder as an unstaged edit.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Add README"
+printf 'def density(h):\n    return 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+printf 'def density(h):\n    print("alt", h)\n    return 1.225\n' > drag.py
+git commit -am "Print altitude in density()"
+printf 'def density(h):\n    print("alt", h)\n    return 1.225\nprint("speed")\n' > drag.py
+git commit -am "Print speed in drag_accel()"
+printf '# orbit-sim\n\nDensity uses an exponential model.\n' > README.md
+--- solution
+git status -s
+git reset HEAD~2
+git status -s
+git restore drag.py
+git status -s
+--- hint
+The default reset, `--mixed`, moves the branch and resets the index, and never touches your files. The prints then show up as an unstaged edit to `drag.py`, next to your README edit.
+--- hint
+Now throw away only the `drag.py` edit with `git restore drag.py`. The README edit stays.
+--- check shell | The two print commits are gone from the branch
+git . commits == 2
+git . at HEAD message == Add drag model
+--- check shell | drag.py has no prints left
+file drag.py excludes print
+file drag.py contains return 1.225
+--- check shell | Your README line survived, uncommitted
+file README.md contains Density uses an exponential model.
+git . modified README.md
+git . at HEAD file README.md excludes Density
+?? A hard reset overwrites every tracked file. Use the default reset, then restore only drag.py.
+
++++ practice | Undo the undo on a shared branch
+--- task
+The commit `Print altitude in density()` is on `main`, and the whole team has already pulled it. A teammate "removed" it with `git reset --hard HEAD~1`. That rewrote shared history: everyone else's `main` still has the commit.
+
+Put it right:
+
+1. Move `main` back to where it was before the reset. Git kept the old tip for you in `ORIG_HEAD`.
+2. Undo the bad commit the shared way, with a new commit, keeping Git's message for it.
+
+History must keep the bad commit, followed by the commit that undoes it.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'def density(h):\n    return 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Add README"
+printf 'def density(h):\n    print("alt", h)\n    return 1.225\n' > drag.py
+git commit -am "Print altitude in density()"
+git reset --hard HEAD~1
+--- solution
+git log --oneline ORIG_HEAD
+git reset --hard ORIG_HEAD
+git revert HEAD --no-edit
+git log --oneline
+--- hint
+`git reset --hard ORIG_HEAD` puts the branch back on the commit it left. Nothing was uncommitted, so nothing is lost.
+--- hint
+`git revert <commit>` adds a commit that applies the opposite change. `--no-edit` keeps the message Git writes, `Revert "…"`.
+--- check shell | The bad commit is back in history, and a revert sits on top
+git . commits == 4
+git . at HEAD~1 message == Print altitude in density()
+git . at HEAD message == Revert "Print altitude in density()"
+--- check shell | The print is gone from the newest snapshot
+git . at HEAD file drag.py excludes print
+git . at HEAD file drag.py contains return 1.225
+--- check shell | Your folder is clean and matches
+file drag.py excludes print
+git . clean
+
++++ practice | Four problems, four undos
+--- task
+Four things need fixing on `main`, and each needs a different command. Do them in this order:
+
+1. `out/run.csv` was staged by mistake. Take it out of the index, but keep the file on disk.
+2. `gravity.py` holds an unstaged experiment. Throw it away.
+3. Your newest commit, `Print drag at every step`, is only on your machine. Remove it completely: the commit and its change.
+4. The commit `Raise drag coefficient to 2.4` is shared, and it was wrong. Undo it without rewriting history, keeping Git's message. The commit after it, `Add density test`, must stay.
+
+Step 1 must come before step 3: a hard reset deletes a new file that is still staged.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf 'G0 = 9.80665\n' > gravity.py
+printf 'CD = 2.2\n' > drag.py
+git add gravity.py drag.py
+git commit -m "Add gravity and drag models"
+printf 'CD = 2.4\n' > drag.py
+git commit -am "Raise drag coefficient to 2.4"
+mkdir tests
+printf 'from drag import CD\n' > tests/test_density.py
+git add tests
+git commit -m "Add density test"
+printf 'CD = 2.4\nprint("drag", CD)\n' > drag.py
+git commit -am "Print drag at every step"
+mkdir out
+printf 't,alt\n0,550000\n' > out/run.csv
+git add out/run.csv
+printf 'G0 = 9.81\n' > gravity.py
+--- solution
+git status -s
+git restore --staged out/run.csv
+git restore gravity.py
+git reset --hard HEAD~1
+git revert HEAD~1 --no-edit
+git log --oneline
+--- hint
+Match each problem to what it touches: the index only, one file in the working tree, a commit only you have, or a commit other people have.
+--- hint
+`git restore --staged`, then `git restore`, then `git reset --hard HEAD~1` for the local commit, then `git revert` on the shared one (after the reset, it is one before HEAD).
+--- check shell | The run output is out of the index, and still on disk
+git . untracked out/run.csv
+file out/run.csv
+git . at HEAD missing out/run.csv
+--- check shell | The gravity experiment is gone
+file gravity.py == G0 = 9.80665
+--- check shell | The local commit is gone, the shared one reverted, the test kept
+git . commits == 4
+git . log excludes Print drag at every step
+git . at HEAD message == Revert "Raise drag coefficient to 2.4"
+git . at HEAD~1 message == Add density test
+git . at HEAD file tests/test_density.py
+--- check shell | drag.py is back to 2.2, with no print
+git . at HEAD file drag.py == CD = 2.2
+file drag.py == CD = 2.2
+git . clean
+
+=== git01-l07 | Practice: The safety net: stash and reflog
+--- for
+l07-stash-and-the-reflog
+
++++ practice | Shelve, fix a release, come back
+--- task
+You are on `main`, halfway through an `escape_speed` function in `gravity.py` (not committed). A typo in the README of the release branch `release/0.1` must be fixed now.
+
+1. Shelve your half-done work with the message `escape speed, half done`.
+2. Switch to `release/0.1`, change `orbitsim` to `orbit-sim` in its `README.md`, and commit with the message `Fix project name in README`.
+3. Switch back to `main` and bring your work back, removing it from the stash list.
+
+Your half-done function must not end up in any commit.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf '# orbitsim\n' > README.md
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add README.md gravity.py
+git commit -m "Add gravity model"
+git branch release/0.1
+printf 'MU_EARTH = 3.986004418e14\nG0 = 9.80665\n' > gravity.py
+git commit -am "Add standard gravity"
+printf 'MU_EARTH = 3.986004418e14\nG0 = 9.80665\n\ndef escape_speed(r):\n' > gravity.py
+--- solution
+git stash push -m "escape speed, half done"
+git switch release/0.1
+printf '# orbit-sim\n' > README.md
+git commit -am "Fix project name in README"
+git switch main
+git stash pop
+git status -s
+--- hint
+Git will not switch with uncommitted edits in the way. `git stash push -m "…"` shelves them and leaves your files matching HEAD.
+--- hint
+After the release fix is committed, `git switch main` and `git stash pop` puts the edit back and drops it from the list.
+--- check shell | The release branch has the fix, and only the fix
+git . at release/0.1 message == Fix project name in README
+git . at release/0.1 file README.md == # orbit-sim
+git . at release/0.1 file gravity.py excludes escape_speed
+--- check shell | Your half-done work is back on main, uncommitted
+git . branch main
+file gravity.py contains def escape_speed(r):
+git . modified gravity.py
+git . at main file gravity.py excludes escape_speed
+--- check shell | The stash list is empty
+git . stashes == 0
+
++++ practice | One experiment on two branches
+--- task
+You are on `main` with an experiment: a new file `mu_mars.py`, not yet added, and an edit to `gravity.py` that imports it. The same change must go onto `main` and onto the branch `test-rig`, as one commit on each, both with the message `Add Mars gravitational parameter`.
+
+Use the stash to carry the change: shelve it, including the untracked file, and apply it on each branch. When you are done, the stash list must be empty, and you are on `main`.
+--- starter
+git init
+git config user.name "Leo Park"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity model"
+git branch test-rig
+printf 'from mu_mars import MU_MARS\nMU_EARTH = 3.986004418e14\n' > gravity.py
+printf 'MU_MARS = 4.282837e13\n' > mu_mars.py
+--- solution
+git stash push -u -m "Mars mu"
+git stash apply
+git add gravity.py mu_mars.py
+git commit -m "Add Mars gravitational parameter"
+git switch test-rig
+git stash pop
+git add gravity.py mu_mars.py
+git commit -m "Add Mars gravitational parameter"
+git switch main
+git stash list
+--- hint
+A plain stash leaves untracked files behind. `-u` shelves `mu_mars.py` too.
+--- hint
+`git stash apply` puts the change back and keeps it on the list, so you can use it again on the other branch. `pop` there applies it and removes it.
+--- check shell | main has the experiment as a commit
+git . at main message == Add Mars gravitational parameter
+git . at main file mu_mars.py == MU_MARS = 4.282837e13
+git . at main file gravity.py contains from mu_mars import MU_MARS
+--- check shell | test-rig has it too
+git . at test-rig message == Add Mars gravitational parameter
+git . at test-rig file mu_mars.py == MU_MARS = 4.282837e13
+git . at test-rig file gravity.py contains from mu_mars import MU_MARS
+--- check shell | The stash is used up, and you are on main
+git . stashes == 0
+git . branch main
+git . commits-on test-rig == 2
+
++++ practice | Back to before the reset, plus one
+--- task
+Maya had three commits on top of `Add gravity model`: `Add circular orbit speed`, `Add escape speed` and `Add orbital period`. She ran `git reset --hard HEAD~3` by mistake, and then, without noticing, made one more commit: `Add CSV export`.
+
+Put `main` in this order, oldest first: `Add gravity model`, the three lost commits in their original order, then a commit with the CSV change, whose message stays `Add CSV export`.
+
+Use `git reflog` to find the lost tip.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity model"
+printf 'def circular_speed(r):\n    return (MU / r) ** 0.5\n' >> gravity.py
+git commit -am "Add circular orbit speed"
+printf 'def escape_speed(r):\n    return (2 * MU / r) ** 0.5\n' >> gravity.py
+git commit -am "Add escape speed"
+printf 'def orbital_period(a):\n    return 6.283185307 * (a**3 / MU) ** 0.5\n' >> gravity.py
+git commit -am "Add orbital period"
+git reset --hard HEAD~3
+printf 'import csv\n' > export.py
+git add export.py
+git commit -m "Add CSV export"
+--- solution
+git reflog
+git reset --hard HEAD@{2}
+git reflog
+git cherry-pick HEAD@{1}
+git log --oneline
+--- hint
+In `git reflog`, the line just under `reset: moving to HEAD~3` shows where HEAD stood before the mistake: the lost tip. Resetting there brings back the three commits exactly, with their original hashes.
+--- hint
+After that reset, the CSV commit is off the branch, but the reflog still lists it. `git cherry-pick <that entry>` copies its change on top.
+--- check shell | Five commits, in the right order
+git . commits == 5
+git . at HEAD message == Add CSV export
+git . at HEAD~1 message == Add orbital period
+git . at HEAD~2 message == Add escape speed
+git . at HEAD~3 message == Add circular orbit speed
+--- check shell | The newest snapshot has all the work
+git . at HEAD file export.py == import csv
+git . at HEAD file gravity.py contains def orbital_period(a):
+git . at HEAD file gravity.py contains def circular_speed(r):
+--- check shell | Your folder matches, and nothing is half done
+file gravity.py contains def escape_speed(r):
+git . clean
+git . idle
+
++++ practice | A pop that conflicts
+--- task
+Maya shelved an `escape_speed` function, then committed a different function, `orbital_period`, at the same spot at the end of `gravity.py`. Now she wants her stash back.
+
+1. Pop the stash. It will conflict.
+2. Resolve `gravity.py` so it ends with `orbital_period` and then `escape_speed`, like this:
+
+```
+def accel(r):
+    return MU / r**2
+
+def orbital_period(a):
+    return 6.283185307 * (a**3 / MU) ** 0.5
+
+def escape_speed(r):
+    return (2 * MU / r) ** 0.5
+```
+
+3. Mark it resolved with `git add`.
+4. A pop that conflicts keeps the stash on purpose, so drop it yourself.
+
+Do not commit.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'def accel(r):\n    return MU / r**2\n' > gravity.py
+git add gravity.py
+git commit -m "Add accel"
+printf 'def accel(r):\n    return MU / r**2\n\ndef escape_speed(r):\n    return (2 * MU / r) ** 0.5\n' > gravity.py
+git stash push -m "escape speed"
+printf 'def accel(r):\n    return MU / r**2\n\ndef orbital_period(a):\n    return 6.283185307 * (a**3 / MU) ** 0.5\n' > gravity.py
+git commit -am "Add orbital period"
+--- solution
+git stash pop
+cat gravity.py
+sed -i '/^<<<<<<< /d; /^=======$/d; /^>>>>>>> /d' gravity.py
+cat gravity.py
+git add gravity.py
+git stash drop
+git stash list
+--- hint
+The markers say `Updated upstream` (what is committed) and `Stashed changes` (your stash). Here you want both sides, one after the other.
+--- hint
+Delete the three marker lines (by hand, or with `sed -i '/^<<<<<<< /d; /^=======$/d; /^>>>>>>> /d' gravity.py`), check with `cat`, then `git add gravity.py` and `git stash drop`.
+--- check shell | Both functions are there, in order, with no markers
+file gravity.py ~= def accel(r):\n    return MU / r**2\n\ndef orbital_period(a):\n    return 6.283185307 * (a**3 / MU) ** 0.5\n\ndef escape_speed(r):\n    return (2 * MU / r) ** 0.5
+file gravity.py excludes <<<<<<<
+file gravity.py excludes Stashed
+--- check shell | The resolution is staged, not committed
+git . staged gravity.py
+git . commits == 2
+--- check shell | The stash is dropped
+git . stashes == 0
+
++++ practice | The rescue branch at the wrong line
+--- task
+After an accidental `git reset --hard HEAD~2`, a teammate tried to rescue the two lost commits with `git branch rescue HEAD@{0}`. But `HEAD@{0}` is where HEAD is *now*, after the reset, so `rescue` names nothing new.
+
+Fix it: `rescue` must point at the newest lost commit, `Add thruster limit test`, so both lost commits are reachable again. Leave `main` where it is, and stay on it.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf 'MAX_THRUST_N = 400\n' > thrust.py
+git add thrust.py
+git commit -m "Add thrust table"
+printf 'MAX_THRUST_N = 400\n\ndef clamp(f):\n    return min(f, MAX_THRUST_N)\n' > thrust.py
+git commit -am "Clamp thrust command"
+mkdir tests
+printf 'from thrust import clamp\n' > tests/test_thrust.py
+git add tests
+git commit -m "Add thruster limit test"
+git reset --hard HEAD~2
+git branch rescue HEAD@{0}
+--- solution
+git reflog
+git branch -D rescue
+git branch rescue HEAD@{1}
+git log --oneline --graph --all
+--- hint
+Read `git reflog`: the top line is the reset. The line under it, `HEAD@{1}`, is where HEAD stood right before it.
+--- hint
+Making or deleting a branch does not move HEAD, so the reflog numbers stay put. Delete `rescue` and make it again at the right entry.
+--- check shell | rescue points at the newest lost commit
+git . at rescue message == Add thruster limit test
+git . commits-on rescue == 3
+git . at rescue~1 message == Clamp thrust command
+--- check shell | main stayed where the reset left it, and you are on it
+git . branch main
+git . commits-on main == 1
+git . at main message == Add thrust table
+--- check shell | Your folder still matches main
+missing tests/test_thrust.py
+
++++ practice | The deleted branch's work
+--- task
+Leo built an attitude estimator on a branch called `attitude`: two commits, `Add gyro bias estimate` and then `Add attitude filter`. Then he switched to `main`, committed `Add CSV export`, and deleted `attitude` with `git branch -D`. Now the estimator is needed after all.
+
+1. Use `git reflog` to find the two commits. Make a branch `attitude` at the newer one again.
+2. On `main`, add both changes on top of `Add CSV export` as new commits, oldest first, with the same messages.
+3. Stay on `main`.
+--- starter
+git init
+git config user.name "Leo Park"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity model"
+git switch -c attitude
+printf 'GYRO_BIAS = 0.002\n' > attitude.py
+git add attitude.py
+git commit -m "Add gyro bias estimate"
+printf 'GYRO_BIAS = 0.002\nALPHA = 0.98\n' > attitude.py
+git commit -am "Add attitude filter"
+git switch main
+printf 'import csv\n' > export.py
+git add export.py
+git commit -m "Add CSV export"
+git branch -D attitude
+--- solution
+git reflog
+git branch attitude HEAD@{2}
+git log --oneline --graph --all
+git cherry-pick attitude~1 attitude
+git log --oneline
+--- hint
+The reflog lists every commit HEAD has stood on, including the two made while HEAD was on `attitude`. `git branch <name> <entry>` names one again.
+--- hint
+With the branch back, `git cherry-pick attitude~1 attitude` copies both changes onto `main`, oldest first.
+--- check shell | attitude is back, at the newer commit
+git . has-branch attitude
+git . at attitude message == Add attitude filter
+git . commits-on attitude == 3
+--- check shell | main has both changes on top of the export, oldest first
+git . branch main
+git . commits == 4
+git . at HEAD message == Add attitude filter
+git . at HEAD~1 message == Add gyro bias estimate
+git . at HEAD~2 message == Add CSV export
+git . at HEAD file attitude.py contains ALPHA = 0.98
+--- check shell | The copies are new commits, not the originals
+git . not-ancestor attitude main
+git . at HEAD file export.py == import csv
+
+=== git01-l08 | Practice: What Git should not track
+--- for
+l08-what-git-should-not-track
+
++++ practice | A first .gitignore
+--- task
+A new GNC repository in `~/project` has never been committed. Next to the code there is clutter: compiled bytecode, build output, logs and a secrets file. Write a `.gitignore` that makes Git ignore:
+
+- every folder named `__pycache__`, at any depth;
+- every file ending in `.log`, at any depth;
+- the top-level `build` folder only. `docs/build/index.md` is a hand-written page and must stay visible;
+- the file `.env`.
+
+Then commit everything that is left, `.gitignore` included, in one commit with the message `Add simulator and ignore rules`.
+--- starter
+git init
+git config user.name "Maya Chen"
+mkdir -p build docs/build __pycache__ tests/__pycache__ logs
+printf 'G0 = 9.80665\n' > gravity.py
+printf 'from gravity import G0\n' > tests/test_gravity.py
+printf '# Build notes\n' > docs/build/index.md
+printf 'binary\n' > build/sim.o
+printf 'bytecode\n' > __pycache__/gravity.cpython-312.pyc
+printf 'bytecode\n' > tests/__pycache__/test_gravity.cpython-312.pyc
+printf 'step 1 ok\n' > sim.log
+printf 'step 2 ok\n' > logs/run2.log
+printf 'TOKEN=abc123\n' > .env
+--- solution
+printf '__pycache__/\n*.log\n/build/\n.env\n' > .gitignore
+git status -s
+git check-ignore -v build/sim.o docs/build/index.md logs/run2.log
+git add .
+git commit -m "Add simulator and ignore rules"
+--- hint
+A pattern ending in `/` matches folders only; with no other `/` in it, it matches at any depth. A pattern that starts with `/` is anchored to the top of the repository.
+--- hint
+`__pycache__/`, `*.log`, `/build/` and `.env`, one per line. Check with `git status -s` before `git add .`: only real source files and `.gitignore` should be listed.
+--- check shell | The clutter is ignored, at every depth
+git . ignored build/sim.o
+git . ignored __pycache__/gravity.cpython-312.pyc
+git . ignored tests/__pycache__/test_gravity.cpython-312.pyc
+git . ignored sim.log
+git . ignored logs/run2.log
+git . ignored .env
+--- check shell | The commit holds the code, the docs page and the rules
+git . commits == 1
+git . at HEAD message == Add simulator and ignore rules
+git . at HEAD file gravity.py
+git . at HEAD file tests/test_gravity.py
+git . at HEAD file .gitignore
+git . at HEAD file docs/build/index.md
+?? If docs/build/index.md is missing, your build rule is not anchored: /build/ matches only the top-level folder.
+--- check shell | No clutter reached the commit
+git . at HEAD missing .env
+git . at HEAD missing build/sim.o
+git . at HEAD missing sim.log
+
++++ practice | The exception that comes too early
+--- task
+The committed `.gitignore` is meant to ignore every CSV file except the calibration reference table, `calibration/keep.csv`. But `git status` does not list `calibration/keep.csv` at all: it is ignored too.
+
+Find out why with `git check-ignore -v calibration/keep.csv`, fix `.gitignore`, and commit the fixed `.gitignore` together with `calibration/keep.csv`, with the message `Keep the calibration reference table`. Every other CSV file must stay ignored.
+--- starter
+git init
+git config user.name "Leo Park"
+printf '!calibration/keep.csv\n*.csv\n' > .gitignore
+git add .gitignore
+git commit -m "Ignore CSV output"
+mkdir calibration out
+printf 'axis,bias\nx,0.002\n' > calibration/keep.csv
+printf 'raw\n' > calibration/raw_0417.csv
+printf 't,alt\n' > out/run.csv
+--- solution
+git check-ignore -v calibration/keep.csv
+printf '*.csv\n!calibration/keep.csv\n' > .gitignore
+git status -s
+git add .gitignore calibration/keep.csv
+git commit -m "Keep the calibration reference table"
+--- hint
+`check-ignore -v` names line 2, `*.csv`, as the rule that matched. When several lines match a path, the last one decides.
+--- hint
+Swap the two lines, so the exception comes after the rule it overrides. Then `git status -s` lists `calibration/keep.csv`.
+--- check shell | The reference table is committed, with the fixed rules
+git . commits == 2
+git . at HEAD message == Keep the calibration reference table
+git . at HEAD file calibration/keep.csv contains x,0.002
+git . at HEAD file .gitignore contains !calibration/keep.csv
+--- check shell | Every other CSV file is still ignored
+git . ignored calibration/raw_0417.csv
+git . ignored out/run.csv
+--- check shell | You asked Git which rule matched
+ran git check-ignore
+used -v
+
++++ practice | Stop tracking the secret
+--- task
+`config/local.env` holds an access token, and it was committed by mistake. It must stay on your disk, because the simulator reads it, but Git must stop tracking it and ignore it from now on.
+
+1. Take `config/local.env` out of the index only.
+2. Add a line to `.gitignore` so it stays out. `.gitignore` already exists and is tracked.
+3. Commit both changes with the message `Stop tracking local.env`.
+
+The old commit still holds the token, in every clone. That is why the real fix for a leaked token is to cancel it and issue a new one.
+--- starter
+git init
+git config user.name "Ravi Patel"
+mkdir config
+printf 'TOKEN=abc123\n' > config/local.env
+printf 'G0 = 9.80665\n' > gravity.py
+printf '*.log\n' > .gitignore
+git add .
+git commit -m "Add gravity model and config"
+--- solution
+git rm --cached config/local.env
+echo "config/local.env" >> .gitignore
+git status -s
+git add .gitignore
+git commit -m "Stop tracking local.env"
+--- hint
+`git rm --cached <file>` removes a file from the index and leaves it on disk. An ignore rule alone does nothing to a file Git already tracks.
+--- hint
+Append the path with `echo "config/local.env" >> .gitignore` (`>>` adds to the end), stage `.gitignore`, and commit.
+--- check shell | local.env is ignored now, and still on disk
+git . ignored config/local.env
+file config/local.env == TOKEN=abc123
+--- check shell | The new commit no longer has it, and keeps the other rules
+git . commits == 2
+git . at HEAD message == Stop tracking local.env
+git . at HEAD missing config/local.env
+git . at HEAD file .gitignore contains *.log
+git . at HEAD file gravity.py
+--- check shell | The old commit still has it: history is not rewritten
+git . at HEAD~1 file config/local.env contains TOKEN=abc123
+
++++ practice | Clean up a polluted repository
+--- task
+Someone committed build products and run output to orbit-sim. Stop tracking them, keep them on disk, and make sure they stay ignored:
+
+- the whole top-level `build` folder;
+- every `__pycache__` folder, at any depth;
+- every file in the top-level `out` folder, except `out/README.md`, which explains the folder and must stay tracked;
+- every `.log` file.
+
+Write the rules into a new `.gitignore`, and make one commit with the message `Stop tracking build products and run output`. The source files stay tracked.
+--- starter
+git init
+git config user.name "Maya Chen"
+mkdir -p build __pycache__ src/__pycache__ out src
+printf 'G0 = 9.80665\n' > src/gravity.py
+printf 'binary\n' > build/sim.o
+printf 'binary\n' > build/drag.o
+printf 'bytecode\n' > __pycache__/setup.cpython-312.pyc
+printf 'bytecode\n' > src/__pycache__/gravity.cpython-312.pyc
+printf 't,alt\n' > out/run1.csv
+printf 't,alt\n' > out/run2.csv
+printf 'Simulation output goes here.\n' > out/README.md
+printf 'step 1 ok\n' > sim.log
+git add .
+git commit -m "Add simulator"
+--- solution
+git rm -r --cached build __pycache__ src/__pycache__
+git rm --cached out/run1.csv out/run2.csv sim.log
+printf '/build/\n__pycache__/\nout/*\n!out/README.md\n*.log\n' > .gitignore
+git status -s
+git add .gitignore
+git commit -m "Stop tracking build products and run output"
+--- hint
+`git rm -r --cached <folder>` takes a whole folder out of the index (`-r` means recursive) and leaves it on disk.
+--- hint
+For `out`, ignore what is inside it, `out/*`, then un-ignore `!out/README.md` on a later line. `git status -s` should list only `.gitignore` and the deletions.
+--- check shell | Build products and run output are ignored now
+git . ignored build/sim.o
+git . ignored build/drag.o
+git . ignored __pycache__/setup.cpython-312.pyc
+git . ignored src/__pycache__/gravity.cpython-312.pyc
+git . ignored out/run1.csv
+git . ignored out/run2.csv
+git . ignored sim.log
+--- check shell | The new commit keeps the source, the out note and the rules
+git . commits == 2
+git . at HEAD message == Stop tracking build products and run output
+git . at HEAD file src/gravity.py
+git . at HEAD file out/README.md
+git . at HEAD file .gitignore
+--- check shell | The junk is out of the commit, but still on disk
+git . at HEAD missing build/sim.o
+git . at HEAD missing out/run1.csv
+git . at HEAD missing src/__pycache__/gravity.cpython-312.pyc
+file build/sim.o
+file out/run2.csv
+git . clean
+
++++ question | What -diff turns off
+--- ask
+A repository's `.gitattributes` has the line `*.csv -diff`. What changes for the CSV files in it?
+--- choice
+They are no longer tracked: Git treats them as if they were in `.gitignore`.
+--- choice correct
+They are still committed and merged line by line as before, but `git diff` shows a one-line "Binary files differ" notice instead of their changed lines.
+--- choice
+They are stored through Git LFS, as pointer files.
+--- choice
+Git stops converting their line endings, but diffs still show every changed line.
+--- why
+`.gitattributes` never decides whether a file is tracked; that is `.gitignore`'s job, and only for untracked files. Each attribute turns off exactly one behavior: `-diff` stops the line-by-line diff, `-merge` stops the line-by-line merge, and `-text` stops line-ending conversion. `binary` is the shorthand for all three. LFS happens only through `filter=lfs`.
+
++++ question | Eight versions of a telemetry file
+--- ask
+A 20,000,000-byte golden telemetry file is re-exported and committed 8 times, without LFS. Each export is completely different from the last. After packing, about how many MiB does this file's history add to every clone? Round to a whole number, and type just the number.
+--- answer
+153
+153 MiB
+153MiB
+about 153
+about 153 MiB
+--- why
+Git stores a complete new blob for each version, and random-looking data neither compresses nor shares pieces with the other versions, so the pack holds all 8 versions in full: 8 × 20,000,000 = 160,000,000 bytes. A MiB is 2^20 = 1,048,576 bytes, and 160,000,000 / 1,048,576 ≈ 152.6, about 153 MiB. With LFS, the repository would hold eight small pointer files instead, and a clone would download only the payload the checked-out commit needs.
+
+=== git01-l09 | Practice: Tags and semantic versioning
+--- for
+l09-tags-and-versions
+
++++ practice | A release and a bookmark
+--- task
+orbit-sim is ready for release 0.3.0.
+
+1. Put an **annotated** tag `v0.3.0` on the commit you are on, with the message `Add J2 and drag models`.
+2. Put a **lightweight** tag `try-rk4` on the commit two before HEAD, as a private bookmark.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity model"
+printf 'def rk4_step():\n    pass\n' > rk4.py
+git add rk4.py
+git commit -m "Sketch an RK4 step"
+printf 'J2 = 1.08263e-3\n' > j2.py
+git add j2.py
+git commit -m "Add J2 constant"
+printf 'RHO0 = 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+--- solution
+git tag -a v0.3.0 -m "Add J2 and drag models"
+git tag try-rk4 HEAD~2
+git log --oneline --decorate
+--- hint
+`git tag -a <name> -m "<message>"` makes an annotated tag on HEAD. With no `-a`, `git tag <name> <commit>` makes a lightweight one.
+--- hint
+Two before HEAD is `HEAD~2`. Check with `git log --oneline --decorate`.
+--- check shell | v0.3.0 is an annotated tag on HEAD
+git . tag v0.3.0
+git . same v0.3.0 HEAD
+used git tag -a
+--- check shell | try-rk4 bookmarks the commit two back
+git . tag try-rk4
+git . same try-rk4 HEAD~2
+git . at try-rk4 message == Sketch an RK4 step
+--- check shell | Tagging moved nothing
+git . branch main
+git . commits == 4
+
++++ practice | Which number goes up?
+--- task
+orbit-sim's last release is `v1.3.0`. Since then, `main` has three commits. Read them with `git log --oneline`: one fixes a docstring, one adds an **optional** `mu` argument to `circular_speed` (old calls still work), and one fixes an off-by-one error in the step count.
+
+Work out the next version under semantic versioning, and put an annotated tag with that name on HEAD, with the message `Optional mu for circular_speed`. The tag name is the version with a `v` in front.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'def circular_speed(r):\n    return (3.986004418e14 / r) ** 0.5\n' > gravity.py
+git add gravity.py
+git commit -m "Add circular speed"
+git tag -a v1.3.0 -m "Circular speed"
+printf 'def circular_speed(r):\n    """Speed of a circular orbit."""\n    return (3.986004418e14 / r) ** 0.5\n' > gravity.py
+git commit -am "Fix the circular_speed docstring"
+printf 'def circular_speed(r, mu=3.986004418e14):\n    """Speed of a circular orbit."""\n    return (mu / r) ** 0.5\n' > gravity.py
+git commit -am "Add optional mu argument to circular_speed"
+printf 'STEPS = 100\n' > steps.py
+git add steps.py
+git commit -m "Fix off-by-one in the step count"
+--- solution
+git log --oneline
+git tag -a v1.4.0 -m "Optional mu for circular_speed"
+--- hint
+A release bumps one number, chosen by its biggest change. Nothing was removed or changed incompatibly, but something was added.
+--- hint
+A backward-compatible addition bumps MINOR and resets PATCH to 0.
+--- check shell | The tag has the right version
+git . tag v1.4.0
+?? Two fixes and one backward-compatible addition: the addition decides. MINOR goes up, PATCH goes back to 0.
+--- check shell | It is annotated, on HEAD
+git . same v1.4.0 HEAD
+used git tag -a
+--- check shell | The old release tag did not move
+git . same v1.3.0 HEAD~3
+
++++ practice | The tag on the wrong commit
+--- task
+A minute ago, Leo tagged `v0.2.0` on HEAD. But the release was qualified one commit earlier: HEAD is a README tweak that came after the qualification. The tag has not left his machine yet, so it is still safe to move.
+
+Delete the tag, and make it again as an annotated tag on the commit before HEAD, with the message `Drag model release`.
+--- starter
+git init
+git config user.name "Leo Park"
+printf 'G0 = 9.80665\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity model"
+printf 'RHO0 = 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+printf '# orbit-sim\n' > README.md
+git add README.md
+git commit -m "Tweak README wording"
+git tag -a v0.2.0 -m "Drag model release"
+--- solution
+git log --oneline --decorate
+git tag -d v0.2.0
+git tag -a v0.2.0 -m "Drag model release" HEAD~1
+git log --oneline --decorate
+--- hint
+Git refuses to reuse a tag name. `git tag -d <name>` deletes only the name; the commit is untouched.
+--- hint
+`git tag -a <name> -m "<message>" <commit>` tags any commit. The one before HEAD is `HEAD~1`.
+--- check shell | v0.2.0 is on the qualified commit
+git . tag v0.2.0
+git . same v0.2.0 HEAD~1
+git . at v0.2.0 message == Add drag model
+--- check shell | You deleted the old tag and made an annotated one
+ran git tag -d
+used git tag -a
+--- check shell | The branch did not move
+git . branch main
+git . commits == 3
+
++++ practice | A patch release from an old tag
+--- task
+`v1.0.0` is flying. `main` has moved on since, and its newest commits include one fix that the flight build needs: `Clamp negative altitude in density()`. Make release 1.0.1 without taking any of `main`'s other work:
+
+1. Make a branch `release/1.0` at `v1.0.0`, and move onto it.
+2. Copy the fix onto it as a new commit.
+3. Tag the result with an annotated tag `v1.0.1`, with the message `Clamp negative altitude`.
+4. Go back to `main`.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'def density(h):\n    return 1.225 * 2.718281828 ** (-h / 8500.0)\n' > drag.py
+printf 'G0 = 9.80665\n' > gravity.py
+git add drag.py gravity.py
+git commit -m "Add gravity and drag models"
+git tag -a v1.0.0 -m "First flight build"
+printf 'J2 = 1.08263e-3\n' > j2.py
+git add j2.py
+git commit -m "Add J2 constant"
+printf 'def density(h):\n    h = max(h, 0.0)\n    return 1.225 * 2.718281828 ** (-h / 8500.0)\n' > drag.py
+git commit -am "Clamp negative altitude in density()"
+printf 'import csv\n' > export.py
+git add export.py
+git commit -m "Add CSV export"
+--- solution
+git log --oneline --decorate
+git switch -c release/1.0 v1.0.0
+git cherry-pick main~1
+git tag -a v1.0.1 -m "Clamp negative altitude"
+git switch main
+git log --oneline --graph --all
+--- hint
+`git switch -c <branch> <start>` makes a branch at any commit or tag and moves onto it. The fix is one commit before `main`'s tip.
+--- hint
+`git cherry-pick main~1` copies only that commit's change. Then tag, and `git switch main`.
+--- check shell | release/1.0 grows from v1.0.0 and holds the fix, tagged
+git . has-branch release/1.0
+git . ancestor v1.0.0 release/1.0
+git . same v1.0.1 release/1.0
+git . at v1.0.1 message == Clamp negative altitude in density()
+git . at v1.0.1 file drag.py contains h = max(h, 0.0)
+--- check shell | None of main's other work came along
+git . at v1.0.1 missing j2.py
+git . at v1.0.1 missing export.py
+git . commits-on release/1.0 == 2
+--- check shell | The tag is annotated, and you are back on main
+used git tag -a
+git . branch main
+git . not-ancestor v1.0.1 main
+
++++ question | Which tag describe picks
+--- ask
+Commit `A` carries the annotated tag `v2.1.0`. One commit later, commit `B`, whose short hash is `5c0d7e2`, carries only a lightweight tag, `nightly`. HEAD is on `B`. What does plain `git describe` print?
+--- choice
+`nightly`
+--- choice correct
+`v2.1.0-1-g5c0d7e2`
+--- choice
+`v2.1.0`
+--- choice
+`nightly-0-g5c0d7e2`
+--- why
+Without `--tags`, `git describe` uses only annotated tags, so the lightweight `nightly` is invisible to it. The nearest annotated tag behind HEAD is `v2.1.0`, one commit back, so it prints the tag, the count `1`, and `g` followed by HEAD's short hash. It would print `v2.1.0` alone only if HEAD were exactly on `A`.
+
++++ question | The order git tag lists
+--- ask
+A repository has exactly three tags: `v0.9.0`, `v0.10.0` and `v0.9.1`. In what order does plain `git tag` list them? Type the three names, top to bottom, separated by spaces.
+--- answer
+v0.10.0 v0.9.0 v0.9.1
+v0.10.0, v0.9.0, v0.9.1
+v0.10.0,v0.9.0,v0.9.1
+v0.10.0, v0.9.0 and v0.9.1
+v0.10.0 v0.9.0 and v0.9.1
+--- why
+Plain `git tag` sorts names as text, one character at a time. All three start `v0.`; then `1` comes before `9`, so `v0.10.0` is first even though 10 is bigger than 9. Between the other two, `v0.9.0` comes before `v0.9.1`. Version order would be `v0.9.0`, `v0.9.1`, `v0.10.0`, which is what `--sort=v:refname` gives.
+
+=== git01-l10 | Practice: Hunting a regression with bisect
+--- for
+l10-bisect
+
++++ practice | A bisect by hand
+--- task
+The atmosphere scale height in `drag.py` should be `H_SCALE = 8500.0`. At HEAD it reads `7200.0`, and the first commit had it right. There are 16 commits.
+
+Find the first bad commit with a manual bisect:
+
+1. Start a bisect, mark HEAD bad and the first commit (`HEAD~15`) good.
+2. At each commit Git checks out, look with `grep H_SCALE drag.py`, and answer `git bisect good` or `git bisect bad`.
+3. When Git names the first bad commit, put a lightweight tag `scale-bug` on it.
+4. End the session, so you are back on `main`.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf 'RHO0 = 1.225\nH_SCALE = 8500.0\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+for i in 2 3 4 5 6 7 8 9 10; do echo "note $i" >> notes.md; git add notes.md; git commit -m "Update notes ($i)"; done
+printf 'RHO0 = 1.225\nH_SCALE = 7200.0\n' > drag.py
+git commit -am "Tidy atmosphere constants"
+for i in 12 13 14 15 16; do echo "note $i" >> notes.md; git commit -am "Update notes ($i)"; done
+--- solution
+git bisect start
+git bisect bad
+git bisect good HEAD~15
+grep H_SCALE drag.py
+git bisect good
+grep H_SCALE drag.py
+git bisect bad
+grep H_SCALE drag.py
+git bisect good
+grep H_SCALE drag.py
+git bisect bad
+git tag scale-bug refs/bisect/bad
+git bisect reset
+--- hint
+`git bisect start`, then `git bisect bad` (HEAD) and `git bisect good HEAD~15`. Git checks out a commit in the middle: test it, and answer.
+--- hint
+Git prints `<hash> is the first bad commit`. Tag that hash with `git tag scale-bug <hash>` (until you reset, Git also calls it `refs/bisect/bad`), then `git bisect reset`.
+--- check shell | scale-bug marks the commit that changed the value
+git . tag scale-bug
+git . at scale-bug message == Tidy atmosphere constants
+git . at scale-bug file drag.py contains H_SCALE = 7200.0
+git . at scale-bug~1 file drag.py contains H_SCALE = 8500.0
+--- check shell | You bisected by hand
+ran git bisect start
+ran git bisect good
+ran git bisect bad
+--- check shell | The session is over, and you are back on main
+git . idle
+git . branch main
+
++++ practice | Let Git run the test
+--- task
+Standard gravity in `gravity.py` should be `G0 = 9.80665`. At HEAD it is `9.81`, and the first of the 20 commits had it right.
+
+Find the first bad commit with `git bisect run`, using `grep` itself as the test: `grep -q` exits 0 when the line is there, and 1 when it is not. Tag the first bad commit `g0-bug` (lightweight), and end the session.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\nG0 = 9.80665\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity constants"
+for i in 2 3 4 5 6 7 8 9 10 11 12; do echo "run $i ok" >> runs.log; git add runs.log; git commit -m "Record test run ($i)"; done
+printf 'MU_EARTH = 3.986004418e14\nG0 = 9.81\n' > gravity.py
+git commit -am "Round constants for display"
+for i in 14 15 16 17 18 19 20; do echo "run $i ok" >> runs.log; git commit -am "Record test run ($i)"; done
+--- solution
+git bisect start HEAD HEAD~19
+git bisect run grep -q "G0 = 9.80665" gravity.py
+git tag g0-bug refs/bisect/bad
+git bisect reset
+--- hint
+`git bisect start <bad> <good>` marks both ends at once: `git bisect start HEAD HEAD~19`.
+--- hint
+`git bisect run grep -q "G0 = 9.80665" gravity.py` tests every step for you. Tag the hash it reports, then reset.
+--- check shell | g0-bug marks the commit that rounded G0
+git . tag g0-bug
+git . at g0-bug message == Round constants for display
+git . at g0-bug~1 file gravity.py contains G0 = 9.80665
+--- check shell | Git ran the test
+ran git bisect run
+printed is the first bad commit
+--- check shell | The session is over
+git . idle
+git . branch main
+
++++ practice | Start from the release tag
+--- task
+The analysts say release `v1.4.0` was fine, but today's `main` has the wrong value of mu in `gravity.py`. It should be `MU_EARTH = 3.986004418e14`.
+
+1. Write a test script `~/check_mu.sh`, outside the repository, that exits 0 when `gravity.py` has that exact line and non-zero when it does not. Make it executable.
+2. Bisect from `v1.4.0` (good) to HEAD (bad) with `git bisect run ~/check_mu.sh`.
+3. Tag the first bad commit `mu-bug` (lightweight) and end the session.
+--- starter
+git init
+git config user.name "Leo Park"
+printf 'MU_EARTH = 3.986004418e14\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity model"
+for i in 2 3 4 5; do echo "item $i" >> changelog.md; git add changelog.md; git commit -m "Update changelog ($i)"; done
+git tag -a v1.4.0 -m "Release 1.4.0"
+for i in 6 7 8 9 10 11 12; do echo "item $i" >> changelog.md; git commit -am "Update changelog ($i)"; done
+printf 'MU_EARTH = 3.986004415e14\n' > gravity.py
+git commit -am "Sync constants with the EGM96 table"
+for i in 14 15 16 17 18; do echo "item $i" >> changelog.md; git commit -am "Update changelog ($i)"; done
+--- solution
+printf 'grep -q "MU_EARTH = 3.986004418e14" gravity.py\n' > ~/check_mu.sh
+chmod +x ~/check_mu.sh
+git bisect start HEAD v1.4.0
+git bisect run ~/check_mu.sh
+git tag mu-bug refs/bisect/bad
+git bisect reset
+--- hint
+The script can be one line: a `grep -q` for the exact text. Its exit status becomes the script's, and `git bisect run` reads 0 as good and 1 as bad.
+--- hint
+A tag works anywhere a commit does: `git bisect start HEAD v1.4.0`, then `git bisect run ~/check_mu.sh`.
+--- check shell | mu-bug marks the commit that changed mu
+git . tag mu-bug
+git . at mu-bug message == Sync constants with the EGM96 table
+git . at mu-bug~1 file gravity.py contains MU_EARTH = 3.986004418e14
+--- check shell | The script lives outside the repository and can run
+file ~/check_mu.sh
+file ~/check_mu.sh exec
+file ~/check_mu.sh contains 3.986004418e14
+--- check shell | You started from the tag, and the session is over
+used v1.4.0
+ran git bisect run
+git . idle
+git . branch main
+
++++ practice | Commits that cannot be tested
+--- task
+`G0` in `constants.py` should be `G0 = 9.80665`. At HEAD it is `9.81`; the first of the 20 commits had it right. In the middle of the history, someone moved `constants.py` away for two commits while splitting it up, so at those commits the file does not exist.
+
+A script that only runs `grep` would exit 2 there, and Git would read 2 as **bad** and blame the wrong commit.
+
+1. Write `~/check.sh` so that it exits **125** when `constants.py` is missing, and otherwise exits 0 when the right `G0` line is there and 1 when it is not. Make it executable.
+2. Bisect with it over the whole history (`HEAD~19` is good), tag the first bad commit `g0-bug` (lightweight), and end the session.
+--- starter
+git init
+git config user.name "Leo Park"
+printf 'G0 = 9.80665\nMU_EARTH = 3.986004418e14\n' > constants.py
+git add constants.py
+git commit -m "Add constants"
+for i in 2 3 4 5 6 7 8; do echo "step $i" >> log.md; git add log.md; git commit -m "Log progress ($i)"; done
+mv constants.py consts_part.py
+git add constants.py consts_part.py
+git commit -m "Start splitting constants"
+echo "step 10" >> log.md
+git commit -am "Log progress (10)"
+mv consts_part.py constants.py
+git add constants.py consts_part.py
+git commit -m "Finish splitting constants"
+for i in 12 13 14 15; do echo "step $i" >> log.md; git commit -am "Log progress ($i)"; done
+printf 'G0 = 9.81\nMU_EARTH = 3.986004418e14\n' > constants.py
+git commit -am "Tidy constants block"
+for i in 17 18 19 20; do echo "step $i" >> log.md; git commit -am "Log progress ($i)"; done
+--- solution
+printf 'if [ ! -f constants.py ]; then\n  exit 125\nfi\ngrep -q "G0 = 9.80665" constants.py\n' > ~/check.sh
+chmod +x ~/check.sh
+cat ~/check.sh
+git bisect start HEAD HEAD~19
+git bisect run ~/check.sh
+git bisect log
+git tag g0-bug refs/bisect/bad
+git bisect reset
+--- hint
+`[ -f constants.py ]` is true when the file exists, and `!` turns that round. Put `exit 125` inside an `if` for the missing case, then let `grep -q` decide.
+--- hint
+Write the script with `printf '…\n…\n' > ~/check.sh`, check it with `cat`, `chmod +x` it, then `git bisect start HEAD HEAD~19` and `git bisect run ~/check.sh`. `git bisect log` shows a `# skip:` line.
+--- check shell | g0-bug marks the real culprit
+git . tag g0-bug
+git . at g0-bug message == Tidy constants block
+?? If g0-bug is on "Start splitting constants", the missing file was read as bad. Exit 125 there, so Git skips that commit.
+--- check shell | The script skips what it cannot test
+file ~/check.sh exec
+file ~/check.sh contains 125
+file ~/check.sh contains constants.py
+--- check shell | The session is over
+git . idle
+git . branch main
+
++++ practice | The test script that vanishes
+--- task
+Ravi committed his check script as `tools/check.sh`, in the newest commit only, and started a bisect:
+
+```
+git bisect start HEAD HEAD~15
+git bisect run tools/check.sh
+```
+
+The run stopped with an error at the very first commit, and he is still in the middle of the session. The script tests that `thrust.py` has `MAX_THRUST_N = 400`.
+
+Find out why it failed, then do the hunt properly: end this session, put a copy of the script outside the repository at `~/check.sh` (executable), bisect again over the same range with that copy, tag the first bad commit `thrust-bug` (lightweight), and end the session.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf 'MAX_THRUST_N = 400\n' > thrust.py
+git add thrust.py
+git commit -m "Add thrust limit"
+for i in 2 3 4 5 6 7 8; do echo "case $i" >> cases.md; git add cases.md; git commit -m "Add test case ($i)"; done
+printf 'MAX_THRUST_N = 440\n' > thrust.py
+git commit -am "Allow 10 percent thrust margin"
+for i in 10 11 12 13 14 15; do echo "case $i" >> cases.md; git commit -am "Add test case ($i)"; done
+mkdir tools
+printf 'grep -q "MAX_THRUST_N = 400" thrust.py\n' > tools/check.sh
+chmod +x tools/check.sh
+git add tools
+git commit -m "Add thrust limit check"
+git bisect start HEAD HEAD~15
+git bisect run tools/check.sh
+--- solution
+git status
+ls tools
+git bisect reset
+cp tools/check.sh ~/check.sh
+chmod +x ~/check.sh
+git bisect start HEAD HEAD~15
+git bisect run ~/check.sh
+git tag thrust-bug refs/bisect/bad
+git bisect reset
+--- hint
+Bisect checks out old commits, replacing the tracked files in your folder. At an old commit, does `tools/check.sh` exist at all?
+--- hint
+`git bisect reset` brings the newest files back. Copy the script to `~/check.sh`, `chmod +x` it, and bisect again with `git bisect run ~/check.sh`.
+--- check shell | thrust-bug marks the commit that raised the limit
+git . tag thrust-bug
+git . at thrust-bug message == Allow 10 percent thrust margin
+git . at thrust-bug~1 file thrust.py == MAX_THRUST_N = 400
+--- check shell | The copy lives outside the repository
+file ~/check.sh exec
+file ~/check.sh contains MAX_THRUST_N = 400
+--- check shell | The session is over, and you are back on main
+git . idle
+git . branch main
+file tools/check.sh
+
++++ practice | Report the hunt
+--- task
+Orbit decay predictions went wrong somewhere in 30 commits. `drag.py` should have `CD = 2.2`; at HEAD it has `2.4`, and the first commit had it right. One commit in the range deleted `drag.py` by mistake, and the next put it back, so one commit cannot be tested.
+
+Hunt it down and write a report:
+
+1. Write an executable `~/check_cd.sh` that exits 125 when `drag.py` is missing, 0 when it has `CD = 2.2`, and 1 otherwise.
+2. Run `git bisect run ~/check_cd.sh` over the whole range (`HEAD~29` is good).
+3. Tag the first bad commit `cd-bug` (lightweight).
+4. Write into `steps.txt` the number of times the script ran, which is the number of `running` lines in the output. Just the number.
+5. End the session. Do not commit `steps.txt`.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'RHO0 = 1.225\nCD = 2.2\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+for i in 2 3 4 5 6 7 8 9 10 11 12 13 14; do echo "row $i" >> table.csv; git add table.csv; git commit -m "Extend drag table ($i)"; done
+rm drag.py
+git add drag.py
+git commit -m "Reorganise model files"
+git show HEAD~1:drag.py > drag.py
+git add drag.py
+git commit -m "Restore drag.py"
+for i in 17 18 19 20 21; do echo "row $i" >> table.csv; git commit -am "Extend drag table ($i)"; done
+printf 'RHO0 = 1.225\nCD = 2.4\n' > drag.py
+git commit -am "Use the tumbling-plate drag coefficient"
+for i in 23 24 25 26 27 28 29 30; do echo "row $i" >> table.csv; git commit -am "Extend drag table ($i)"; done
+--- solution
+printf 'if [ ! -f drag.py ]; then\n  exit 125\nfi\ngrep -q "CD = 2.2" drag.py\n' > ~/check_cd.sh
+chmod +x ~/check_cd.sh
+git bisect start HEAD HEAD~29
+git bisect run ~/check_cd.sh
+git tag cd-bug refs/bisect/bad
+git bisect log
+echo 6 > steps.txt
+git bisect reset
+--- hint
+The script has the same shape as any skip-aware test: exit 125 for the missing file, then `grep -q` for the right line.
+--- hint
+Count the `running` lines, or the `# good:`, `# bad:` and `# skip:` lines in `git bisect log`: one per run of the script.
+--- check shell | cd-bug marks the commit that changed the coefficient
+git . tag cd-bug
+git . at cd-bug message == Use the tumbling-plate drag coefficient
+git . at cd-bug~1 file drag.py contains CD = 2.2
+--- check shell | steps.txt holds the number of runs
+file steps.txt == 6
+--- check shell | The script handles the missing file, and the session is over
+file ~/check_cd.sh exec
+file ~/check_cd.sh contains 125
+git . idle
+git . untracked steps.txt
+
+=== git01-test | Git basics: module test
+--- teach
+Ten problems in the practice terminal and twelve questions, in one timed sitting with no hints. The problems combine the module's lessons: precise staging and commit messages, branches and merges with conflicts, undoing shared and local work, rescuing lost commits with the reflog, ignore rules, release tags and bisect. The questions test the model underneath: objects and hashes, the commit graph, what each command moves. To get ready, redo the practice problems of the lessons that felt hard, and draw the graph before every command you are unsure of.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | Three commits from one messy afternoon
+--- task
+Your working tree in orbit-sim is a mix of things:
+
+- `gravity.py` is **staged** with a sign fix in `accel_vector`, and after staging you also added an `orbital_period` function (not staged);
+- `drag.py` is modified: it now rejects negative drag coefficients;
+- `tests/test_drag.py` is new;
+- `out/run.csv` is a simulation output.
+
+Make exactly three commits, in this order:
+
+1. Subject `Fix sign of accel_vector`: `gravity.py` exactly as it is staged now, without `orbital_period`, and nothing else.
+2. Subject `Reject negative drag coefficients`, with this body: `A negative coefficient from the config parser made drag push the vehicle forward. Raise ValueError so a bad config stops the run.` It holds `drag.py` and `tests/test_drag.py`. (Give `git commit` two `-m` options: the first is the subject, the second becomes the body, after a blank line.)
+3. Subject `Add orbital period helper`: the rest of `gravity.py`.
+
+`out/run.csv` is never committed and stays untracked.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'def accel_vector(x, y, z):\n    r = (x*x + y*y + z*z) ** 0.5\n    return (x / r**3, y / r**3, z / r**3)\n' > gravity.py
+printf 'CD = 2.2\n' > drag.py
+printf '# orbit-sim\n' > README.md
+git add gravity.py drag.py README.md
+git commit -m "Add gravity and drag models"
+printf 'def accel_vector(x, y, z):\n    r = (x*x + y*y + z*z) ** 0.5\n    return (-x / r**3, -y / r**3, -z / r**3)\n' > gravity.py
+git add gravity.py
+printf 'def accel_vector(x, y, z):\n    r = (x*x + y*y + z*z) ** 0.5\n    return (-x / r**3, -y / r**3, -z / r**3)\n\n\ndef orbital_period(a):\n    return 6.283185307 * a ** 1.5\n' > gravity.py
+printf 'CD = 2.2\n\n\ndef check_cd(cd):\n    if cd < 0:\n        raise ValueError("negative drag coefficient")\n' > drag.py
+mkdir tests out
+printf 'from drag import check_cd\n' > tests/test_drag.py
+printf 't,alt\n0,550000\n' > out/run.csv
+--- solution
+git status -s
+git commit -m "Fix sign of accel_vector"
+git add drag.py tests
+git commit -m "Reject negative drag coefficients" -m "A negative coefficient from the config parser made drag push the vehicle forward. Raise ValueError so a bad config stops the run."
+git add gravity.py
+git commit -m "Add orbital period helper"
+git log --oneline
+--- check shell | Three new commits, in order
+git . commits == 4
+git . at HEAD~2 message == Fix sign of accel_vector
+git . at HEAD~1 message == Reject negative drag coefficients
+git . at HEAD message == Add orbital period helper
+--- check shell | The first holds only the staged sign fix
+git . at HEAD~2 file gravity.py contains return (-x / r**3, -y / r**3, -z / r**3)
+git . at HEAD~2 file gravity.py excludes orbital_period
+git . at HEAD~2 file drag.py excludes check_cd
+git . at HEAD~2 missing tests/test_drag.py
+--- check shell | The second holds the drag change and its test, with the body
+git . at HEAD~1 message contains Raise ValueError so a bad config stops the run.
+git . at HEAD~1 file drag.py contains def check_cd(cd):
+git . at HEAD~1 file tests/test_drag.py
+git . at HEAD~1 file gravity.py excludes orbital_period
+--- check shell | The third finishes gravity.py, and the output never went in
+git . at HEAD file gravity.py contains def orbital_period(a):
+git . at HEAD missing out/run.csv
+git . untracked out/run.csv
+git . clean
+
++++ problem | Resolve on the branch, land without a merge on main
+--- task
+You are on `egm96-mu`, which has two commits of its own. `main` has meanwhile switched `MU_EARTH` to the WGS 84 value, on the same line your branch changed.
+
+1. Merge `main` into `egm96-mu`, and resolve the conflict so `constants.py` is exactly:
+
+```
+MU_EARTH = 3.986004418e14
+MU_EARTH_EGM96 = 3.986004415e14
+R_EARTH = 6378137.0
+```
+
+   Finish that merge with the message `Merge branch 'main' into egm96-mu`.
+2. Then bring the branch into `main` with **no** further merge commit, and delete `egm96-mu`.
+
+You end on `main`, with exactly one merge commit in its history.
+--- starter
+git init
+git config user.name "Leo Park"
+printf 'MU_EARTH = 3.986e14\nR_EARTH = 6378137.0\n' > constants.py
+git add constants.py
+git commit -m "Add Earth constants"
+git switch -c egm96-mu
+printf 'MU_EARTH = 3.986004415e14\nR_EARTH = 6378137.0\n' > constants.py
+git commit -am "Use the EGM96 value of mu"
+printf 'from constants import MU_EARTH\n' > compare.py
+git add compare.py
+git commit -m "Add EGM96 comparison script"
+git switch main
+git config user.name "Maya Chen"
+printf 'MU_EARTH = 3.986004418e14\nR_EARTH = 6378137.0\n' > constants.py
+git commit -am "Use the WGS 84 value of mu"
+git switch egm96-mu
+--- solution
+git merge main
+cat constants.py
+printf 'MU_EARTH = 3.986004418e14\nMU_EARTH_EGM96 = 3.986004415e14\nR_EARTH = 6378137.0\n' > constants.py
+git add constants.py
+git commit -m "Merge branch 'main' into egm96-mu"
+git switch main
+git merge egm96-mu
+git branch -d egm96-mu
+git log --oneline --graph
+--- check shell | One merge commit, now at the tip of main
+git . branch main
+git . merges == 1
+git . commits == 5
+git . at HEAD parents == 2
+git . at HEAD message == Merge branch 'main' into egm96-mu
+--- check shell | The branch's work is the first parent, main's fix the second
+git . at HEAD^1 message == Add EGM96 comparison script
+git . at HEAD^2 message == Use the WGS 84 value of mu
+--- check shell | The resolution keeps both values, with no markers
+git . at HEAD file constants.py contains MU_EARTH = 3.986004418e14
+git . at HEAD file constants.py contains MU_EARTH_EGM96 = 3.986004415e14
+git . at HEAD file constants.py contains R_EARTH = 6378137.0
+git . at HEAD file constants.py excludes <<<<<<<
+git . at HEAD file compare.py
+--- check shell | The branch is gone, and nothing is in progress
+git . no-branch egm96-mu
+git . idle
+
++++ problem | Lost work under a shared merge
+--- task
+Ravi had three commits on `main` on top of `Add thrust table`: `Add minimum thrust`, `Add throttle rate limit` and `Test the thrust limits`. By mistake he ran `git reset --hard HEAD~3`. Then, without noticing, he merged `docs` with a merge commit, and that merge is already shared, so `main` must not move backward.
+
+1. Put a branch `lost-thrust` on the newest lost commit, so the originals have a name.
+2. On `main`, add the three changes on top of the merge as new commits, in their original order and with their original messages.
+3. Stay on `main`.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf 'MAX_THRUST_N = 400\n' > thrust.py
+printf '# thrust\n' > README.md
+git add thrust.py README.md
+git commit -m "Add thrust table"
+git branch docs
+printf 'MAX_THRUST_N = 400\nMIN_THRUST_N = 40\n' > thrust.py
+git commit -am "Add minimum thrust"
+printf 'MAX_THRUST_N = 400\nMIN_THRUST_N = 40\nTHROTTLE_RATE = 0.1\n' > thrust.py
+git commit -am "Add throttle rate limit"
+mkdir tests
+printf 'from thrust import MIN_THRUST_N\n' > tests/test_thrust.py
+git add tests
+git commit -m "Test the thrust limits"
+git reset --hard HEAD~3
+git switch docs
+printf '# thrust\n\nAll forces are in newtons.\n' > README.md
+git commit -am "State force units"
+git switch main
+git merge --no-ff docs --no-edit
+--- solution
+git reflog
+git branch lost-thrust HEAD@{5}
+git log --oneline --graph --all
+git cherry-pick lost-thrust~2 lost-thrust~1 lost-thrust
+git log --oneline --graph
+--- check shell | lost-thrust names the original newest lost commit
+git . has-branch lost-thrust
+git . at lost-thrust message == Test the thrust limits
+git . commits-on lost-thrust == 4
+--- check shell | main has the three changes on top of the merge, in order
+git . branch main
+git . at HEAD message == Test the thrust limits
+git . at HEAD~1 message == Add throttle rate limit
+git . at HEAD~2 message == Add minimum thrust
+git . at HEAD~3 parents == 2
+git . at HEAD~3 message == Merge branch 'docs'
+--- check shell | The newest snapshot has everything, and main did not rewind
+git . at HEAD file thrust.py contains THROTTLE_RATE = 0.1
+git . at HEAD file tests/test_thrust.py
+git . at HEAD file README.md contains newtons
+git . not-ancestor lost-thrust main
+git . idle
+
++++ problem | A revert that conflicts
+--- task
+`main` is shared. The commit `Raise drag coefficient to 2.4` was wrong and must be undone without rewriting history, keeping Git's message and every later commit.
+
+A later commit, `Explain the drag coefficient`, edited the same line, so the revert will stop on a conflict. Resolve it so the line reads exactly `CD = 2.2 # sphere-cylinder`, with no conflict markers left, and finish the revert (Git tells you how when it stops).
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'RHO0 = 1.225\nCD = 2.2\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+printf 'RHO0 = 1.225\nCD = 2.4\n' > drag.py
+git commit -am "Raise drag coefficient to 2.4"
+mkdir tests
+printf 'from drag import CD\n' > tests/test_drag.py
+git add tests
+git commit -m "Add drag test"
+printf 'RHO0 = 1.225\nCD = 2.4 # tumbling plate\n' > drag.py
+git commit -am "Explain the drag coefficient"
+--- solution
+git log --oneline
+git revert HEAD~2 --no-edit
+cat drag.py
+printf 'RHO0 = 1.225\nCD = 2.2 # sphere-cylinder\n' > drag.py
+git add drag.py
+git revert --continue
+git log --oneline
+--- check shell | The revert is finished, on top of the whole history
+git . idle
+git . commits == 5
+git . at HEAD message == Revert "Raise drag coefficient to 2.4"
+git . at HEAD~1 message == Explain the drag coefficient
+git . at HEAD~3 message == Raise drag coefficient to 2.4
+--- check shell | The line reads as asked, with no markers
+git . at HEAD file drag.py contains CD = 2.2 # sphere-cylinder
+git . at HEAD file drag.py contains RHO0 = 1.225
+git . at HEAD file drag.py excludes 2.4
+git . at HEAD file drag.py excludes <<<<<<<
+git . at HEAD file drag.py excludes >>>>>>>
+--- check shell | The later test commit survived, and the folder is clean
+git . at HEAD file tests/test_drag.py
+git . clean
+file drag.py excludes <<<<<<<
+
++++ problem | Ignore rules for a results folder
+--- task
+orbit-sim tracks files it should not, and a new reference table is waiting to be committed. Write a `.gitignore` so Git ignores:
+
+- every `.log` file, at any depth;
+- the file `config/local.env` (the other files in `config` stay tracked);
+- every `.mat` file directly inside any folder named `results`, at any depth,
+
+**except** the top-level `results/reference.mat`, which must be committed. `a/results/reference.mat` is a stale copy and must be ignored like the rest.
+
+Stop tracking every file these rules cover, keeping each one on disk, and make one commit with the message `Ignore logs, local config and run results` that holds `.gitignore` and `results/reference.mat`.
+--- starter
+git init
+git config user.name "Leo Park"
+mkdir -p logs config results a/results src
+printf 'G0 = 9.80665\n' > src/gravity.py
+printf 'step ok\n' > logs/2026-09-01.log
+printf 'step ok\n' > run.log
+printf 'TOKEN=abc123\n' > config/local.env
+printf 'port = 8080\n' > config/defaults.env
+printf 'r1\n' > results/run1.mat
+printf 'r2\n' > a/results/run2.mat
+printf 'old ref\n' > a/results/reference.mat
+git add .
+git commit -m "Add simulator and results"
+printf 'ref\n' > results/reference.mat
+--- solution
+printf '*.log\n/config/local.env\n**/results/*.mat\n!/results/reference.mat\n' > .gitignore
+git rm --cached logs/2026-09-01.log run.log config/local.env results/run1.mat a/results/run2.mat a/results/reference.mat
+git status -s
+git add .gitignore results/reference.mat
+git commit -m "Ignore logs, local config and run results"
+--- check shell | Everything the rules cover is ignored now
+git . ignored logs/2026-09-01.log
+git . ignored run.log
+git . ignored config/local.env
+git . ignored results/run1.mat
+git . ignored a/results/run2.mat
+git . ignored a/results/reference.mat
+--- check shell | The commit holds the rules, the reference table and the source
+git . commits == 2
+git . at HEAD message == Ignore logs, local config and run results
+git . at HEAD file .gitignore contains !
+git . at HEAD file results/reference.mat == ref
+git . at HEAD file config/defaults.env
+git . at HEAD file src/gravity.py
+--- check shell | Untracked files left the commit but stayed on disk
+git . at HEAD missing config/local.env
+git . at HEAD missing a/results/reference.mat
+git . at HEAD missing results/run1.mat
+file config/local.env == TOKEN=abc123
+file a/results/run2.mat
+git . clean
+
++++ problem | One fix, two patch releases
+--- task
+orbit-sim still supports two release lines, 2.0 and 2.1 (tags `v2.0.0` and `v2.1.0`). On `main`, the commit before the tip, `Reject non-positive radius in accel`, fixes a bug both lines have. The tip itself renames `accel` to `gravity_accel`, which neither line may take.
+
+For each line:
+
+1. Make a branch at its release tag, named `release/2.0` or `release/2.1`.
+2. Copy the fix onto it as a new commit.
+3. Put an annotated tag on the result, with the message `Reject non-positive radius`, named by the next version under semantic versioning.
+
+End on `main`, which must not change.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'def accel(r):\n    return 3.986004418e14 / r**2\n' > gravity.py
+git add gravity.py
+git commit -m "Add accel"
+git tag -a v2.0.0 -m "Release 2.0.0"
+printf 'def circular_speed(r):\n    return (3.986004418e14 / r) ** 0.5\n' > speed.py
+git add speed.py
+git commit -m "Add circular speed"
+git tag -a v2.1.0 -m "Release 2.1.0"
+printf 'def accel(r):\n    if r <= 0:\n        raise ValueError("radius must be positive")\n    return 3.986004418e14 / r**2\n' > gravity.py
+git commit -am "Reject non-positive radius in accel"
+printf 'def gravity_accel(r):\n    if r <= 0:\n        raise ValueError("radius must be positive")\n    return 3.986004418e14 / r**2\n' > gravity.py
+git commit -am "Rename accel to gravity_accel"
+--- solution
+git log --oneline --decorate
+git switch -c release/2.0 v2.0.0
+git cherry-pick main~1
+git tag -a v2.0.1 -m "Reject non-positive radius"
+git switch -c release/2.1 v2.1.0
+git cherry-pick main~1
+git tag -a v2.1.1 -m "Reject non-positive radius"
+git switch main
+git log --oneline --graph --all
+--- check shell | 2.0.1 is the fix on top of 2.0.0
+git . tag v2.0.1
+git . same v2.0.1 release/2.0
+git . same release/2.0~1 v2.0.0
+git . at v2.0.1 file gravity.py contains raise ValueError
+git . at v2.0.1 missing speed.py
+--- check shell | 2.1.1 is the fix on top of 2.1.0, without the rename
+git . tag v2.1.1
+git . same v2.1.1 release/2.1
+git . same release/2.1~1 v2.1.0
+git . at v2.1.1 file gravity.py contains def accel(r):
+git . at v2.1.1 file speed.py
+--- check shell | Both tags are annotated, and main is untouched
+used git tag -a
+git . branch main
+git . commits-on main == 4
+git . not-ancestor v2.1.1 main
+
++++ problem | Hunt the regression, then undo it
+--- task
+Release `v3.0.0` was fine. At HEAD, `drag.py` has the wrong scale height: it should be `H_SCALE = 8500.0`. Somewhere after the release, `drag.py` was also missing for one commit.
+
+1. Write an executable `~/check_scale.sh` that exits 125 when `drag.py` is missing, 0 when it has `H_SCALE = 8500.0`, and 1 otherwise.
+2. Bisect from `v3.0.0` (good) to HEAD (bad) with it, tag the first bad commit `regression` (lightweight), and end the session.
+3. `main` is shared: undo the culprit with a new commit, keeping Git's message.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf 'RHO0 = 1.225\nH_SCALE = 8500.0\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+for i in 2 3; do echo "entry $i" >> history.md; git add history.md; git commit -m "Update history ($i)"; done
+git tag -a v3.0.0 -m "Release 3.0.0"
+for i in 4 5 6 7 8 9 10 11; do echo "entry $i" >> history.md; git commit -am "Update history ($i)"; done
+rm drag.py
+git add drag.py
+git commit -m "Move drag model out for review"
+git show HEAD~1:drag.py > drag.py
+git add drag.py
+git commit -m "Bring drag model back"
+for i in 14 15 16; do echo "entry $i" >> history.md; git commit -am "Update history ($i)"; done
+printf 'RHO0 = 1.225\nH_SCALE = 7200.0\n' > drag.py
+git commit -am "Tidy atmosphere constants"
+for i in 18 19 20 21 22; do echo "entry $i" >> history.md; git commit -am "Update history ($i)"; done
+--- solution
+printf 'if [ ! -f drag.py ]; then\n  exit 125\nfi\ngrep -q "H_SCALE = 8500.0" drag.py\n' > ~/check_scale.sh
+chmod +x ~/check_scale.sh
+git bisect start HEAD v3.0.0
+git bisect run ~/check_scale.sh
+git tag regression refs/bisect/bad
+git bisect reset
+git revert regression --no-edit
+git log --oneline -3
+--- check shell | regression marks the real culprit
+git . tag regression
+git . at regression message == Tidy atmosphere constants
+git . at regression~1 file drag.py contains H_SCALE = 8500.0
+--- check shell | The script skips the missing file
+file ~/check_scale.sh exec
+file ~/check_scale.sh contains 125
+--- check shell | The culprit is reverted on main, and the session is over
+git . idle
+git . branch main
+git . commits == 23
+git . at HEAD message == Revert "Tidy atmosphere constants"
+git . at HEAD file drag.py contains H_SCALE = 8500.0
+git . at HEAD~1 message == Update history (22)
+
++++ problem | A hotfix in the middle of a feature
+--- task
+You are on `attitude`, in the middle of work: `attitude.py` has an uncommitted edit, and `filter.py` is a new file, not yet added. A hotfix cannot wait.
+
+1. On `main`, change the `G0` comment in `gravity.py` from `# m/s` to `# m/s^2`, and commit with the message `Fix the unit in the G0 comment`.
+2. Back on `attitude`, bring `main` into it with a merge commit, keeping Git's message.
+3. Get your unfinished work back exactly as it was: the `attitude.py` edit uncommitted, `filter.py` untracked. The stash list must end empty.
+
+Your unfinished work must not end up in any commit.
+--- starter
+git init
+git config user.name "Leo Park"
+printf 'G0 = 9.80665 # m/s\n' > gravity.py
+git add gravity.py
+git commit -m "Add gravity model"
+git switch -c attitude
+printf 'GYRO_BIAS = 0.002\n' > attitude.py
+git add attitude.py
+git commit -m "Add gyro bias estimate"
+printf 'GYRO_BIAS = 0.002\nALPHA = 0.98\n' > attitude.py
+printf 'def complementary(a, b):\n    pass\n' > filter.py
+--- solution
+git stash push -u -m "attitude filter, half done"
+git switch main
+printf 'G0 = 9.80665 # m/s^2\n' > gravity.py
+git commit -am "Fix the unit in the G0 comment"
+git switch attitude
+git merge main --no-edit
+git stash pop
+git status -s
+--- check shell | The hotfix is on main
+git . at main message == Fix the unit in the G0 comment
+git . at main file gravity.py == G0 = 9.80665 # m/s^2
+git . commits-on main == 2
+--- check shell | attitude took the fix with a merge, and nothing unfinished
+git . at attitude parents == 2
+git . same attitude^2 main
+git . at attitude file gravity.py contains m/s^2
+git . at attitude file attitude.py excludes ALPHA
+git . at attitude missing filter.py
+--- check shell | Your unfinished work is back as it was, and the stash is empty
+git . branch attitude
+git . stashes == 0
+file attitude.py contains ALPHA = 0.98
+git . modified attitude.py
+git . untracked filter.py
+
++++ problem | Experiments on the flight build
+--- task
+Maya stood on the flight build `v1.0.0` in detached HEAD and made two experimental commits: `Try rounded g0 on the flight build`, then `Note why g0 is rounded`. Then she switched back to `main`, and now no branch or tag names them.
+
+1. Make a branch `exp/rounded-g0` at the newer experiment.
+2. Put a lightweight tag `exp-1` on the older one.
+3. Stay on `main`, which must not change.
+--- starter
+git init
+git config user.name "Maya Chen"
+printf 'G0 = 9.80665\n' > gravity.py
+git add gravity.py
+git commit -m "Add standard gravity"
+git tag -a v1.0.0 -m "Flight build 1.0.0"
+printf 'RHO0 = 1.225\n' > drag.py
+git add drag.py
+git commit -m "Add drag model"
+printf 'J2 = 1.08263e-3\n' > j2.py
+git add j2.py
+git commit -m "Add J2 constant"
+git switch --detach v1.0.0
+printf 'G0 = 9.81\n' > gravity.py
+git commit -am "Try rounded g0 on the flight build"
+printf 'G0 = 9.81\n# rounded for the display only\n' > gravity.py
+git commit -am "Note why g0 is rounded"
+git switch main
+--- solution
+git reflog
+git branch exp/rounded-g0 HEAD@{1}
+git tag exp-1 exp/rounded-g0~1
+git log --oneline --graph --all
+--- check shell | The branch names the newer experiment, grown from the flight build
+git . has-branch exp/rounded-g0
+git . at exp/rounded-g0 message == Note why g0 is rounded
+git . same exp/rounded-g0~2 v1.0.0
+--- check shell | exp-1 marks the older experiment
+git . tag exp-1
+git . same exp-1 exp/rounded-g0~1
+git . at exp-1 file gravity.py == G0 = 9.81
+--- check shell | main is untouched, and you are on it
+git . branch main
+git . commits-on main == 3
+git . not-ancestor exp/rounded-g0 main
+
++++ problem | Squash the work in progress before review
+--- task
+Your last four commits, `wip`, `more`, `fix typo` and `tests`, are only on your machine. Before review, replace them with **one** commit whose subject is `Add ballistic coefficient helper` and whose body is `Drag depends on mass over drag coefficient times area, so one number describes each vehicle. The trajectory code needs it to compare vehicles.` The new commit must hold the final versions of everything the four commits changed.
+
+`notes.txt` has an unstaged edit that must stay out of the commit, unstaged. `scratch.txt` was staged by mistake: it must not be committed, and must end up untracked, still on disk.
+--- starter
+git init
+git config user.name "Ravi Patel"
+printf 'RHO0 = 1.225\n' > drag.py
+printf 'todo: drag\n' > notes.txt
+git add drag.py notes.txt
+git commit -m "Add drag model"
+printf 'RHO0 = 1.225\n\n\ndef ballistic_coefficient(m, cd, a):\n    return m / (cd * a)\n' > drag.py
+git commit -am "wip"
+printf 'RHO0 = 1.225\n\n\ndef ballistic_coefficient(m, cd, a):\n    """Mass over drag area, in kg/m^2. Lagrer means less drag."""\n    return m / (cd * a)\n' > drag.py
+git commit -am "more"
+printf 'RHO0 = 1.225\n\n\ndef ballistic_coefficient(m, cd, a):\n    """Mass over drag area, in kg/m^2. Larger means less drag."""\n    return m / (cd * a)\n' > drag.py
+git commit -am "fix typo"
+mkdir tests
+printf 'from drag import ballistic_coefficient\n' > tests/test_drag.py
+git add tests
+git commit -m "tests"
+printf 'todo: drag\ndone: ballistic coefficient\n' > notes.txt
+printf 'try m = 4 kg\n' > scratch.txt
+git add scratch.txt
+--- solution
+git log --oneline
+git restore --staged scratch.txt
+git reset --soft HEAD~4
+git status -s
+git commit -m "Add ballistic coefficient helper" -m "Drag depends on mass over drag coefficient times area, so one number describes each vehicle. The trajectory code needs it to compare vehicles."
+git log --oneline
+--- check shell | One commit replaces the four
+git . commits == 2
+git . log excludes wip
+git . at HEAD message == Add ballistic coefficient helper
+git . at HEAD message contains The trajectory code needs it to compare vehicles.
+git . at HEAD~1 message == Add drag model
+--- check shell | It holds the final versions
+git . at HEAD file drag.py contains Larger means less drag.
+git . at HEAD file drag.py excludes Lagrer
+git . at HEAD file tests/test_drag.py
+--- check shell | The notes edit and the scratch file stayed out
+git . at HEAD file notes.txt == todo: drag
+git . modified notes.txt
+git . at HEAD missing scratch.txt
+git . untracked scratch.txt
+file scratch.txt == try m = 4 kg
+git . clean
+
++++ question | Two tags, how many objects
+--- ask
+On the same commit, you run `git tag -a v1.0.0 -m "First flight build"` and then `git tag flown`. How many new objects appear in `.git/objects`? Type the number.
+--- answer
+1
+one
+1 object
+one object
+1 new object
+one new object
+--- why
+One. An annotated tag is a real object, the fourth kind: it records the commit it names, the tagger, the date and the message, and its ref file holds the tag object's hash. A lightweight tag is only a small ref file under `.git/refs/tags` holding the commit's hash, just like a branch file, so it adds no object at all. Neither tag writes a blob, a tree or a commit.
+
++++ question | Two ways down a merge
+--- ask
+`git log --oneline --graph --all` prints:
+
+```
+*   9f1c2ab (HEAD -> main) Merge branch 'drag'
+|\
+| * 4d7e011 (drag) Add drag coefficient
+| * 71b09c3 Add air density
+* | c2a8f55 Add J2 constant
+|/
+* 5be3d90 Add gravity model
+```
+
+Which commits do `HEAD~2` and `HEAD^2~1` name? Type the two short hashes in that order, separated by a space.
+--- answer
+5be3d90 71b09c3
+5be3d90, 71b09c3
+5be3d90,71b09c3
+5be3d90 and 71b09c3
+5be3d90; 71b09c3
+--- why
+`~` always follows first parents. The merge's first parent is where `main` was, `c2a8f55` in the left column, and its parent is `5be3d90`, so `HEAD~2` is `5be3d90`. `^2` steps to the second parent instead, the tip of the merged branch, `4d7e011`, and `~1` goes one more parent back, to `71b09c3`.
+
++++ question | The body a reviewer needs
+--- ask
+A commit changes one line of `integrator.py`, from `STEP_S = 10.0` to `STEP_S = 5.0`. Its subject is `Halve the integrator step`. Which body is worth writing?
+--- choice
+`Change STEP_S from 10.0 to 5.0 in integrator.py.`
+--- choice correct
+`Drag runs below 300 km diverged with 10 s steps: the energy error grew 2 percent per orbit. At 5 s it stays under 0.01 percent. A variable-step integrator was considered, but it would change every golden file.`
+--- choice
+`Updated the integrator settings as discussed.`
+--- choice
+`integrator.py, line 1: 10.0 -> 5.0. Tested.`
+--- why
+The diff already says what changed: one number, from 10 to 5. Only the author knows why: the symptom, the evidence that the new value fixes it, and the alternative that was rejected, so nobody "fixes" it back later. The first and last choices repeat the diff, and the third points to a conversation that will not be in the repository.
+
++++ question | Counting both ways
+--- ask
+You are on `main`. You run `git branch drag main~3`, then `git switch drag`, and make one commit. How many commits does `drag` have that `main` lacks, and how many does `main` have that `drag` lacks?
+--- choice correct
+1 on `drag` that `main` lacks, and 3 on `main` that `drag` lacks.
+--- choice
+1 on `drag`, and none on `main`, because `main` has not moved.
+--- choice
+4 on `drag`, and none on `main`, because `drag` was made from `main`.
+--- choice
+1 on `drag`, and 2 on `main`.
+--- why
+A branch's history is whatever you can reach from its tip by following parents. `drag` starts at `main~3`, so the three commits above it, `main~2`, `main~1` and `main`, are reachable from `main` but not from `drag`. The new commit's parent is `main~3`, and only `drag` points at it. "Made from `main`" means made at one of its commits, not a copy of its whole history.
+
++++ question | Fast-forward or not?
+--- ask
+Since `feature` was made from `main`, `main` has gained two commits and `feature` has two of its own. On `main`, you run `git merge feature`. What happens?
+--- choice
+A fast-forward: `feature` is newer, so `main` slides to its tip.
+--- choice correct
+A three-way merge: neither tip is an ancestor of the other, so Git combines the merge base, ours and theirs, and, without a conflict, makes a merge commit with two parents.
+--- choice
+Git refuses, because `main` has commits that `feature` lacks.
+--- choice
+A fast-forward, and `main`'s two new commits are dropped from its history.
+--- why
+A fast-forward is possible only when your tip is an ancestor of the other tip, so that the other branch is your branch plus more. Here each side has commits the other lacks, so sliding `main` to `feature` would drop `main`'s two commits, which a merge never does. Git compares both sides with their merge base and records the result as a commit with two parents.
+
++++ question | Deleted on one side, changed on the other
+--- ask
+In the merge base, a region of a file is three lines: `A`, `B`, `C`. Ours deleted line `B`. Theirs changed `B` to `B2`. Nothing else changed. What does the three-way merge do with that region?
+--- choice
+Takes theirs, `A`, `B2`, `C`, because a change beats a deletion.
+--- choice
+Takes ours, `A`, `C`, because the branch you are on wins.
+--- choice correct
+Stops with a conflict: both sides changed the same region since the base, in different ways.
+--- choice
+Keeps both, `A`, `B2`, `C`, and adds a comment where `B` was deleted.
+--- why
+A deletion is a change like any other. Base to ours changed the region (`B` removed), and base to theirs changed it differently (`B` became `B2`). That is the last row of the merge table: only a person who knows why each side did what it did can decide, so Git writes both versions between markers and stops.
+
++++ question | Hard, then soft
+--- ask
+With nothing uncommitted, you run `git reset --hard HEAD~1`, and then `git reset --soft ORIG_HEAD`. Where are you now?
+--- choice
+Exactly where you started: the branch at the old tip, and a clean status.
+--- choice correct
+The branch is back at the old tip, but the index and the working tree still hold the older snapshot, so `git status` shows the undoing of that commit as staged changes.
+--- choice
+Git refuses, because a hard reset clears `ORIG_HEAD`.
+--- choice
+The branch stays at `HEAD~1`, and the last commit's changes come back as unstaged edits.
+--- why
+The hard reset moved the branch to `HEAD~1` and overwrote the index and the files with that snapshot, and it wrote the old tip into `ORIG_HEAD`. A soft reset moves only the branch. So the branch is back at the old tip while the index and files still hold the older snapshot, and the difference between the index and HEAD is the reverse of the last commit, staged. `git reset --hard ORIG_HEAD` would have put all three places back.
+
++++ question | What stash -u leaves behind
+--- ask
+Your folder holds three kinds of change: an edit to the tracked file `gravity.py`, a new untracked file `notes.txt`, and `build/sim.o`, which `.gitignore` ignores. You run `git stash push -u`. What is left in your folder?
+--- choice
+Everything, as it was: a stash only copies the changes.
+--- choice correct
+Only `build/sim.o`. `gravity.py` is back to its committed version, and `notes.txt` is gone into the stash.
+--- choice
+`notes.txt` and `build/sim.o`: `-u` affects only changes to tracked files.
+--- choice
+Nothing but committed files: `-u` shelves ignored files too.
+--- why
+A plain stash shelves changes to tracked files and puts them back to HEAD's version. `-u` (include untracked) also shelves untracked files like `notes.txt`. Ignored files are left alone even with `-u`, so the build output stays exactly where it was.
+
++++ question | A pattern with a slash in it
+--- ask
+`.gitignore` holds one line: `results/*.mat`. Which of these untracked files does it ignore: `results/a.mat`, `sim/results/b.mat`, `results/old/c.mat`?
+--- choice
+All three.
+--- choice correct
+Only `results/a.mat`.
+--- choice
+`results/a.mat` and `sim/results/b.mat`.
+--- choice
+`results/a.mat` and `results/old/c.mat`.
+--- why
+A `/` in the middle of a pattern anchors it to the folder that holds `.gitignore`, so only the top-level `results` folder matches, not `sim/results`. And a single `*` never crosses a `/`, so it matches files directly inside `results`, not `results/old/c.mat`. For a `results` folder at any depth you would write `**/results/*.mat`.
+
++++ question | LFS from today
+--- ask
+A repository's history already holds 2 GB of `.bin` telemetry files. Today the team runs `git lfs track "*.bin"` and commits the new `.gitattributes`. Tomorrow a new engineer clones the repository. Roughly how much `.bin` history does the clone download?
+--- choice
+Almost none: `.bin` files now go through LFS.
+--- choice correct
+Still about 2 GB: every old commit holds the full blobs, and tracking changes only the commits made from now on.
+--- choice
+About 1 GB: LFS compresses the old versions.
+--- choice
+133 bytes per file: the old files are swapped for pointers.
+--- why
+LFS swaps a file for its pointer when the file is added, through the clean filter. Commits that already exist keep the complete blobs they were made with, and a clone downloads every commit's objects. Removing the old blobs means rewriting history, for example with `git lfs migrate`, which changes every later commit hash. That is why LFS belongs in the repository from the first day.
+
++++ question | A fix and a feature in one release
+--- ask
+orbit-sim is at version `2.7.3`. The next release fixes a bug in `accel` and also adds a new function, `hill_radius`. Nothing is removed or changed incompatibly. What is the next version? Type it without a `v`.
+--- answer
+2.8.0
+v2.8.0
+--- why
+A release bumps exactly one number, chosen by its biggest change. A backward-compatible addition bumps MINOR and resets PATCH to 0, and the bug fix rides along. `2.7.4` would hide that there is something new to use, and `3.0.0` would warn every user of a breaking change that does not exist.
+
++++ question | Budget for 500 commits
+--- ask
+A regression is somewhere among 500 suspect commits. Each test is a simulation run of 6 minutes, and no commit needs skipping. About how many minutes does `git bisect run` take? Type the number.
+--- answer
+54
+54 minutes
+54 min
+54 mins
+about 54
+--- why
+Each test halves the suspects, so you need k tests with 2^k ≥ 500. 2^8 = 256 is too few and 2^9 = 512 is enough, so 9 tests (log2 500 ≈ 8.97, rounded up). 9 × 6 = 54 minutes. Testing commit after commit could take up to 499 runs, almost 50 hours.

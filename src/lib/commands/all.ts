@@ -8,6 +8,7 @@ import { COMMANDS as CPP_STD_1 } from './cpp-std-1'
 import { COMMANDS as CPP_STD_2 } from './cpp-std-2'
 import { COMMANDS as FILES } from './files'
 import { COMMANDS as GAP_CPP } from './gap-cpp'
+import { COMMANDS as GAP_DEGREE } from './gap-degree'
 import { COMMANDS as GAP_FINAL } from './gap-final'
 import { COMMANDS as GAP_PYTHON } from './gap-python'
 import { COMMANDS as GAP_SHELL } from './gap-shell'
@@ -61,5 +62,6 @@ export const COMMANDS: CommandRef[] = [
   ...MATLAB_2,
   ...CMAKE_DOCKER,
   ...GAP_FINAL,
+  ...GAP_DEGREE,
   ...CONFIG,
 ]

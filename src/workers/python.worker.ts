@@ -25,12 +25,24 @@ const PYODIDE_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/p
 interface PyodideLike {
   runPythonAsync(code: string, options?: { globals?: unknown }): Promise<unknown>
   runPython(code: string): { destroy?: () => void }
-  loadPackage(names: string[]): Promise<void>
-  loadPackagesFromImports(code: string): Promise<void>
+  loadPackage(names: string[], options?: LoadOptions): Promise<void>
+  loadPackagesFromImports(code: string, options?: LoadOptions): Promise<void>
   setStdout(opts: { batched: (s: string) => void }): void
   setStderr(opts: { batched: (s: string) => void }): void
   setStdin(opts: { stdin?: () => string | null; error?: boolean }): void
   globals: { set(k: string, v: unknown): void }
+}
+
+/** Where Pyodide's "Loading numpy" lines go. Left alone, they are printed into the program's own output. */
+type LoadOptions = { messageCallback?: (text: string) => void; errorCallback?: (text: string) => void }
+
+/**
+ * The code to scan for packages to fetch: the program, plus an import line for each
+ * `__import__("name")`, which a one-expression check uses and the import scan does not see.
+ */
+function importsOf(code: string): string {
+  const dynamic = [...code.matchAll(/__import__\(\s*["']([A-Za-z_][\w.]*)["']/g)].map((m) => `import ${m[1]}`)
+  return dynamic.length ? `${code}\n${dynamic.join('\n')}\n` : code
 }
 
 type Incoming =
@@ -157,13 +169,17 @@ self.onmessage = async (e: MessageEvent<Incoming>) => {
       let cursor = 0
       py.setStdin({ stdin: () => (cursor < lines.length ? lines[cursor++]! : null) })
 
+      const quiet: LoadOptions = {
+        messageCallback: (text) => post({ type: 'status', text }),
+        errorCallback: (text) => post({ type: 'stderr', id: msg.id, text: `${text}\n` }),
+      }
       if (msg.packages?.length) {
         post({ type: 'status', text: `Loading ${msg.packages.join(', ')}…` })
-        await py.loadPackage(msg.packages)
+        await py.loadPackage(msg.packages, quiet)
       }
       // Anything imported that ships with the distribution is fetched on
       // demand, so a learner writing `import numpy` just works.
-      await py.loadPackagesFromImports(msg.code)
+      await py.loadPackagesFromImports(importsOf(msg.code), quiet)
 
       py.globals.set('_ORBIT_RUN_ID', msg.id)
 
@@ -185,9 +201,30 @@ self.onmessage = async (e: MessageEvent<Incoming>) => {
     }
   } catch (err) {
     const message = err instanceof Error ? (err.message || String(err)) : String(err)
-    if (msg.cmd === 'run') post({ type: 'error', id: msg.id, message })
+    if (isFatal(err)) post({ type: 'fatal', message: CRASHED })
+    else if (msg.cmd === 'run') post({ type: 'error', id: msg.id, message })
     else post({ type: 'fatal', message })
   }
 }
+
+/* Pyodide cannot go on after a fatal error, and some (a JavaScript stack overflow) surface as an
+   unhandled rejection rather than through the run's own promise, so the run would never answer.
+   Either way the page is told at once, and the next run starts a fresh interpreter. */
+const CRASHED =
+  "Python's runtime ran out of stack and had to stop. In the browser this happens when a very long " +
+  'chain of objects is freed at once, such as a linked list of a few thousand nodes: take it apart ' +
+  'one node at a time (set each next to None as you walk it) before it goes. On a laptop the same ' +
+  'program runs. The next run starts Python again.'
+
+function isFatal(err: unknown): boolean {
+  return (err as { pyodide_fatal_error?: boolean } | null)?.pyodide_fatal_error === true || (err instanceof RangeError && /call stack/i.test(err.message))
+}
+
+self.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) => {
+  if (isFatal(e.reason)) {
+    e.preventDefault()
+    post({ type: 'fatal', message: CRASHED })
+  }
+})
 
 export {}

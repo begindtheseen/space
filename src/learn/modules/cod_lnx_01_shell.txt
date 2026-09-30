@@ -1,0 +1,2031 @@
+@track bash
+@course mod-cod_lnx_01_shell
+@module cod_lnx_01_shell
+@title Linux and the shell: practice and test
+
+=== lnx01-l01 | Practice: The filesystem, paths, and moving things about
+--- for
+l01-the-filesystem-and-getting-around
+
++++ practice | A dated output folder
+--- task
+The campaign for 2 April 2026 needs two folders inside `project`: `out/2026-04-02/plots` and `out/2026-04-02/logs`. A folder called `out` is already there from an earlier campaign.
+
+1. Make both folders with **one** `mkdir` command. The command must be safe to run twice: typing it a second time must not fail.
+2. Then move into the `plots` folder.
+--- starter
+mkdir out
+--- solution
+mkdir -p out/2026-04-02/plots out/2026-04-02/logs
+cd out/2026-04-02/plots
+--- hint
+Plain `mkdir` fails when a parent folder is missing, and fails again when the folder already exists. One flag fixes both.
+--- hint
+`mkdir -p` takes several paths in one command. Then `cd` into the path of the plots folder.
+--- check shell | Both folders exist
+dir out/2026-04-02/plots
+dir out/2026-04-02/logs
+--- check shell | You are in the plots folder
+cwd out/2026-04-02/plots
+--- check shell | The mkdir is safe to repeat
+used mkdir -p
+
++++ practice | Up one, across one
+--- task
+You are standing in `campaign/runs`. Its neighbor folder, `campaign/configs`, holds `ascent.yaml`.
+
+1. Without leaving `runs` (no `cd` at all), copy `ascent.yaml` into `runs` under the new name `used_ascent.yaml`. Use a relative path: one that starts neither with `/` nor with `~`.
+2. Print your working directory, to show that you never moved.
+--- starter
+mkdir -p campaign/configs campaign/runs
+echo "vehicle: falcon9-s1" > campaign/configs/ascent.yaml
+echo "dt: 0.004" >> campaign/configs/ascent.yaml
+cd campaign/runs
+--- solution
+cp ../configs/ascent.yaml used_ascent.yaml
+pwd
+--- hint
+From `runs`, the name `..` means `campaign`, one level up.
+--- hint
+Go up with `..`, then down into `configs`: that path is the source for `cp`, and the new name is the destination. `pwd` prints where you are.
+--- check shell | The copy is in runs, under its new name
+file campaign/runs/used_ascent.yaml contains dt: 0.004
+--- check shell | You are still in runs
+cwd campaign/runs
+printed-line /home/you/project/campaign/runs
+--- check shell | The path climbed with ..
+used ../configs/ascent.yaml
+--- check source absent | No cd
+(^|[;&|])\s*cd\b
+
++++ practice | Promote the new settings
+--- task
+`current/guidance.yaml` is the settings file every tool reads. A new version has arrived in the folder `incoming`. Promote it in three steps:
+
+1. Move the old `current/guidance.yaml` into `archive`, renamed to `guidance_v1.yaml`, with one `mv`.
+2. Copy `incoming/guidance.yaml` into `current`. It keeps its name.
+3. Delete the whole `incoming` folder and everything in it, with a command that would still complain if the path were wrong. So: no `-f`.
+
+At the end `current/guidance.yaml` holds `horizon_s: 22.0` and `archive/guidance_v1.yaml` holds `horizon_s: 18.0`.
+--- starter
+mkdir -p current archive incoming
+echo "horizon_s: 18.0" > current/guidance.yaml
+echo "horizon_s: 22.0" > incoming/guidance.yaml
+echo "reviewed by: ana" > incoming/review.txt
+--- solution
+mv current/guidance.yaml archive/guidance_v1.yaml
+cp incoming/guidance.yaml current/
+rm -r incoming
+--- hint
+`mv` moves and renames in one step when the destination is a full new path, not just a folder.
+--- hint
+Plain `rm` refuses a folder. The flag that goes into folders is `-r`; the one that silences every complaint is `-f`, and you do not want it here.
+--- check shell | The old settings are archived under the new name
+file archive/guidance_v1.yaml == horizon_s: 18.0
+missing archive/guidance.yaml
+--- check shell | The new settings are current
+file current/guidance.yaml == horizon_s: 22.0
+--- check shell | incoming is gone
+missing incoming
+--- check source absent | No -f on the rm
+\brm\b[^\n]*\s-\w*f
+
++++ practice | Into, or as
+--- task
+`cp -r` behaves differently depending on whether the destination folder already exists. `backup` exists; `snapshot` does not.
+
+Make two copies of the whole `configs` folder, each with one `cp -r`:
+
+1. `backup/configs`: a folder called `configs` **inside** `backup`, holding both files.
+2. `snapshot`, which **is** the copy: `snapshot/entry.yaml` and `snapshot/seeds.yaml`, with no `configs` folder inside it.
+--- starter
+mkdir -p configs backup
+echo "dt: 0.002" > configs/entry.yaml
+echo "seed_base: 100000" > configs/seeds.yaml
+--- solution
+cp -r configs backup
+cp -r configs snapshot
+--- hint
+When the destination is a folder that already exists, `cp` puts the source inside it and keeps the source's name.
+--- hint
+When nothing by the destination's name exists yet, the copy is created under that name.
+--- check shell | backup holds a configs folder
+file backup/configs/entry.yaml
+file backup/configs/seeds.yaml
+missing backup/entry.yaml
+--- check shell | snapshot is the copy itself
+file snapshot/entry.yaml == dt: 0.002
+file snapshot/seeds.yaml
+missing snapshot/configs
+--- check shell | configs is untouched
+file configs/entry.yaml
+file configs/seeds.yaml
+
++++ practice | The cleanup that aims too wide
+--- task
+A cleanup note says to delete one run folder with `rm -r scratch/$RUNID`. The variable in your shell is really called `RUN_ID`, and it holds `run_07`. Nothing called `RUNID` is set.
+
+1. First put `echo` in front of the note's command, exactly as written, and read what it would really delete.
+2. Then delete only `scratch/run_07`, still taking the folder name from the variable. `run_08` and `run_09` must survive.
+--- starter
+mkdir -p scratch/run_07 scratch/run_08 scratch/run_09
+echo "t=1" > scratch/run_07/a.log
+echo "t=2" > scratch/run_08/a.log
+echo "t=3" > scratch/run_09/a.log
+RUN_ID=run_07
+--- solution
+echo rm -r scratch/$RUNID
+rm -r scratch/$RUN_ID
+--- hint
+A variable that is not set turns into nothing, and the shell does this before `rm` ever starts. `echo` shows you the finished line.
+--- hint
+Spell the variable the way it is really named: `$RUN_ID`.
+--- check shell | You looked before you deleted
+printed-line rm -r scratch/
+--- check shell | run_07 is gone
+missing scratch/run_07
+--- check shell | The other runs survived
+dir scratch/run_08
+dir scratch/run_09
+--- check shell | The name came from the variable
+used $RUN_ID
+
++++ practice | Sort out the inbox
+--- task
+The files from last night's run all landed in one folder, `inbox`. Sort them out:
+
+1. Make two folders in `project`: `logs` and `plots`.
+2. Move both `.log` files into `logs`, and the `.png` file into `plots`.
+3. Delete the empty folder `inbox/old`.
+4. List `inbox` so that hidden names show up too. The hidden file `.lock` must still be there, next to `notes.txt`: the job that owns the lock is still running.
+--- starter
+mkdir -p inbox/old
+touch inbox/case_0001.log inbox/case_0002.log inbox/traj_0001.png inbox/notes.txt inbox/.lock
+--- solution
+mkdir logs plots
+mv inbox/case_0001.log inbox/case_0002.log logs/
+mv inbox/traj_0001.png plots/
+rm -r inbox/old
+ls -a inbox
+--- hint
+`mv` takes several sources at once when the last name is a folder.
+--- hint
+`ls` hides names that begin with a dot. One flag shows all of them.
+--- check shell | The logs are in logs
+file logs/case_0001.log
+file logs/case_0002.log
+--- check shell | The picture is in plots
+file plots/traj_0001.png
+--- check shell | old is gone; the lock and the notes stayed
+missing inbox/old
+file inbox/.lock
+file inbox/notes.txt
+count inbox/*.log == 0
+--- check shell | You listed the hidden file
+printed .lock
+
+=== lnx01-l02 | Practice: Reading files without an editor
+--- for
+l02-reading-files-without-an-editor
+
++++ practice | What it tried, how it ended, how long
+--- task
+`runs/case_0212.log` is the log of one run. Read it without an editor:
+
+1. Print its **first** line, which says what the job thought it was doing.
+2. Print its **last** line, which says how the job ended.
+3. Print how many lines it has with `wc -l`.
+
+Use `-n` to say how many lines `head` and `tail` should give.
+--- starter
+mkdir runs
+printf '%s\n' "2026-04-02T08:00:00Z INFO sim start case=0212 seed=731002" "2026-04-02T08:00:00Z INFO vehicle=falcon9-s1 profile=entry-burn dt=0.002" "2026-04-02T08:00:01Z INFO guidance mode=PDG horizon_s=18.0" "2026-04-02T08:01:10Z INFO t=60.0 alt_m=6400.0" "2026-04-02T08:02:20Z INFO t=120.0 alt_m=2950.0" "2026-04-02T08:03:30Z WARN throttle limit reached" "2026-04-02T08:03:41Z INFO MISS_DISTANCE_M 212.4" "2026-04-02T08:03:42Z INFO sim end status=OK wall_s=222.0" > runs/case_0212.log
+--- solution
+head -n 1 runs/case_0212.log
+tail -n 1 runs/case_0212.log
+wc -l runs/case_0212.log
+--- hint
+`head` takes lines from the top, `tail` from the bottom.
+--- hint
+`head -n 1 FILE`, `tail -n 1 FILE`, and `wc -l FILE` for the count.
+--- check shell | The first line
+printed-exactly 2026-04-02T08:00:00Z INFO sim start case=0212 seed=731002
+--- check shell | The last line
+printed-exactly 2026-04-02T08:03:42Z INFO sim end status=OK wall_s=222.0
+--- check shell | The number of lines
+printed-line 8 runs/case_0212.log
+
++++ practice | Drop the header
+--- task
+`telemetry.csv` starts with a header line that names the columns, then five rows of data. A plotting tool wants the rows only.
+
+1. Save every line of `telemetry.csv` **except the header** into `rows.csv`, without typing any of the lines yourself. The command must still be right when the file grows to 50,000 rows.
+2. Print how many lines `rows.csv` has, with `wc -l`.
+--- starter
+printf '%s\n' "t_s,alt_m,vspeed_ms" "0.0,12000.0,-100.0" "0.5,11950.1,-99.7" "1.0,11900.4,-99.3" "1.5,11850.8,-98.9" "2.0,11801.3,-98.4" > telemetry.csv
+--- solution
+tail -n +2 telemetry.csv > rows.csv
+wc -l rows.csv
+--- hint
+You do not want "the last five lines": that number changes with the file. You want "everything from line 2 on".
+--- hint
+`tail -n +N` starts **at** line N. Send its output into a file with `>`.
+--- check shell | rows.csv holds the five rows and no header
+file rows.csv ~= 0.0,12000.0,-100.0\n0.5,11950.1,-99.7\n1.0,11900.4,-99.3\n1.5,11850.8,-98.9\n2.0,11801.3,-98.4
+--- check shell | Counted
+printed-line 5 rows.csv
+--- check source absent | Does not depend on the file's length
+tail\s+-n\s*5\b|tail\s+-5\b|\bhead\b
+
++++ practice | Size up the campaign
+--- task
+`runs` holds three logs. Measure them:
+
+1. Make a folder called `reports`.
+2. With **one** `wc` command, save the line count of every log in `runs`, plus the total, into `reports/size.txt`. Use a wildcard, so the same command would work for 500 logs.
+3. Print only the last line of `reports/size.txt`: the total.
+--- starter
+mkdir runs
+seq 4 > runs/case_0001.log
+seq 6 > runs/case_0002.log
+seq 5 > runs/case_0003.log
+--- solution
+mkdir reports
+wc -l runs/*.log > reports/size.txt
+tail -n 1 reports/size.txt
+--- hint
+`runs/*.log` stands for every name in `runs` that ends in `.log`. Given several files, `wc -l` adds a total line.
+--- hint
+The total is the last line of what `wc` printed, so `tail -n 1` on the saved file shows it.
+--- check shell | size.txt has a line per log and the total
+file reports/size.txt lines == 4
+file reports/size.txt contains 15 total
+--- check shell | The total on its own
+printed-exactly 15 total
+--- check shell | A wildcard, not three names
+used runs/*.log
+
++++ practice | Lines 4 to 6
+--- task
+You need lines 4, 5 and 6 of a solver trace: nothing before them and nothing after.
+
+1. Print lines 4 to 6 of `trace.log`, which has 10 lines, with one pipeline of `head` and `tail`.
+2. Run the **same** pipeline, changing only the file name, on `short.log`, which has only 5 lines. It must print lines 4 and 5 and nothing else: never line 3.
+--- starter
+printf '%s\n' "iter 1 residual=4.1e-01" "iter 2 residual=9.3e-02" "iter 3 residual=1.7e-02" "iter 4 residual=2.9e-03" "iter 5 residual=4.4e-04" "iter 6 residual=6.1e-05" "iter 7 residual=7.9e-06" "iter 8 residual=2.3e-06" "iter 9 residual=2.2e-06" "iter 10 residual=2.2e-06" > trace.log
+printf '%s\n' "run B iter 1 residual=5.0e-01" "run B iter 2 residual=1.2e-01" "run B iter 3 residual=3.3e-02" "run B iter 4 residual=8.0e-03" "run B iter 5 residual=1.9e-03" > short.log
+--- solution
+tail -n +4 trace.log | head -n 3
+tail -n +4 short.log | head -n 3
+--- hint
+Try `head -n 6 short.log | tail -n 3` in your head: `head` gives only 5 lines, and the last 3 of those start at line 3.
+--- hint
+Cut the front first: `tail -n +4` starts at line 4 whatever the length. Then keep at most three lines with `head`.
+--- check shell | Lines 4 to 6 of trace.log
+printed-exactly iter 4 residual=2.9e-03\niter 5 residual=4.4e-04\niter 6 residual=6.1e-05
+--- check shell | Only lines 4 and 5 of short.log
+printed-exactly run B iter 4 residual=8.0e-03\nrun B iter 5 residual=1.9e-03
+--- check shell | Line 3 of short.log never printed
+not-printed run B iter 3
+
++++ practice | Two rows glued into one
+--- task
+`all.csv` was made with `cat part1.csv part2.csv > all.csv`. It should have five lines, one row each. Instead it has four, and one of them reads `0.5,11950.11.0,11900.4`: two rows glued together.
+
+Fix `part1.csv` so that it ends the way a text file should, keeping its three lines as they are. Then rebuild `all.csv` with the same `cat` command.
+--- starter
+printf 't_s,alt_m\n0.0,12000.0\n0.5,11950.1' > part1.csv
+printf '1.0,11900.4\n1.5,11850.8\n' > part2.csv
+cat part1.csv part2.csv > all.csv
+--- solution
+printf 't_s,alt_m\n0.0,12000.0\n0.5,11950.1\n' > part1.csv
+cat part1.csv part2.csv > all.csv
+--- hint
+`cat` adds nothing between the files it joins. Look at how `part1.csv` was written: what is missing after its last row?
+--- hint
+Write `part1.csv` again with `printf`, this time ending with `\n`, then run the `cat` again.
+--- check shell | all.csv has five separate lines
+file all.csv ~= t_s,alt_m\n0.0,12000.0\n0.5,11950.1\n1.0,11900.4\n1.5,11850.8
+file all.csv excludes 11950.11.0
+--- check shell | part1.csv kept its three lines
+file part1.csv ~= t_s,alt_m\n0.0,12000.0\n0.5,11950.1
+--- check shell | all.csv was rebuilt with cat
+ran cat part1.csv part2.csv
+
++++ practice | Which run ended badly
+--- task
+`runs` holds four logs. The last line of each one says how that run ended.
+
+1. With **one** `tail` command and a wildcard, print the last line of every log in `runs`.
+2. One run did not end with `status=OK`. Print the last **three** lines of that run's log, to see what led up to the ending.
+--- starter
+mkdir runs
+printf '%s\n' "2026-04-02T09:00:00Z INFO sim start case=0001" "2026-04-02T09:03:20Z INFO MISS_DISTANCE_M 307.6" "2026-04-02T09:03:21Z INFO sim end status=OK wall_s=201.4" > runs/case_0001.log
+printf '%s\n' "2026-04-02T09:04:00Z INFO sim start case=0002" "2026-04-02T09:07:31Z INFO MISS_DISTANCE_M 118.9" "2026-04-02T09:07:32Z INFO sim end status=OK wall_s=212.0" > runs/case_0002.log
+printf '%s\n' "2026-04-02T09:08:00Z INFO sim start case=0003" "2026-04-02T09:09:10Z WARN solver iteration limit reached" "2026-04-02T09:09:14Z ERROR divergence detected in attitude loop" "2026-04-02T09:09:37Z INFO sim end status=DIVERGED wall_s=97.2" > runs/case_0003.log
+printf '%s\n' "2026-04-02T09:10:00Z INFO sim start case=0004" "2026-04-02T09:13:40Z INFO MISS_DISTANCE_M 96.2" "2026-04-02T09:13:41Z INFO sim end status=OK wall_s=221.3" > runs/case_0004.log
+--- solution
+tail -n 1 runs/*.log
+tail -n 3 runs/case_0003.log
+--- hint
+Given several files, `tail` prints a banner with each file's name before its lines. That banner tells you which log is which.
+--- hint
+Read the endings, find the one that is not `status=OK`, then run `tail -n 3` on that one file.
+--- check shell | Every ending, from one tail
+used tail -n 1 runs/*.log
+printed ==> runs/case_0004.log <==
+--- check shell | The ending that was not OK appeared
+printed-line 2026-04-02T09:09:37Z INFO sim end status=DIVERGED wall_s=97.2
+--- check shell | The last three lines of the run that diverged
+printed-exactly 2026-04-02T09:09:10Z WARN solver iteration limit reached\n2026-04-02T09:09:14Z ERROR divergence detected in attitude loop\n2026-04-02T09:09:37Z INFO sim end status=DIVERGED wall_s=97.2
+
+=== lnx01-l03 | Practice: Permissions, ownership and umask
+--- for
+l03-permissions-ownership-and-umask
+
++++ practice | Let the sweep run by name
+--- task
+`sweep.sh` is a script, but `./sweep.sh` answers `Permission denied`.
+
+1. Add execute permission for the file's **owner**, using the **letter** (symbolic) form of `chmod`.
+2. Run it by name: `./sweep.sh 500 0.002`.
+--- starter
+echo 'echo "sweep: $1 cases, dt=$2"' > sweep.sh
+--- solution
+chmod u+x sweep.sh
+./sweep.sh 500 0.002
+--- hint
+The letter form reads as who, operation, what. The owner is `u`, adding is `+`, and execute is `x`.
+--- hint
+`chmod u+x sweep.sh`, then run it with `./` in front.
+--- check shell | sweep.sh is executable
+file sweep.sh exec
+--- check shell | It ran by name
+ran ./sweep.sh 500 0.002
+printed-line sweep: 500 cases, dt=0.002
+--- check source | The letter form, for the owner
+chmod\s+u\+x
+
++++ practice | A script you may not change
+--- task
+`shared/plot.sh` belongs to a colleague. You may read it but not change it, and it has no execute permission.
+
+1. Try to run it by its path with the argument `0417`, and on the same line print the exit status with `echo $?`. The number you see means "found, but could not be run".
+2. Then run it with the argument `0417` in a way that needs no execute permission at all. Do not use `chmod`.
+--- starter
+mkdir shared
+echo 'echo "plotting case $1"' > shared/plot.sh
+--- solution
+./shared/plot.sh 0417; echo $?
+bash shared/plot.sh 0417
+--- hint
+`;` runs the second command after the first, whatever happened, and `$?` holds the first one's exit status.
+--- hint
+Execute permission matters only when the kernel is asked to run the file itself. `bash` can read the file and run its lines; reading needs only `r`.
+--- check shell | You saw the status for "found, but not runnable"
+printed-line 126
+--- check shell | The script ran without its mode changing
+printed-line plotting case 0417
+ran bash
+--- check source absent | No chmod
+chmod
+
++++ practice | The digit form
+--- task
+The team rule for scripts in `tools` is: the owner may read, write and run; the group may read and run; everyone else gets nothing.
+
+1. Set exactly that mode on `tools/plot.sh` with the **digit** (octal) form of `chmod`.
+2. Run it by its path: `./tools/plot.sh entry`.
+--- starter
+mkdir tools
+echo 'echo "plot ready: $1"' > tools/plot.sh
+--- solution
+chmod 750 tools/plot.sh
+./tools/plot.sh entry
+--- hint
+Each digit is the sum of read 4, write 2 and execute 1, for owner, group and others in that order.
+--- hint
+`rwx` is 4 + 2 + 1, `r-x` is 4 + 1, and nothing is 0.
+--- check shell | plot.sh is executable
+file tools/plot.sh exec
+--- check shell | It ran
+printed-line plot ready: entry
+--- check source | The digits for rwx, r-x and nothing
+chmod\s+0?750\b
+
++++ question | A mask of 007
+--- ask
+Your umask is `007`. You run `mkdir results`. What mode does the new folder `results` get? Type it in digits.
+--- answer
+770
+0770
+rwxrwx---
+drwxrwx---
+--- why
+A new folder asks for 777, and the kernel then removes every bit that is set in the mask. The mask 007 blocks nothing for the owner and nothing for the group, and blocks read, write and execute for others. So the owner keeps `rwx` (7), the group keeps `rwx` (7), and others get nothing (0): 770. A file made under the same mask asks for 666 and gets 660, which is why 007 suits a folder shared by a team and closed to everyone else.
+
++++ question | The owner who cannot write
+--- ask
+`ls -l` shows:
+
+```text
+-r--rw-r-- 1 ana team 812 Apr  2 09:10 limits.yaml
+```
+
+Ana owns the file and is also a member of `team`. Can Ana add a line to it without changing its mode first?
+--- choice
+Yes: she is in `team`, and the group has write permission.
+--- choice correct
+No: for the owner the kernel checks only the owner's three bits, and they say `r--`.
+--- choice
+Yes: the owner of a file can always write to it.
+--- choice
+No: nobody can write a file whose last three bits have no `w`.
+--- why
+The kernel checks exactly one group of three bits. If you are the owner, it uses the owner's bits and stops; it never falls back to the group's, even when they would allow more. So Ana, the owner, is refused, while any other member of `team` may write. Ana can still fix it, because the owner may always run `chmod` on her own file: `chmod u+w limits.yaml`.
+
++++ question | What capital X can bring back
+--- ask
+After an accidental `chmod -R 644 tree`, someone runs `chmod -R u+rwX,go+rX tree` to repair it. `tree` holds folders, data files and a few shell scripts. What is the result?
+--- choice
+Everything is exactly as it was before the accident.
+--- choice correct
+The folders get their `x` back, but the scripts stay without `x`: nothing on disk records that they were programs.
+--- choice
+Folders, data files and scripts all get `x`.
+--- choice
+Nothing gets `x`: capital `X` only acts on things that are already executable, and nothing is.
+--- why
+Capital `X` adds execute to every folder, and to a file only if at least one of its execute bits is already set. The 644 removed execute from everything, so no file qualifies any more; the folders do, because `X` always applies to folders. The folders become passable again and the data files are right, but each script must be marked by name with `chmod +x`. That is why a digit-style `chmod -R` on a mixed tree does damage that cannot be undone automatically.
+
+=== lnx01-l04 | Practice: Processes, signals and job control
+--- for
+l04-processes-signals-and-job-control
+
++++ question | Interrupted, by number
+--- ask
+A solver that installs no signal handlers of its own is running as process 4211. You send it `kill -INT 4211`, the same signal `Ctrl-C` sends, and it ends. What exit status does the shell report for it? Type the number.
+--- answer
+130
+--- why
+`SIGINT` is signal 2. The solver has no handler, so the default action runs and the process is terminated by the signal. A process killed by signal N is reported as 128 + N, so 128 + 2 = 130. The same rule gives 143 for `SIGTERM` (15) and 137 for `SIGKILL` (9). A status above 128 tells you that something outside the program ended it.
+
++++ question | Parked on purpose
+--- ask
+To let an urgent job run, you pause a large analysis with `kill -STOP 5120`. Which statement about process 5120 is true while it stays stopped?
+--- choice correct
+It gets no CPU time, but it keeps all its memory and open files; `kill -CONT 5120` resumes it exactly where it was.
+--- choice
+Its memory is written to disk and freed until it is resumed.
+--- choice
+It restarts from the beginning when it receives `SIGCONT`.
+--- choice
+It could have ignored the stop if its authors had installed a handler for it.
+--- why
+A stopped process, state `T`, is simply not scheduled: it keeps its place in the calculation, its open files and all of its memory. `SIGCONT` puts it back in line for the CPU. Two consequences: stopping a job does not free memory for anyone else, and `SIGSTOP`, like `SIGKILL`, can never be caught, blocked or ignored. `Ctrl-Z` sends `SIGTSTP`, the catchable cousin.
+
++++ question | A busy machine that is not computing
+--- ask
+On a machine where `nproc` prints 8, `uptime` shows `load average: 16.2, 15.8, 9.0`. `top` shows `3.0 us`, `1.0 sy` and `90.0 wa`, and many processes are in state `D`. What is the best reading?
+--- choice
+The CPUs are overloaded twice over: add more cores or run fewer jobs at once.
+--- choice correct
+The tasks are waiting on disk or network I/O, not computing; more threads or cores will not help, so find what they are waiting on.
+--- choice
+The load is falling fast, so the problem is already over.
+--- choice
+`D` marks daemons, so the load comes from background services and can be ignored.
+--- why
+The load average counts tasks that are runnable **or** in uninterruptible sleep, `D`. Here the CPU is almost idle (3% user, 1% system) and 90% of the time is spent waiting for I/O, so the high load is a queue in front of a disk or a network file server, not a shortage of CPUs. The trend, 16.2 over one minute against 9.0 over fifteen, says it got worse recently. Adding work makes the queue longer.
+
++++ question | Thousands of zombies
+--- ask
+`ps` lists 4,000 processes in state `Z`, all with the same parent, `collector` (process 812). What is the right fix?
+--- choice
+`kill -9` each zombie: `SIGKILL` cannot be ignored.
+--- choice correct
+Fix or restart the parent, `collector`: the zombies are finished processes waiting for their parent to collect their exit status.
+--- choice
+Reboot at once: the zombies are using all the CPU.
+--- choice
+Nothing ever: zombies disappear on their own after a few minutes.
+--- why
+A zombie has already exited. What is left is its exit status, which the kernel holds until the parent asks for it with `wait()`. You cannot kill something that has already finished, so signals to the zombies do nothing. The bug is in `collector`, which never collects. Restart it (its zombies are then adopted by process 1, which collects them at once) and fix it. Zombies use no CPU, only a slot in the process table each.
+
++++ question | Leaving now, and no tmux
+--- ask
+Over SSH you started `./run_campaign.sh > run.log 2>&1 &` and it is job 1. You have to disconnect in a minute, and tmux is not installed. Which single command, typed now, keeps the job running after the connection drops?
+--- choice
+`bg %1`
+--- choice correct
+`disown %1`
+--- choice
+`nice -n 19 ./run_campaign.sh`
+--- choice
+`kill -STOP %1`
+--- why
+When the connection drops, your shell receives `SIGHUP` and passes it on to every job on its job list, and the default action of `SIGHUP` is to terminate. `disown %1` removes the job from that list, so the shell never passes the hang-up on. `bg` changes nothing: the job is already in the background and still on the list. `nice` only changes CPU priority (and would start a second copy). `kill -STOP` freezes the job. Redirecting output, as here, does not protect it either; it only stops it writing to a terminal that vanishes.
+
++++ question | Forty-one gigabytes of nothing
+--- ask
+`ps -o pid,vsz,rss,args -p 7300` shows a simulation with `VSZ` 41,000,000 and `RSS` 900,000 (both in kilobytes). The machine has 16 GB of memory and is healthy. A colleague is alarmed that the job "uses 41 GB". What is right?
+--- choice
+The colleague is right: VSZ is the memory the process holds, so it is already swapping.
+--- choice correct
+The job really holds about 0.9 GB: RSS is the physical memory in use, while VSZ counts address space reserved but mostly never touched.
+--- choice
+Both numbers are in bytes, so the job uses under 1 MB.
+--- choice
+The two columns are the same measure taken at different moments.
+--- why
+`RSS`, the resident set size, is the physical memory the process really holds, in kilobytes: 900,000 KB is about 0.9 GB. `VSZ`, the virtual size, counts every address range the process has reserved, much of which is never used; it is routinely enormous and says almost nothing. When memory runs short, watch `RSS`.
+
+=== lnx01-l05 | Practice: Pipes, redirection and xargs
+--- for
+l05-pipes-redirection-and-xargs
+
++++ practice | Findings and complaints apart
+--- task
+Join three logs into one file with **one** `cat`: `runs/case_0001.log`, `runs/case_0002.log` and `runs/case_0003.log`. The third one does not exist.
+
+Send the lines that `cat` finds into `joined.log` and its complaint about the missing file into `errors.txt`, so that nothing at all appears on the screen.
+--- starter
+mkdir runs
+echo "case 0001 sim end status=OK" > runs/case_0001.log
+echo "case 0002 sim end status=OK" > runs/case_0002.log
+--- solution
+cat runs/case_0001.log runs/case_0002.log runs/case_0003.log > joined.log 2> errors.txt
+--- hint
+Results and complaints travel on two different streams: standard output is number 1, standard error is number 2.
+--- hint
+`>` redirects standard output and `2>` redirects standard error, both on the same command line.
+--- check shell | joined.log holds both logs' lines
+file joined.log ~= case 0001 sim end status=OK\ncase 0002 sim end status=OK
+--- check shell | errors.txt holds the complaint
+file errors.txt contains case_0003.log
+--- check shell | Nothing reached the screen
+not-printed No such file
+
++++ practice | Keep the old, silence the noise
+--- task
+`worst.txt` keeps a running list of the worst cases, one per line.
+
+1. Add the line `0063 784.1` to the end of `worst.txt`. The two lines already in it must stay.
+2. Run `ls runs/case_0063.log` (that log does not exist), throwing its complaint away so that nothing of it reaches the screen or any file, and on the same line print its exit status with `echo "exit=$?"`.
+--- starter
+printf '%s\n' "0417 4812.6" "0288 1904.3" > worst.txt
+--- solution
+echo "0063 784.1" >> worst.txt
+ls runs/case_0063.log 2>/dev/null; echo "exit=$?"
+--- hint
+`>` empties its file before the command runs. The operator that adds to the end is different by one character.
+--- hint
+Anything written to `/dev/null` vanishes. Point standard error, number 2, at it; the exit status survives in `$?`.
+--- check shell | worst.txt kept its lines and gained one
+file worst.txt ~= 0417 4812.6\n0288 1904.3\n0063 784.1
+--- check shell | The status survived
+printed-line exit=2
+--- check shell | The complaint was thrown away
+not-printed No such file
+used /dev/null
+
++++ practice | Keep a copy on the way
+--- task
+`batch1.txt` and `batch2.txt` each list case ids, one per line.
+
+With **one** pipeline, join the two lists, save the joined list into `all_cases.txt` on the way, and print how many cases there are in total, as a single number.
+--- starter
+printf '%s\n' 0417 0288 0063 > batch1.txt
+printf '%s\n' 0112 0500 0007 0231 > batch2.txt
+--- solution
+cat batch1.txt batch2.txt | tee all_cases.txt | wc -l
+--- hint
+`tee FILE` writes what flows into it to FILE and also passes it on down the pipe.
+--- hint
+`cat` joins, `tee` saves a copy, and `wc -l` at the end counts lines read from the pipe.
+--- check shell | all_cases.txt holds all seven ids
+file all_cases.txt ~= 0417\n0288\n0063\n0112\n0500\n0007\n0231
+--- check shell | The total
+printed-exactly 7
+--- check shell | Saved on the way with tee
+used tee
+
++++ practice | Sort a file into itself
+--- task
+Sort `cases.txt` alphabetically, so that the file `cases.txt` itself ends up sorted. None of its lines may be lost, and no extra file may be left in `project` when you are done.
+
+Careful: `sort cases.txt > cases.txt` leaves an empty file.
+--- starter
+printf '%s\n' case_0288 case_0063 case_0417 case_0112 > cases.txt
+--- solution
+sort cases.txt > cases.tmp
+mv cases.tmp cases.txt
+--- hint
+`>` empties its file before `sort` even starts, so `sort` reads nothing. The output has to go somewhere else first.
+--- hint
+Sort into a temporary file, then rename the temporary file over the original with `mv`.
+--- check shell | cases.txt is sorted and complete
+file cases.txt ~= case_0063\ncase_0112\ncase_0288\ncase_0417
+--- check shell | No file left behind
+count * == 1
+--- check shell | You sorted it
+ran sort
+
++++ practice | Errors still on the screen
+--- task
+A colleague wanted `merged.log` to hold everything from three logs, including the complaint that `run3.log` does not exist. She ran:
+
+```bash
+cat run1.log run2.log run3.log 2>&1 > merged.log
+```
+
+The complaint appeared on the screen instead, and `merged.log` has only the two logs' lines. Run a corrected command so that `merged.log` holds both logs' lines **and** the complaint.
+--- starter
+echo "run1 case 0001 done" > run1.log
+echo "run2 case 0002 done" > run2.log
+cat run1.log run2.log run3.log 2>&1 > merged.log
+--- solution
+cat run1.log run2.log run3.log > merged.log 2>&1
+--- hint
+Redirections are applied from left to right, and `2>&1` copies wherever standard output points **at that moment**.
+--- hint
+Point standard output at the file first, and only then make standard error a copy of it.
+--- check shell | merged.log has the complaint
+file merged.log contains run3.log
+--- check shell | merged.log has both logs' lines
+file merged.log contains run1 case 0001 done
+file merged.log contains run2 case 0002 done
+--- check shell | Nothing else, and both streams through one redirection
+file merged.log lines == 3
+used 2>&1
+
++++ practice | Clear the queue
+--- task
+`queue.txt` lists files to archive, one path per line. Two of the names contain a space.
+
+1. With one pipeline that ends in `xargs`, move every file listed in `queue.txt` into the folder `archive`. The names with spaces must arrive whole.
+2. `retry.txt` is empty. Count the lines of every file it lists with `xargs` and `wc -l`, in a way that runs nothing at all when the list is empty. Make this your last command: it must print nothing.
+--- starter
+mkdir -p inbox archive
+touch "inbox/case 0417.csv" "inbox/case 0288.csv" inbox/case_0063.csv inbox/keep.csv
+printf '%s\n' "inbox/case 0417.csv" "inbox/case 0288.csv" "inbox/case_0063.csv" > queue.txt
+touch retry.txt
+--- solution
+cat queue.txt | xargs -I{} mv {} archive/
+cat retry.txt | xargs -r wc -l
+--- hint
+By default `xargs` splits its input at every space. With `-I{}` it takes one whole line per command and puts it wherever `{}` appears.
+--- hint
+Without `-r`, `xargs` runs the command once even when there is no input, and a bare `wc -l` then counts its own empty input and prints `0`.
+--- check shell | All three listed files are archived, whole
+count archive/*.csv == 3
+file archive/case_0063.csv
+missing inbox/case_0063.csv
+--- check shell | The file not on the list stayed
+file inbox/keep.csv
+count inbox/*.csv == 1
+--- check shell | The empty list ran nothing
+used xargs -r
+last-not-printed 0
+
+=== lnx01-l06 | Practice: grep, regular expressions, and the text toolkit
+--- for
+l06-grep-regex-and-the-text-toolkit
+
++++ practice | Which runs logged an error
+--- task
+`runs` holds five logs.
+
+1. Save the names of the logs that contain `ERROR`, in capitals, into `failed.txt`, one per line, with one `grep`.
+2. Print how many `ERROR` lines there are across all the logs, as a single number, with one pipeline.
+--- starter
+mkdir runs
+printf '%s\n' "INFO sim start case=0101" "INFO sim end status=OK" > runs/case_0101.log
+printf '%s\n' "INFO sim start case=0102" "ERROR divergence detected" "INFO sim end status=DIVERGED" > runs/case_0102.log
+printf '%s\n' "INFO sim start case=0103" "INFO error rate nominal" "INFO sim end status=OK" > runs/case_0103.log
+printf '%s\n' "INFO sim start case=0104" "ERROR sensor dropout" "ERROR sensor dropout again" "INFO sim end status=OK" > runs/case_0104.log
+printf '%s\n' "INFO sim start case=0105" "INFO sim end status=OK" > runs/case_0105.log
+--- solution
+grep -l ERROR runs/*.log > failed.txt
+grep -h ERROR runs/*.log | wc -l
+--- hint
+One `grep` flag lists only the names of the files that match.
+--- hint
+For the count, let `grep` print the matching lines without file names and hand them to `wc -l`.
+--- check shell | failed.txt lists the two logs with errors
+file failed.txt ~= runs/case_0102.log\nruns/case_0104.log
+--- check shell | Three error lines in all
+printed-exactly 3
+--- check shell | Files chosen with grep
+used grep -l
+
++++ practice | Distinct cases in a list
+--- task
+`rerun.cfg` holds one line: `cases=` followed by case ids separated by commas, some of them repeated.
+
+Print how many **different** case ids it lists, as a single number, with one pipeline.
+--- starter
+echo "cases=0417,0288,0063,0417,0112,0288,0417" > rerun.cfg
+--- solution
+cut -d= -f2 rerun.cfg | tr "," "\n" | sort -u | wc -l
+--- hint
+First get rid of `cases=`, then put each id on a line of its own, then keep one of each and count.
+--- hint
+`cut -d= -f2` keeps what follows the `=`, `tr "," "\n"` turns commas into new lines, and `sort -u` keeps one of each equal line.
+--- check shell | Four different cases
+printed-exactly 4
+--- check shell | Commas became new lines
+used tr
+--- check shell | One of each
+used sort
+
++++ practice | The most common warnings
+--- task
+Warning lines in the logs in `runs` look like `2026-04-02T11:00:05Z WARN throttle limit reached`: a timestamp, the word `WARN`, then the message, all separated by single spaces.
+
+Save how many times each message appears, most common first, into `warnings.txt`, as `count message` lines, like `3 throttle limit reached`. Use one pipeline.
+--- starter
+mkdir runs
+printf '%s\n' "2026-04-02T11:00:00Z INFO sim start case=0201" "2026-04-02T11:00:05Z WARN throttle limit reached" "2026-04-02T11:00:09Z WARN solver iteration limit reached" > runs/case_0201.log
+printf '%s\n' "2026-04-02T11:10:00Z INFO sim start case=0202" "2026-04-02T11:10:04Z WARN throttle limit reached" > runs/case_0202.log
+printf '%s\n' "2026-04-02T11:20:00Z INFO sim start case=0203" "2026-04-02T11:20:02Z WARN gimbal rate saturated" "2026-04-02T11:20:06Z WARN throttle limit reached" > runs/case_0203.log
+printf '%s\n' "2026-04-02T11:30:00Z INFO sim start case=0204" "2026-04-02T11:30:07Z WARN solver iteration limit reached" > runs/case_0204.log
+--- solution
+grep -h WARN runs/*.log | cut -d " " -f 3- | sort | uniq -c | sort -rn > warnings.txt
+--- hint
+The message is everything from the third space-separated field to the end of the line. `cut -f 3-` takes field 3 and all after it.
+--- hint
+`uniq -c` counts runs of equal neighboring lines, so the lines must be sorted before it. A second, numeric, reversed sort puts the biggest count first.
+--- check shell | Counts per message, most common first
+file warnings.txt ~= 3 throttle limit reached\n2 solver iteration limit reached\n1 gimbal rate saturated
+--- check shell | Only warnings were counted
+file warnings.txt excludes sim start
+file warnings.txt excludes WARN
+--- check shell | Counted with uniq -c
+used uniq -c
+
++++ practice | Firmware 2.10, exactly
+--- task
+`fleet.txt` lists each node's firmware as `fw=` followed by a version.
+
+Save into `fw_2_10.txt` the lines of the nodes that run exactly version `2.10`, in file order, with one `grep`. The versions `2110`, `2-10`, `2.101` and `12.10` are different versions and must not be saved.
+--- starter
+printf '%s\n' "node1 fw=2.10" "node2 fw=2110" "node3 fw=2.101" "node4 fw=2.10" "node5 fw=12.10" "node6 fw=2-10" > fleet.txt
+--- solution
+grep -E "fw=2\.10$" fleet.txt > fw_2_10.txt
+--- hint
+In a pattern, `.` matches any character, so `2.10` also matches `2110` and `2-10`. A backslash makes it a plain dot, and so does `-F`.
+--- hint
+Even a plain dot is not enough: `2.101` contains `2.10`. Say that the version must end there, with `$` for the end of the line, or ask for whole words with `-w`.
+--- check shell | Only the two nodes on 2.10
+file fw_2_10.txt ~= node1 fw=2.10\nnode4 fw=2.10
+--- check shell | The dot matched only a dot
+file fw_2_10.txt excludes node2
+file fw_2_10.txt excludes node6
+--- check shell | Longer versions stayed out
+file fw_2_10.txt excludes node3
+file fw_2_10.txt excludes node5
+
++++ practice | The count that split in two
+--- task
+`events.csv` has a header line, then one row per event: time, subsystem and event, separated by commas. A colleague counted events per subsystem with:
+
+```bash
+cut -d, -f2 events.csv | uniq -c
+```
+
+Her output lists `gnc` three separate times and even counts the header word `subsystem`. Save the correct count for each subsystem into `counts.txt`, most events first, as `count subsystem` lines. The header must not be counted.
+--- starter
+printf '%s\n' "t_s,subsystem,event" "0.0,gnc,mode change" "0.5,prop,valve open" "1.0,gnc,solver fallback" "1.5,gnc,mode change" "2.0,power,bus dip" "2.5,prop,valve close" "3.0,gnc,mode change" > events.csv
+--- solution
+tail -n +2 events.csv | cut -d, -f2 | sort | uniq -c | sort -rn > counts.txt
+--- hint
+`uniq` merges only lines that are next to each other. The rows are in time order, so equal subsystems are scattered.
+--- hint
+Drop the header with `tail -n +2`, sort before `uniq -c`, then sort the counts numerically, biggest first.
+--- check shell | Counts per subsystem, most first
+file counts.txt ~= 4 gnc\n2 prop\n1 power
+--- check shell | The header was not counted
+file counts.txt excludes subsystem
+--- check shell | Sorted before counting
+used sort
+used uniq -c
+
++++ practice | Find every NaN
+--- task
+The telemetry tables are the `.csv` files under `telemetry`, at any depth.
+
+1. Save the paths of the tables that contain `NaN` into `nan_files.txt`, sorted, with one pipeline that starts with `find` and lets `find` run `grep` on many files at a time. The `.bak` copy is not a table.
+2. Then delete every `.tmp` file under `telemetry` with one `find` command that needs no other program.
+--- starter
+mkdir -p telemetry/batch1 telemetry/batch2/deep
+printf 't_s,alt_m\n0.0,12000.0\n0.5,NaN\n' > telemetry/batch1/case_0001.csv
+printf 't_s,alt_m\n0.0,12000.0\n0.5,11950.1\n' > telemetry/batch1/case_0002.csv
+printf 't_s,alt_m\n0.0,NaN\n' > telemetry/batch2/deep/case_0003.csv
+printf 't_s,alt_m\n0.0,NaN\n' > telemetry/batch2/case_0003.csv.bak
+printf 't_s,alt_m\n0.0,11999.0\n' > telemetry/batch2/case_0004.csv
+touch telemetry/batch1/a.tmp telemetry/batch2/deep/b.tmp
+--- solution
+find telemetry -name "*.csv" -exec grep -l NaN {} + | sort > nan_files.txt
+find telemetry -name "*.tmp" -delete
+--- hint
+`-name "*.csv"` keeps only names that end in `.csv`, so the `.bak` file is left out. Quote the pattern so the shell does not expand it first.
+--- hint
+`-exec grep -l NaN {} +` hands many paths to one `grep`. For the second step, `find` has a built-in action that deletes, and it goes last.
+--- check shell | The two tables with NaN, sorted
+file nan_files.txt ~= telemetry/batch1/case_0001.csv\ntelemetry/batch2/deep/case_0003.csv
+--- check shell | find ran grep in batches
+used -exec grep
+used {} +
+--- check shell | The .tmp files are gone, the tables stayed
+missing telemetry/batch1/a.tmp
+missing telemetry/batch2/deep/b.tmp
+file telemetry/batch2/case_0004.csv
+file telemetry/batch1/case_0002.csv
+
+=== lnx01-l07 | Practice: Diffs, archives and moving data between machines
+--- for
+l07-diffs-archives-and-moving-data
+
++++ question | Write the hunk header
+--- ask
+One hunk of a `diff -u` has 4 unchanged context lines, 3 lines that start with `-` and 5 lines that start with `+`. It starts at line 20 in both files. What is its header line?
+--- answer
+@@ -20,7 +20,9 @@
+-20,7 +20,9
+--- why
+Each range in the header counts every line of the hunk as that file sees it, context included. The old file's stretch is the 4 context lines plus the 3 removed lines: 7 lines from line 20, so `-20,7`. The new file's stretch is the 4 context lines plus the 5 added lines: 9 lines from line 20, so `+20,9`. The counts are larger than the number of edits because context lines count on both sides.
+
++++ question | How many folders to strip
+--- ask
+A colleague made a patch from her home folder with:
+
+```bash
+diff -u orig/flight/src/nav.cpp new/flight/src/nav.cpp > nav.patch
+```
+
+You are inside your own `flight` folder, which holds `src/nav.cpp`. Which command applies the patch?
+--- choice
+`patch < nav.patch`
+--- choice
+`patch -p1 < nav.patch`
+--- choice correct
+`patch -p2 < nav.patch`
+--- choice
+`patch -R < nav.patch`
+--- why
+The `---` and `+++` lines carry the paths as she typed them: `orig/flight/src/nav.cpp` and `new/flight/src/nav.cpp`. From inside `flight`, the file is `src/nav.cpp`, so two leading folder names (`new/` and `flight/`) must be stripped: `-p2`. `-p1` would look for `flight/src/nav.cpp`, and no `-p` looks for the whole path. `-R` reverses a patch, which is a different problem. `patch --dry-run -p2 < nav.patch` rehearses it first.
+
++++ question | Where an absolute archive lands
+--- ask
+On your workstation you run `tar -czf cfg.tar.gz /home/eng/campaign/configs`. On the cluster you then run `tar -xzf cfg.tar.gz` while your working folder is `/scratch/eng`. Where does `entry_burn.yaml` end up?
+--- choice
+`/home/eng/campaign/configs/entry_burn.yaml`, replacing whatever is there.
+--- choice correct
+`/scratch/eng/home/eng/campaign/configs/entry_burn.yaml`
+--- choice
+`/scratch/eng/configs/entry_burn.yaml`
+--- choice
+`/scratch/eng/campaign/configs/entry_burn.yaml`
+--- why
+When it made the archive, `tar` removed the leading `/` from every member name (and said so), so the members are `home/eng/campaign/configs/...`, relative paths. Relative members unpack under the folder you are in, four folders deeper than you probably wanted. Archiving with `tar -czf cfg.tar.gz -C /home/eng campaign/configs` makes members that start at `campaign/`.
+
++++ question | A change rsync does not see
+--- ask
+You mirror `data/` to a server with `rsync -a data/ sim01:/srv/data/`. Then you change one digit inside `data/limits.csv`, which leaves its size the same, and a tool sets the file's modification time back to its old value. You run the same `rsync -a` command again. What happens to `limits.csv`?
+--- choice
+It is sent, because rsync compares the contents of every file.
+--- choice correct
+It is skipped: by default rsync treats a file with the same size and the same modification time as unchanged. `-c` would compare checksums and send it.
+--- choice
+rsync stops with an error, because the two copies disagree.
+--- choice
+The server's copy is deleted, because the times now conflict.
+--- why
+rsync's default quick check compares only size and modification time; it does not read the contents. Same size and same time mean "same file", so the changed file is not sent. `-c` makes rsync read every file on both sides and compare a fingerprint, which is slower and catches exactly this case. The same trap appears when two filesystems store times with different precision.
+
++++ question | What gzip leaves behind
+--- ask
+A folder holds one file, `traj.csv`. You run `gzip traj.csv`, then `ls`. What does `ls` print?
+--- answer
+traj.csv.gz
+--- why
+`gzip` replaces the file: it writes `traj.csv.gz` and deletes `traj.csv`. The original stays only if you pass `-k` ("keep"). `gunzip traj.csv.gz` reverses it, and `zcat` or `zgrep` read the compressed file without unpacking it.
+
++++ question | One archive or many
+--- ask
+You must archive 10,000 small run logs with `zstd`. Why is one `.tar.zst` of the whole folder much smaller than 10,000 separate `.zst` files?
+--- choice
+`tar` compresses the files before `zstd` sees them.
+--- choice correct
+The compressor sees all the logs as one stream, so a pattern repeated across files, such as each line's timestamp and vehicle name, is stored once and then pointed back to.
+--- choice
+Separate files are compressed at a lower level by default.
+--- choice
+The `.tar` format drops the files' timestamps, and that saves the space.
+--- why
+A compressor saves space by replacing text it has already seen with a short pointer back to it. Compressed one by one, each small log starts from nothing and has little to point back to. Joined into one stream by `tar`, every log after the first repeats what came before: the same dates, levels and settings lines. `tar` itself compresses nothing; it only joins the files, with their names and details, into one stream.
+
+=== lnx01-l08 | Practice: SSH keys, config and tunnels
+--- for
+l08-ssh-keys-config-and-tunnels
+
++++ question | A key that is too open
+--- ask
+`ssh sim01` prints `Permissions 0644 for '/home/eng/.ssh/id_ed25519' are too open.` and ignores the key. Which mode should the private key file have? Type it in digits.
+--- answer
+600
+0600
+400
+0400
+rw-------
+--- why
+SSH refuses a private key that anyone but its owner could read, so the group and others bits must all be 0. The usual mode is 600, read and write for the owner only: `chmod 600 ~/.ssh/id_ed25519`. 400, read only for the owner, is also accepted. The `~/.ssh` folder itself should be 700; public keys and `known_hosts` may stay 644.
+
++++ question | Who logs in
+--- ask
+Your `~/.ssh/config` is:
+
+```text
+Host *
+    User root
+    ServerAliveInterval 60
+
+Host sim01
+    HostName sim01.cluster.internal
+    User eng
+```
+
+As which user does `ssh sim01` log in? Type the user name.
+--- answer
+root
+--- why
+For each setting, the first value found wins. `Host *` matches every name and comes first, so `User root` is set before the `sim01` block is read, and the later `User eng` is ignored. `HostName` still comes from the `sim01` block, because nothing set it earlier. That is why specific hosts go first and the catch-all goes last. `ssh -G sim01` prints the settings really in effect.
+
++++ question | A license server on your laptop
+--- ask
+A simulation on `sim01` must reach a license server that listens on port 27000 on your laptop's loopback address. Which command, run on your laptop, makes `127.0.0.1:27000` on `sim01` lead to that license server?
+--- choice
+`ssh -f -N -L 27000:127.0.0.1:27000 sim01`
+--- choice correct
+`ssh -f -N -R 27000:127.0.0.1:27000 sim01`
+--- choice
+`ssh -f -N -D 27000 sim01`
+--- choice
+`ssh -A sim01`
+--- why
+Here the connection starts on the server and must end on your side, which is remote forwarding, `-R`: `sim01` listens on port 27000, and each connection is carried back through SSH to `127.0.0.1:27000` as seen from your laptop. `-L` is the mirror image: your laptop listens and connects out from the server. `-D` makes a SOCKS proxy on your side, and `-A` forwards your agent, which has nothing to do with ports.
+
++++ question | Only passing through
+--- ask
+To reach `sim07` you must go through `bastion`. You never work on `bastion` itself. Which setting is the right one?
+--- choice correct
+`ProxyJump bastion` in the block for `sim07`.
+--- choice
+`ForwardAgent yes` for `bastion`, so that `bastion` can use your key to log in to `sim07`.
+--- choice
+Copy your private key to `bastion`, so that you can log in to `sim07` from there.
+--- choice
+`ForwardAgent yes` in a `Host *` block, so it works everywhere.
+--- why
+With `ProxyJump`, your laptop runs the SSH session to `sim07` itself, end to end, through a plain connection that `bastion` passes along. `bastion` sees only encrypted bytes and never gets to use your keys. A forwarded agent lets anyone with root on `bastion` use your keys while you are connected, and a copied private key is simply leaked. In a `Host *` block, forwarding exposes your keys to every machine you ever touch.
+
++++ question | When a dead server is noticed
+--- ask
+Your `~/.ssh/config` has `ServerAliveInterval 30` and `ServerAliveCountMax 4` for `sim01`. The server dies without closing the connection. About how many seconds pass before your `ssh` gives up? Type the number.
+--- answer
+120
+120 seconds
+120 s
+120s
+2 minutes
+two minutes
+--- why
+When the session is quiet, the client sends a small "still here?" message every 30 seconds, and it gives up after 4 of them go unanswered: 4 × 30 = 120 seconds. Without these settings, a dead connection can hang forever. They also stop a router or firewall from silently dropping an idle session, because the messages keep the connection active.
+
++++ question | A first key, and a changed one
+--- ask
+For a fleet of test machines that are rebuilt often, you set `StrictHostKeyChecking accept-new`. Which describes what SSH then does?
+--- choice
+It accepts every host key, new or changed, without asking.
+--- choice correct
+It records a host's key without asking the first time, but still refuses to connect if a recorded key later changes.
+--- choice
+It refuses every host it has not seen before.
+--- choice
+It stops checking host keys and deletes `known_hosts`.
+--- why
+`accept-new` removes only the first-time question. The protection against a machine in the middle stays: once a key is in `known_hosts`, a different key is refused with the `REMOTE HOST IDENTIFICATION HAS CHANGED!` warning. So a rebuilt machine still needs its old entry removed on purpose, after its new fingerprint has been confirmed through another channel.
+
+=== lnx01-l09 | Practice: tmux, sessions, windows and panes
+--- for
+l09-tmux-sessions-windows-and-panes
+
++++ question | Job on top, shell below
+--- ask
+Inside tmux you want the job's pane on top and a new shell underneath it. Which key do you press after `Ctrl-b`?
+--- choice correct
+`"`
+--- choice
+`%`
+--- choice
+`c`
+--- choice
+`z`
+--- why
+`"` splits the current pane into a top half and a bottom half; think of the two marks, one above the other. `%` splits it into left and right halves. `c` creates a whole new window, like a new tab, and `z` zooms the current pane to fill the window.
+
++++ question | No sessions at all
+--- ask
+You log in to a machine and `tmux ls` prints `error connecting to /tmp/tmux-1500/default (No such file or directory)` and exits with status 1. What does this mean?
+--- choice
+tmux is not installed on this machine.
+--- choice correct
+No tmux server is running for your user, so there are no sessions to list.
+--- choice
+Your sessions are damaged; delete `/tmp/tmux-1500` and try again.
+--- choice
+You need `sudo` to list tmux sessions.
+--- why
+Every tmux command talks to your server through a socket file named after your user number, here 1500. The file is missing, so no server is running, and with no server there are no sessions: any job you left in one is gone, or was never started there. `tmux new -s NAME` starts a server and a session. A missing `tmux` program would say `command not found` instead.
+
++++ question | A command as the pane's program
+--- ask
+A script runs `tmux new-session -d -s sweep './run_campaign.sh 2>&1 | tee campaign.log'`. Two hours later the campaign finishes. What happens to the session?
+--- choice correct
+It closes: the command was the pane's only program, so when it ends the pane, the window and the session end too. The output survives in `campaign.log`.
+--- choice
+It stays open at a shell prompt, with the campaign's last screen visible.
+--- choice
+It stays open but detached, and must be closed with `kill-session`.
+--- choice
+It restarts the campaign, because tmux keeps its panes alive.
+--- why
+Given a command, tmux runs it as the pane's program instead of an interactive shell. When that program exits, nothing is left in the pane, so tmux closes it, and a session with no windows closes too. That is why the command pipes through `tee` to a file. To keep the session and its last screen, start an ordinary session and type the command into it with `tmux send-keys -t sweep '...' Enter`.
+
++++ question | What survives a reboot
+--- ask
+A job runs inside a detached tmux session on `sim01`. Overnight, `sim01` itself reboots for an update. What do you find when you log back in?
+--- choice
+The session, the job and the scrollback, exactly as you left them.
+--- choice
+The session is there, but its job is stopped and must be resumed with `fg`.
+--- choice correct
+No session and no job: the tmux server was an ordinary program on `sim01`, and it ended with everything else.
+--- choice
+The session is there, with its scrollback, but the job restarted from the beginning.
+--- why
+tmux protects a job from *your connection* going away, because the job's terminal belongs to the tmux server instead of your SSH login. It cannot protect anything from the machine going away: the server, its sessions and every program in them are processes on that machine, and a reboot ends them all. Output you might need must go to a file on disk, for example with `tee`.
+
++++ question | The last window
+--- ask
+The tmux status bar reads:
+
+```text
+[flight]0:bash- 1:make* 2:vim
+```
+
+Which window does `Ctrl-b l` jump to? Type its number.
+--- answer
+0
+window 0
+0:bash
+bash
+--- why
+In the list of windows, `*` marks the active one, here window 1 running `make`, and `-` marks the previous one, here window 0. `Ctrl-b l` ("last") jumps back to that previous window, so it goes to window 0. The name in brackets, `flight`, is the session.
+
++++ question | tmux inside tmux
+--- ask
+You are attached to tmux on your laptop. In one of its panes you SSH to `sim01` and attach to a tmux session there. Pressing `Ctrl-b` then `d` detaches your laptop's session, not the one on `sim01`. How do you detach only the inner one?
+--- choice correct
+Press `Ctrl-b` twice, then `d`: the outer tmux turns the second `Ctrl-b` into a real `Ctrl-b` for the program in its pane, which is the inner tmux.
+--- choice
+Press `Ctrl-a` then `d`: the inner tmux always uses `Ctrl-a`.
+--- choice
+Type `exit` in the inner session's shell.
+--- choice
+Kill the pane with `Ctrl-b` then `x`; the inner session detaches by itself.
+--- why
+Every `Ctrl-b` is caught first by the outer tmux. When it receives the prefix twice, it passes one real `Ctrl-b` through to the program in the pane, here the SSH session running the inner tmux, which takes it as its own prefix; then `d` goes to the inner one. `exit` would end the shell and with it the inner session's work, and `Ctrl-b x` kills the outer pane, which drops the SSH connection.
+
+=== lnx01-l10 | Practice: The environment, PATH, and startup files
+--- for
+l10-environment-path-and-startup-files
+
++++ practice | Pack it in the bag
+--- task
+`show.sh` prints the variable `SIM_ROOT` as the script sees it.
+
+1. Give `SIM_ROOT` the value `/data/campaign` in your shell in a way that scripts you start will see.
+2. Run `bash show.sh`. It must print `campaign root: [/data/campaign]`.
+--- starter
+echo 'echo "campaign root: [$SIM_ROOT]"' > show.sh
+--- solution
+export SIM_ROOT=/data/campaign
+bash show.sh
+--- hint
+A plain assignment stays inside your shell. The script runs as a child process and gets only a copy of the variables marked for export.
+--- hint
+`export NAME=value` sets and marks the variable in one step.
+--- check shell | SIM_ROOT is exported
+env SIM_ROOT == /data/campaign
+--- check shell | The script saw it
+printed-line campaign root: [/data/campaign]
+--- check shell | The script ran as a child
+ran bash show.sh
+
++++ practice | For one command only
+--- task
+1. Run `bash run.sh` with `SIM_DT` set to `0.001` for **that one command only**. It must print `dt seen by run: [0.001]`.
+2. Then run `echo "shell: [$SIM_DT]"` as a command of its own. Your own shell must never have had the variable, so this prints `shell: []`.
+--- starter
+echo 'echo "dt seen by run: [$SIM_DT]"' > run.sh
+--- solution
+SIM_DT=0.001 bash run.sh
+echo "shell: [$SIM_DT]"
+--- hint
+An assignment written directly in front of a command, on the same line, goes into that command's environment only.
+--- hint
+`NAME=value command`: no `export`, no semicolon between them.
+--- check shell | The script saw 0.001
+printed-line dt seen by run: [0.001]
+--- check shell | Your shell never had it
+printed-line shell: []
+--- check shell | The setting went in front of the command
+used SIM_DT=0.001 bash
+
++++ practice | Settings that stick
+--- task
+`setup.sh` sets the variable `CASE_SET` and moves into the campaign's run folder. Running it with `bash setup.sh` changes nothing in your shell.
+
+1. Load `setup.sh` so that both of its effects stay in your shell: afterwards `CASE_SET` is `entry-burn` and you are in `campaign/runs`.
+2. Print both, with `echo "$CASE_SET"` and `pwd`.
+--- starter
+mkdir -p campaign/runs
+printf '%s\n' 'CASE_SET=entry-burn' 'cd campaign/runs' > setup.sh
+--- solution
+source setup.sh
+echo "$CASE_SET"
+pwd
+--- hint
+`bash setup.sh` runs the file in a child shell, which changes its own variables and folder, then exits. Nothing comes back to you.
+--- hint
+`source` (also written `.`) runs the file's lines inside the shell you are typing in.
+--- check shell | The variable stuck
+var CASE_SET == entry-burn
+--- check shell | The move stuck
+cwd campaign/runs
+--- check shell | You printed both
+printed-line entry-burn
+printed-line /home/you/project/campaign/runs
+
++++ practice | Gone, or only empty
+--- task
+Two exported variables are set in your shell: `SIM_MODE` and `TAG`.
+
+1. Remove `SIM_MODE` completely, so that it is not set at all.
+2. Give `TAG` the empty value, but keep it exported.
+3. Run `printenv SIM_MODE; echo $?`, then `printenv TAG; echo $?`. The first must print only `1`, because the variable is not found. The second prints an empty line, then `0`, because the variable exists and is empty.
+--- starter
+export SIM_MODE=debug
+export TAG=nightly
+--- solution
+unset SIM_MODE
+export TAG=
+printenv SIM_MODE; echo $?
+printenv TAG; echo $?
+--- hint
+Setting a variable to nothing is not the same as removing it. One builtin removes a variable entirely.
+--- hint
+`unset SIM_MODE` removes it. `export TAG=` sets it to the empty string and keeps it exported.
+--- check shell | SIM_MODE is gone
+ran unset SIM_MODE
+printed-exactly 1
+--- check shell | TAG is empty and still exported
+env TAG ==
+--- check shell | You checked TAG too
+ran printenv TAG
+
++++ practice | The settings file that exports nothing
+--- task
+Every morning you run `source env.sh` and then `bash job.sh`. The job should print `job root: [/data/campaign]`, but it prints `job root: []`, although `echo $SIM_ROOT` in your shell shows the right value.
+
+1. Rewrite `env.sh` itself, with `echo '...' > env.sh`, so that the morning routine works.
+2. Then do the routine: `source env.sh`, then `bash job.sh`.
+--- starter
+echo 'SIM_ROOT=/data/campaign' > env.sh
+echo 'echo "job root: [$SIM_ROOT]"' > job.sh
+source env.sh
+--- solution
+echo 'export SIM_ROOT=/data/campaign' > env.sh
+source env.sh
+bash job.sh
+--- hint
+Sourcing did its job: the variable is in your shell. The question is whether it is marked to be copied into the programs you start.
+--- hint
+Put `export` in front of the assignment inside `env.sh`. Single quotes keep the line exactly as written.
+--- check shell | env.sh now exports
+file env.sh contains export SIM_ROOT=/data/campaign
+--- check shell | The job sees the value
+printed-line job root: [/data/campaign]
+ran bash job.sh
+--- check shell | SIM_ROOT is exported in your shell
+env SIM_ROOT == /data/campaign
+
++++ practice | A job's environment, written down
+--- task
+Prepare your shell for a batch job, then run it once.
+
+1. Put `$HOME/sim/bin` at the **front** of `PATH`, keeping everything that is already there, so that tools in it are found before the system's copies.
+2. Export `SIM_ROOT` with the value `/data/campaign`.
+3. Run `bash job.sh` with `CASE` set to `0417` for that one command only.
+4. Run `echo "[$CASE]"`: it must print `[]`.
+
+The job must print `root=/data/campaign case=0417` and `first on PATH: /home/you/sim/bin`.
+--- starter
+mkdir -p sim/bin
+printf '%s\n' 'echo "root=$SIM_ROOT case=$CASE"' 'echo "first on PATH: $(echo $PATH | cut -d: -f1)"' > job.sh
+--- solution
+export PATH="$HOME/sim/bin:$PATH"
+export SIM_ROOT=/data/campaign
+CASE=0417 bash job.sh
+echo "[$CASE]"
+--- hint
+`PATH` is searched from left to right. Prepending means writing the new folder, a colon, then the old value, `$PATH`.
+--- hint
+`PATH` is already exported. `SIM_ROOT` needs `export`, and `CASE` goes in front of the command.
+--- check shell | PATH starts with sim/bin and keeps the rest
+env PATH == /home/you/sim/bin:/usr/local/bin:/usr/bin:/bin
+--- check shell | SIM_ROOT is exported
+env SIM_ROOT == /data/campaign
+--- check shell | The job saw all three
+printed-line root=/data/campaign case=0417
+printed-line first on PATH: /home/you/sim/bin
+--- check shell | CASE never stayed in your shell
+printed-line []
+
++++ question | What ssh host 'cmd' reads
+--- ask
+On an Ubuntu server, `~/.bashrc` begins with the usual interactivity guard, `case $- in *i*) ;; *) return;; esac`, and `~/.bash_profile` sources `~/.bashrc`. You run `ssh sim01 'echo $PATH'`. Which startup files does the remote bash read, and how far?
+--- choice correct
+Only `~/.bashrc`, and it stops at the guard, because the shell is not interactive.
+--- choice
+`~/.bash_profile`, then all of `~/.bashrc`, because every SSH connection is a login.
+--- choice
+`/etc/profile` and `~/.bash_profile`, because the SSH server starts a login shell for every command.
+--- choice
+No startup file at all, because a shell that runs one command never reads one.
+--- why
+Given a command, the SSH server starts a bash that is neither a login shell nor interactive. On Ubuntu such a bash reads `~/.bashrc` anyway, because it was started by the SSH server; `$-` holds no `i`, so the guard returns at once. `/etc/profile` and `~/.bash_profile` are read only by login shells: `ssh sim01` with no command, a console login, or `bash -l`. So a `PATH` line placed in `~/.bash_profile` reaches your login sessions and what they start, but not `ssh sim01 'cmd'`; for that it must sit in `~/.bashrc` above the guard. `ssh sim01 'echo $PATH'` is the honest test.
+
+=== lnx01-l11 | Practice: Packages, and building from source
+--- for
+l11-packages-and-building-from-source
+
++++ question | A catalog three months old
+--- ask
+A machine has not run `apt update` for three months. `apt install libhdf5-dev` fails, because a package version it tries to download is no longer on the server (`404 Not Found`). What should you run first?
+--- choice correct
+`apt update`, then the same `apt install` again.
+--- choice
+`apt upgrade`, which downloads the newest catalog as part of upgrading.
+--- choice
+Delete `/var/lib/dpkg/lock-frontend`, then install again.
+--- choice
+`dpkg -i libhdf5-dev`, which installs without the catalog.
+--- why
+`apt install` picks versions from the local index, the catalog `apt update` downloads. A stale catalog names versions that the repository has since replaced, so the download fails. `apt update` refreshes the catalog and installs nothing; then `install` finds the current version. `apt upgrade` works from the same stale catalog. The lock file only keeps two package tools apart and must never be deleted, and `dpkg -i` needs a package file you already have.
+
++++ question | A file no package owns
+--- ask
+`dpkg -S /usr/local/bin/solver` answers `dpkg-query: no path found matching pattern /usr/local/bin/solver`. What does that tell you?
+--- choice correct
+No installed package put that file there: someone built or copied it by hand, which is what `/usr/local` is for.
+--- choice
+The file is damaged and should be reinstalled with `apt`.
+--- choice
+The package catalog is stale; run `apt update` and ask again.
+--- choice
+The solver is installed, but `dpkg` needs root to see it.
+--- why
+`dpkg -S` searches the records of files that installed packages own. "No path found" means no package claims this file. In `/usr/local` that is normal: it is the place for software built locally, which the package manager never touches. The catalog from `apt update` describes what can be installed, not what is installed, so it does not matter here.
+
++++ question | Installed, but not found
+--- ask
+You run `./configure --prefix=$HOME/.local && make && make install` for a small tool called `hello`. Typing `$HOME/.local/bin/hello` works, but typing `hello` says `command not found`. What is wrong?
+--- choice
+`make install` failed halfway, so the program is incomplete.
+--- choice correct
+`$HOME/.local/bin` is not on `PATH`, so the shell never looks there; add it to `PATH`.
+--- choice
+The program needs the execute bit; run `chmod +x hello` in the build folder.
+--- choice
+Programs built from source must always be run with their full path.
+--- why
+The program is installed and runs, as the full path proves. The shell looks for a bare name only in the folders listed in `PATH`, and a private prefix is not one of them until you add it: `export PATH="$HOME/.local/bin:$PATH"`. Put that line where every shell that needs it will read it, and test with the same kind of shell your jobs use.
+
++++ question | Where the build really broke
+--- ask
+`make -j8` prints about 300 lines and ends with `make: *** [Makefile:212: all] Error 2`. Where are you most likely to find the real cause?
+--- choice
+In that last line: it names the file that failed to compile.
+--- choice correct
+Further up, at the first line that reports an error; everything after it is fallout. With `-j8` the jobs' output is mixed, so save it with `2>&1 | tee build.log` and search it.
+--- choice
+In the warnings: fix all of them, and the error goes away.
+--- choice
+Nowhere in the output: run `make` again without `-j8` and it will succeed.
+--- why
+The last line only says that `make` stopped, and which rule it was running when it gave up. The cause is the first error that a compiler or other tool printed, often many lines up, and with parallel jobs it may be buried among other jobs' output. `make -j8 2>&1 | tee build.log`, then `grep -n "error" build.log`, finds it. Warnings do not stop a build; `make` stops at the first error.
+
++++ question | Fine on the login node only
+--- ask
+Your solver runs on the login node. On a compute node it dies at once with `error while loading shared libraries: libsolver.so.3: cannot open shared object file`. You built `libsolver` into `$HOME/.local/lib`. What is the likeliest cause?
+--- choice correct
+On the compute node the program cannot find that shared library: your home folder is not mounted there, or nothing points the loader at `$HOME/.local/lib`. `ldd` run on the node shows it as `not found`.
+--- choice
+The program was built for a newer processor; rebuild it with `-march=native`.
+--- choice
+`libsolver` is a static library, so it must be copied to every node.
+--- choice
+The node's package catalog is stale; run `apt update` there.
+--- why
+A shared library (`.so`) is loaded every time the program starts, so it must exist, and be findable, on every machine that runs the program. On the login node something (an `LD_LIBRARY_PATH`, or the mount of your home) makes it findable; on the node it is not. A processor mismatch gives `Illegal instruction` instead, and a static library (`.a`) is copied into the program when it is linked, so it is never needed at run time.
+
++++ question | Four times slower than the package
+--- ask
+You built a solver with `cmake -S . -B build` and `cmake --build build`. It runs four times slower than the distribution's package of the same version. What should you check first?
+--- choice correct
+The build type: without `-DCMAKE_BUILD_TYPE=Release` it is empty, and the solver was compiled with no optimization.
+--- choice
+Whether `make -j` was used: without it, the program runs on one core.
+--- choice
+Whether `cmake --install build` was run: an uninstalled program runs in debug mode.
+--- choice
+Whether the package was built with `-march=native`, which your machine cannot use.
+--- why
+With no build type, the usual Makefile or Ninja builds pass no optimization flags at all, so the compiler produces slow, straightforward code. Configure again with `-DCMAKE_BUILD_TYPE=Release`. `-j` only changes how many compile jobs run at once, which affects build time, not how fast the finished program runs, and installing only copies files.
+
+=== lnx01-l12 | Practice: systemd services and the journal
+--- for
+l12-systemd-services-and-the-journal
+
++++ question | Running, but not for long
+--- ask
+`systemctl status license-srv` shows:
+
+```text
+     Loaded: loaded (/etc/systemd/system/license-srv.service; disabled; preset: enabled)
+     Active: active (running) since Mon 2026-03-02 08:14:02 UTC; 1 month ago
+```
+
+The machine reboots tonight. What happens to `license-srv`?
+--- choice correct
+It does not come back after the reboot: it runs now, but it is `disabled`, so nothing starts it at boot. `systemctl enable license-srv` fixes that.
+--- choice
+It comes back, because it has been running for a month.
+--- choice
+It comes back, because the preset says `enabled`.
+--- choice
+It comes back only if the unit has `Restart=always`.
+--- why
+Running now and starting at boot are two separate facts. `start` and `stop` are about now; `enable` and `disable` are about boot. `disabled` on the `Loaded:` line means there is no link in any target's `.wants` folder, so boot will not pull it in. The preset is only the distribution's suggested default, and `Restart=` restarts a service that exits, not one that was never started.
+
++++ question | A tilde in ExecStart
+--- ask
+A unit has `ExecStart=~/bin/ingest --watch /data/incoming`, and the service fails to start. Why?
+--- choice correct
+`ExecStart` is not run through a shell, so nothing turns `~` into a home folder; give the absolute path, such as `/home/eng/bin/ingest`.
+--- choice
+A service cannot take arguments on its `ExecStart` line.
+--- choice
+The unit needs `Type=forking` for a program in a home folder.
+--- choice
+`--watch` must be moved into an `Environment=` line.
+--- why
+systemd splits the `ExecStart` line into words itself and starts the program directly. No shell reads the line, so `~`, `>`, `|` and wildcards mean nothing there. Arguments are fine. Write the absolute path, or, if you really need a shell, run one on purpose: `ExecStart=/bin/bash -c '...'`.
+
++++ question | What -p warning shows
+--- ask
+Which messages does `journalctl -u ingest -p warning` show?
+--- choice correct
+Messages at level `warning` and every more severe level: `err`, `crit`, `alert` and `emerg`.
+--- choice
+Messages at level `warning` only.
+--- choice
+Messages at level `warning` and the less severe ones: `notice`, `info` and `debug`.
+--- choice
+Messages at level `err` only, because warnings are not stored.
+--- why
+The levels run from most to least severe: `emerg`, `alert`, `crit`, `err`, `warning`, `notice`, `info`, `debug`, numbered 0 to 7. `-p` names a level and includes everything more severe, so `-p warning` means levels 0 to 4. That is the filter you want after a deployment: everything that is at least a warning.
+
++++ question | The status of is-active
+--- ask
+You run `systemctl stop ingest`, then `systemctl is-active ingest; echo $?`. The first line printed is `inactive`. What number does `echo $?` print?
+--- answer
+3
+--- why
+`systemctl is-active` answers with its exit status as well as with a word: 0 when the unit is active, and a non-zero status, 3 here, when it is not. That makes it usable in a script: `if systemctl is-active --quiet ingest; then ...` runs the `then` part only when the service is up.
+
++++ question | A loop that never trips the limit
+--- ask
+A unit has `Restart=on-failure` and `RestartSec=5`. Its program dies with an error one second after every start. The start limit is the default of 5 starts within 10 seconds. What happens?
+--- choice correct
+It restarts forever: a start comes only about every 6 seconds, so 5 starts never fit in 10 seconds. `status` always shows it as started a few seconds ago.
+--- choice
+After 5 attempts systemd gives up with `Start request repeated too quickly`.
+--- choice
+It is never restarted, because `on-failure` applies only to clean exits.
+--- choice
+systemd disables the unit after the first failure.
+--- why
+The limiter counts starts inside a sliding 10-second window. One second of running plus five seconds of `RestartSec` makes a start every 6 seconds or so, and at most two of those fit in any 10-second window, so the limit of 5 is never reached. The service crash-loops for ever. The tell is `Active: active (running) since 3s ago` every time you look; `journalctl -u NAME` shows the repeating cycle and the program's last words.
+
++++ question | Changing a packaged unit
+--- ask
+`ssh.service` was installed by a package into `/usr/lib/systemd/system/`. You want to add `Restart=always` in a way that survives package upgrades and reboots. What do you do?
+--- choice correct
+Run `systemctl edit ssh`, which writes only your change to a drop-in file under `/etc/systemd/system/ssh.service.d/` and reloads systemd.
+--- choice
+Edit `/usr/lib/systemd/system/ssh.service` directly, then run `systemctl daemon-reload`.
+--- choice
+Put a changed copy in `/run/systemd/system/`, which has the highest priority.
+--- choice
+Add the line to `~/.bashrc`, so that it is set at every login.
+--- why
+Files under `/usr/lib/systemd/system` belong to the package manager and are overwritten on upgrade. `/run` is in memory and is lost at reboot, and it ranks below `/etc` anyway. `/etc/systemd/system` is yours and wins. A drop-in there holds only your change and is added on top of the packaged file, so you keep future fixes from the package. `systemctl cat ssh` then shows both parts.
+
+=== lnx01-l13 | Practice: Diagnosing a machine, disk, network, syscalls, kernel
+--- for
+l13-diagnosing-a-machine
+
++++ question | Small files, two sizes
+--- ask
+A folder holds 100,000 files of 100 bytes each, on a filesystem with 4 KiB blocks. Roughly what do `du -sb` and `du -sh` report for it?
+--- choice correct
+`du -sb` about 10 MB, the bytes written; `du -sh` about 400 MB, the whole blocks the files take up.
+--- choice
+Both about 10 MB.
+--- choice
+Both about 400 MB.
+--- choice
+`du -sh` about 10 MB and `du -sb` about 400 MB.
+--- why
+`du -sb` counts bytes written, as `ls -l` does: 100,000 × 100 = 10,000,000 bytes, about 10 MB. Plain `du` counts blocks, and each tiny file takes a whole 4096-byte block: 100,000 × 4096 = 409,600,000 bytes, which `du -sh` shows as about 391M. Forty times more disk than data: many tiny files waste space, and they use up inodes as well.
+
++++ question | Room on the disk, and still full
+--- ask
+`touch newcase.log` fails with `No space left on device`, but `df -h .` shows `Use%` at 41%. Which command should you run next?
+--- choice correct
+`df -i .`
+--- choice
+`du -sh .`
+--- choice
+`lsof +L1`
+--- choice
+`dmesg -T`
+--- why
+There are free blocks, so the other thing a new file needs is probably gone: an inode, the record card every file uses whatever its size. `df -i` shows how many are used, and at 100% nothing new can be made. `lsof +L1` explains blocks that `df` counts but `du` cannot see, which is not the problem here, since blocks are free. A campaign writing many small files per case is the usual cause.
+
++++ question | Listening everywhere, still unreachable
+--- ask
+On `sim01`, `ss -ltnp` shows `LISTEN 0 128 0.0.0.0:5432 ... users:(("postgres",...))`. From your laptop, a connection to `sim01` port 5432 hangs until `curl --max-time 5` gives up with exit status 28. What does this point to?
+--- choice correct
+The service listens on every address, so its binding is fine; something between you and it, such as a firewall silently dropping packets, is the problem.
+--- choice
+The service listens only on loopback, so only `sim01` itself can reach it.
+--- choice
+The service is not running.
+--- choice
+The name `sim01` could not be looked up.
+--- why
+`0.0.0.0` in the local address means every address the machine has, so the service accepts connections from outside. A firewall that rejects a connection makes `curl` fail at once with exit 7; one that silently drops packets makes it wait until the time limit, exit 28. A loopback-only service would show `127.0.0.1:5432`, a stopped one would not be in the list, and a name that cannot be looked up gives exit 6.
+
++++ question | Permission denied on a readable file
+--- ask
+A solver exits with status 1 and says nothing. `strace -f -e trace=openat ./solver` shows:
+
+```text
+openat(AT_FDCWD, "/opt/sim/lib/tables.dat", O_RDONLY) = -1 EACCES (Permission denied)
+```
+
+`ls -l /opt/sim/lib/tables.dat` shows `-rw-r--r--`. What do you check next?
+--- choice correct
+The folders along the path: one of them is missing the execute bit for you. `namei -l /opt/sim/lib/tables.dat` shows every step.
+--- choice
+The file needs the execute bit before a program can open it.
+--- choice
+The file does not exist; `strace` reports a missing file as `EACCES`.
+--- choice
+The shared library path: set `LD_LIBRARY_PATH=/opt/sim/lib`.
+--- why
+Opening a file needs read permission on the file and execute permission on every folder you pass through to reach it. The file is readable by everyone, so a folder on the way must be blocking you: without `x` on a folder, nothing below it can be reached, whatever its own mode says. A missing file would give `ENOENT`, not `EACCES`. `strace` found in one line what the solver never said.
+
++++ question | 139
+--- ask
+A run ends with exit status 139, and all that appears is `Segmentation fault`. What is the number of the signal that killed it? Type the number.
+--- answer
+11
+--- why
+A status above 128 means the process was killed by a signal, and 139 − 128 = 11, which is `SIGSEGV`: the program touched memory it may not use, a bug in the program. The kernel logs the address and the guilty instruction; `dmesg -T | grep segfault` shows `segfault at 0` for a null pointer. If `ulimit -c` allowed it, a core file holds the program's memory at the moment it died.
+
++++ question | Killed by a limit
+--- ask
+After a job died, `dmesg` shows `Memory cgroup out of memory: Killed process 16914 (python3)`. What happened?
+--- choice correct
+The job reached a memory limit set for its group of processes (a service, container or scheduler limit), and the kernel killed it with `SIGKILL`; it reports exit status 137.
+--- choice
+The whole machine ran out of memory, and the kernel chose this job as the victim.
+--- choice
+The job touched memory it may not use and crashed.
+--- choice
+The job was sent `SIGTERM`, so it had the chance to save its work.
+--- why
+"Memory cgroup out of memory" means a limit on one control group was hit; without the word "cgroup", the whole machine ran out and the kernel picked a victim. Either way the OOM killer uses `SIGKILL`, which cannot be caught: no handler runs and nothing is saved, and the status is 128 + 9 = 137. The job's own log just stops, so only the kernel's log says why.
+
+=== lnx01-l14 | Practice: vim survival
+--- for
+l14-vim-survival
+
++++ question | Cut and put
+--- ask
+A file has four lines, `A`, `B`, `C` and `D`, one per line. The cursor is on line `B`, in normal mode. You type `dd`, then `p`. What is the order of the lines now? Type the four letters.
+--- answer
+ACBD
+A C B D
+A,C,B,D
+A, C, B, D
+--- why
+`dd` cuts line `B`, and the cursor lands on the line that took its place, `C`. `p` puts the cut line after the cursor's line, so `B` goes after `C`: A, C, B, D. `dd` then `p` is the quick way to move a line down by one.
+
++++ question | Delete the comment only
+--- ask
+The line is `horizon_s: 18.0  # was 22.0` and the cursor, in normal mode, is on the `#`. You want to delete the comment and keep `horizon_s: 18.0  `. Which keys do it?
+--- choice correct
+`D`, which deletes from the cursor to the end of the line (the same as `d$`).
+--- choice
+`dd`
+--- choice
+`x`
+--- choice
+`dw`
+--- why
+`D` deletes from the cursor to the end of the line and leaves everything before it. `dd` deletes the whole line, `x` deletes only the character under the cursor, and `dw` deletes only up to the start of the next word. `d$` spells the same thing as `D`: the delete operator with the motion "to the end of the line".
+
++++ question | Leaving without touching the file
+--- ask
+You open a file in vim only to read it, change nothing, and leave. Which command leaves the file's modification time untouched?
+--- choice correct
+`:x`
+--- choice
+`:wq`
+--- choice
+`:w`, then `:q`
+--- choice
+`:w!`
+--- why
+`:x` writes only if something changed, then quits. `:wq` and `:w` always write the file, which updates its modification time even though the content is the same, and a tool like `make` or `rsync` then treats the file as changed. `:q` would also leave it untouched.
+
++++ question | One change per line
+--- ask
+The current line is `dt: 0.002 # was dt: 0.002`. You run `:s/0\.002/0.001/`, with no `g` at the end. What does the line say now? Type the whole line.
+--- answer
+dt: 0.001 # was dt: 0.002
+--- why
+Without the `g` flag, `:s` replaces only the first match on each line it acts on, and without a range it acts only on the current line. So the first `0.002` becomes `0.001` and the one in the comment stays. `:s/0\.002/0.001/g` would change both, and `%` in front would do it on every line.
+
++++ question | The warning that came back
+--- ask
+vim showed `E325: ATTENTION` for `sweep.yaml`, with no `(STILL RUNNING)`. You pressed `R`, checked the recovered text and saved it with `:wq`. The next time you open the file, the same warning appears. Why?
+--- choice correct
+Recovering does not remove the swap file; once the recovered text is saved, delete `.sweep.yaml.swp` yourself.
+--- choice
+The recovery failed, so the saved file is still the old version.
+--- choice
+Another vim is still editing the file.
+--- choice
+vim always shows the warning twice after a crash.
+--- why
+The swap file is only removed when a session exits cleanly *on its own*. Recovering reads the old swap file but leaves it where it is, so vim finds it again next time. Once you have saved the recovered text, delete the `.swp` file (`ls -a` shows it, because its name starts with a dot). Another running vim would have shown `(STILL RUNNING)`.
+
++++ question | Suspended, not gone
+--- ask
+While editing `sweep.yaml` you pressed `Ctrl-z` by accident and got your shell prompt back. You type `vim sweep.yaml` again and see `E325: ATTENTION` with `process ID: 20740 (STILL RUNNING)`. What is the right move?
+--- choice correct
+Quit this second copy, then type `fg` to bring back the suspended vim, which is process 20740.
+--- choice
+Press `D` to delete the swap file, then carry on in the new copy.
+--- choice
+Press `E` to edit anyway; vim merges the two copies when you save.
+--- choice
+Run `kill -9 20740`, then open the file again.
+--- why
+`Ctrl-z` does not close vim; it stops it and hands the terminal back to the shell, like any job. The "still running" vim is your own, suspended, with your unsaved changes. `fg` brings it back to the foreground. Editing a second copy means whichever saves last silently wins, and `kill -9` throws away the unsaved work.
+
+=== lnx01-test | Linux and the shell: module test
+--- teach
+The test covers the whole module: paths and file handling, reading files, permissions, processes and signals, redirection, pipes and `xargs`, `grep` and the text tools, archives and copying between machines, SSH, tmux, the environment and startup files, packages, systemd, diagnosing a machine and vim. The 10 problems run in the practice terminal and most of them combine several lessons; the 12 questions test the parts a terminal cannot run. You have 112 minutes, and you pass with 7 problems and 10 questions right. There are no hints. To get ready, redo the practice sets of the lessons that felt hardest without opening their hints, and reread the check-yourself answers of lessons 03, 04, 05 and 10.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | Set up a case folder from where you stand
+--- task
+You are in `campaign/runs`, next to `case_0288.log`. Do all of this without leaving `runs` (no `cd`), and use relative paths only: none that starts with `/` or `~`.
+
+1. Make the folder `campaign/out/case_0288/logs`, parents included, with a command that is safe to run twice.
+2. Copy `campaign/configs/entry.yaml` into `campaign/out/case_0288`, keeping its name.
+3. Make `campaign/out/case_0288/logs/summary.txt` hold the first 3 lines of `case_0288.log` followed by its last 2 lines: 5 lines in all, in that order.
+--- starter
+mkdir -p campaign/configs campaign/runs
+echo "dt: 0.002" > campaign/configs/entry.yaml
+printf '%s\n' "2026-04-02T09:00:00Z INFO sim start case=0288 seed=150631" "2026-04-02T09:00:00Z INFO vehicle=falcon9-s1 profile=entry-burn dt=0.002" "2026-04-02T09:00:01Z INFO guidance mode=PDG horizon_s=18.0" "2026-04-02T09:01:00Z INFO t=60.0 alt_m=6200.0" "2026-04-02T09:02:00Z WARN solver iteration limit reached" "2026-04-02T09:02:05Z WARN falling back to previous solution" "2026-04-02T09:03:00Z INFO t=180.0 alt_m=40.0" "2026-04-02T09:03:10Z INFO MISS_DISTANCE_M 1904.3" "2026-04-02T09:03:11Z INFO sim end status=OK wall_s=191.0" > campaign/runs/case_0288.log
+cd campaign/runs
+--- solution
+mkdir -p ../out/case_0288/logs
+cp ../configs/entry.yaml ../out/case_0288/
+head -n 3 case_0288.log > ../out/case_0288/logs/summary.txt
+tail -n 2 case_0288.log >> ../out/case_0288/logs/summary.txt
+--- check shell | The folder chain exists
+dir campaign/out/case_0288/logs
+used -p
+--- check shell | The settings were copied, name kept
+file campaign/out/case_0288/entry.yaml == dt: 0.002
+--- check shell | summary.txt: the first three lines, then the last two
+file campaign/out/case_0288/logs/summary.txt ~= 2026-04-02T09:00:00Z INFO sim start case=0288 seed=150631\n2026-04-02T09:00:00Z INFO vehicle=falcon9-s1 profile=entry-burn dt=0.002\n2026-04-02T09:00:01Z INFO guidance mode=PDG horizon_s=18.0\n2026-04-02T09:03:10Z INFO MISS_DISTANCE_M 1904.3\n2026-04-02T09:03:11Z INFO sim end status=OK wall_s=191.0
+--- check shell | You never left runs
+cwd campaign/runs
+--- check source absent | No cd
+(^|[;&|])\s*cd\b
+--- check source absent | Relative paths only
+(^|\s)[/~]
+
++++ problem | Top three by dynamic pressure
+--- task
+`telemetry.csv` has a header line and seven rows. Column 4 is `q_pa`, the dynamic pressure in pascals.
+
+Save the three rows with the **largest** `q_pa` into `top3.csv`, largest first, with no header line, using one pipeline. The values have different numbers of digits, so they must be compared as numbers, not as text. Do not change `telemetry.csv`.
+--- starter
+printf '%s\n' "t_s,alt_m,vspeed_ms,q_pa,alpha_deg" "40.0,8120.4,-81.2,9876.5,4.10" "45.0,7702.9,-78.8,12000.0,5.02" "50.0,7299.6,-76.1,15230.8,6.40" "55.0,6911.0,-73.0,8410.2,7.95" "60.0,6537.7,-69.4,11020.7,9.27" "65.0,6180.3,-65.5,300.25,8.80" "70.0,5840.9,-61.2,10450.0,7.10" > telemetry.csv
+--- solution
+tail -n +2 telemetry.csv | sort -t, -k4 -rn | head -n 3 > top3.csv
+--- check shell | The three largest, largest first
+file top3.csv ~= 50.0,7299.6,-76.1,15230.8,6.40\n45.0,7702.9,-78.8,12000.0,5.02\n60.0,6537.7,-69.4,11020.7,9.27
+--- check shell | No header in the file
+file top3.csv excludes q_pa
+--- check shell | telemetry.csv was not changed
+file telemetry.csv lines == 8
+
++++ problem | A pipeline that must not hide a failure
+--- task
+`runs/case_0001.log` exists; `runs/case_0099.log` does not.
+
+1. Turn on the shell option that makes a pipeline fail when any of its commands fails.
+2. With one pipeline, count the lines of both logs together with `wc -l`. The pipeline must send `cat`'s complaint about the missing log into `errors.log`, not to the screen.
+3. Right after it, print the pipeline's exit status with `echo $?`. Because one log is missing, it must print `1`.
+--- starter
+mkdir runs
+printf '%s\n' "INFO sim start case=0001" "INFO t=60.0 alt_m=6400.0" "INFO t=120.0 alt_m=2950.0" "WARN throttle limit reached" "INFO MISS_DISTANCE_M 307.6" "INFO sim end status=OK" > runs/case_0001.log
+--- solution
+set -o pipefail
+cat runs/case_0001.log runs/case_0099.log 2> errors.log | wc -l
+echo $?
+--- check shell | The complaint went into errors.log
+file errors.log contains case_0099.log
+--- check shell | The lines that exist were counted
+printed-line 6
+--- check shell | The failure shows in the status
+ran set -o pipefail
+printed-line 1
+--- check shell | Nothing from cat reached the screen
+not-printed No such file
+
++++ problem | Warnings and errors by subsystem
+--- task
+Lines in the logs under `runs`, at any depth, look like `2026-04-02T10:00:04Z WARN gnc solver iteration limit reached`: a timestamp, a severity, a subsystem, then a message, separated by single spaces.
+
+Count the `WARN` and `ERROR` events **per subsystem**, most first, and save the result into `by_subsystem.txt` as `count subsystem` lines, like `4 gnc`. Use one pipeline. Only real events count:
+
+- only files whose names end in `.log` (a `readme.txt` in `runs` holds example lines);
+- only lines that **start** with a timestamp followed by `WARN` or `ERROR`. Comment lines start with `#`, and an `INFO` line may mention `WARN` in its message.
+--- starter
+mkdir -p runs/batch1 runs/batch2
+printf '%s\n' "2026-04-02T10:00:00Z INFO gnc sim start" "2026-04-02T10:00:04Z WARN gnc solver iteration limit reached" "2026-04-02T10:00:09Z INFO prop recovered after WARN" "2026-04-02T10:00:12Z ERROR gnc divergence detected" > runs/batch1/case_0001.log
+printf '%s\n' "# WARN power template line, not a real event" "2026-04-02T10:05:00Z WARN prop tank pressure low" "2026-04-02T10:05:03Z WARN gnc attitude error above limit" > runs/batch1/case_0002.log
+printf '%s\n' "2026-04-02T10:10:00Z ERROR power bus undervoltage" "2026-04-02T10:10:02Z WARN prop valve slow to open" "2026-04-02T10:10:07Z WARN gnc solver iteration limit reached" > runs/batch2/case_0003.log
+printf '%s\n' "2026-04-02T00:00:00Z WARN power example only" "2026-04-02T00:00:00Z ERROR power example only" > runs/readme.txt
+--- solution
+find runs -name "*.log" -exec grep -hE "^[0-9-]+T[0-9:]+Z (WARN|ERROR) " {} + | cut -d " " -f 3 | sort | uniq -c | sort -rn > by_subsystem.txt
+--- check shell | Counts per subsystem, most first
+file by_subsystem.txt ~= 4 gnc\n2 prop\n1 power
+--- check shell | Counted from sorted lines
+used uniq -c
+
++++ problem | Clear the temporary files
+--- task
+Under `results`, at every depth, delete every **file** whose name ends in `.tmp`, with one `find` command that deletes. Keep:
+
+- every folder, including the empty folder `results/batch1/cache.tmp`;
+- `results/keep/notes.tmp.txt`, whose name only contains `.tmp`;
+- every `.csv` file.
+
+Then print how many files are left under `results`, as a single number, with `find` and `wc -l`.
+--- starter
+mkdir -p results/batch1/cache.tmp results/batch2/deep results/keep
+touch results/batch1/a.tmp results/batch1/a.csv results/batch2/b.tmp results/batch2/deep/c.tmp results/batch2/deep/c.csv results/keep/notes.tmp.txt
+--- solution
+find results -type f -name "*.tmp" -delete
+find results -type f | wc -l
+--- check shell | The .tmp files are gone
+missing results/batch1/a.tmp
+missing results/batch2/b.tmp
+missing results/batch2/deep/c.tmp
+--- check shell | The folder named cache.tmp stayed
+dir results/batch1/cache.tmp
+--- check shell | The other files stayed
+file results/keep/notes.tmp.txt
+file results/batch1/a.csv
+file results/batch2/deep/c.csv
+--- check shell | Three files left, deleted by find itself
+printed-exactly 3
+used -delete
+
++++ problem | Exact fault codes
+--- task
+In `faults.log`, a fault line starts with a code: a capital `E` followed by exactly three digits, then a space. Other lines only look similar.
+
+1. Save every fault line, in file order, into `faults_e.txt` with one `grep`.
+2. Print how many times each code appears, most first, as `count code` lines, with one pipeline.
+--- starter
+printf '%s\n' "E101 IMU timeout" "E1011 IMU timeout, extended" "W101 IMU slow" "E204 GPS lost" "xE101 bad frame" "E101 IMU timeout" "  E305 indented, not a code line" "E305 thrust mismatch" "E30 short code" "e204 lower case, not valid" "E204 GPS reacquired late" "E101 IMU timeout again" > faults.log
+--- solution
+grep -E "^E[0-9]{3} " faults.log > faults_e.txt
+grep -E "^E[0-9]{3} " faults.log | cut -d " " -f 1 | sort | uniq -c | sort -rn
+--- check shell | Only the six fault lines, in order
+file faults_e.txt ~= E101 IMU timeout\nE204 GPS lost\nE101 IMU timeout\nE305 thrust mismatch\nE204 GPS reacquired late\nE101 IMU timeout again
+--- check shell | The look-alikes stayed out
+file faults_e.txt excludes E1011
+file faults_e.txt excludes xE101
+file faults_e.txt excludes indented
+file faults_e.txt excludes E30 short
+--- check shell | Counts per code, most first
+printed-exactly 3 E101\n2 E204\n1 E305
+
++++ problem | A script that shares its setting
+--- task
+`launch.sh` sets `RUN_TAG` and then starts `worker.sh` as a child, with `bash worker.sh`. Right now `bash launch.sh` prints `tag= root=`.
+
+1. Rewrite `launch.sh`, with `printf` or `echo`, so that `worker.sh` sees `RUN_TAG`. Keep the value `nightly` and keep the line `bash worker.sh`.
+2. Make `launch.sh` executable.
+3. In your shell, give `SIM_ROOT` the value `/data/campaign` so that scripts you start see it.
+4. Run `./launch.sh`. It must print `tag=nightly root=/data/campaign`.
+5. Then run `echo "shell: [$RUN_TAG]"`. It must print `shell: []`.
+--- starter
+echo 'echo "tag=$RUN_TAG root=$SIM_ROOT"' > worker.sh
+printf '%s\n' 'RUN_TAG=nightly' 'bash worker.sh' > launch.sh
+--- solution
+printf '%s\n' 'export RUN_TAG=nightly' 'bash worker.sh' > launch.sh
+chmod +x launch.sh
+export SIM_ROOT=/data/campaign
+./launch.sh
+echo "shell: [$RUN_TAG]"
+--- check shell | launch.sh exports the tag, starts the worker, and is executable
+file launch.sh contains export RUN_TAG=nightly
+file launch.sh contains bash worker.sh
+file launch.sh exec
+--- check shell | The worker saw both values
+ran ./launch.sh
+printed-line tag=nightly root=/data/campaign
+--- check shell | SIM_ROOT is exported from your shell
+env SIM_ROOT == /data/campaign
+--- check shell | The script's variable did not come back
+printed-line shell: []
+
++++ problem | Copy the fine-step settings
+--- task
+Settings files are the `.yaml` files under `configs`, at any depth. Copy into the folder `fine` every settings file that contains the exact line `dt: 0.001`, with one pipeline that ends in `xargs`. Then list `fine`.
+
+- `dt: 0.0015` is a different step, and a comment that mentions `dt: 0.001` does not count.
+- One file name contains a space; it must arrive in `fine` whole.
+- `notes.txt` is not a settings file, even though it holds the line.
+--- starter
+mkdir -p configs/entry configs/landing configs/archive fine
+printf 'vehicle: falcon9-s1\ndt: 0.001\n' > "configs/entry/entry burn.yaml"
+printf 'vehicle: falcon9-s1\ndt: 0.0015\n' > configs/entry/entry_fast.yaml
+printf 'vehicle: falcon9-s1\ndt: 0.001\n' > configs/landing/landing.yaml
+printf '# dt: 0.001 was tried\ndt: 0.002\n' > configs/archive/old.yaml
+printf 'dt: 0.001\n' > configs/landing/notes.txt
+--- solution
+find configs -name "*.yaml" -exec grep -lx "dt: 0.001" {} + | xargs -I{} cp {} fine/
+ls fine
+--- check shell | The two fine-step files arrived whole
+count fine/*.yaml == 2
+file fine/landing.yaml
+count fine/entry?burn.yaml == 1
+--- check shell | The others stayed out
+missing fine/entry_fast.yaml
+missing fine/old.yaml
+missing fine/notes.txt
+--- check shell | Copied through xargs
+used xargs
+
++++ problem | Merge two batches of case ids
+--- task
+`done.txt` lists the cases already finished, one id per line. `new.txt` lists the cases finished today; some of them are repeats.
+
+1. Keep a copy of `done.txt` as it is now, called `done.bak`.
+2. Make `done.txt` itself hold every id from both files, sorted, each id once. Go through a temporary file so that `done.txt` is never emptied, and leave no temporary file behind.
+3. Print how many different cases are done, with `wc -l done.txt`.
+
+`new.txt` must not change.
+--- starter
+printf '%s\n' 0417 0063 0288 0112 > done.txt
+printf '%s\n' 0288 0500 0063 0007 > new.txt
+--- solution
+cp done.txt done.bak
+sort -u done.txt new.txt > done.tmp
+mv done.tmp done.txt
+wc -l done.txt
+--- check shell | done.txt: every id once, sorted
+file done.txt ~= 0007\n0063\n0112\n0288\n0417\n0500
+--- check shell | The backup holds the old list
+file done.bak ~= 0417\n0063\n0288\n0112
+--- check shell | No temporary file left, and new.txt untouched
+count * == 3
+file new.txt ~= 0288\n0500\n0063\n0007
+--- check shell | Counted
+printed-line 6 done.txt
+
++++ problem | Which outputs are missing
+--- task
+A run should have written five files, `out/case_0001.csv` to `out/case_0005.csv`. Some are missing.
+
+1. Run one `ls` on all five names. Throw away what it prints for the files that exist, and save its complaints into `missing.txt`. Nothing may reach the screen.
+2. From `missing.txt`, save only the missing paths, like `out/case_0002.csv`, one per line, into `todo.txt`, with one `grep` that prints only the part of each line that matches.
+3. Print how many files are missing, with `wc -l todo.txt`.
+--- starter
+mkdir out
+touch out/case_0001.csv out/case_0003.csv out/case_0004.csv
+--- solution
+ls out/case_0001.csv out/case_0002.csv out/case_0003.csv out/case_0004.csv out/case_0005.csv > /dev/null 2> missing.txt
+grep -o "out/case_[0-9]*\.csv" missing.txt > todo.txt
+wc -l todo.txt
+--- check shell | missing.txt holds only the complaints
+file missing.txt lines == 2
+file missing.txt contains case_0002.csv
+file missing.txt excludes case_0001
+--- check shell | todo.txt lists the two missing paths
+file todo.txt ~= out/case_0002.csv\nout/case_0005.csv
+--- check shell | Counted
+printed-line 2 todo.txt
+--- check shell | The existing names were thrown away
+not-printed out/case_0003.csv
+used /dev/null
+
++++ question | The 40 GB that did not come back
+--- ask
+You delete `/data/traj_full.bin`, a 40 GB file, with `rm`. `du -sh /data` now reports 40 GB less, but `df -h /data` shows exactly the same free space as before. Which explanation fits both numbers?
+--- choice correct
+A running program still has the file open. Its blocks are freed only when that program closes it; `lsof +L1` names the program.
+--- choice
+Another hard link to the same file still exists somewhere under `/data`.
+--- choice
+`rm` moved the file to a hidden trash folder, which `df` counts and `du` does not.
+--- choice
+`df` updates its numbers only once an hour.
+--- why
+`rm` removes a name and lowers the inode's link count. The data is freed only when the count reaches zero **and** no process has the file open. `du` walks names, and no name leads to the data any more, so it stopped counting it; `df` asks the filesystem, where the blocks are still taken. A second hard link under `/data` cannot be the answer: `du` would still reach the data through that other name, and its total would not have dropped. Restart the program holding the file, or make it reopen its log, and the space returns at once.
+
++++ question | A file made under umask 027
+--- ask
+Your umask is `027`. You run `touch report.csv`. What mode does `report.csv` get? Type it in digits.
+--- answer
+640
+0640
+rw-r-----
+-rw-r-----
+--- why
+A new file asks for 666, and every bit set in the mask is removed. The mask's 0 blocks nothing for the owner, who keeps `rw-` (6). Its 2 blocks write for the group, which keeps `r--` (4). Its 7 blocks everything for others, who get nothing (0). So 640. Subtracting digits would give 637, which is wrong: a mask works bit by bit, and there was never an execute bit to remove.
+
++++ question | Names without contents
+--- ask
+The folder `results` has mode `drwxr--r--` and belongs to ana. Bob is not ana and is not in her group. `ls results` shows `run_0001.log`, but `cat results/run_0001.log` says `Permission denied`, although the file itself is `-rw-r--r--`. Why?
+--- choice correct
+Others have `r` but not `x` on `results`: Bob may read the list of names, but may not go through the folder to reach a file in it.
+--- choice
+The file needs execute permission before Bob can read it.
+--- choice
+`ls` can read the folder because it always runs as root.
+--- choice
+Bob needs write permission on `results` to open files in it.
+--- why
+On a folder, `r` means reading the list of names, and `x` means going through the folder to use a name. Others have `r--` on `results`, so the names can be listed and nothing can be reached; the file's own 644 is never even checked. `ls -l results` would show a row of question marks for the same reason. `chmod o+x results` (755 in all) would let Bob in.
+
++++ question | A handler that exits cleanly
+--- ask
+A solver installs a handler for `SIGTERM` that flushes its output and then exits with status 0. You run `kill 5120` on it, and it ends. What exit status does the shell report? Type the number.
+--- answer
+0
+--- why
+`kill` sends `SIGTERM` by default, and this program catches it: its handler runs, flushes, and chooses to exit with 0. The status 128 + 15 = 143 appears only when the signal's default action terminates a program that has no handler. With `kill -9`, `SIGKILL` cannot be caught, the handler never runs, nothing is flushed, and the status is 137.
+
++++ question | One job dies, one lives
+--- ask
+Over SSH you start the same six-hour job twice: once with `./sweep.sh &` in your login shell, and once inside a tmux session that you then detach from. The connection drops. What happens, and why?
+--- choice correct
+The `&` job dies from the `SIGHUP` your login shell passes on to its jobs; the tmux job lives, because its terminal belongs to the tmux server, which the dropped connection never touches.
+--- choice
+Both survive: `&` puts a job in the background, and background jobs never receive `SIGHUP`.
+--- choice
+Both die: the kernel ends every process you started when your connection drops.
+--- choice
+The tmux job dies too, unless it was also started with `nohup` inside tmux.
+--- why
+`&` only frees your prompt; the job stays on your shell's job list and in your terminal's session. When the connection drops, the shell gets `SIGHUP` and passes it on to every job, and the default action is to terminate. Inside tmux, the only thing attached to your SSH terminal is the tmux client, which exits. The job's terminal was created by the tmux server, a separate process with no link to your login, so no hang-up reaches it.
+
++++ question | The slash that was left off
+--- ask
+On your laptop you run `rsync -a runs sim01:/srv/campaign/runs/`, with no slash after the first `runs`. Where does the laptop's `runs/case_0001.log` end up on `sim01`? Type the full path.
+--- answer
+/srv/campaign/runs/runs/case_0001.log
+--- why
+Without a trailing slash, the source means "this folder itself", so rsync creates a folder `runs` inside the destination: `/srv/campaign/runs/runs/`. With a slash, `runs/` means "the contents of this folder", and the logs land directly in `/srv/campaign/runs/`. A slash at the end of the destination makes no difference. Say it aloud before running: "contents of runs, into runs".
+
++++ question | A dashboard two hops away
+--- ask
+A dashboard runs on `gpu07` and listens on port 3000 on all its addresses. Your laptop cannot reach `gpu07`, but `sim01` can, and you can SSH to `sim01`. Which command makes `http://localhost:3000` on your laptop show the dashboard?
+--- choice correct
+`ssh -f -N -L 3000:gpu07:3000 sim01`
+--- choice
+`ssh -f -N -L 3000:127.0.0.1:3000 sim01`
+--- choice
+`ssh -f -N -R 3000:gpu07:3000 sim01`
+--- choice
+`ssh -f -N -L 3000:127.0.0.1:3000 gpu07`
+--- why
+In `-L local:host:port`, the `host:port` part is dialed **by the server**, here `sim01`. From `sim01`, `gpu07:3000` is the dashboard. `127.0.0.1` would mean `sim01`'s own loopback, where nothing listens on 3000. `-R` carries connections the other way, from the server back to you, and you cannot SSH to `gpu07` directly at all.
+
++++ question | Appended, and still not used
+--- ask
+You put your own `python3` wrapper in `~/bin`, and your `~/.bash_profile` has `export PATH="$PATH:$HOME/bin"`. In a brand-new login shell, `type python3` still says `python3 is /usr/bin/python3`. Why?
+--- choice correct
+The line appends `~/bin` to the end of `PATH`, and the search stops at the first match, which is `/usr/bin/python3`; to override, prepend it instead.
+--- choice
+`$HOME` is not expanded inside `PATH`.
+--- choice
+Programs in your own `~/bin` must always be started with `./`.
+--- choice
+`PATH` is searched from right to left, so `~/bin` should be listed first to be searched last.
+--- why
+The shell searches the folders in `PATH` from left to right and runs the first match. Appending puts `~/bin` last, so it is used only for names nothing earlier provides; `/usr/bin` comes first and wins. `export PATH="$HOME/bin:$PATH"` puts your folder first, so it shadows the system's copy. `./` is needed only for a folder that is not on `PATH`, such as the current one.
+
++++ question | Two solver versions, side by side
+--- ask
+On a machine you administer, you must keep solver 2.1 working and also install version 3.0 from source, so that both can be used. Which layout is right?
+--- choice correct
+Install each under its own prefix, such as `--prefix=/opt/solver-2.1` and `--prefix=/opt/solver-3.0`, and choose one with `PATH`.
+--- choice
+`--prefix=/usr` for 3.0, so that it replaces the packaged files in the standard place.
+--- choice
+The default prefix for both: `/usr/local` keeps them apart automatically.
+--- choice
+Install 3.0 with `make install` into `/usr/bin`, and keep 2.1 as the package.
+--- why
+`/usr` belongs to the package manager: files you install there are overwritten by the next upgrade and make `dpkg -S` misleading. Two builds with the same default prefix, `/usr/local`, land on the same paths, so the second overwrites the first. A versioned prefix under `/opt` keeps each version complete and separate, and one `PATH` line picks which one runs, which is also how you reproduce last quarter's results with last quarter's solver.
+
++++ question | Started, then failed
+--- ask
+`systemctl start sim-post; echo $?` prints `0`. A minute later `systemctl is-active sim-post` prints `failed`. Which statement is true?
+--- choice correct
+`start` only reported that systemd launched the program; the program then exited with an error. `systemctl status sim-post` and `journalctl -u sim-post` show why.
+--- choice
+The service ran successfully, as the `0` proves; `is-active` is showing a stale state.
+--- choice
+The unit file changed on disk, and `failed` goes away after `systemctl daemon-reload`.
+--- choice
+The unit is disabled, so systemd stopped it after a minute.
+--- why
+`systemctl start` succeeds once the process has been launched; what the program does afterwards is a separate question. `status` shows the result (`failed (Result: exit-code)`), how long it ran and its exit code, and the log lines under it usually name the cause, such as a missing file. `disabled` is about boot and has nothing to do with a service stopping.
+
++++ question | A 404, according to curl
+--- ask
+The page `https://sim01:8443/status` answers with HTTP status 404. You run `curl -sS -o /dev/null https://sim01:8443/status; echo $?`. What number is printed? Type it.
+--- answer
+0
+--- why
+`curl` counts any answer from the server as success: the network worked and the server replied, so the exit status is 0 even though the page is missing. A script that tests only `$?` would call this page healthy. With `-f` (`--fail`), any HTTP status of 400 or more becomes exit status 22. Exit 6 would mean the name could not be looked up, and 7 that the connection was refused.
+
++++ question | :wq in insert mode
+--- ask
+You are typing in vim, and the bottom line shows `-- INSERT --`. You type `:wq` and press Enter. What happens?
+--- choice correct
+The characters `:wq` and a new line are typed into the file, and you are still in insert mode; press `Esc` first, then `:wq`.
+--- choice
+The file is saved and vim quits.
+--- choice
+vim refuses with `E37: No write since last change`.
+--- choice
+The file is saved, but vim stays open until you press `Esc`.
+--- why
+In insert mode every key is a character for the file, so `:`, `w`, `q` and Enter are simply typed in. Commands such as `:wq` work only from normal mode, and `Esc` always gets you there. If you are unsure which mode you are in, press `Esc` twice, then type the command.

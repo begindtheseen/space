@@ -1,0 +1,3086 @@
+@track python
+@course mod-cod_py_08_performance
+@module cod_py_08_performance
+@title Python performance: practice and test
+
+=== py08-l01 | Practice: Measure first, then change the code
+--- for
+l01-measure-first
+
++++ practice | Best run before, best run after
+--- task
+You timed the same dispersion run five times with the old code and five times with the new code. Write a function `speedup(before, after)` that says how many times faster the new code is.
+
+- `before` and `after` are lists of timings in seconds, one per repeat, in any order.
+- Use the fastest run of each list, since noise can only ever add time.
+- Return the old best divided by the new best, rounded to 2 decimal places. A number below 1 means the new code is slower.
+- If either list is empty, raise `ValueError`.
+
+So `speedup([2.41, 2.30, 2.36], [0.52, 0.49, 0.55])` is `2.30 / 0.49`, which rounds to `4.69`.
+--- starter
+def speedup(before, after):
+    pass
+--- solution
+def speedup(before, after):
+    """Old best time over new best time: how many times faster the new code is."""
+    if not before or not after:
+        raise ValueError("need at least one timing of each version")
+    return round(min(before) / min(after), 2)
+--- hint
+Which single number from a list of repeats is the fairest estimate of what the code itself costs?
+--- hint
+Take `min` of each list and divide. Check for an empty list first, before calling `min`.
+--- check case | Five repeats of each version
+speedup([2.41, 2.30, 2.36, 2.29, 2.33], [0.52, 0.49, 0.50, 0.55, 0.49])
+=> 4.67
+--- check case | The best run, not the average
+speedup([1.0, 5.0], [0.5, 0.9])
+=> 2.0
+--- check case | A slower "fix" gives a number below 1
+speedup([3.0], [4.0])
+=> 0.75
+--- check test | An empty list is an error
+raises(ValueError, lambda: speedup([], [1.0])) and raises(ValueError, lambda: speedup([1.0], []))
+
++++ practice | Follow the time down the call tree
+--- task
+A profile of a simulator is given as three dictionaries:
+
+- `cum` maps each function name to its cumtime in seconds (its own time plus everything it calls);
+- `own` maps each function name to its tottime in seconds (its own lines only);
+- `calls` maps a function name to the list of functions it calls. A function that calls nothing may be missing from `calls`, or map to an empty list.
+
+Write a function `walk_down(cum, own, calls, root)` that starts at `root` and walks down to the hotspot, returning the list of names it visited, `root` first. At each function:
+
+- if it calls nothing, stop there;
+- otherwise pick the function it calls with the largest cumtime (the first one in its list on a tie). If the current function's own time is at least that cumtime, stop at the current function: its own lines are where the time goes. Otherwise move down to the picked function and repeat.
+
+So if `main` calls `step`, `step` has own time 5.0 and calls only `log`, whose cumtime is 1.0, the walk from `main` is `["main", "step"]`.
+--- starter
+def walk_down(cum, own, calls, root):
+    pass
+--- solution
+def walk_down(cum, own, calls, root):
+    """Names from root down to the hotspot, following the largest cumtime."""
+    path = [root]
+    node = root
+    while calls.get(node):
+        child = max(calls[node], key=lambda name: cum[name])   # first one wins a tie
+        if own[node] >= cum[child]:
+            break
+        path.append(child)
+        node = child
+    return path
+--- hint
+Keep a current function and a list of visited names. Loop while the current function calls something.
+--- hint
+`max(names, key=lambda name: cum[name])` picks the largest cumtime, and on a tie it returns the first one. Compare the current function's own time with that cumtime before moving down.
+--- check case | Down to the table builder
+walk_down({"run_all": 3.1, "run_case": 3.08, "derivs": 3.0, "gravity": 0.2, "density": 2.7, "table": 2.1, "interp": 0.5}, {"run_all": 0.02, "run_case": 0.08, "derivs": 0.1, "gravity": 0.2, "density": 0.1, "table": 2.1, "interp": 0.5}, {"run_all": ["run_case"], "run_case": ["derivs"], "derivs": ["gravity", "density"], "density": ["table", "interp"]}, "run_all")
+=> ["run_all", "run_case", "derivs", "density", "table"]
+--- check case | A function whose own lines are the hotspot
+walk_down({"main": 6.1, "step": 6.0, "log": 1.0}, {"main": 0.1, "step": 5.0, "log": 1.0}, {"main": ["step"], "step": ["log"], "log": []}, "main")
+=> ["main", "step"]
+--- check case | A tie goes to the first function in the list
+walk_down({"a": 4.0, "b": 2.0, "c": 2.0}, {"a": 0.0, "b": 2.0, "c": 2.0}, {"a": ["c", "b"]}, "a")
+=> ["a", "c"]
+--- check case | A root that calls nothing
+walk_down({"solo": 1.5}, {"solo": 1.5}, {}, "solo")
+=> ["solo"]
+
++++ practice | Own time from total time
+--- task
+Some tools only report cumtime. If each function is called from one place only, a function's own time is its cumtime minus the cumtimes of the functions it calls.
+
+Write two functions:
+
+- `own_times(cum, calls)` returns a dictionary that maps every name in `cum` to its own time, rounded to 3 decimal places. `cum` maps names to cumtimes in seconds; `calls` maps a name to the list of names it calls, and a function that calls nothing may be missing from it.
+- `hotspot(cum, calls)` returns a tuple `(name, own_time)` for the function with the largest own time, taking the one that comes first in `cum` on a tie.
+
+So with `cum = {"drag": 1.25, "table": 0.8, "interp": 0.3}` and `calls = {"drag": ["table", "interp"]}`, the own time of `drag` is `1.25 - 0.8 - 0.3`, which rounds to `0.15`.
+--- starter
+def own_times(cum, calls):
+    pass
+
+
+def hotspot(cum, calls):
+    pass
+--- solution
+def own_times(cum, calls):
+    """Each function's own time: its cumtime minus what the functions it calls took."""
+    return {name: round(t - sum(cum[c] for c in calls.get(name, [])), 3) for name, t in cum.items()}
+
+
+def hotspot(cum, calls):
+    """The function whose own lines take the most time, and that time."""
+    own = own_times(cum, calls)
+    name = max(own, key=own.get)
+    return name, own[name]
+--- hint
+`calls.get(name, [])` gives an empty list for a function that calls nothing, so the same formula works for leaves.
+--- hint
+A dictionary keeps the order its keys were added, and `max` returns the first of several equal values, so `max(own, key=own.get)` settles ties the way the task asks.
+--- check case | One function and the two it calls
+own_times({"drag": 1.25, "table": 0.8, "interp": 0.3}, {"drag": ["table", "interp"]})
+=> {"drag": 0.15, "table": 0.8, "interp": 0.3}
+--- check case | The hotspot of a whole run
+hotspot({"run": 9.0, "step": 8.4, "aero": 6.1, "lookup": 5.2, "gravity": 1.1, "log": 0.5}, {"run": ["step", "log"], "step": ["aero", "gravity"], "aero": ["lookup"]})
+=> ("lookup", 5.2)
+--- check case | A tie goes to the first name
+hotspot({"a": 3.0, "b": 1.5, "c": 1.5}, {"a": ["b"]})
+=> ("a", 1.5)
+--- check case | Every own time of a deeper tree
+own_times({"run": 9.0, "step": 8.4, "aero": 6.1, "lookup": 5.2, "gravity": 1.1, "log": 0.5}, {"run": ["step", "log"], "step": ["aero", "gravity"], "aero": ["lookup"]})
+=> {"run": 0.1, "step": 1.2, "aero": 0.9, "lookup": 5.2, "gravity": 1.1, "log": 0.5}
+
++++ practice | The most one fix can buy
+--- task
+Write a function `amdahl(p, s)` that returns the overall speed-up of a program when a part that takes the fraction `p` of its run time is made `s` times faster, using Amdahl's law: one divided by (1 minus p, plus p divided by s).
+
+- Round the answer to 3 decimal places.
+- `s` may be `float("inf")`, a part made infinitely fast.
+- If `p` is 1 and `s` is infinite, the whole run takes no time: return `float("inf")`.
+- If `p` is below 0 or above 1, or `s` is 0 or less, raise `ValueError`.
+
+So `amdahl(0.4, 5)` is `1 / (0.6 + 0.08)`, which rounds to `1.471`.
+--- starter
+def amdahl(p, s):
+    pass
+--- solution
+def amdahl(p, s):
+    """Overall speed-up when a fraction p of the run is made s times faster."""
+    if not 0.0 <= p <= 1.0 or s <= 0:
+        raise ValueError("p must be in [0, 1] and s must be positive")
+    new_time = (1.0 - p) + p / s          # p / inf is 0.0
+    if new_time == 0.0:
+        return float("inf")
+    return round(1.0 / new_time, 3)
+--- hint
+Work out the new run time as a fraction of the old one first: the untouched part stays, the sped-up part shrinks.
+--- hint
+In Python, a number divided by `float("inf")` is `0.0`, so the formula already handles an infinite `s`. The one case it cannot handle is a new run time of exactly zero.
+--- check case | A 40 percent part made 5 times faster
+amdahl(0.4, 5)
+=> 1.471
+--- check case | The ceiling for a 30 percent part
+amdahl(0.3, float("inf"))
+=> 1.429
+--- check case | The whole run, and none of it
+(amdahl(1.0, float("inf")), amdahl(1.0, 4), amdahl(0.0, 50))
+=> (float("inf"), 4.0, 1.0)
+--- check test | Impossible inputs are errors
+raises(ValueError, lambda: amdahl(1.2, 2)) and raises(ValueError, lambda: amdahl(-0.1, 2)) and raises(ValueError, lambda: amdahl(0.5, 0))
+
++++ practice | Mebibytes, not megabytes
+--- task
+`array_mib(shape, dtype)` should return how much memory an array of that shape and NumPy dtype needs, in mebibytes (1 MiB is 1,048,576 bytes), rounded to 1 decimal place, the way memory_profiler reports it.
+
+It gives `80.0` for a `(500, 20000)` float64 grid, where memory_profiler shows 76.3, and it gives `80.0` again for a float32 grid of the same shape, which needs half as much. Fix it.
+--- starter
+import math
+import numpy as np
+
+
+def array_mib(shape, dtype):
+    """Memory of an array with this shape and dtype, in MiB."""
+    n = math.prod(shape)
+    return round(n * 8 / 1_000_000, 1)
+--- solution
+import math
+import numpy as np
+
+
+def array_mib(shape, dtype):
+    """Memory of an array with this shape and dtype, in MiB."""
+    n = math.prod(shape)
+    return round(n * np.dtype(dtype).itemsize / 2**20, 1)
+--- hint
+Two things are wrong: the number of bytes per element, and the size of one MiB.
+--- hint
+`np.dtype(dtype).itemsize` is the number of bytes in one element of that dtype, and one MiB is `2**20` bytes.
+--- check case | The float64 grid
+array_mib((500, 20_000), np.float64)
+=> 76.3
+--- check case | The same grid as float32
+array_mib((500, 20_000), np.float32)
+=> 38.1
+--- check case | 2,000 rows of 10,000 float64 numbers
+array_mib((2_000, 10_000), "float64")
+=> 152.6
+--- check case | Small arrays round to nothing
+(array_mib((1_000,), np.int16), array_mib((), np.float64))
+=> (0.0, 0.0)
+
++++ question | What the profiler inflates
+--- ask
+Under cProfile, `density` (called 29,500 times, a few microseconds each) shows 60 percent of the run, and `solve_orbit` (called 3 times, about a tenth of a second each) shows 30 percent. Without the profiler, how do their real shares most likely compare with these?
+--- choice
+The shares are exact: cProfile records every call, so its percentages are the real ones.
+--- choice correct
+The real share of `density` is probably smaller than 60 percent, because the profiler adds a small cost to every call and return, and `density` makes 29,500 calls against 3.
+--- choice
+The real share of `solve_orbit` is probably smaller, because the profiler slows long functions the most.
+--- choice
+Both shares shrink by the same factor, so the ratio of 60 to 30 stays the same.
+--- why
+cProfile is deterministic: its call counts are exact, but it does some bookkeeping on every call and every return. That cost grows with the number of calls, not with how long each call takes, so code made of many small calls looks bigger under the profiler than it really is. Use the profile to find where the time is, then measure the fix without the profiler, with `timeit`, against a baseline taken the same way.
+
+=== py08-l02 | Practice: Fix the algorithm before the details
+--- for
+l02-complexity-first
+
++++ practice | The first packet ID seen twice
+--- task
+A ground station logs packet IDs in the order they arrive. Write a function `first_repeat(ids)` that returns the first ID to turn up a second time: the one whose second appearance comes earliest in the list. Return `None` if no ID repeats.
+
+- IDs can be numbers or strings.
+- It must be linear in the number of IDs: one check runs it on 300,000 packets, which a pair-by-pair comparison cannot finish.
+
+So `first_repeat([7, 3, 9, 3, 7])` is `3`: its second appearance, at position 3, comes before the second 7, at position 4.
+--- starter
+def first_repeat(ids):
+    pass
+--- solution
+def first_repeat(ids):
+    """The first ID whose second appearance comes earliest, or None."""
+    seen = set()
+    for x in ids:
+        if x in seen:
+            return x
+        seen.add(x)
+    return None
+--- hint
+Walk the list once. What do you need to remember about the IDs you have already passed, and which container answers "have I seen this?" in about the same time however big it gets?
+--- hint
+A set: check `x in seen` before adding `x`. The first time the check is true, that ID is the answer.
+--- check case | The example
+first_repeat([7, 3, 9, 3, 7])
+=> 3
+--- check case | No repeats, and no packets
+(first_repeat([1, 2, 3]), first_repeat([]))
+=> (None, None)
+--- check case | Strings, and a repeat right away
+(first_repeat(["TLM", "CMD", "TLM"]), first_repeat([5, 5]))
+=> ("TLM", 5)
+--- check case | 300,000 packets, the repeat at the very end
+first_repeat(list(range(300_000)) + [299_999])
+=> 299999
+
++++ practice | The busiest stretch of a flight
+--- task
+Write a function `busiest_window(x, w)` that finds the stretch of `w` consecutive samples with the largest sum in the load samples `x`, and returns a tuple `(start, mean)`:
+
+- `start` is the index of the first sample of that stretch, as a plain whole number. On a tie, take the earliest stretch.
+- `mean` is the average of the `w` samples in it, as a plain float rounded to 6 decimal places.
+- `x` is a list or a 1-D NumPy array. If `w` is less than 1 or more than `len(x)`, raise `ValueError`.
+- It must be linear in the number of samples, whatever `w` is: one check uses 2,000,000 samples and a window of 100,000.
+
+So `busiest_window([1, 3, 2, 6, 1, 1], 2)` is `(2, 4.0)`: the stretch 2, 6 has the largest sum, 8.
+--- starter
+import numpy as np
+
+
+def busiest_window(x, w):
+    pass
+--- solution
+import numpy as np
+
+
+def busiest_window(x, w):
+    """Start and mean of the w-sample stretch with the largest sum."""
+    x = np.asarray(x, dtype=np.float64)
+    if w < 1 or w > x.size:
+        raise ValueError("need 1 <= w <= len(x)")
+    totals = np.concatenate(([0.0], np.cumsum(x)))    # totals[k] = sum of the first k samples
+    sums = totals[w:] - totals[:-w]                     # one subtraction per stretch
+    start = int(np.argmax(sums))                        # argmax returns the first maximum
+    return start, round(float(sums[start]) / w, 6)
+--- hint
+With running totals, the sum of any stretch is one subtraction, however long the stretch is.
+--- hint
+Put a 0 in front of the cumulative sum, so that the sum of the stretch starting at `i` is `totals[i + w] - totals[i]`. Slicing gives every stretch at once, and `np.argmax` returns the first position of the largest value.
+--- check case | The example
+busiest_window([1, 3, 2, 6, 1, 1], 2)
+=> (2, 4.0)
+--- check case | A tie goes to the earliest stretch
+busiest_window([5, 0, 5, 0, 5], 2)
+=> (0, 2.5)
+--- check case | The window is the whole signal
+busiest_window([2.0, 4.0], 2)
+=> (0, 3.0)
+--- check test | A window that does not fit is an error
+raises(ValueError, lambda: busiest_window([1.0, 2.0], 0)) and raises(ValueError, lambda: busiest_window([1.0, 2.0], 3))
+--- check test | 2,000,000 samples, a window of 100,000
+(lambda x: (x.__setitem__(slice(1_234_567, 1_334_567), x[1_234_567:1_334_567] + 5.0), (lambda r: r[0] == 1_234_567 and type(r[0]) is int and abs(r[1] - x[1_234_567:1_334_567].mean()) < 1e-6)(busiest_window(x, 100_000)))[1])(np.random.default_rng(8).uniform(0.0, 1.0, 2_000_000))
+
++++ practice | Packets in the last few seconds
+--- task
+Packets arrive at the times `times`, in seconds, sorted from earliest to latest; several packets may share a time. For each packet, the ground software wants to know how many packets arrived in the `window` seconds up to and including it.
+
+Write a function `recent_counts(times, window)` that returns a list with one whole number per packet: for the packet at position `i`, the count of packets at positions `0` to `i` (itself included) whose time is greater than `times[i] - window`.
+
+- A packet exactly `window` seconds earlier is not counted.
+- `window` is greater than 0. An empty `times` gives `[]`.
+- It must be linear in the number of packets: one check uses 500,000 packets.
+
+So `recent_counts([0.0, 0.4, 1.0, 1.1, 2.5], 1.0)` is `[1, 2, 2, 3, 1]`.
+--- starter
+def recent_counts(times, window):
+    pass
+--- solution
+from collections import deque
+
+
+def recent_counts(times, window):
+    """For each packet, how many packets so far arrived in the last `window` seconds."""
+    recent = deque()
+    counts = []
+    for t in times:
+        recent.append(t)
+        while recent[0] <= t - window:     # too old for this packet, so too old for every later one
+            recent.popleft()
+        counts.append(len(recent))
+    return counts
+--- hint
+Times only go up. Once a packet is too old for one packet, it is too old for every later packet too, so it can be thrown away for good.
+--- hint
+Keep the packets still inside the window in a `collections.deque`: append each new time at the back, then pop from the front while the front time is `window` or more seconds older. The answer for each packet is the deque's length.
+--- check case | The example
+recent_counts([0.0, 0.4, 1.0, 1.1, 2.5], 1.0)
+=> [1, 2, 2, 3, 1]
+--- check case | Packets that share a time
+recent_counts([1.0, 1.0, 1.0, 3.0], 0.5)
+=> [1, 2, 3, 1]
+--- check case | Exactly one window apart is not counted, and no packets
+(recent_counts([0.0, 1.0, 2.0], 1.0), recent_counts([], 5.0))
+=> ([1, 1, 1], [])
+--- check test | 500,000 packets at 1 kHz
+(lambda c: len(c) == 500_000 and c[1500] == 1501 and c[-1] == 2000 and c[1999] == 2000)(recent_counts([i * 0.001 for i in range(500_000)], 1.9995))
+
++++ practice | Range sums, one off
+--- task
+`range_sums(x, queries)` answers many questions of the form "what is the sum of `x[start:stop]`?" with running totals, so that each question costs one subtraction. `queries` is a list of `(start, stop)` pairs, with `stop` left out of the range as in a slice; `start` may equal `stop`, an empty range whose sum is 0. It returns a list of floats, one per query.
+
+For `x = [3, 1, 4, 1, 5]`, the query `(0, 2)` should give `4.0` but gives `5.0`, and the query `(1, 5)` crashes with an `IndexError`. Fix it.
+--- starter
+import numpy as np
+
+
+def range_sums(x, queries):
+    """Sum of x[start:stop] for each (start, stop), one subtraction each."""
+    totals = np.cumsum(x)
+    return [float(totals[stop] - totals[start]) for start, stop in queries]
+--- solution
+import numpy as np
+
+
+def range_sums(x, queries):
+    """Sum of x[start:stop] for each (start, stop), one subtraction each."""
+    totals = np.concatenate(([0.0], np.cumsum(x)))    # totals[k] = sum of the first k values
+    return [float(totals[stop] - totals[start]) for start, stop in queries]
+--- hint
+What does `np.cumsum(x)[k]` hold: the sum of the first `k` values, or of the first `k + 1`?
+--- hint
+Put a 0 in front of the running totals, so that position `k` holds the sum of the first `k` values. Then the sum of `x[start:stop]` is `totals[stop] - totals[start]`, and `stop` may be `len(x)`.
+--- check case | The ranges from the task, an empty one and the whole list
+range_sums([3, 1, 4, 1, 5], [(0, 2), (1, 5), (2, 2), (0, 5)])
+=> [4.0, 11.0, 0.0, 14.0]
+--- check case | No queries
+range_sums([1.0, 2.0], [])
+=> []
+--- check test | Agrees with slicing on random ranges
+(lambda x, q: all(abs(a - float(np.sum(x[s:e]))) < 1e-9 for a, (s, e) in zip(range_sums(x, q), q)))(np.random.default_rng(2).normal(size=500), [(s, s + L) for s, L in zip(range(0, 400, 7), range(0, 100))])
+
++++ practice | Screen by altitude first
+--- task
+Before any detailed conjunction check, a screening tool keeps only the pairs of objects whose altitudes are close. Write a function `altitude_pairs(alts, tol)` that returns how many pairs of different objects have altitudes that differ by `tol` or less.
+
+- `alts` is a list or 1-D array of altitudes in kilometers, in no particular order; two objects may share an altitude.
+- Each pair counts once. Fewer than two objects give 0.
+- Return a plain whole number.
+- It must take about n log n steps for n objects, not n squared: one check uses 200,000 objects.
+
+So `altitude_pairs([400.0, 402.0, 399.5, 550.0], 2.0)` is `2`: 400 with 402, and 400 with 399.5. (402 and 399.5 differ by 2.5.)
+--- starter
+def altitude_pairs(alts, tol):
+    pass
+--- solution
+def altitude_pairs(alts, tol):
+    """How many pairs of objects have altitudes within tol of each other."""
+    a = sorted(alts)
+    count = 0
+    low = 0
+    for high, h in enumerate(a):
+        while h - a[low] > tol:     # too far below h, and so too far below every later altitude
+            low += 1
+        count += high - low          # every altitude from a[low] up to just before h pairs with h
+    return count
+--- hint
+After sorting, the altitudes close to a given one sit right next to it. For each altitude, the ones within `tol` below it form one unbroken run.
+--- hint
+Sort once. Walk the sorted list with a second index `low` that marks the lowest altitude still within `tol` of the current one; it only ever moves forward. Each altitude pairs with every altitude from `low` up to just before it.
+--- check case | The example
+altitude_pairs([400.0, 402.0, 399.5, 550.0], 2.0)
+=> 2
+--- check case | Shared altitudes, and a tolerance of zero
+(altitude_pairs([400.0, 400.0, 400.0], 0.0), altitude_pairs([1.0], 5.0), altitude_pairs([], 5.0))
+=> (3, 0, 0)
+--- check test | Agrees with checking every pair
+(lambda a: altitude_pairs(a, 3.05) == sum(1 for i in range(len(a)) for j in range(i + 1, len(a)) if abs(a[i] - a[j]) <= 3.05))(__import__("numpy").random.default_rng(5).uniform(300.0, 600.0, 400).round(1).tolist())
+--- check case | 200,000 objects, shuffled
+altitude_pairs(__import__("numpy").random.default_rng(1).permutation(200_000).astype(float), 2.5)
+=> 399997
+
++++ question | Three sizes of the same job
+--- ask
+A new orbit-matching routine takes 0.30 s on 5,000 objects and 2.40 s on 10,000 objects. If its time grows like n to the power k, what is k?
+--- answer
+3
+3.0
+k = 3
+k=3
+three
+--- why
+Doubling n multiplied the time by 2.40 / 0.30 = 8. The exponent is k = log(8) / log(2) = 3, so the work grows like n cubed: a loop inside a loop inside a loop over the objects. Going to 20,000 objects would take about 8 times longer again, about 19 seconds. A different algorithm, not a faster version of the same one, is the fix.
+
+=== py08-l03 | Practice: Vectorize by default, but watch the memory
+--- for
+l03-vectorisation-and-memory
+
++++ practice | Mach numbers for a whole flight
+--- task
+Write a function `mach(v, T)` that returns the Mach number of every telemetry sample at once: the speed `v`, in meters per second, divided by the speed of sound, which is the square root of `1.4 * 287.05 * T` for the air temperature `T` in kelvin.
+
+- `v` and `T` are lists or NumPy arrays of the same shape, of any number of axes.
+- Return a float64 NumPy array of that shape.
+- Use whole-array operations: no Python loop.
+
+So at 288.15 K the speed of sound is about 340.29 m/s, and `mach([340.0], [288.15])` gives an array holding about `0.999`.
+--- starter
+import numpy as np
+
+
+def mach(v, T):
+    pass
+--- solution
+import numpy as np
+
+
+def mach(v, T):
+    """Mach number of every sample: speed over the local speed of sound."""
+    v = np.asarray(v, dtype=np.float64)
+    T = np.asarray(T, dtype=np.float64)
+    return v / np.sqrt(1.4 * 287.05 * T)
+--- hint
+Turn both inputs into float64 arrays first, with `np.asarray`, so lists work too.
+--- hint
+`np.sqrt` works on a whole array at once, and `/` divides element by element.
+--- check case | Three samples
+mach([340.0, 680.0, 250.0], [288.15, 288.15, 216.65]).round(3).tolist()
+=> [0.999, 1.998, 0.847]
+--- check test | A 2-D table keeps its shape, as float64
+(lambda m: m.shape == (2, 3) and m.dtype == np.float64 and abs(m[1, 2] - 300.0 / (1.4 * 287.05 * 250.0) ** 0.5) < 1e-12)(mach(np.full((2, 3), 300.0), np.full((2, 3), 250.0)))
+--- check test | A million samples agree with the formula
+(lambda v, T: np.allclose(mach(v, T), v / np.sqrt(401.87 * T)))(np.random.default_rng(1).uniform(100.0, 800.0, 1_000_000), np.random.default_rng(2).uniform(200.0, 300.0, 1_000_000))
+--- check source absent | No Python loop
+\bfor\s+\w+(\s*,\s*\w+)*\s+in\b|\bwhile\b
+
++++ practice | Dynamic pressure into an array you already have
+--- task
+A simulator keeps one output array for the dynamic pressure and fills it again every step. Write a function `q_into(rho, v, out)` that writes `0.5 * rho * v**2` into `out` and returns `out` itself.
+
+- `rho`, `v` and `out` are float64 arrays of the same shape; `out` is a separate array from the other two.
+- Do not change `rho` or `v`.
+- Do not build any new full-size array: write every step into `out` with in-place operators such as `*=` or the `out=` argument of NumPy's functions.
+
+So after `q_into(np.array([1.2]), np.array([100.0]), out)`, `out` holds `[6000.0]`.
+--- starter
+import numpy as np
+
+
+def q_into(rho, v, out):
+    pass
+--- solution
+import numpy as np
+
+
+def q_into(rho, v, out):
+    """Write 0.5 * rho * v**2 into out, with no full-size temporary, and return out."""
+    np.multiply(v, v, out=out)
+    out *= rho
+    out *= 0.5
+    return out
+--- hint
+Start by putting `v` times `v` straight into `out`: `np.multiply` takes an `out=` argument.
+--- hint
+After that, `out *= rho` and `out *= 0.5` change `out` where it sits.
+--- check case | One sample
+q_into(np.array([1.2]), np.array([100.0]), np.empty(1)).tolist()
+=> [6000.0]
+--- check test | It returns out itself, and leaves the inputs alone
+(lambda rho, v, out: (lambda r: r is out and np.allclose(out, 0.5 * rho * v * v) and rho.tolist() == [0.5, 1.0, 1.2] and v.tolist() == [10.0, 20.0, 30.0])(q_into(rho, v, out)))(np.array([0.5, 1.0, 1.2]), np.array([10.0, 20.0, 30.0]), np.zeros(3))
+--- check test | A 2-D grid of a million values
+(lambda rho, v, out: q_into(rho, v, out) is out and np.allclose(out, 0.5 * rho * v**2))(np.random.default_rng(3).uniform(0.01, 1.2, (1000, 1000)), np.random.default_rng(4).uniform(100.0, 800.0, (1000, 1000)), np.empty((1000, 1000)))
+--- check source | Works in place
+out=out|out\s*\*=|,\s*out\s*\)
+
++++ practice | The nearest ground station, a strip at a time
+--- task
+For every one of `N` points along a set of trajectories, find the nearest of `M` ground stations. Write a function `nearest_station(points, stations, max_bytes)` that returns an integer NumPy array of shape `(N,)`: for each point, the index of the nearest station.
+
+- `points` has shape `(N, 3)` and `stations` has shape `(M, 3)`, both float64 positions in kilometers.
+- On a tie, take the lowest station index.
+- Work on a strip of points at a time, broadcasting each strip against all stations, so that the difference array of shape `(rows, M, 3)` never holds more than `max_bytes` bytes of float64 numbers. Use as many rows as fit, but always at least 1, even when one row alone is bigger than `max_bytes`.
+- No points gives an empty array.
+
+So a point at the origin, with stations at `(1, 0, 0)` and `(-1, 0, 0)`, is nearest to station 0: the two are equally far, and 0 is the lower index.
+--- starter
+import numpy as np
+
+
+def nearest_station(points, stations, max_bytes):
+    pass
+--- solution
+import numpy as np
+
+
+def nearest_station(points, stations, max_bytes):
+    """Index of the nearest station for every point, a strip of points at a time."""
+    rows = max(1, max_bytes // (len(stations) * 3 * 8))    # rows whose (rows, M, 3) float64 array fits
+    nearest = np.empty(len(points), dtype=np.int64)
+    for start in range(0, len(points), rows):
+        d = points[start:start + rows, None, :] - stations[None, :, :]
+        d2 = np.einsum("ijk,ijk->ij", d, d)                   # squared distances, no d**2 array
+        nearest[start:start + rows] = d2.argmin(axis=1)      # argmin takes the first on a tie
+    return nearest
+--- hint
+One row of the difference array holds `M * 3` numbers of 8 bytes each. Divide the budget by that to get the rows per strip, and never go below 1.
+--- hint
+For a strip `points[s:s + rows]`, `strip[:, None, :] - stations[None, :, :]` has shape `(rows, M, 3)`. Squared distances are enough to find the nearest, and `argmin(axis=1)` returns the first index of the smallest value in each row.
+--- check case | A tie goes to the lower index
+nearest_station(np.array([[0.0, 0.0, 0.0], [0.9, 0.0, 0.0], [-3.0, 1.0, 0.0]]), np.array([[1.0, 0.0, 0.0], [-1.0, 0.0, 0.0]]), 10_000).tolist()
+=> [0, 0, 1]
+--- check test | Matches a full broadcast for any budget
+(lambda p, s: (lambda want: all(nearest_station(p, s, b).tolist() == want for b in (1, 24 * 40, 24 * 40 * 7, 10**9)))(np.sqrt(((p[:, None, :] - s[None, :, :]) ** 2).sum(axis=2)).argmin(axis=1).tolist()))(np.random.default_rng(7).uniform(-7000.0, 7000.0, (300, 3)), np.random.default_rng(8).uniform(-6400.0, 6400.0, (40, 3)))
+--- check case | No points
+nearest_station(np.zeros((0, 3)), np.ones((5, 3)), 1_000_000).tolist()
+=> []
+
++++ practice | A pressure that ruins its input
+--- task
+`dyn_pressure(rho, v)` should return a new array holding `0.5 * rho * v**2`, and leave `rho` and `v` as they were. The author tried to save memory with in-place operations.
+
+The first call gives the right numbers, but afterwards `v` holds `0.5 * rho * v**2` instead of the speeds, and calling the function a second time with the same `v` gives nonsense. Fix it, keeping the in-place operations.
+--- starter
+import numpy as np
+
+
+def dyn_pressure(rho, v):
+    """0.5 * rho * v**2 as a new array; rho and v are left unchanged."""
+    q = v
+    q *= v
+    q *= rho
+    q *= 0.5
+    return q
+--- solution
+import numpy as np
+
+
+def dyn_pressure(rho, v):
+    """0.5 * rho * v**2 as a new array; rho and v are left unchanged."""
+    q = v * v          # a new array: the only full-size allocation
+    q *= rho
+    q *= 0.5
+    return q
+--- hint
+Does `q = v` make a new array, or a second name for the same one?
+--- hint
+Start from a new array, such as `q = v * v`, and then work in place on `q`.
+--- check case | The right numbers
+dyn_pressure(np.array([1.0, 0.5]), np.array([10.0, 20.0])).tolist()
+=> [50.0, 100.0]
+--- check test | v is left alone
+(lambda rho, v: (dyn_pressure(rho, v), v.tolist() == [10.0, 20.0, 30.0] and rho.tolist() == [1.0, 1.0, 2.0])[1])(np.array([1.0, 1.0, 2.0]), np.array([10.0, 20.0, 30.0]))
+--- check test | Two calls give the same answer
+(lambda rho, v: dyn_pressure(rho, v).tolist() == dyn_pressure(rho, v).tolist() == [150.0, 800.0])(np.array([3.0, 4.0]), np.array([10.0, 20.0]))
+--- check source | Still works in place
+\*=
+
++++ practice | The apogee of every case at once
+--- task
+A dispersion launches a rocket straight up at many different speeds. For one case, the rule is this loop, with `k` the drag factor and `dt` the time step, both the same for every case:
+
+```python
+h, v = 0.0, v0
+while v > 0.0:
+    v = v + (-9.81 - k * v * abs(v)) * dt
+    h = h + v * dt
+```
+
+When it stops, `h` is that case's highest altitude. A case with `v0` of 0 or less never takes a step and stays at 0.
+
+Write a function `apogees(v0, k, dt)` that returns a float64 array with the highest altitude of every case, for a 1-D array `v0` of launch speeds. Loop over the time steps, but not over the cases: every step works on all cases at once, and a case that has stopped climbing must not change any more. The results must agree with the loop above to within 1e-6 m. One check runs 20,000 cases of about 3,000 steps each.
+--- starter
+import numpy as np
+
+
+def apogees(v0, k, dt):
+    pass
+--- solution
+import numpy as np
+
+
+def apogees(v0, k, dt):
+    """Highest altitude of every case, stepping all cases together."""
+    v = np.array(v0, dtype=np.float64)
+    h = np.zeros_like(v)
+    climbing = v > 0.0                                     # the mask: cases still going up
+    while climbing.any():
+        v_new = v + (-9.81 - k * v * np.abs(v)) * dt
+        h = np.where(climbing, h + v_new * dt, h)          # stopped cases stay put
+        v = np.where(climbing, v_new, v)
+        climbing = climbing & (v > 0.0)
+    return h
+--- hint
+The branch "is this case still climbing?" becomes a boolean mask. Keep stepping while any entry of the mask is True.
+--- hint
+Compute the next speed and height for every case, then use `np.where(climbing, new, old)` so that cases which have stopped keep their old values. Update the mask after each step.
+--- check case | No drag, and cases that never climb
+apogees(np.array([100.0, 50.0, 0.0, -5.0]), 0.0, 0.1).round(4).tolist()
+=> [504.6807, 124.9194, 0.0, 0.0]
+--- check case | With drag
+apogees(np.array([300.0, 250.0, 120.0]), 2e-4, 0.01).round(4).tolist()
+=> [2602.5529, 2052.2043, 642.8297]
+--- check test | 20,000 cases at once, each the same as on its own
+(lambda v0: (lambda r: r.shape == (20_000,) and abs(r[0] - 2946.2429) < 1e-3 and abs(r[12345] - 3751.6176) < 1e-3 and all(abs(r[i] - apogees(v0[i:i + 1], 1e-4, 0.01)[0]) < 1e-6 for i in (7, 999, 19_999)))(apogees(v0, 1e-4, 0.01)))(np.random.default_rng(6).uniform(200.0, 350.0, 20_000))
+
++++ question | The price of one broadcast
+--- ask
+`a` holds 2,000 float64 altitudes and `b` holds 50,000. A script runs:
+
+```python
+d = a[:, None] - b[None, :]
+score = (d * d).sum(axis=1)
+```
+
+About how much memory do the arrays need at the peak, ignoring `a`, `b` and the small `score`?
+--- choice
+About 1.6 MB: 2,000 plus 50,000 numbers, since broadcasting copies nothing.
+--- choice
+About 800 MB: the one (2000, 50000) array `d`.
+--- choice correct
+About 1.6 GB: `d` is a (2000, 50000) float64 array of 800 MB, and `d * d` makes a second one of the same size while `d` still exists.
+--- choice
+About 8 GB: every pair needs a full copy of `b`.
+--- why
+Broadcasting stretches the inputs without copying them, but the result is a real array with the broadcast shape: 2,000 × 50,000 × 8 bytes = 800 MB. Because `d` has a name, it stays alive while `d * d` builds another 800 MB array, so the peak is about 1.6 GB before the sum shrinks it. Working a strip of rows at a time, or using `np.einsum("ij,ij->i", d, d)` to square and add in one step, keeps the peak far lower.
+
+=== py08-l04 | Practice: Numba – compiling the hot loop
+--- for
+l04-numba-njit
+
++++ practice | Speed-up and efficiency for every core count
+--- task
+You timed a compiled dispersion on one core in `t1` seconds, and then with `prange` on several core counts. Write a function `scaling(t1, runs)` that returns one tuple `(cores, speedup, efficiency)` per entry of `runs`, sorted by the number of cores.
+
+- `runs` is a dictionary mapping a number of cores to the time in seconds on that many cores.
+- The speed-up is `t1` divided by the time. The efficiency is the speed-up divided by the number of cores, worked out from the unrounded speed-up.
+- Round both to 2 decimal places. An empty `runs` gives `[]`.
+
+So `scaling(2.0, {4: 0.62})` is `[(4, 3.23, 0.81)]`.
+--- starter
+def scaling(t1, runs):
+    pass
+--- solution
+def scaling(t1, runs):
+    """(cores, speed-up, efficiency) for every timed core count, fewest cores first."""
+    table = []
+    for cores in sorted(runs):
+        s = t1 / runs[cores]
+        table.append((cores, round(s, 2), round(s / cores, 2)))
+    return table
+--- hint
+Loop over `sorted(runs)`, which gives the core counts from smallest to largest.
+--- hint
+Keep the unrounded speed-up in a variable, and divide that by the cores before rounding either number.
+--- check case | Four core counts, given out of order
+scaling(2.0, {8: 0.41, 1: 2.0, 4: 0.62, 2: 1.04})
+=> [(1, 1.0, 1.0), (2, 1.92, 0.96), (4, 3.23, 0.81), (8, 4.88, 0.61)]
+--- check case | Three cores
+scaling(1.0, {3: 0.335})
+=> [(3, 2.99, 1.0)]
+--- check case | Nothing timed yet
+scaling(5.0, {})
+=> []
+
++++ practice | Unpack at the boundary
+--- task
+A compiled core cannot take a list of dictionaries. Write a function `unpack_stages(stages)` that turns the stage descriptions of a vehicle into what the core can take, returning a tuple `(names, table)`:
+
+- `stages` is a list of dictionaries, each with the keys `"name"`, `"dry"`, `"prop"` and `"isp"`, in any order, and possibly other keys, which are ignored. The numbers may be ints or floats.
+- `names` is the list of stage names, in the same order as `stages`.
+- `table` is a float64 NumPy array of shape `(n, 3)`, laid out in C order, whose columns are dry mass, propellant mass and specific impulse, in that order.
+- No stages gives `([], table)` with `table` of shape `(0, 3)`.
+--- starter
+import numpy as np
+
+
+def unpack_stages(stages):
+    pass
+--- solution
+import numpy as np
+
+
+def unpack_stages(stages):
+    """Stage names, and a float64 (n, 3) table of dry mass, propellant mass and Isp."""
+    names = [s["name"] for s in stages]
+    rows = [[s["dry"], s["prop"], s["isp"]] for s in stages]
+    table = np.array(rows, dtype=np.float64).reshape(len(stages), 3)
+    return names, table
+--- hint
+Pull the three numbers out of each dictionary by key, in the order the table needs, whatever order the keys were written in.
+--- hint
+`np.array(rows, dtype=np.float64)` builds a new C-ordered array. `.reshape(len(stages), 3)` also gives the empty case the right shape.
+--- check test | Two stages, keys in any order
+(lambda r: r[0] == ["S1", "S2"] and r[1].tolist() == [[22000.0, 410000.0, 282.0], [4000.0, 92000.0, 348.0]] and r[1].dtype == np.float64 and r[1].flags.c_contiguous)(unpack_stages([{"isp": 282, "name": "S1", "prop": 410000, "dry": 22000}, {"name": "S2", "dry": 4000.0, "prop": 92000.0, "isp": 348.0, "engine": "vac"}]))
+--- check test | No stages
+(lambda r: r[0] == [] and r[1].shape == (0, 3) and r[1].dtype == np.float64)(unpack_stages([]))
+--- check case | Column 2 is the specific impulse
+unpack_stages([{"name": "kick", "dry": 50, "prop": 300, "isp": 290}])[1][:, 2].tolist()
+=> [290.0]
+
++++ practice | A sum split the way prange splits it
+--- task
+A parallel reduction adds each thread's chunk on its own, then adds the partial sums. Write two functions to see what that does to a floating-point total:
+
+- `thread_ranges(n, threads)` returns a list of `threads` pairs `(start, stop)` that cut the positions `0` to `n - 1` into consecutive chunks, as equal as possible, with the first `n % threads` chunks one position longer. A chunk may be empty (start equal to stop) when `n` is smaller than `threads`.
+- `split_sum(x, threads)` adds up each chunk of the list `x` from left to right with a plain loop, starting from `0.0`, and then adds the chunk totals from left to right, starting from `0.0`. Do not use the built-in `sum`: recent versions of Python make it correct its own rounding, which would hide the effect.
+
+So `thread_ranges(10, 4)` is `[(0, 3), (3, 6), (6, 8), (8, 10)]`.
+--- starter
+def thread_ranges(n, threads):
+    pass
+
+
+def split_sum(x, threads):
+    pass
+--- solution
+def thread_ranges(n, threads):
+    """Consecutive (start, stop) chunks, as equal as possible, longer ones first."""
+    base, extra = divmod(n, threads)
+    ranges = []
+    start = 0
+    for i in range(threads):
+        stop = start + base + (1 if i < extra else 0)
+        ranges.append((start, stop))
+        start = stop
+    return ranges
+
+
+def split_sum(x, threads):
+    """Sum each chunk, then sum the chunk totals: the grouping a parallel reduction uses."""
+    total = 0.0
+    for start, stop in thread_ranges(len(x), threads):
+        part = 0.0
+        for i in range(start, stop):
+            part += x[i]
+        total += part
+    return total
+--- hint
+`divmod(n, threads)` gives the length every chunk has at least, and how many chunks get one more.
+--- hint
+Loop over the ranges, keep a running `part` for each one, and add each `part` to the total when its chunk is done.
+--- check case | Ten positions over four threads
+thread_ranges(10, 4)
+=> [(0, 3), (3, 6), (6, 8), (8, 10)]
+--- check case | More threads than positions
+thread_ranges(2, 3)
+=> [(0, 1), (1, 2), (2, 2)]
+--- check case | Regrouping moves the last digit
+(split_sum([1.0, 1e-16, 1e-16, 1e-16, 1e-16], 1), split_sum([1.0, 1e-16, 1e-16, 1e-16, 1e-16], 2))
+=> (1.0, 1.0000000000000002)
+--- check test | Always the sum of the chunk sums
+(lambda add: (lambda x: all(split_sum(x, t) == add([add(x[a:b]) for a, b in thread_ranges(len(x), t)]) for t in (1, 2, 3, 7)))(__import__("numpy").random.default_rng(3).normal(size=1001).tolist()))(lambda v: __import__("functools").reduce(lambda s, y: s + y, v, 0.0))
+
++++ practice | A regression test that fails on the build server
+--- task
+`same_result(a, b)` compares the total from a parallel reduction with a stored reference value. It should return `True` when the two floats agree to a relative tolerance of `1e-12`: when the size of their difference is at most `1e-12` times the larger of their two sizes. Two zeros agree.
+
+It passes on your laptop and fails on the build server, which has a different number of cores: `same_result(-112.78554893201051, -112.78554893202494)` gives `False`. Fix it.
+--- starter
+def same_result(a, b):
+    """True when a and b agree to a relative tolerance of 1e-12."""
+    return a == b
+--- solution
+import math
+
+
+def same_result(a, b):
+    """True when a and b agree to a relative tolerance of 1e-12."""
+    return math.isclose(a, b, rel_tol=1e-12, abs_tol=0.0)
+--- hint
+A parallel sum regroups the additions, and floating-point addition is not associative, so the last digits can move. Comparing with `==` asks for identical bits.
+--- hint
+`math.isclose(a, b, rel_tol=1e-12)` does exactly the comparison the task describes.
+--- check case | The two totals from the task agree
+same_result(-112.78554893201051, -112.78554893202494)
+=> True
+--- check case | A real change does not
+same_result(-112.7855, -112.7856)
+=> False
+--- check case | Zeros, and a difference of one part in a billion
+(same_result(0.0, 0.0), same_result(1.0, 1.0 + 1e-9))
+=> (True, False)
+
++++ practice | A histogram with no race
+--- task
+Inside a `prange` loop, each case writes its miss distance into its own slot of an array, so there is no race. Now build the summary afterwards, in one fixed order. Write a function `miss_summary(miss, width, nbins)` that returns a tuple `(worst, counts)`:
+
+- `miss` is a 1-D float64 array of miss distances in meters, all 0 or more, with at least one entry.
+- `worst` is the largest miss, as a plain float.
+- `counts` is a list of `nbins` whole numbers. Bin `b` counts the misses from `b * width` up to, but not including, `(b + 1) * width`. Misses of `nbins * width` or more go in the last bin.
+- No Python loop over the cases: use NumPy.
+
+So `miss_summary(np.array([3.0, 12.0, 10.0, 55.0, 9.99]), 10.0, 4)` is `(55.0, [2, 2, 0, 1])`.
+--- starter
+import numpy as np
+
+
+def miss_summary(miss, width, nbins):
+    pass
+--- solution
+import numpy as np
+
+
+def miss_summary(miss, width, nbins):
+    """Worst miss, and counts per bin of the given width; overflow goes in the last bin."""
+    bins = np.minimum(np.floor(miss / width).astype(np.intp), nbins - 1)
+    counts = np.bincount(bins, minlength=nbins)
+    return float(miss.max()), counts.tolist()
+--- hint
+Dividing each miss by the width and rounding down gives its bin number. Then cap the bin numbers at `nbins - 1`.
+--- hint
+`np.bincount(bins, minlength=nbins)` counts how many times each bin number appears, including bins that nobody landed in.
+--- check case | The example
+miss_summary(np.array([3.0, 12.0, 10.0, 55.0, 9.99]), 10.0, 4)
+=> (55.0, [2, 2, 0, 1])
+--- check case | One case exactly on the top edge
+miss_summary(np.array([0.0, 40.0]), 10.0, 4)
+=> (40.0, [1, 0, 0, 1])
+--- check test | Agrees with counting one case at a time
+(lambda m: (lambda w, c: w == float(m.max()) and c == [sum(1 for x in m if min(int(x // 25.0), 7) == b) for b in range(8)])(*miss_summary(m, 25.0, 8)))(np.random.default_rng(9).exponential(60.0, 5000))
+--- check source absent | No Python loop
+\bfor\s+\w+(\s*,\s*\w+)*\s+in\b|\bwhile\b
+
++++ question | How many versions get compiled
+--- ask
+What does this print?
+
+```python
+import numpy as np
+from numba import njit
+
+@njit
+def coast(v0, m, dt):
+    ...   # the coast loop
+
+coast(300.0, 25.0, 0.001)
+coast(310.0, 25.0, 0.002)
+coast(300, 25.0, 0.001)
+coast(np.float64(290.0), 25.0, 0.001)
+print(len(coast.signatures))
+```
+--- answer
+2
+two
+--- why
+Numba compiles one version per distinct set of argument types, not per set of values. The first, second and fourth calls all pass three float64 values (a NumPy `float64` is the same machine type as a Python float), so they share one version. The third call passes the integer `300`, which is an int64, so it compiles a second version. Writing `300.0`, or converting inputs with `float()` at the boundary, avoids the extra compile.
+
+=== py08-l05 | Practice: When @njit makes things slower
+--- for
+l05-when-numba-is-slower
+
++++ practice | How many calls pay for the compile
+--- task
+Compiling a function costs `Tc` seconds once. After that, each call takes `t_nb` seconds compiled, against `t_py` seconds in plain Python. Write a function `break_even(Tc, t_py, t_nb)` that returns the smallest whole number of calls `N` for which the compiled route is strictly faster in total: `Tc + N * t_nb` less than `N * t_py`.
+
+- If compiling saves nothing per call (`t_nb` is `t_py` or more), return `None`.
+- If `Tc` is 0, one call is already enough.
+- Return a plain whole number.
+
+So `break_even(0.3, 0.004, 0.0006)` is `89`: each call saves 0.0034 s, and 0.3 / 0.0034 is about 88.2.
+--- starter
+def break_even(Tc, t_py, t_nb):
+    pass
+--- solution
+import math
+
+
+def break_even(Tc, t_py, t_nb):
+    """Fewest calls for which compiling, then calling, beats plain Python in total."""
+    saving = t_py - t_nb
+    if saving <= 0:
+        return None
+    return math.floor(Tc / saving) + 1
+--- hint
+Move the `N` terms to one side: compiling wins once `N` times the saving per call is more than `Tc`.
+--- hint
+If `Tc / saving` is exactly a whole number, the totals are equal there, which is not a win, so you need one more call. `math.floor(Tc / saving) + 1` covers both cases.
+--- check case | The example
+break_even(0.3, 0.004, 0.0006)
+=> 89
+--- check case | Equal totals are not a win
+break_even(0.5, 0.25, 0.125)
+=> 5
+--- check case | Free compiling, and no saving per call
+(break_even(0.0, 0.002, 0.001), break_even(1.0, 0.001, 0.001), break_even(1.0, 0.001, 0.002))
+=> (1, None, None)
+--- check test | A plain whole number
+type(break_even(0.47, 0.0047, 0.00053)) is int and break_even(0.47, 0.0047, 0.00053) == 113
+
++++ practice | One signature at the boundary
+--- task
+Every new combination of argument types makes Numba compile again. Write a function `prepare(x, k)` that the harness calls before every call into the compiled core, returning a tuple `(array, factor)`:
+
+- `array` is `x` as a float64 NumPy array laid out in C order. `x` may be a list, an integer or float32 array, a strided slice, or a transposed 2-D array.
+- If `x` already is a C-ordered float64 NumPy array, return that very same object: no copy.
+- `factor` is `k` as a plain Python float, whether `k` came in as an int or a float.
+--- starter
+import numpy as np
+
+
+def prepare(x, k):
+    pass
+--- solution
+import numpy as np
+
+
+def prepare(x, k):
+    """x as a C-ordered float64 array (copied only if needed), and k as a float."""
+    return np.ascontiguousarray(x, dtype=np.float64), float(k)
+--- hint
+NumPy has a function that returns a C-ordered array of the dtype you ask for, and hands back its input untouched when it already is one.
+--- hint
+`np.ascontiguousarray(x, dtype=np.float64)` for the array, `float(k)` for the factor.
+--- check test | A good array is passed straight through
+(lambda a: prepare(a, 2.0)[0] is a)(np.arange(5.0))
+--- check test | A strided slice becomes a C-ordered copy
+(lambda r: r[0].flags.c_contiguous and r[0].dtype == np.float64 and r[0].tolist() == [0.0, 2.0, 4.0])(prepare(np.arange(6.0)[::2], 1.0))
+--- check case | A list and an int factor
+(lambda r: (r[0].dtype.name, r[0].tolist(), r[1], type(r[1]).__name__))(prepare([1, 2, 3], 2))
+=> ("float64", [1.0, 2.0, 3.0], 2.0, "float")
+--- check test | float32 and transposed arrays are converted
+prepare(np.ones(3, dtype=np.float32), 0.5)[0].dtype == np.float64 and (lambda a: prepare(a, 1)[0].flags.c_contiguous and prepare(a, 1)[0].tolist() == a.tolist())(np.arange(6.0).reshape(2, 3).T)
+
++++ practice | Count the compilations
+--- task
+Write a small audit tool that predicts how many versions of a function Numba compiles for a list of calls. It keeps three things about an array argument, as the lesson did: its dtype, its number of axes and its memory layout.
+
+- `layout(a)` returns `"C"` if the array `a` is C-contiguous, otherwise `"F"` if it is Fortran-contiguous, otherwise `"A"`. (A 1-D contiguous array is both; it is `"C"`.)
+- `type_key(value)` returns, for a NumPy array, the tuple `("array", dtype name, number of axes, layout)`; for `True` or `False`, the string `"bool"`; for any other int, `"int64"`; for a float (a NumPy float64 counts as a float), `"float64"`.
+- `compiles(calls)` takes a list of argument tuples, one per call, and returns how many different lists of type keys they produce.
+
+So `compiles([(np.ones(10), 2.0), (np.zeros(3), 7.5)])` is `1`: the values differ, the types do not.
+--- starter
+import numpy as np
+
+
+def layout(a):
+    pass
+
+
+def type_key(value):
+    pass
+
+
+def compiles(calls):
+    pass
+--- solution
+import numpy as np
+
+
+def layout(a):
+    """C, F or A: the memory layout Numba compiles for."""
+    if a.flags.c_contiguous:
+        return "C"
+    if a.flags.f_contiguous:
+        return "F"
+    return "A"
+
+
+def type_key(value):
+    """What Numba's dispatcher looks at for one argument."""
+    if isinstance(value, np.ndarray):
+        return ("array", value.dtype.name, value.ndim, layout(value))
+    if isinstance(value, bool):          # before int: True is also an int
+        return "bool"
+    if isinstance(value, int):
+        return "int64"
+    if isinstance(value, float):
+        return "float64"
+    raise TypeError(f"no key for {type(value).__name__}")
+
+
+def compiles(calls):
+    """How many versions a list of calls would compile: one per distinct list of type keys."""
+    return len({tuple(type_key(v) for v in args) for args in calls})
+--- hint
+A set of tuples keeps each distinct combination once, so its size is the number of compilations.
+--- hint
+In Python, `True` is also an `int`, so test for `bool` before you test for `int`.
+--- check case | Values change, types do not
+compiles([(np.ones(10), 2.0), (np.zeros(10), 3.5), (np.ones(4), -1.0)])
+=> 1
+--- check case | Six calls, six versions
+compiles([(np.ones(10), 2.0), (np.ones(10, dtype=np.float32), 2.0), (np.ones(10), 2), (np.ones((2, 5)), 2.0), (np.ones(20)[::2], 2.0), (np.ones(10), True)])
+=> 6
+--- check case | Layouts
+(layout(np.ones((3, 4))), layout(np.ones((3, 4)).T), layout(np.ones((3, 4))[:, ::2]), layout(np.ones(5)))
+=> ("C", "F", "A", "C")
+--- check case | Scalar keys
+(type_key(True), type_key(3), type_key(2.5), type_key(np.float64(1.0)))
+=> ("bool", "int64", "float64", "float64")
+--- check case | An array key
+type_key(np.ones((2, 2), dtype=np.float32))
+=> ("array", "float32", 2, "C")
+
++++ practice | Sums per case, with empty cases
+--- task
+A compiled core cannot take a list of lists of different lengths cheaply, so the harness packs every case's samples into one flat float64 array `flat`, plus an integer array `offsets` of length `n_cases + 1`: case `i` is `flat[offsets[i]:offsets[i + 1]]`. `case_sums(flat, offsets)` should return a float64 array with each case's sum, where a case with no samples sums to 0.
+
+For `flat = [1, 2, 3, 4]` and `offsets = [0, 2, 2, 4]` it gives `[3, 3, 7]` instead of `[3, 0, 7]`, and when the last case is empty, as with `offsets = [0, 2, 4, 4]`, it crashes with an `IndexError`. Fix it.
+--- starter
+import numpy as np
+
+
+def case_sums(flat, offsets):
+    """Sum of every case's samples; an empty case sums to 0."""
+    return np.add.reduceat(flat, offsets[:-1])
+--- solution
+import numpy as np
+
+
+def case_sums(flat, offsets):
+    """Sum of every case's samples; an empty case sums to 0."""
+    totals = np.concatenate(([0.0], np.cumsum(flat)))    # totals[k] = sum of the first k samples
+    return totals[offsets[1:]] - totals[offsets[:-1]]
+--- hint
+`np.add.reduceat` has a surprise: where two offsets are equal, it returns the sample at that offset instead of 0, and it cannot start at the very end of the array.
+--- hint
+Running totals with a 0 in front give the sum of `flat[a:b]` as `totals[b] - totals[a]`, which is 0 when `a` equals `b`. Index with the whole offsets arrays at once.
+--- check case | An empty case in the middle
+case_sums(np.array([1.0, 2.0, 3.0, 4.0]), np.array([0, 2, 2, 4])).tolist()
+=> [3.0, 0.0, 7.0]
+--- check case | An empty case at the end
+case_sums(np.array([1.0, 2.0, 3.0, 4.0]), np.array([0, 2, 4, 4])).tolist()
+=> [3.0, 7.0, 0.0]
+--- check case | Only empty cases
+case_sums(np.zeros(0), np.array([0, 0, 0])).tolist()
+=> [0.0, 0.0]
+--- check test | Agrees with one slice per case
+(lambda flat, off: np.allclose(case_sums(flat, off), [flat[a:b].sum() for a, b in zip(off[:-1], off[1:])]))(np.random.default_rng(4).normal(size=1000), np.array([0, 0, 17, 17, 300, 301, 650, 1000, 1000]))
+
++++ question | An empty list of nopython signatures
+--- ask
+On an older Numba, you add a bare `@jit` to a loop that calls a SciPy function inside it. The loop now runs 1.3 times slower than before, even after a warm-up call, and `f.nopython_signatures` is `[]`. What happened?
+--- choice
+Compile time is still being counted on every call.
+--- choice correct
+Type inference failed on the SciPy call, so Numba fell back to object mode: every value stays a Python object, nothing was compiled to machine code, and Numba's own wrapping adds cost.
+--- choice
+The function was compiled for too many signatures, and switching between them costs time.
+--- choice
+It was compiled in nopython mode, but NumPy's version of the loop is faster.
+--- why
+`nopython_signatures` lists the versions compiled to real machine code, so an empty list means none were. Old versions of `@jit` fell back to object mode, with only an easy-to-miss warning, when a line could not be typed, such as a call into SciPy, for which Numba has no lowering. Object mode does the interpreter's work plus its own. Write `@njit`, so a failure is a clear `TypingError`, and move the unsupported call out of the compiled function.
+
++++ question | A tiny compiled function in a Python loop
+--- ask
+`gravity_nb` is a warmed-up `@njit` version of a one-line gravity formula. The loop `[gravity_nb(h) for h in heights]` over 100,000 heights is slower than the same loop calling the plain Python function. What is the best fix?
+--- choice
+Add `cache=True`, so the machine code is loaded from disk.
+--- choice correct
+Write a compiled function that takes the whole array of heights and loops inside, so Python crosses into compiled code once instead of 100,000 times.
+--- choice
+Add `parallel=True` and use `prange` inside `gravity_nb`.
+--- choice
+Call `gravity_nb` once more before the loop, to warm it up.
+--- why
+Each call from Python into a Numba function goes through the dispatcher, which checks the argument types, finds the machine code and converts the arguments. For a formula that takes a few nanoseconds, that crossing costs more than the work. The cache only saves compile time, and the function is already warm. `prange` on a single value only adds thread start-up. Compile the loop, not the loop body.
+
+=== py08-l06 | Practice: Cython and pybind11 – a compiled core with a Python harness
+--- for
+l06-cython-and-pybind11
+
++++ practice | Computing, or crossing the boundary?
+--- task
+Every call from Python into a compiled core pays a fixed crossing cost on top of its real work. Write a function `boundary_report(n_calls, work_ns, cross_ns)` that returns a tuple `(compute_s, crossing_s, fraction)`:
+
+- `compute_s` is the total time spent on real work, in seconds: `n_calls` times `work_ns` nanoseconds.
+- `crossing_s` is the total time spent crossing, in seconds: `n_calls` times `cross_ns` nanoseconds.
+- `fraction` is the share of the total spent crossing: `crossing_s / (compute_s + crossing_s)`, or 0.0 when there are no calls.
+- Round all three to 3 decimal places.
+
+So 2,000,000 calls of 20 ns of work with 140 ns of crossing give `(0.04, 0.28, 0.875)`.
+--- starter
+def boundary_report(n_calls, work_ns, cross_ns):
+    pass
+--- solution
+def boundary_report(n_calls, work_ns, cross_ns):
+    """Seconds of work, seconds of crossing, and the crossing share of the total."""
+    compute_s = n_calls * work_ns * 1e-9
+    crossing_s = n_calls * cross_ns * 1e-9
+    total = compute_s + crossing_s
+    fraction = crossing_s / total if total > 0 else 0.0
+    return round(compute_s, 3), round(crossing_s, 3), round(fraction, 3)
+--- hint
+A nanosecond is `1e-9` seconds.
+--- hint
+Work out the fraction from the unrounded times, and guard against dividing by zero when there are no calls.
+--- check case | A tiny function called two million times
+boundary_report(2_000_000, 20, 140)
+=> (0.04, 0.28, 0.875)
+--- check case | Half a millisecond of work per call
+boundary_report(500, 540_000, 710)
+=> (0.27, 0.0, 0.001)
+--- check case | No calls
+boundary_report(0, 20, 140)
+=> (0.0, 0.0, 0.0)
+
++++ practice | The copy the adapter makes for you
+--- task
+A pybind11 core takes `py::array_t<double, py::array::c_style | py::array::forcecast>`. Whenever the argument is not already a C-ordered float64 NumPy array, the binding quietly converts it, which means a full float64 copy.
+
+Write a function `forced_copy_mb(a)` that returns the size of that copy in megabytes (1 MB is 1,000,000 bytes), rounded to 3 decimal places: 8 bytes for every element of `a`, or `0.0` when `a` is already a C-ordered float64 NumPy array. `a` may be a NumPy array of any dtype, shape or layout, or a list of numbers.
+
+So a float32 array of 1,000 numbers costs `0.008` MB, and a float64 array of 1,000 numbers costs nothing.
+--- starter
+import numpy as np
+
+
+def forced_copy_mb(a):
+    pass
+--- solution
+import numpy as np
+
+
+def forced_copy_mb(a):
+    """Megabytes of the float64 copy a forcecast binding makes, or 0.0 if none is needed."""
+    if isinstance(a, np.ndarray) and a.dtype == np.float64 and a.flags.c_contiguous:
+        return 0.0
+    return round(np.asarray(a).size * 8 / 1e6, 3)
+--- hint
+Three things must all be true for no copy: it is a NumPy array, its dtype is float64, and it is C-contiguous.
+--- hint
+The copy is always float64, so its size is the number of elements times 8 bytes, whatever the original dtype was. `np.asarray(a).size` counts the elements of a list too.
+--- check case | Already right, and right dtype but wrong for the binding
+(forced_copy_mb(np.zeros(1000)), forced_copy_mb(np.zeros(1000, dtype=np.float32)))
+=> (0.0, 0.008)
+--- check case | A strided slice and a transposed grid are copied
+(forced_copy_mb(np.zeros(2_000_000)[::2]), forced_copy_mb(np.zeros((500, 1000)).T))
+=> (8.0, 4.0)
+--- check case | A list is copied, a C-ordered 2-D grid is not
+(forced_copy_mb([1.0] * 250_000), forced_copy_mb(np.zeros((300, 400))))
+=> (2.0, 0.0)
+--- check case | Integers become float64 too
+forced_copy_mb(np.arange(1_000_000, dtype=np.int32))
+=> 8.0
+
++++ practice | Keep the core free of Python objects
+--- task
+A C++ coast core has been bound as `core(mass, cda, v0)`. It returns a flight time in seconds and, like the physics code it wraps, it knows nothing about Python types: the harness must hand it three plain Python floats, never ints, NumPy scalars or dictionaries.
+
+Write the harness function `dispersion(cases, core)` that returns a tuple `(flight, mean, std)`:
+
+- `cases` is a list of at least two dictionaries, each with the keys `"mass"`, `"cda"` and `"v0"` and possibly others. The values may be ints, floats or NumPy scalars.
+- Call `core` once per case, in order, with the three values converted to plain floats.
+- `flight` is a float64 NumPy array of the flight times, in case order.
+- `mean` is their mean and `std` their sample standard deviation (with `ddof=1`), both as plain floats rounded to 3 decimal places.
+--- starter
+import numpy as np
+
+
+def dispersion(cases, core):
+    pass
+--- solution
+import numpy as np
+
+
+def dispersion(cases, core):
+    """Run every case through the core with plain floats; flight times, mean and spread."""
+    flight = np.array([core(float(c["mass"]), float(c["cda"]), float(c["v0"])) for c in cases], dtype=np.float64)
+    return flight, round(float(flight.mean()), 3), round(float(flight.std(ddof=1)), 3)
+--- hint
+`float(x)` turns an int or a NumPy scalar into a plain Python float. Do that for each of the three values at the moment you call the core.
+--- hint
+Collect the results in a list, make one float64 array from it, then take `.mean()` and `.std(ddof=1)`.
+--- check test | Mixed input types all reach the core as plain floats
+(lambda core: (lambda f, m, s: f.dtype == np.float64 and f.tolist() == [30.25, 28.26, 31.0] and m == 29.837 and s == 1.416)(*dispersion([{"name": "c1", "mass": 25, "cda": 0.36, "v0": np.float64(300.0)}, {"mass": np.float64(26.0), "cda": 0.35, "v0": 280, "name": "c2"}, {"v0": 305.0, "mass": 50.0, "cda": np.float32(0.25)}], core)))(lambda m, c, v: v / 10.0 + m / 100.0 if all(type(x) is float for x in (m, c, v)) else (_ for _ in ()).throw(TypeError("the core takes plain floats")))
+--- check test | Called once per case, in order
+(lambda log: (dispersion([{"mass": 1, "cda": 2, "v0": 3}, {"mass": 4, "cda": 5, "v0": 6}], lambda m, c, v: (log.append((m, c, v)), m + c + v)[1]), log == [(1.0, 2.0, 3.0), (4.0, 5.0, 6.0)])[1])([])
+--- check case | Mean and spread of two cases
+dispersion([{"mass": 25.0, "cda": 0.36, "v0": 14.0}, {"mass": 25.0, "cda": 0.36, "v0": 16.0}], lambda m, c, v: v)[1:]
+=> (15.0, 1.414)
+
++++ practice | The last batch goes missing
+--- task
+`run_in_batches(xs, core_many, batch)` sends the launch speeds `xs` to a compiled core `batch` at a time, so that Python crosses into the core once per batch instead of once per case. `core_many` takes a float64 array and returns an array of the same length. The function should return a float64 array of every result, in the same order as `xs`; with no speeds it returns an empty array without calling the core.
+
+With 5 speeds and `batch = 2`, the last result comes back as 0.0; with 4 speeds and `batch = 2`, the last two do. Fix it.
+--- starter
+import numpy as np
+
+
+def run_in_batches(xs, core_many, batch):
+    """core_many on consecutive batches of xs; every result, in order."""
+    xs = np.ascontiguousarray(xs, dtype=np.float64)
+    out = np.zeros(len(xs))
+    for start in range(0, len(xs) - batch, batch):
+        out[start:start + batch] = core_many(xs[start:start + batch])
+    return out
+--- solution
+import numpy as np
+
+
+def run_in_batches(xs, core_many, batch):
+    """core_many on consecutive batches of xs; every result, in order."""
+    xs = np.ascontiguousarray(xs, dtype=np.float64)
+    out = np.zeros(len(xs))
+    for start in range(0, len(xs), batch):
+        out[start:start + batch] = core_many(xs[start:start + batch])
+    return out
+--- hint
+Write out the starts the loop visits for 4 speeds and a batch of 2. Which batch is never sent?
+--- hint
+A slice that runs past the end of an array simply stops at the end, so the loop can run its starts all the way to `len(xs)`.
+--- check case | Five speeds, batches of two
+run_in_batches([1.0, 2.0, 3.0, 4.0, 5.0], lambda a: a * 10.0, 2).tolist()
+=> [10.0, 20.0, 30.0, 40.0, 50.0]
+--- check case | Four speeds, batches of two, and one batch bigger than everything
+(run_in_batches([1.0, 2.0, 3.0, 4.0], lambda a: a + 1.0, 2).tolist(), run_in_batches([1.0, 2.0], lambda a: a * 2.0, 10).tolist())
+=> ([2.0, 3.0, 4.0, 5.0], [2.0, 4.0])
+--- check test | One call per batch, and none for no speeds
+(lambda log: (run_in_batches(list(range(7)), lambda a: (log.append(len(a)), a)[1], 3), log == [3, 3, 1] and run_in_batches([], lambda a: (log.append(len(a)), a)[1], 3).tolist() == [] and log == [3, 3, 1])[1])([])
+
++++ question | Which tool for this job?
+--- ask
+An analysis team has a 300-line Python post-processing script. Its time goes into one loop over large NumPy arrays of telemetry, doing arithmetic sample by sample, and it cannot be vectorized cleanly because each sample depends on the one before. The shared analysis machines have no C or C++ compiler, and the fix is needed this week. Which tool fits best?
+--- choice
+pybind11, wrapping a new C++ version of the loop.
+--- choice
+Cython with typed variables, built into a wheel.
+--- choice correct
+Numba's `@njit` on the loop, with the arrays passed straight in.
+--- choice
+A `ThreadPoolExecutor` running the loop on several threads.
+--- why
+A numeric loop over NumPy arrays is exactly what `@njit` is for, and it needs no build step: Numba compiles at run time. Cython and pybind11 both need a C or C++ compiler and a build, and pybind11 also needs C++ skills and a new C++ core. Threads cannot help a loop of Python bytecode, because only one thread at a time can run it.
+
++++ question | A yellow line in the loop
+--- ask
+You typed every variable of a Cython loop, but the timing barely moved. `cython -a` shows one bright yellow line inside the loop: `ratio = drag / m`. What is the most likely cause?
+--- choice
+`boundscheck` is still on, so every index is checked.
+--- choice correct
+`ratio` was never declared with `cdef double`, so Cython makes it a Python object and builds a boxed float on every pass.
+--- choice
+Division is always done by the Python interpreter in Cython.
+--- choice
+The module was built without `-i`, so the old Python version is running.
+--- why
+Yellow in the annotated page means the line talks to the Python C API. A variable without a `cdef` declaration is silently a general Python object, so each pass creates and destroys a float object, and the loop stays several times slower while the answers stay right. Declare `cdef double ratio`, rebuild, and check that the line turns white.
+
+=== py08-l07 | Practice: The GIL, threads and processes
+--- for
+l07-gil-threads-processes
+
++++ practice | Downloads on a pool of threads
+--- task
+A script fetches telemetry passes from ground stations. Request `i` spends `waits[i]` seconds waiting for the reply and almost no time computing, so the GIL is free while it waits. Write a function `batch_time(waits, threads)` that returns how long the whole batch takes on a pool of `threads` threads, rounded to 3 decimal places.
+
+- The requests are handed out in list order. Each one goes to whichever thread becomes free first; at the start, every thread is free.
+- `threads` is at least 1 and may be more than the number of requests. No requests take 0.0 seconds.
+
+So eight requests of 0.25 s on 3 threads take 0.75 s: three waves, the last one only two requests wide. And `batch_time([2.0, 0.5, 0.5, 0.5, 0.5], 2)` is `2.0`: one thread waits on the slow request while the other handles the four short ones.
+--- starter
+def batch_time(waits, threads):
+    pass
+--- solution
+import heapq
+
+
+def batch_time(waits, threads):
+    """Wall time of a batch of waiting requests on a pool of threads."""
+    free_at = [0.0] * min(threads, len(waits))    # when each thread is next free
+    for w in waits:
+        start = heapq.heappop(free_at)             # the thread that is free soonest
+        heapq.heappush(free_at, start + w)
+    return round(max(free_at, default=0.0), 3)
+--- hint
+Keep, for every thread, the time at which it will next be free. Each request starts at the smallest of those times.
+--- hint
+A heap from `heapq` gives the smallest time with `heappop`; push back that time plus the request's wait. The batch ends when the busiest thread is done.
+--- check case | Eight requests on eight threads, and on three
+(batch_time([0.25] * 8, 8), batch_time([0.25] * 8, 3))
+=> (0.25, 0.75)
+--- check case | One slow request
+batch_time([2.0, 0.5, 0.5, 0.5, 0.5], 2)
+=> 2.0
+--- check case | More threads than requests, and no requests
+(batch_time([1.0, 3.0], 5), batch_time([], 4))
+=> (3.0, 0.0)
+--- check case | Forty requests on twenty threads
+batch_time([0.5] * 40, 20)
+=> 1.0
+
++++ practice | Two threads, one total
+--- task
+The GIL makes each bytecode step safe, not each line. Simulate two threads, `"A"` and `"B"`, that each run `total = total + 1` exactly `k` times. Every run of that line is three steps, in this order:
+
+1. read: copy the shared total into the thread's own register;
+2. add: add 1 to the thread's own register;
+3. write: copy the thread's register into the shared total.
+
+A schedule is a string such as `"AABBBA"`: each letter means that thread carries out its next step. Write a function `run_schedule(schedule, k)` that starts with a total of 0 and both registers at 0, runs the schedule, and returns the final total.
+
+- Raise `ValueError` if the schedule is not exactly `6 * k` letters long, contains a letter other than `A` or `B`, or gives a thread more than its `3 * k` steps.
+
+So `run_schedule("AAABBB", 1)` is `2`, but `run_schedule("ABABAB", 1)` is `1`: both threads read 0, and one update is lost.
+--- starter
+def run_schedule(schedule, k):
+    pass
+--- solution
+def run_schedule(schedule, k):
+    """Final total after two threads each run total = total + 1, k times, in this interleaving."""
+    if len(schedule) != 6 * k:
+        raise ValueError("each thread needs exactly 3 * k steps")
+    shared = 0
+    register = {"A": 0, "B": 0}
+    done = {"A": 0, "B": 0}
+    for who in schedule:
+        if who not in done or done[who] == 3 * k:
+            raise ValueError(f"step for {who!r} is not allowed")
+        step = done[who] % 3
+        if step == 0:
+            register[who] = shared        # read
+        elif step == 1:
+            register[who] += 1            # add
+        else:
+            shared = register[who]        # write
+        done[who] += 1
+    return shared
+--- hint
+Keep the shared total, one register per thread, and a count of how many steps each thread has taken. The count modulo 3 tells you which of the three steps comes next.
+--- hint
+A write copies the thread's register, which may hold a value read before the other thread's write. That is how an update gets lost.
+--- check case | One thread after the other
+(run_schedule("AAABBB", 1), run_schedule("AAABBBAAABBB", 2))
+=> (2, 4)
+--- check case | Interleaved reads lose updates
+(run_schedule("ABABAB", 1), run_schedule("AABBBA", 1))
+=> (1, 1)
+--- check case | Half the updates lost
+run_schedule("ABBBBBBAAAAA", 2)
+=> 2
+--- check test | Impossible schedules are errors
+raises(ValueError, lambda: run_schedule("AAAAAA", 1)) and raises(ValueError, lambda: run_schedule("AAAB", 1)) and raises(ValueError, lambda: run_schedule("AAABBC", 1))
+
++++ practice | A thread estimate turned inside out
+--- task
+`thread_speedup(released, threads)` estimates how much faster a job runs on `threads` threads, on a machine with at least that many cores. `released` is the fraction of the job's serial time spent inside compiled code that releases the GIL, such as large NumPy operations; those parts can run on all threads at once. The rest is Python bytecode, which runs one thread at a time. The estimate is one divided by (1 minus released, plus released divided by threads), rounded to 2 decimal places.
+
+It promises a 4 times speed-up on four threads for pure-Python work (`released = 0`), and no speed-up at all for work that is entirely inside NumPy (`released = 1`). Fix it.
+--- starter
+def thread_speedup(released, threads):
+    """Estimated speed-up on `threads` threads when a fraction `released` runs without the GIL."""
+    return round(1 / (released + (1 - released) / threads), 2)
+--- solution
+def thread_speedup(released, threads):
+    """Estimated speed-up on `threads` threads when a fraction `released` runs without the GIL."""
+    return round(1 / ((1 - released) + released / threads), 2)
+--- hint
+Which part of the job can be shared out among the threads, and which part still runs one thread at a time?
+--- hint
+Only the released part is divided by the number of threads. The bytecode part stays at its full size.
+--- check case | Pure Python, and pure NumPy
+(thread_speedup(0.0, 4), thread_speedup(1.0, 4))
+=> (1.0, 4.0)
+--- check case | Mostly inside NumPy
+thread_speedup(0.9, 4)
+=> 3.08
+--- check case | Half and half on eight threads
+thread_speedup(0.5, 8)
+=> 1.78
+
++++ practice | Threads or processes: predict the wall time
+--- task
+Write a function `wall_time(jobs, workers, cores, kind, pool)` that predicts how long a batch of jobs takes. `jobs` lists each job's time in seconds when run alone. Jobs are handed out in list order, each to whichever worker is free first. Round the answer to 3 decimal places. The rules:
+
+- `kind == "io"`: the jobs are mostly waiting. Waiting needs neither the GIL nor a core, so `workers` jobs can run at once, for either pool.
+- `kind == "python"`: the jobs are Python bytecode. With `pool == "threads"` they take turns on the GIL, so the batch takes the sum of all the job times. With `pool == "processes"` each has its own GIL, so as many run at once as the smaller of `workers` and `cores`.
+- `kind == "numpy"`: the jobs run inside compiled code that releases the GIL. For either pool, as many run at once as the smaller of `workers` and `cores`.
+- Any other `kind`, or a `pool` other than `"threads"` or `"processes"`, raises `ValueError`.
+
+So six pure-Python jobs of 3.0 s take 18.0 s on six threads but 3.0 s on six processes on a six-core machine.
+--- starter
+def wall_time(jobs, workers, cores, kind, pool):
+    pass
+--- solution
+import heapq
+
+
+def finish_time(jobs, slots):
+    """Wall time when jobs, in order, go to whichever of `slots` runners is free first."""
+    free_at = [0.0] * min(slots, len(jobs))
+    for job in jobs:
+        heapq.heappush(free_at, heapq.heappop(free_at) + job)
+    return max(free_at, default=0.0)
+
+
+def wall_time(jobs, workers, cores, kind, pool):
+    """Predicted wall time of a batch, from what the jobs do and which pool runs them."""
+    if pool not in ("threads", "processes"):
+        raise ValueError(f"unknown pool {pool!r}")
+    if kind == "io":
+        return round(finish_time(jobs, workers), 3)
+    if kind == "python":
+        if pool == "threads":
+            return round(sum(jobs), 3)                  # one GIL: one job at a time
+        return round(finish_time(jobs, min(workers, cores)), 3)
+    if kind == "numpy":
+        return round(finish_time(jobs, min(workers, cores)), 3)
+    raise ValueError(f"unknown kind {kind!r}")
+--- hint
+Every case except Python bytecode on threads is the same schedule: jobs in order, each to the first free runner. Only the number of runners changes. Write that once, as a helper.
+--- hint
+Waiting jobs are not limited by cores, so they get `workers` runners. Computing jobs that can run at once get `min(workers, cores)` runners. Python bytecode on threads gets, in effect, one.
+--- check case | Pure Python on threads and on processes
+(wall_time([3.0] * 6, 6, 6, "python", "threads"), wall_time([3.0] * 6, 6, 6, "python", "processes"))
+=> (18.0, 3.0)
+--- check case | Waiting jobs ignore the core count
+(wall_time([0.5] * 40, 20, 4, "io", "threads"), wall_time([0.5] * 8, 8, 2, "io", "processes"))
+=> (1.0, 0.5)
+--- check case | NumPy jobs are limited by the cores
+wall_time([1.0] * 8, 8, 4, "numpy", "threads")
+=> 2.0
+--- check case | Uneven jobs on two processes
+wall_time([4.0, 1.0, 1.0, 1.0, 1.0], 2, 8, "python", "processes")
+=> 4.0
+--- check test | Unknown kinds and pools are errors
+raises(ValueError, lambda: wall_time([1.0], 1, 1, "gpu", "threads")) and raises(ValueError, lambda: wall_time([1.0], 1, 1, "io", "fibers"))
+
++++ question | Which job will not get faster
+--- ask
+On a 4-core machine running standard CPython, each of these jobs is split into four parts and run on a `ThreadPoolExecutor` with four threads. Which one will not get faster?
+--- choice
+Fetching four telemetry files from a server, each request mostly waiting on the reply.
+--- choice
+Calling `np.exp` on four blocks of 5 million samples each.
+--- choice correct
+Solving Kepler's equation with a pure-Python Newton loop for four blocks of orbits.
+--- choice
+Four large matrix products, with the BLAS library set to one thread.
+--- why
+The GIL stops two threads from running Python bytecode at the same moment, and a pure-Python Newton loop is nothing but bytecode, so the four threads take turns and the job runs at serial speed or slightly worse. Waiting on the network releases the GIL, and so do NumPy's element-wise loops on large arrays and BLAS matrix products, so the other three can overlap. For the Kepler loop, use processes, or compile the loop first.
+
++++ question | Python without the GIL
+--- ask
+A team moves its pure-Python dispersion harness to a free-threaded build of CPython, such as `python3.13t`, which runs without the GIL, and keeps using a `ThreadPoolExecutor`. What changes?
+--- choice
+Nothing: threads still take turns, because the GIL is part of the Python language.
+--- choice correct
+Threads can now run Python bytecode at the same time on different cores, so CPU-bound cases can scale with threads, although single-threaded code runs somewhat slower in that build.
+--- choice
+Processes stop working, since the build has no GIL to copy into each process.
+--- choice
+Only NumPy calls get faster, because they now release a lock that no longer exists.
+--- why
+The GIL belongs to the standard CPython program, not to the Python language. The free-threaded build removes it, so threads really do run bytecode in parallel, at the price of finer locking inside the interpreter, which slows single-threaded code, and of extension modules that must be rebuilt for it. Code that shares and changes variables between threads now needs its own locks even more than before.
+
+=== py08-l08 | Practice: Running a Monte Carlo on every core
+--- for
+l08-parallel-monte-carlo
+
++++ practice | Cases that finish in any order
+--- task
+Worker processes finish Monte Carlo cases in an order nobody controls. Write a function `run_shuffled(master, n_cases, case, order)` that runs every case in the given order and returns the results in case order:
+
+- Make the per-case seeds with `np.random.SeedSequence(master).spawn(n_cases)`.
+- Case `i` calls `case(rng)`, where `rng` is `np.random.default_rng` of seed `i`, and its result goes in position `i` of the returned list.
+- `order` is a list of every case number, in the order the cases are run.
+
+The results must be the same for every `order`, and the first cases must not change when more cases are added.
+--- starter
+import numpy as np
+
+
+def run_shuffled(master, n_cases, case, order):
+    pass
+--- solution
+import numpy as np
+
+
+def run_shuffled(master, n_cases, case, order):
+    """Run the cases in any order; each draws from its own seed, so the results never change."""
+    seeds = np.random.SeedSequence(master).spawn(n_cases)
+    results = [None] * n_cases
+    for i in order:
+        results[i] = case(np.random.default_rng(seeds[i]))
+    return results
+--- hint
+The random numbers a case sees must depend on which case it is, never on when it runs or on what ran before it.
+--- hint
+Build every child seed first. When you run case `i`, give it a fresh generator made from seed `i`, and store its result in slot `i`.
+--- check test | The same results in any order
+(lambda f: run_shuffled(2024, 6, f, [0, 1, 2, 3, 4, 5]) == run_shuffled(2024, 6, f, [5, 3, 1, 0, 2, 4]) == run_shuffled(2024, 6, f, [2, 5, 4, 3, 1, 0]))(lambda rng: round(float(rng.normal(0.0, 8.0)), 6))
+--- check test | Case i gets child seed i
+(lambda f: run_shuffled(2024, 6, f, [3, 1, 4, 0, 5, 2]) == [f(np.random.default_rng(s)) for s in np.random.SeedSequence(2024).spawn(6)])(lambda rng: round(float(rng.normal(0.0, 8.0)), 6))
+--- check test | Adding cases leaves the first ones alone
+(lambda f: run_shuffled(7, 5, f, [4, 3, 2, 1, 0])[:3] == run_shuffled(7, 3, f, [0, 1, 2]))(lambda rng: int(rng.integers(0, 10**9)))
+--- check test | Each case draws several numbers from its own stream
+(lambda f: run_shuffled(11, 4, f, [1, 0, 3, 2]) == run_shuffled(11, 4, f, [0, 1, 2, 3]))(lambda rng: tuple(rng.uniform(0.0, 1.0, 3).round(9).tolist()))
+
++++ practice | Put each result back in its slot
+--- task
+With `as_completed`, results arrive in the order the cases finish. Write a function `reassemble(done, n)` that puts them back in case order.
+
+- `done` is a list of `(case_index, result)` pairs, in finishing order. A result can be any value, including `None`.
+- Return a list of `n` results, where position `i` holds the result of case `i`.
+- Raise `ValueError` if any case from `0` to `n - 1` is missing, if a case index appears twice, or if an index is outside that range.
+
+So `reassemble([(2, "c"), (0, "a"), (1, "b")], 3)` is `["a", "b", "c"]`.
+--- starter
+def reassemble(done, n):
+    pass
+--- solution
+def reassemble(done, n):
+    """Results back in case order; every case exactly once."""
+    results = [None] * n
+    filled = [False] * n
+    for i, value in done:
+        if not 0 <= i < n or filled[i]:
+            raise ValueError(f"bad or repeated case index {i}")
+        results[i] = value
+        filled[i] = True
+    if not all(filled):
+        raise ValueError("some cases never came back")
+    return results
+--- hint
+A result can be `None`, so you cannot use `None` to mean "not filled yet". Keep a separate record of which slots have been filled.
+--- hint
+Check each index before you use it: in range, and not filled already. After the loop, every slot must be filled.
+--- check case | The example
+reassemble([(2, "c"), (0, "a"), (1, "b")], 3)
+=> ["a", "b", "c"]
+--- check case | A result that is None, and no cases at all
+(reassemble([(1, None), (0, 5.0)], 2), reassemble([], 0))
+=> ([5.0, None], [])
+--- check test | A missing case is an error
+raises(ValueError, lambda: reassemble([(0, "a")], 2)) and raises(ValueError, lambda: reassemble([(1, None)], 2))
+--- check test | A repeated or impossible index is an error
+raises(ValueError, lambda: reassemble([(0, "a"), (1, "b"), (1, "c")], 2)) and raises(ValueError, lambda: reassemble([(0, "a"), (2, "b")], 2)) and raises(ValueError, lambda: reassemble([(-1, "a"), (0, "b")], 2))
+
++++ practice | How many tasks per trip
+--- task
+Every trip through the pipe to a worker costs a fixed overhead. Write a function `pick_chunksize(n_tasks, task_us, trip_us, workers)` that picks the `chunksize` for `ProcessPoolExecutor.map`:
+
+- Times are whole numbers of microseconds: `task_us` is one task's work and `trip_us` is one trip's overhead.
+- Take the smallest chunk size for which one trip's overhead is at most 1 percent of the work in the chunk: `trip_us` at most `0.01 * chunksize * task_us`.
+- But never give a chunk larger than the tasks divided by the workers, rounded up, so every worker has something to do.
+- The answer is always at least 1. Use whole-number arithmetic only, so no rounding error can move the answer.
+
+So 20,000 tasks of 10 µs with 100 µs trips on 4 workers give `1000`.
+--- starter
+def pick_chunksize(n_tasks, task_us, trip_us, workers):
+    pass
+--- solution
+def pick_chunksize(n_tasks, task_us, trip_us, workers):
+    """Smallest chunk whose trip overhead is at most 1 % of its work, capped so every worker gets some."""
+    need = -(-100 * trip_us // task_us)            # ceil(100 * trip / task), in whole numbers
+    cap = -(-n_tasks // workers)                    # ceil(n_tasks / workers)
+    return max(1, min(need, cap))
+--- hint
+Rearrange the condition: the chunk size must be at least `100 * trip_us / task_us`, rounded up.
+--- hint
+For whole numbers, `-(-a // b)` is `a / b` rounded up. Take the smaller of the need and the cap, then make sure the result is at least 1.
+--- check case | Many tiny tasks
+pick_chunksize(20_000, 10, 100, 4)
+=> 1000
+--- check case | Tasks of 5 ms need only small chunks
+pick_chunksize(400, 5_000, 100, 4)
+=> 2
+--- check case | The cap keeps every worker busy
+(pick_chunksize(100, 10, 100, 4), pick_chunksize(1_000, 3, 100, 8))
+=> (25, 125)
+--- check case | Long tasks, and no tasks
+(pick_chunksize(400, 5_000_000, 100, 4), pick_chunksize(0, 10, 100, 4))
+=> (1, 1)
+
++++ practice | Eight workers, a slower run
+--- task
+`predicted(serial_s, parallel_s, workers)` should use Amdahl's law to predict a dispersion's run time on `workers` processes, from the seconds a one-core run spends in its serial part (loading tables, making plots) and in its parallel part (the cases). It returns a tuple `(new_time, speedup)`, both rounded to 2 decimal places.
+
+For 30 s of serial work and 2,400 s of cases on 8 workers it should give `(330.0, 7.36)`. Instead it predicts a speed-up below 1, and the more workers you give it, the slower it says the run gets. Fix it.
+--- starter
+def predicted(serial_s, parallel_s, workers):
+    """Run time and speed-up on `workers` processes, by Amdahl's law."""
+    p = parallel_s / (serial_s + parallel_s)
+    speedup = 1 / ((1 - p) + p * workers)
+    return round((serial_s + parallel_s) / speedup, 2), round(speedup, 2)
+--- solution
+def predicted(serial_s, parallel_s, workers):
+    """Run time and speed-up on `workers` processes, by Amdahl's law."""
+    p = parallel_s / (serial_s + parallel_s)
+    speedup = 1 / ((1 - p) + p / workers)
+    return round((serial_s + parallel_s) / speedup, 2), round(speedup, 2)
+--- hint
+What happens to the time of the parallel part when it is shared among `workers` processes?
+--- hint
+The parallel fraction shrinks to `p / workers`; the serial fraction stays `1 - p`.
+--- check case | The dispersion from the task
+predicted(30, 2400, 8)
+=> (330.0, 7.36)
+--- check case | All parallel, and all serial
+(predicted(0, 100, 4), predicted(10, 0, 16))
+=> ((25.0, 4.0), (10.0, 1.0))
+--- check case | One worker changes nothing
+predicted(5, 15, 1)
+=> (20.0, 1.0)
+
++++ question | Shared memory after the run
+--- ask
+A dispersion script creates a 2 GB block with `shared_memory.SharedMemory(create=True, size=...)`, runs its workers, and at the end calls `shm.close()` but never `shm.unlink()`. What happens?
+--- choice
+Nothing: `close` frees the block, and `unlink` only matters on Windows.
+--- choice
+The workers get a copy of the block each, so 2 GB is used once per worker.
+--- choice correct
+The block stays taken after the program ends, so each run of the script can leave another 2 GB of memory in use until it is freed by hand or the machine restarts.
+--- choice
+The next run of the script fails, because a block with the same data already exists.
+--- why
+`close` only detaches the current process from the block. `unlink` tells the operating system the block may be freed once nobody is attached. Without it, the named block outlives the program. Call `unlink` once, from the process that created the block, after every worker is done with it.
+
++++ question | A case function that cannot be sent
+--- ask
+This fails with a pickling error. Why?
+
+```python
+with ProcessPoolExecutor(max_workers=4) as ex:
+    results = list(ex.map(lambda s: run_case(s) * 2.0, seeds))
+```
+--- choice
+Seeds made by `SeedSequence` cannot be pickled.
+--- choice correct
+Functions are pickled by name, so a worker can only receive a function it can import by name from a module; a `lambda` has no such name.
+--- choice
+`map` needs a `chunksize` when the function is a `lambda`.
+--- choice
+Worker processes cannot multiply floats they received through a pipe.
+--- why
+To send a task, Python pickles the function and its argument. A function is pickled as a reference, its module and its name, and the worker imports it from there. A `lambda`, or a function defined inside another function, cannot be found that way. Define the wrapper at the top level of a module, for example `def doubled_case(s): return run_case(s) * 2.0`, and map that.
+
+=== py08-l09 | Practice: Telemetry bigger than memory
+--- for
+l09-bigger-than-memory
+
++++ practice | Will the log fit?
+--- task
+Write two functions for sizing a telemetry recording:
+
+- `log_bytes(channels, rate_hz, seconds, dtype)` returns the size of a recording in bytes, as a plain whole number: channels times samples per second times bytes per sample times seconds. `dtype` is a NumPy dtype or its name, such as `"float32"`; use its item size.
+- `hours_that_fit(channels, rate_hz, dtype, ram_bytes)` returns the largest whole number of hours of recording that fits in `ram_bytes` bytes. It may be 0.
+
+So 200 channels at 1000 Hz as float64 make 5,760,000,000 bytes an hour, and 2 hours of that fit in 16,000,000,000 bytes.
+--- starter
+import numpy as np
+
+
+def log_bytes(channels, rate_hz, seconds, dtype):
+    pass
+
+
+def hours_that_fit(channels, rate_hz, dtype, ram_bytes):
+    pass
+--- solution
+import numpy as np
+
+
+def log_bytes(channels, rate_hz, seconds, dtype):
+    """Bytes in a recording: channels x rate x bytes per sample x seconds."""
+    return int(channels * rate_hz * np.dtype(dtype).itemsize * seconds)
+
+
+def hours_that_fit(channels, rate_hz, dtype, ram_bytes):
+    """The most whole hours of recording that fit in ram_bytes."""
+    return int(ram_bytes // log_bytes(channels, rate_hz, 3600, dtype))
+--- hint
+`np.dtype("float32").itemsize` is 4, and it works the same whether you pass the name or `np.float32`.
+--- hint
+One hour is 3600 seconds. Floor division, `//`, gives the whole hours; wrap the result in `int()`.
+--- check case | One hour of a test stand
+log_bytes(200, 1000, 3600, np.float64)
+=> 5760000000
+--- check case | Ten minutes as float32, one minute as int16
+(log_bytes(48, 250, 600, "float32"), log_bytes(16, 2000, 60, np.int16))
+=> (28800000, 3840000)
+--- check case | Hours that fit
+(hours_that_fit(200, 1000, "float64", 16e9), hours_that_fit(200, 1000, "float64", 5e9), hours_that_fit(10, 100, "float32", 1e9))
+=> (2, 0, 69)
+
++++ practice | Mean and spread, one chunk at a time
+--- task
+A telemetry file is too big for memory, so it is read in chunks. `read_chunks()` returns a new iterator over the whole file every time you call it; each chunk it yields is a 2-D float64 array of some rows and all the channels. The reader reuses one buffer: a chunk's numbers are only valid until you ask for the next chunk.
+
+Write a function `channel_stats(read_chunks)` that returns a tuple `(mean, std)` of float64 arrays with one entry per channel: the mean, and the standard deviation about the mean dividing by the total number of rows. Use two passes over the file: the first for the mean, the second for the squared distances from it. The file has at least one row.
+--- starter
+import numpy as np
+
+
+def channel_stats(read_chunks):
+    pass
+--- solution
+import numpy as np
+
+
+def channel_stats(read_chunks):
+    """Per-channel mean and standard deviation of a file read in chunks, in two passes."""
+    n = 0
+    total = 0.0
+    for chunk in read_chunks():                  # pass 1: sum and count
+        total = total + chunk.sum(axis=0)
+        n += len(chunk)
+    mean = total / n
+    sq = 0.0
+    for chunk in read_chunks():                  # pass 2: spread about the mean
+        sq = sq + ((chunk - mean) ** 2).sum(axis=0)
+    return mean, np.sqrt(sq / n)
+--- hint
+Carry only small things from one chunk to the next: a running sum per channel and a row count. Never keep a chunk itself, because the reader will overwrite it.
+--- hint
+Call `read_chunks()` once for each pass. In the second pass, add up `((chunk - mean) ** 2).sum(axis=0)`, then divide by the row count and take the square root.
+--- check test | Chunks of 1,000 rows from a buffer the reader reuses
+(lambda data, k: (lambda m, s: np.allclose(m, data.mean(axis=0)) and np.allclose(s, data.std(axis=0)))(*channel_stats(lambda: (lambda buf: (buf.__setitem__(slice(0, len(data[i:i + k])), data[i:i + k]) or buf[:len(data[i:i + k])] for i in range(0, len(data), k)))(np.empty((k, data.shape[1]))))))(np.random.default_rng(4).normal(5.0, 2.0, (10_001, 3)), 1000)
+--- check test | One row per chunk
+(lambda data: (lambda m, s: np.allclose(m, [2.0, 20.0]) and np.allclose(s, data.std(axis=0)))(*channel_stats(lambda: (lambda buf: (buf.__setitem__(0, row) or buf for row in data))(np.empty((1, 2))))))(np.array([[1.0, 10.0], [2.0, 20.0], [3.0, 30.0]]))
+--- check test | The whole file in one chunk
+(lambda data: (lambda m, s: np.allclose(m, data.mean(axis=0)) and np.allclose(s, data.std(axis=0)))(*channel_stats(lambda: iter([data.copy()]))))(np.random.default_rng(5).uniform(-1.0, 1.0, (500, 7)))
+
++++ practice | The mean tank temperature per phase
+--- task
+A long recording arrives as chunks. Each chunk is a pair `(labels, values)` of equal-length NumPy arrays: `labels` holds a flight-phase name per sample, such as `"ascent"`, and `values` holds the tank temperature of that sample. Write a function `phase_means(chunks)` that returns a dictionary mapping every phase name that appears to the mean of all its values across the whole recording.
+
+- `chunks` can be walked only once, and a chunk may be empty.
+- The mean of a phase is its grand total divided by its grand count. Averaging the per-chunk means is wrong whenever chunks hold different numbers of samples of that phase.
+--- starter
+import numpy as np
+
+
+def phase_means(chunks):
+    pass
+--- solution
+import numpy as np
+
+
+def phase_means(chunks):
+    """Mean value per label over every chunk: grand sum over grand count."""
+    sums, counts = {}, {}
+    for labels, values in chunks:
+        names, which = np.unique(labels, return_inverse=True)
+        chunk_sums = np.bincount(which, weights=values, minlength=len(names))
+        chunk_counts = np.bincount(which, minlength=len(names))
+        for name, s, c in zip(names.tolist(), chunk_sums.tolist(), chunk_counts.tolist()):
+            sums[name] = sums.get(name, 0.0) + s
+            counts[name] = counts.get(name, 0) + c
+    return {name: sums[name] / counts[name] for name in sums}
+--- hint
+Carry two small dictionaries from chunk to chunk: a running total and a running count for every phase. Divide only at the very end.
+--- hint
+`np.unique(labels, return_inverse=True)` gives the distinct names in a chunk and, for every sample, the position of its name. `np.bincount` of those positions, with `weights=values`, adds up the values of each name at once.
+--- check case | Grand totals, not chunk means
+phase_means([(np.array(["ascent", "coast"]), np.array([1.0, 3.0])), (np.array(["coast", "coast", "coast"]), np.array([5.0, 5.0, 5.0]))])
+=> {"ascent": 1.0, "coast": 4.5}
+--- check case | An empty chunk, and a phase in one chunk only
+phase_means([(np.array([], dtype=str), np.array([])), (np.array(["prelaunch", "prelaunch"]), np.array([90.0, 91.0]))])
+=> {"prelaunch": 90.5}
+--- check test | Agrees with the whole recording at once
+(lambda lab, val: (lambda got: sorted(got) == ["ascent", "coast", "prelaunch"] and all(abs(got[p] - val[lab == p].mean()) < 1e-9 for p in got))(phase_means((lab[i:i + 700], val[i:i + 700]) for i in range(0, 5000, 700))))(np.random.default_rng(6).choice(np.array(["prelaunch", "ascent", "coast"]), 5000), np.random.default_rng(7).normal(93.0, 0.5, 5000))
+
++++ practice | The peak window across chunk edges
+--- task
+Write a function `peak_window(chunks, w)` that finds, in a long signal read as chunks, the stretch of `w` consecutive samples with the largest mean, and returns a tuple `(start, mean)`:
+
+- `chunks` is an iterable of 1-D arrays; joined end to end they make the signal. It can be walked only once, and a chunk may be shorter than `w`, or empty.
+- `start` is the index, in the whole signal, of the first sample of the best stretch, as a plain whole number; take the earliest on a tie. `mean` is its mean, as a float.
+- A stretch may cross from one chunk into the next: carry the last `w - 1` samples of what you have seen over to the front of the next chunk.
+- If the whole signal has fewer than `w` samples, return `None`.
+
+So for the chunks `[1, 3, 2]` and `[6, 1, 1]` with `w = 2`, the answer is `(2, 4.0)`: the stretch 2, 6 crosses the edge.
+--- starter
+import numpy as np
+
+
+def peak_window(chunks, w):
+    pass
+--- solution
+import numpy as np
+
+
+def peak_window(chunks, w):
+    """Start (in the whole signal) and mean of the w-sample stretch with the largest mean."""
+    carry = np.zeros(0)
+    offset = 0                                        # whole-signal index of carry[0]
+    best_start, best_sum = None, None
+    for chunk in chunks:
+        x = np.concatenate((carry, np.asarray(chunk, dtype=np.float64)))
+        if len(x) >= w:
+            totals = np.concatenate(([0.0], np.cumsum(x)))
+            sums = totals[w:] - totals[:-w]
+            i = int(np.argmax(sums))
+            if best_sum is None or sums[i] > best_sum:    # strictly larger: earlier wins a tie
+                best_start, best_sum = offset + i, float(sums[i])
+        keep = min(w - 1, len(x))                     # the samples the next stretch may still need
+        offset += len(x) - keep
+        carry = x[len(x) - keep:]
+    return None if best_start is None else (best_start, best_sum / w)
+--- hint
+Put the carried samples in front of each new chunk and search that joined piece with running totals. Every stretch that ends in the new chunk is then complete, and none is counted twice.
+--- hint
+Keep track of where the carried samples sit in the whole signal, so a position in the joined piece can be turned into a whole-signal index. Only replace the best when a new sum is strictly larger, so the earliest stretch wins a tie.
+--- check case | A stretch across the edge
+peak_window([np.array([1.0, 3.0, 2.0]), np.array([6.0, 1.0, 1.0])], 2)
+=> (2, 4.0)
+--- check case | Chunks shorter than the window
+peak_window([np.array([5.0]), np.array([0.0]), np.array([]), np.array([9.0]), np.array([1.0]), np.array([8.0])], 3)
+=> (2, 6.0)
+--- check case | A window of one, with a tie
+peak_window([np.array([2.0, 7.0]), np.array([7.0])], 1)
+=> (1, 7.0)
+--- check case | Too few samples, and none
+(peak_window([np.array([1.0, 2.0])], 3), peak_window([], 2))
+=> (None, None)
+--- check test | Agrees with the whole signal, for uneven chunks from a reused buffer
+(lambda x, w, cuts: (lambda got, c: got[0] == int(np.argmax(c[w:] - c[:-w])) and abs(got[1] - (c[w:] - c[:-w]).max() / w) < 1e-9)(peak_window((lambda buf: (buf.__setitem__(slice(0, b - a), x[a:b]) or buf[:b - a] for a, b in zip(cuts[:-1], cuts[1:])))(np.empty(3000)), w), np.concatenate(([0.0], np.cumsum(x)))))(np.random.default_rng(3).normal(0.0, 1.0, 20_000), 250, [0, 7, 100, 2900, 2901, 5000, 5000, 7500, 10_000, 12_999, 15_000, 17_000, 20_000])
+
++++ practice | A channel read the wrong way round
+--- task
+A recorder writes telemetry as raw float64 numbers in row-major order: one row per time step, all channels side by side, so the file is row 0's channels, then row 1's, and so on. `read_channel(raw, n_channels, channel)` should return one channel over the whole recording, as a writable float64 NumPy array, from the file's contents `raw` (a `bytes` object).
+
+For a file whose channel 0 is the time, `0.000, 0.001, 0.002, ...`, reading channel 0 gives a jumble of times and other channels' values. Fix it.
+--- starter
+import numpy as np
+
+
+def read_channel(raw, n_channels, channel):
+    """One channel of a row-major float64 recording, as a writable array."""
+    data = np.frombuffer(raw, dtype=np.float64)
+    return data.reshape(n_channels, -1)[channel].copy()
+--- solution
+import numpy as np
+
+
+def read_channel(raw, n_channels, channel):
+    """One channel of a row-major float64 recording, as a writable array."""
+    data = np.frombuffer(raw, dtype=np.float64)
+    return data.reshape(-1, n_channels)[:, channel].copy()
+--- hint
+In row-major order, which numbers of the file sit next to each other: the samples of one channel, or the channels of one time step?
+--- hint
+Each row of the file is one time step, `n_channels` numbers long. Reshape to `(-1, n_channels)` and take a column.
+--- check case | The time column
+read_channel(np.column_stack([np.arange(5) / 1000, np.arange(5) * 10.0, -np.arange(5.0)]).tobytes(), 3, 0).tolist()
+=> [0.0, 0.001, 0.002, 0.003, 0.004]
+--- check case | The other two channels
+(lambda raw: (read_channel(raw, 3, 1).tolist(), read_channel(raw, 3, 2).tolist()))(np.column_stack([np.arange(4) / 1000, np.arange(4) * 10.0, -np.arange(4.0)]).tobytes())
+=> ([0.0, 10.0, 20.0, 30.0], [-0.0, -1.0, -2.0, -3.0])
+--- check test | A writable float64 array
+(lambda c: c.dtype == np.float64 and c.flags.writeable and c.shape == (6,))(read_channel(np.ones((6, 4)).tobytes(), 4, 2))
+
++++ practice | How many pages one channel costs
+--- task
+The operating system reads a memory-mapped file in pages of `page` bytes (4096 by default). Write a function `pages_read(n_rows, n_channels, itemsize, channel, row_start, row_stop, layout, page=4096)` that returns how many different pages must be read to get the samples of one channel for the rows `row_start` up to, but not including, `row_stop`.
+
+- `layout == "row"`: row-major. The sample of row `r` and channel `c` starts at byte `(r * n_channels + c) * itemsize`.
+- `layout == "column"`: one channel after another. That sample starts at byte `(c * n_rows + r) * itemsize`.
+- A sample covers `itemsize` bytes from where it starts. Page `p` holds bytes `p * page` to `(p + 1) * page - 1`, and a sample that crosses a page edge needs both pages.
+- No rows need no pages. Any other `layout` raises `ValueError`.
+
+So one second of channel 37 of a 200-channel float64 recording at 1 kHz needs 391 pages in row-major order, and only 3 in channel-by-channel order.
+--- starter
+import numpy as np
+
+
+def pages_read(n_rows, n_channels, itemsize, channel, row_start, row_stop, layout, page=4096):
+    pass
+--- solution
+import numpy as np
+
+
+def pages_read(n_rows, n_channels, itemsize, channel, row_start, row_stop, layout, page=4096):
+    """Distinct pages holding any byte of one channel over a range of rows."""
+    rows = np.arange(row_start, row_stop, dtype=np.int64)
+    if layout == "row":
+        first = (rows * n_channels + channel) * itemsize
+    elif layout == "column":
+        first = (channel * n_rows + rows) * itemsize
+    else:
+        raise ValueError(f"unknown layout {layout!r}")
+    last = first + itemsize - 1                        # a sample may end on the next page
+    return int(np.unique(np.concatenate((first // page, last // page))).size)
+--- hint
+Work out the first byte of every requested sample at once, as a NumPy array of whole numbers, then turn bytes into page numbers with `//`.
+--- hint
+Use the page of each sample's first byte and of its last byte, `first + itemsize - 1`, and count the distinct page numbers with `np.unique`.
+--- check case | One second of one channel, both layouts
+(pages_read(36_000, 200, 8, 37, 0, 1000, "row"), pages_read(36_000, 200, 8, 37, 0, 1000, "column"))
+=> (391, 3)
+--- check case | Half a million rows of a float32 recording
+(pages_read(1_000_000, 64, 4, 10, 250_000, 750_000, "row"), pages_read(1_000_000, 64, 4, 10, 250_000, 750_000, "column"))
+=> (31250, 490)
+--- check case | A sample that crosses a page edge
+pages_read(11, 1, 6, 0, 0, 11, "row", page=64)
+=> 2
+--- check case | No rows
+pages_read(1000, 3, 8, 1, 10, 10, "row")
+=> 0
+--- check test | Another layout is an error
+raises(ValueError, lambda: pages_read(10, 2, 8, 0, 0, 10, "diagonal"))
+
+=== py08-l10 | Practice: Caching and precomputation
+--- for
+l10-caching-and-precomputation
+
++++ practice | A table that refuses to guess
+--- task
+Write a function `table_lookup(x_tab, y_tab)` that prepares a lookup table once and returns a function `lookup(x)` for the simulator to call many times.
+
+- `x_tab` is an increasing list or array of table points and `y_tab` the values there. Store your own float64 copies when `table_lookup` is called, so that later changes to the caller's lists or arrays cannot change the table.
+- `lookup(x)` interpolates in a straight line between table points. For a single number it returns a plain float; for an array it returns an array of the same shape.
+- The table's two end points themselves are allowed, but if any requested `x` lies outside them, `lookup` raises `ValueError` instead of guessing.
+
+So with the table `[0, 1, 2]` to `[10, 20, 40]`, `lookup(0.5)` is `15.0` and `lookup(2.5)` raises `ValueError`.
+--- starter
+import numpy as np
+
+
+def table_lookup(x_tab, y_tab):
+    pass
+--- solution
+import numpy as np
+
+
+def table_lookup(x_tab, y_tab):
+    """Build a straight-line table once; the returned lookup refuses to go past its edges."""
+    xs = np.array(x_tab, dtype=np.float64)      # own copies: the caller cannot change the table later
+    ys = np.array(y_tab, dtype=np.float64)
+    low, high = xs[0], xs[-1]
+
+    def lookup(x):
+        q = np.asarray(x, dtype=np.float64)
+        if np.any(q < low) or np.any(q > high):
+            raise ValueError("outside the table")
+        out = np.interp(q, xs, ys)
+        return float(out) if out.ndim == 0 else out
+
+    return lookup
+--- hint
+Everything that does not depend on `x` belongs in `table_lookup`, run once; `lookup` only checks the edges and interpolates.
+--- hint
+`np.array(..., dtype=np.float64)` always makes a new array, which is the copy you need. `np.interp` does the straight-line part but holds the end value past the edges, so check the edges yourself first.
+--- check case | Inside the table, and on its edges
+(lambda f: (f(0.5), f(2.0), f(0.0)))(table_lookup([0.0, 1.0, 2.0], [10.0, 20.0, 40.0]))
+=> (15.0, 40.0, 10.0)
+--- check test | A plain float for a number, an array for an array
+(lambda f: type(f(1.5)) is float and f(np.array([0.25, 1.5])).tolist() == [12.5, 30.0])(table_lookup([0.0, 1.0, 2.0], [10.0, 20.0, 40.0]))
+--- check test | Past either edge is an error
+(lambda f: raises(ValueError, lambda: f(2.5)) and raises(ValueError, lambda: f(-0.1)) and raises(ValueError, lambda: f(np.array([0.5, 3.0]))))(table_lookup([0.0, 1.0, 2.0], [10.0, 20.0, 40.0]))
+--- check test | Changing the inputs later does not change the table
+(lambda xs, ys: (lambda f: (ys.__setitem__(1, 99.0), xs.__setitem__(1, 5.0), f(0.5) == 5.0)[2])(table_lookup(xs, ys)))(np.array([0.0, 1.0]), [0.0, 10.0])
+
++++ practice | Gains cached by mass bin
+--- task
+The starter's `solve_gain(bin_kg)` stands in for an expensive controller-gain solve. The mass falls smoothly during a burn, so rounding it to 10 kg bins makes the same few bins come up again and again. Write two functions:
+
+- `gain_for_bin(bin_kg)` returns `solve_gain(bin_kg)` and is wrapped in `functools.lru_cache` with no size limit, so each bin is solved only once.
+- `gain(mass_kg)` rounds the mass to the nearest multiple of 10 kg, with halves going up (505 kg goes to 510 kg), and returns `gain_for_bin` of that bin, passed as a float.
+
+Leave `solve_gain` as it is.
+--- starter
+import math
+
+
+def solve_gain(bin_kg):
+    """Stands in for an expensive gain solve."""
+    k = 0.0
+    for i in range(1, 2001):
+        k += math.sin(i) / (bin_kg + i)
+    return round(k, 12)
+
+
+def gain_for_bin(bin_kg):
+    pass
+
+
+def gain(mass_kg):
+    pass
+--- solution
+import math
+from functools import lru_cache
+
+
+def solve_gain(bin_kg):
+    """Stands in for an expensive gain solve."""
+    k = 0.0
+    for i in range(1, 2001):
+        k += math.sin(i) / (bin_kg + i)
+    return round(k, 12)
+
+
+@lru_cache(maxsize=None)
+def gain_for_bin(bin_kg):
+    """Each 10 kg bin is solved once, then remembered."""
+    return solve_gain(bin_kg)
+
+
+def gain(mass_kg):
+    """The gain for the mass, rounded to the nearest 10 kg (halves go up)."""
+    bin_kg = math.floor(mass_kg / 10.0 + 0.5) * 10.0
+    return gain_for_bin(float(bin_kg))
+--- hint
+Python's `round` sends a half to the nearest even number, so `round(50.5)` is 50. For halves going up, add 0.5 and round down with `math.floor`.
+--- hint
+Put `@lru_cache(maxsize=None)` from `functools` on `gain_for_bin`. It then has `cache_info()` and `cache_clear()`.
+--- check case | Rounding to bins, halves up
+(gain(503.0) == solve_gain(500.0), gain(505.0) == solve_gain(510.0), gain(514.9) == solve_gain(510.0))
+=> (True, True, True)
+--- check test | A whole burn: 2,000 calls, 15 solves
+(gain_for_bin.cache_clear(), [gain(520.0 - 140.0 * i / 1999) for i in range(2000)], tuple(gain_for_bin.cache_info())[:2])[2] == (1985, 15)
+--- check test | An int mass lands in the same bin
+(gain_for_bin.cache_clear(), gain(498.0), gain(502), tuple(gain_for_bin.cache_info())[:2])[3] == (1, 1)
+
++++ practice | Count the misses of a small cache
+--- task
+The best a cache can do is limited by how often it misses. Write a function `lru_misses(keys, maxsize)` that returns how many misses `functools.lru_cache(maxsize=maxsize)` would have for a function called with the arguments in `keys`, one call per key, in order.
+
+- `maxsize=None` means the cache never throws anything out.
+- `maxsize=0` means nothing is kept, so every call is a miss.
+- Otherwise, when a new answer would make more than `maxsize` stored answers, the least recently used one is thrown out first. A hit counts as a use.
+
+So for the keys `[1, 2, 1, 3, 1, 2]` and `maxsize=2` there are 4 misses: 1, 2, 3 and the second 2, whose answer was thrown out to make room for 3.
+--- starter
+def lru_misses(keys, maxsize):
+    pass
+--- solution
+from collections import OrderedDict
+
+
+def lru_misses(keys, maxsize):
+    """Misses of a least-recently-used cache of the given size over this sequence of calls."""
+    cache = OrderedDict()                      # oldest use first, newest last
+    misses = 0
+    for k in keys:
+        if k in cache:
+            cache.move_to_end(k)               # a hit makes it the most recently used
+            continue
+        misses += 1
+        if maxsize == 0:
+            continue
+        cache[k] = True
+        if maxsize is not None and len(cache) > maxsize:
+            cache.popitem(last=False)          # throw out the least recently used
+    return misses
+--- hint
+Keep the stored keys in order of their last use. A hit moves a key to the newest end; a miss adds it there and, if the cache is now too full, removes the oldest.
+--- hint
+`collections.OrderedDict` has `move_to_end(key)` and `popitem(last=False)`, which removes the oldest entry.
+--- check case | The example, and the three special sizes
+(lru_misses([1, 2, 1, 3, 1, 2], 2), lru_misses([1, 2, 1, 3, 1, 2], None), lru_misses([1, 2, 1, 3, 1, 2], 0), lru_misses([1, 2, 1, 3, 1, 2], 1))
+=> (4, 3, 6, 6)
+--- check case | No calls
+lru_misses([], 128)
+=> 0
+--- check test | Agrees with the real lru_cache
+(lambda keys: all(lru_misses(keys, m) == (lambda f: ([f(k) for k in keys], f.cache_info().misses)[1])(__import__("functools").lru_cache(maxsize=m)(lambda k: k)) for m in (None, 0, 1, 2, 3, 5, 128)))(__import__("numpy").random.default_rng(12).integers(0, 9, 400).tolist())
+
++++ practice | A cached list that keeps growing
+--- task
+`stage_masses(vehicle)` returns the dry masses of a vehicle's stages and is cached with `lru_cache`, because in the real code it reads a database. `launch_mass(vehicle, payload_kg)` should return the stages' masses plus the payload.
+
+`launch_mass("orbit-1", 100.0)` gives 2750.0 the first time, 2850.0 the second time and 2950.0 the third. Fix it, and keep the cache on `stage_masses`.
+--- starter
+from functools import lru_cache
+
+
+@lru_cache(maxsize=None)
+def stage_masses(vehicle):
+    """Dry masses of a vehicle's stages, in kg."""
+    table = {"orbit-1": [2200.0, 450.0], "orbit-2": [3100.0, 800.0, 120.0]}
+    return table[vehicle]
+
+
+def launch_mass(vehicle, payload_kg):
+    """Stage masses plus payload, in kg."""
+    masses = stage_masses(vehicle)
+    masses.append(payload_kg)
+    return sum(masses)
+--- solution
+from functools import lru_cache
+
+
+@lru_cache(maxsize=None)
+def stage_masses(vehicle):
+    """Dry masses of a vehicle's stages, in kg, as a tuple nobody can change."""
+    table = {"orbit-1": [2200.0, 450.0], "orbit-2": [3100.0, 800.0, 120.0]}
+    return tuple(table[vehicle])
+
+
+def launch_mass(vehicle, payload_kg):
+    """Stage masses plus payload, in kg."""
+    return sum(stage_masses(vehicle)) + payload_kg
+--- hint
+A cached function hands every caller the very same object it stored. What does `append` do to that object?
+--- hint
+Return something that cannot be changed, such as a tuple, and add the payload without changing what the cache holds.
+--- check case | The same answer every time
+(launch_mass("orbit-1", 100.0), launch_mass("orbit-1", 100.0), launch_mass("orbit-1", 100.0))
+=> (2750.0, 2750.0, 2750.0)
+--- check case | The cached masses are left alone
+(launch_mass("orbit-2", 50.0), list(stage_masses("orbit-2")))
+=> (4070.0, [3100.0, 800.0, 120.0])
+--- check test | stage_masses is still cached
+hasattr(stage_masses, "cache_info") and stage_masses("orbit-1") is stage_masses("orbit-1")
+
++++ practice | Total impulse between any two times
+--- task
+A thrust curve is given at increasing times `t` (seconds) with thrusts `F` (newtons), and the thrust changes in a straight line between samples. A dispersion asks, millions of times, for the impulse delivered between two times.
+
+Write a function `make_impulse(t, F)` that does the expensive work once and returns a function `impulse(t0, t1)`:
+
+- `impulse(t0, t1)` returns the integral of the thrust from `t0` to `t1`, exact for the straight-line thrust curve: negative when `t1` comes before `t0`, and 0 when they are equal.
+- `t0` and `t1` may be single numbers, giving a plain float, or arrays of the same shape, giving an array.
+- Any time before `t[0]` or after `t[-1]` raises `ValueError`.
+- Precompute the running total of impulse at every sample time once, so that each question costs a table lookup, not a sum over samples. One check asks 200,000 questions of a 10,000-sample curve.
+
+So for `t = [0, 1, 2]` and `F = [0, 10, 0]`, a triangle, `impulse(0, 2)` is `10.0` and `impulse(0.5, 1.5)` is `7.5`.
+--- starter
+import numpy as np
+
+
+def make_impulse(t, F):
+    pass
+--- solution
+import numpy as np
+
+
+def make_impulse(t, F):
+    """Precompute running impulse at the samples; return a fast impulse(t0, t1)."""
+    t = np.array(t, dtype=np.float64)
+    F = np.array(F, dtype=np.float64)
+    running = np.concatenate(([0.0], np.cumsum(0.5 * (F[1:] + F[:-1]) * np.diff(t))))
+
+    def since_start(x):
+        x = np.asarray(x, dtype=np.float64)
+        if np.any(x < t[0]) or np.any(x > t[-1]):
+            raise ValueError("time outside the thrust curve")
+        k = np.clip(np.searchsorted(t, x, side="right") - 1, 0, len(t) - 2)   # the sample at or before x
+        return running[k] + 0.5 * (F[k] + np.interp(x, t, F)) * (x - t[k])
+
+    def impulse(t0, t1):
+        out = since_start(t1) - since_start(t0)
+        return float(out) if np.ndim(out) == 0 else out
+
+    return impulse
+--- hint
+Build the running impulse at every sample time once, with the trapezoid rule and `np.cumsum`. The impulse between two times is then a difference of "impulse since the start" values.
+--- hint
+For a time `x` between samples `k` and `k + 1`, the impulse since the start is the running total at sample `k` plus a trapezoid from `t[k]` to `x`, whose far side is the interpolated thrust at `x`. `np.searchsorted` finds `k` for a whole array of times at once.
+--- check case | The triangle
+(lambda f: (f(0.0, 2.0), f(0.0, 1.0), f(0.5, 1.5), f(1.5, 0.5), f(1.2, 1.2)))(make_impulse([0.0, 1.0, 2.0], [0.0, 10.0, 0.0]))
+=> (10.0, 5.0, 7.5, -7.5, 0.0)
+--- check test | Arrays in, an array out
+(lambda f: f(np.array([0.0, 0.0, 1.0]), np.array([1.0, 2.0, 2.0])).tolist() == [5.0, 10.0, 5.0])(make_impulse([0.0, 1.0, 2.0], [0.0, 10.0, 0.0]))
+--- check test | Outside the curve is an error
+(lambda f: raises(ValueError, lambda: f(-0.1, 1.0)) and raises(ValueError, lambda: f(0.0, 2.5)))(make_impulse([0.0, 1.0, 2.0], [0.0, 10.0, 0.0]))
+--- check test | 200,000 questions of a 10,000-sample curve
+(lambda t, F, a, b: (lambda f: (lambda got: got.shape == (200_000,) and all(abs(got[i] - (lambda p: float(np.sum(0.5 * (np.interp(p, t, F)[1:] + np.interp(p, t, F)[:-1]) * np.diff(p))))(np.concatenate(([a[i]], t[(t > a[i]) & (t < b[i])], [b[i]])))) < 1e-6 for i in (0, 17, 99_999, 199_999)) and np.allclose(f(a, b) + f(b, a), 0.0))(f(a, b)))(make_impulse(t, F)))(np.cumsum(np.random.default_rng(1).uniform(0.005, 0.015, 10_000)), np.random.default_rng(2).uniform(0.0, 5000.0, 10_000), np.sort(np.random.default_rng(3).uniform(0.02, 45.0, 200_000)), np.sort(np.random.default_rng(4).uniform(55.0, 99.0, 200_000)))
+
++++ question | A finer table
+--- ask
+A straight-line lookup table of a smooth function has 401 evenly spaced points, and its worst error is 8e-6. If you rebuild it with 1601 points over the same range, about what is the worst error now?
+--- answer
+5e-7
+5e-07
+5 x 10^-7
+5 × 10^-7
+5*10^-7
+0.0000005
+5.0e-7
+--- why
+401 points make 400 gaps, and 1601 points make 1600, so the gap is 4 times smaller. The worst error of straight-line interpolation is about the gap squared over 8 times the curve's largest bend, so it drops by 4 squared, 16: 8e-6 / 16 = 5e-7. The table takes 4 times the memory for 16 times the accuracy.
+
+=== py08-l11 | Practice: Benchmarks you can believe
+--- for
+l11-benchmark-methodology
+
++++ practice | Three numbers for a benchmark report
+--- task
+Write a function `timing_summary(times)` that returns a tuple `(fastest, median, iqr)` for a list of repeated timings, all in the same unit as the timings and rounded to 2 decimal places:
+
+- `fastest` is the minimum, the steadiest estimate of the code's own cost;
+- `median` is the middle timing (the mean of the two middle ones for an even count);
+- `iqr` is the interquartile range: the third quartile minus the first, as given by `statistics.quantiles(times, n=4)`.
+- Fewer than two timings raise `ValueError`.
+
+So `timing_summary([12.4, 12.1, 12.9, 13.0, 12.2])` is `(12.1, 12.4, 0.8)`.
+--- starter
+import statistics
+
+
+def timing_summary(times):
+    pass
+--- solution
+import statistics
+
+
+def timing_summary(times):
+    """Minimum, median and interquartile range of repeated timings."""
+    if len(times) < 2:
+        raise ValueError("need at least two timings to see a spread")
+    q1, median, q3 = statistics.quantiles(times, n=4)
+    return round(min(times), 2), round(median, 2), round(q3 - q1, 2)
+--- hint
+`statistics.quantiles(times, n=4)` returns three cut points: the first quartile, the median and the third quartile.
+--- hint
+Check the length before calling `quantiles`, and round each of the three numbers at the end.
+--- check case | Five repeats
+timing_summary([12.4, 12.1, 12.9, 13.0, 12.2])
+=> (12.1, 12.4, 0.8)
+--- check case | A slow tail barely moves the median
+timing_summary([5.3, 5.1, 5.6, 5.2, 9.4, 5.2, 5.4, 11.8])
+=> (5.1, 5.35, 3.25)
+--- check test | One timing is not a measurement
+raises(ValueError, lambda: timing_summary([4.2])) and raises(ValueError, lambda: timing_summary([]))
+
++++ practice | Is version B really faster?
+--- task
+You timed two versions of a solver in interleaved rounds: in round `i`, version A took `ta[i]` and version B took `tb[i]`. Write a function `compare(ta, tb)` that returns a tuple `(min_ratio, median_ratio, b_wins)`:
+
+- `min_ratio` is A's fastest time divided by B's fastest time, rounded to 3 decimal places;
+- `median_ratio` is A's median divided by B's median, rounded to 3 decimal places;
+- `b_wins` is the number of rounds in which B was strictly faster than A.
+- If the lists are empty or of different lengths, raise `ValueError`.
+--- starter
+import statistics
+
+
+def compare(ta, tb):
+    pass
+--- solution
+import statistics
+
+
+def compare(ta, tb):
+    """Three views of an interleaved A/B timing: ratio of minimums, ratio of medians, rounds B won."""
+    if not ta or len(ta) != len(tb):
+        raise ValueError("need the same number of rounds, at least one, for each version")
+    min_ratio = round(min(ta) / min(tb), 3)
+    median_ratio = round(statistics.median(ta) / statistics.median(tb), 3)
+    b_wins = sum(b < a for a, b in zip(ta, tb))
+    return min_ratio, median_ratio, b_wins
+--- hint
+The rounds pair up: `zip(ta, tb)` gives A's and B's times from the same round together.
+--- hint
+`True` counts as 1 when summed, so `sum(b < a for a, b in zip(ta, tb))` counts B's wins.
+--- check case | Five rounds
+compare([11.2, 11.6, 11.9, 12.8, 11.4], [10.4, 10.9, 12.0, 10.7, 10.5])
+=> (1.077, 1.084, 4)
+--- check case | Identical times: no wins
+compare([2.0, 2.0], [2.0, 2.0])
+=> (1.0, 1.0, 0)
+--- check test | Unpaired rounds are an error
+raises(ValueError, lambda: compare([1.0, 2.0], [1.0])) and raises(ValueError, lambda: compare([], []))
+
++++ practice | A gate that ignores ordinary wobble
+--- task
+A performance regression gate in the automated tests times the old and the new code on the same machine. Write a function `regression_gate(old, new, noise_pct)` that returns `"fail"` when the new code is slower by more than the noise that machine shows, and `"pass"` otherwise:
+
+- `old` and `new` are lists of repeated timings of each version.
+- Fail when `min(new)` is greater than `min(old) * (1 + noise_pct / 100)`. A new best exactly at that limit passes.
+- If either list is empty, raise `ValueError`.
+
+So with a noise of 5 percent, an old best of 10.0 ms and a new best of 10.4 ms pass, and a new best of 10.6 ms fails.
+--- starter
+def regression_gate(old, new, noise_pct):
+    pass
+--- solution
+def regression_gate(old, new, noise_pct):
+    """Fail only when the new best is slower than the old best by more than the machine's noise."""
+    if not old or not new:
+        raise ValueError("need timings of both versions")
+    limit = min(old) * (1 + noise_pct / 100)
+    return "fail" if min(new) > limit else "pass"
+--- hint
+Compare the best run of each version, and allow the old best to grow by the noise percentage first.
+--- hint
+Use exactly the comparison in the task, `min(new) > min(old) * (1 + noise_pct / 100)`, so that a best time right at the limit passes.
+--- check case | Inside and outside the noise
+(regression_gate([10.2, 10.0, 10.9], [10.4, 10.8], 5), regression_gate([10.2, 10.0, 10.9], [10.6, 11.0], 5))
+=> ("pass", "fail")
+--- check case | Exactly at the limit passes
+regression_gate([8.0, 9.0], [10.0, 10.5], 25)
+=> "pass"
+--- check case | A faster new version passes
+regression_gate([10.0], [7.5, 7.9], 2)
+=> "pass"
+--- check test | Missing timings are an error
+raises(ValueError, lambda: regression_gate([], [1.0], 5)) and raises(ValueError, lambda: regression_gate([1.0], [], 5))
+
++++ practice | The median of an even count
+--- task
+`report(times)` should return a dictionary with the minimum, the median and the maximum of a list of timings, under the keys `"min"`, `"median"` and `"max"`. The median of an even number of timings is the mean of the two middle ones.
+
+For `[4.0, 1.0, 3.0, 2.0]` it reports a median of 3.0 instead of 2.5. Fix it.
+--- starter
+def report(times):
+    """Minimum, median and maximum of repeated timings."""
+    ordered = sorted(times)
+    return {"min": ordered[0], "median": ordered[len(ordered) // 2], "max": ordered[-1]}
+--- solution
+import statistics
+
+
+def report(times):
+    """Minimum, median and maximum of repeated timings."""
+    ordered = sorted(times)
+    return {"min": ordered[0], "median": statistics.median(ordered), "max": ordered[-1]}
+--- hint
+For an even count, `len(ordered) // 2` points at the upper of the two middle timings.
+--- hint
+`statistics.median` averages the two middle values of an even count, and returns the middle one of an odd count.
+--- check case | An even count
+report([4.0, 1.0, 3.0, 2.0])
+=> {"min": 1.0, "median": 2.5, "max": 4.0}
+--- check case | An odd count
+report([3.0, 1.0, 2.0])
+=> {"min": 1.0, "median": 2.0, "max": 3.0}
+--- check case | Ten timings with a slow tail
+report([5.1, 5.0, 5.2, 5.0, 9.8, 5.1, 5.0, 5.3, 5.1, 12.4])["median"]
+=> 5.1
+
++++ practice | Interleave, and warm both up
+--- task
+Write a function `interleaved(fa, fb, warmup, rounds, clock)` that benchmarks two versions fairly and returns a tuple of two lists `(times_a, times_b)`:
+
+- First call `fa` then `fb`, alternately, `warmup` times each, without timing them: `fa, fb, fa, fb, ...`.
+- Then run `rounds` rounds. In each round, time one call of `fa`, then one call of `fb`. Time a call by reading `clock()` just before it and just after it, and recording the difference.
+- `clock` is a function returning the current time in seconds, such as `time.perf_counter`. The checks pass a fake clock, so use only `clock()` to read the time.
+
+So with `warmup=1` and `rounds=2`, the calls are `fa, fb` (untimed), then `fa, fb, fa, fb` (timed), and each list holds two times.
+--- starter
+import time
+
+
+def interleaved(fa, fb, warmup, rounds, clock=time.perf_counter):
+    pass
+--- solution
+import time
+
+
+def interleaved(fa, fb, warmup, rounds, clock=time.perf_counter):
+    """Warm both versions up, then time them in alternating rounds."""
+    for _ in range(warmup):              # untimed: compile, load, fill caches, for both
+        fa()
+        fb()
+    times_a, times_b = [], []
+    for _ in range(rounds):
+        for f, times in ((fa, times_a), (fb, times_b)):
+            t0 = clock()
+            f()
+            times.append(clock() - t0)
+    return times_a, times_b
+--- hint
+Warm-up calls go first and are not timed. After that, every round times A and then B, so that anything that drifts during the run hits both versions alike.
+--- hint
+For each timed call: `t0 = clock()`, call the function, then append `clock() - t0` to that version's list.
+--- check case | The order of calls and the recorded times
+(lambda st, log: (lambda ta, tb: (log, ta, tb))(*interleaved(lambda: (log.append("a"), st.__setitem__("t", st["t"] + st["a"].pop(0))), lambda: (log.append("b"), st.__setitem__("t", st["t"] + st["b"].pop(0))), 1, 2, lambda: st["t"])))({"t": 0.0, "a": [0.5, 0.25, 0.125], "b": [1.0, 0.5, 0.375]}, [])
+=> (["a", "b", "a", "b", "a", "b"], [0.25, 0.125], [0.5, 0.375])
+--- check case | A slow first call stays out of the results
+(lambda st: interleaved(lambda: st.__setitem__("t", st["t"] + st["a"].pop(0)), lambda: st.__setitem__("t", st["t"] + st["b"].pop(0)), 2, 3, lambda: st["t"]))({"t": 0.0, "a": [4.0, 0.5, 0.25, 0.25, 0.25], "b": [8.0, 1.0, 0.125, 0.125, 0.125]})
+=> ([0.25, 0.25, 0.25], [0.125, 0.125, 0.125])
+--- check case | No warm-up
+(lambda st: interleaved(lambda: st.__setitem__("t", st["t"] + 2.0), lambda: st.__setitem__("t", st["t"] + 1.0), 0, 1, lambda: st["t"]))({"t": 0.0})
+=> ([2.0], [1.0])
+
++++ question | Faster in timeit, slower in the program
+--- ask
+`timeit` says a function that builds a million small Python objects takes 40 ms. Inside the real simulation, timed with `time.perf_counter()`, the same call takes about 55 ms, even after warming up. What is the most likely reason?
+--- choice
+`time.perf_counter()` is less precise than `timeit`.
+--- choice correct
+`timeit` switches off the garbage collector while it times, so the collector's pauses, which the real program pays when it creates many objects, are left out.
+--- choice
+`timeit` runs the code in C, so it is always faster.
+--- choice
+The real program timed the first call, which includes compiling.
+--- why
+While timing, `timeit` turns off Python's garbage collector, which wakes up after enough new objects have been made. That makes timings steadier, but code that allocates heavily looks faster than it is in a program where the collector runs. Compare with a plain `time.perf_counter()` loop, or pass `setup="gc.enable()"` to `timeit`, when the code creates many objects.
+
+=== py08-test | Python performance: module test
+--- teach
+The test covers the whole module: reading a profile, fixing the algorithm before the details, vectorizing without running out of memory, what Numba, Cython and pybind11 can and cannot speed up, the GIL and the choice between threads and processes, parallel Monte Carlo with per-case seeds and the cost of moving data, telemetry bigger than memory, caching and lookup tables, and honest benchmarks. Its ten problems are new, most of them combine several lessons, and several of them check large inputs that only the right algorithm finishes. Twelve questions after them ask you to predict, estimate and explain. To get ready, redo without hints the practice problems of the lessons that felt hardest, and for every speed-up you claim, say what you measured, how, and what the order of attack would try next.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | Read a profiler's table
+--- task
+Write a function `top_own(text, k)` that reads the text a profiler printed and returns the `k` functions with the largest own time.
+
+- A row of the table is a line whose first five fields, separated by spaces, are numbers: `ncalls`, `tottime`, `percall`, `cumtime`, `percall`. The first may be written like `30/10` (total calls, then primitive calls); the total calls is the number before the slash. Every other line (a summary, a header, a blank line) is ignored.
+- Everything after the fifth field is the location. If it ends with `)`, the name is the text inside its last pair of parentheses, so `sim.py:18(derivs)` gives `derivs`. Otherwise the name is the whole location, such as `{built-in method math.exp}`.
+- Return a list of up to `k` tuples `(name, calls, tottime, share)`, largest `tottime` first, keeping the table's order on a tie. `calls` is a whole number, `tottime` a float, and `share` is `tottime` divided by the sum of the `tottime` column over all rows, rounded to 3 decimal places. A table with no rows gives `[]`.
+--- starter
+def top_own(text, k):
+    pass
+--- solution
+def is_number(field):
+    try:
+        float(field)
+    except ValueError:
+        return False
+    return True
+
+
+def top_own(text, k):
+    """The k functions with the largest own time, with calls and share of all own time."""
+    rows = []
+    for line in text.splitlines():
+        fields = line.split(None, 5)
+        if len(fields) < 6:
+            continue
+        calls = fields[0].split("/")[0]
+        if not all(is_number(f) for f in [calls] + fields[1:5]):
+            continue
+        location = fields[5].strip()
+        if location.endswith(")") and "(" in location:
+            name = location[location.rindex("(") + 1:-1]
+        else:
+            name = location
+        rows.append((name, int(calls), float(fields[1])))
+    total = sum(own for _, _, own in rows)
+    ranked = sorted(rows, key=lambda r: r[2], reverse=True)[:k]     # sorted is stable: ties keep table order
+    return [(name, calls, own, round(own / total, 3)) for name, calls, own in ranked]
+--- check case | The top three of a simulator's profile
+top_own("\n".join(["         5930114 function calls (5930094 primitive calls) in 2.344 seconds", "", "   Ordered by: cumulative time", "", "   ncalls  tottime  percall  cumtime  percall filename:lineno(function)", "        1    0.000    0.000    2.344    2.344 sim.py:32(run_all)", "       20    0.025    0.001    2.329    0.116 sim.py:23(run_case)", "    29500    0.100    0.000    2.304    0.000 sim.py:18(derivs)", "    29500    0.053    0.000    2.186    0.000 sim.py:10(density)", "    29500    0.035    0.000    1.689    0.000 sim.py:4(density_table)", "  5929500    1.100    0.000    1.100    0.000 {built-in method math.exp}", "    29500    0.444    0.000    0.444    0.000 function_base.py:1470(interp)", "    30/10    0.010    0.000    0.020    0.002 tree.py:5(visit)"]), 3)
+=> [("{built-in method math.exp}", 5929500, 1.1, 0.623), ("interp", 29500, 0.444, 0.251), ("derivs", 29500, 0.1, 0.057)]
+--- check case | Recursive calls, and asking for more rows than there are
+top_own("\n".join(["   ncalls  tottime  percall  cumtime  percall filename:lineno(function)", "    30/10    0.010    0.000    0.020    0.002 tree.py:5(visit)", "        1    0.030    0.030    0.050    0.050 tree.py:1(main)"]), 10)
+=> [("main", 1, 0.03, 0.75), ("visit", 30, 0.01, 0.25)]
+--- check case | A tie keeps the table's order, and names with spaces or brackets
+top_own("\n".join(["   ncalls  tottime  percall  cumtime  percall filename:lineno(function)", "       10    0.300    0.030    0.900    0.090 gnc.py:12(step)", "     4000    0.300    0.000    0.600    0.000 {method 'append' of 'list' objects}", "     4000    0.300    0.000    0.300    0.000 <string>:1(<module>)"]), 3)
+=> [("step", 10, 0.3, 0.333), ("{method 'append' of 'list' objects}", 4000, 0.3, 0.333), ("<module>", 4000, 0.3, 0.333)]
+--- check case | No rows at all
+top_own("         0 function calls in 0.000 seconds\n\n   Ordered by: cumulative time\n", 5)
+=> []
+
++++ problem | Frames that fill a block exactly
+--- task
+A downlink sends telemetry in blocks of exactly `block` bytes. Frame `i` of a pass holds `sizes[i]` bytes; a size may be 0 (a keep-alive frame). Write a function `exact_blocks(sizes, block)` that returns how many stretches of consecutive frames, `sizes[i:j]` with `j` greater than `i`, add up to exactly `block` bytes.
+
+- `sizes` is a list of whole numbers, 0 or more, and `block` is at least 1.
+- Return a plain whole number. Stretches that differ only by keep-alive frames at their ends are different stretches.
+- It must be linear in the number of frames: one check uses 200,000 frames.
+
+So `exact_blocks([3, 0, 2, 5, 0, 0, 5], 5)` is `7`.
+--- starter
+def exact_blocks(sizes, block):
+    pass
+--- solution
+from collections import Counter
+
+
+def exact_blocks(sizes, block):
+    """How many stretches of consecutive frames add up to exactly `block` bytes."""
+    seen = Counter({0: 1})           # how many prefixes had each running total
+    total = 0
+    count = 0
+    for s in sizes:
+        total += s
+        count += seen[total - block]   # every earlier prefix this far below closes a stretch here
+        seen[total] += 1
+    return count
+--- check case | The example
+exact_blocks([3, 0, 2, 5, 0, 0, 5], 5)
+=> 7
+--- check case | Single frames, and no frames
+(exact_blocks([4, 4, 4], 4), exact_blocks([], 4), exact_blocks([1, 2], 10))
+=> (3, 0, 0)
+--- check case | Keep-alive frames make more stretches
+exact_blocks([0, 6, 0], 6)
+=> 4
+--- check test | 200,000 frames
+(lambda s: exact_blocks(s, 20) == (lambda u, n: (lambda d: sum(c * d.get(v - 20, 0) for v, c in d.items()))(dict(zip(u.tolist(), n.tolist()))))(*__import__("numpy").unique(__import__("numpy").concatenate(([0], __import__("numpy").cumsum(s))), return_counts=True)))(__import__("numpy").random.default_rng(3).integers(0, 5, 200_000).tolist())
+
++++ problem | The largest swing across chunk edges
+--- task
+A vibration channel arrives as chunks. Write a function `max_swing(chunks, w)` that finds the stretch of `w` consecutive samples of the whole signal with the largest swing, its largest sample minus its smallest, and returns a tuple `(start, swing)`:
+
+- `chunks` is an iterable of 1-D float arrays; joined end to end they make the signal. It can be walked only once, a chunk may be empty or shorter than `w`, and the reader reuses one buffer, so a chunk's numbers are only valid until the next chunk arrives.
+- `start` is the index in the whole signal of the stretch's first sample, as a plain whole number; the earliest stretch wins a tie. `swing` is a float.
+- If the signal has fewer than `w` samples, return `None`.
+- It must take a number of steps proportional to the number of samples, whatever `w` is: one check uses 1,000,000 samples and a window of 10,000.
+--- starter
+import numpy as np
+
+
+def max_swing(chunks, w):
+    pass
+--- solution
+from collections import deque
+
+import numpy as np
+
+
+def max_swing(chunks, w):
+    """Start and size of the w-sample stretch whose max minus min is largest, across chunks."""
+    high = deque()        # (index, value), values falling front to back: the front is the window's max
+    low = deque()         # (index, value), values rising front to back: the front is the window's min
+    best = None
+    i = -1
+    for chunk in chunks:
+        for v in np.asarray(chunk, dtype=np.float64).tolist():    # copies the values out of the buffer
+            i += 1
+            while high and high[-1][1] <= v:
+                high.pop()
+            high.append((i, v))
+            while low and low[-1][1] >= v:
+                low.pop()
+            low.append((i, v))
+            if high[0][0] <= i - w:
+                high.popleft()
+            if low[0][0] <= i - w:
+                low.popleft()
+            if i >= w - 1:
+                swing = high[0][1] - low[0][1]
+                if best is None or swing > best[1]:
+                    best = (i - w + 1, swing)
+    return best
+--- check case | Across chunk edges, with an empty chunk
+max_swing([np.array([1.0, 5.0]), np.array([2.0]), np.array([]), np.array([9.0, 0.0])], 2)
+=> (3, 9.0)
+--- check case | A window of one, and too few samples
+(max_swing([np.array([3.0, -1.0])], 1), max_swing([np.array([1.0]), np.array([2.0])], 3))
+=> ((0, 0.0), None)
+--- check test | Agrees with every window, for chunks from a reused buffer
+(lambda y, w: (lambda sw: (lambda got, s: got[0] == int(np.argmax(s)) and abs(got[1] - s.max()) < 1e-12)(max_swing((lambda buf: (buf.__setitem__(slice(0, len(y[a:a + 333])), y[a:a + 333]) or buf[:len(y[a:a + 333])] for a in range(0, len(y), 333)))(np.empty(333)), w), sw.max(axis=1) - sw.min(axis=1)))(np.lib.stride_tricks.sliding_window_view(y, w)))(np.random.default_rng(2).normal(size=3000), 40)
+--- check test | 1,000,000 samples, a window of 10,000
+(lambda x: (x.__setitem__(500_000, x[500_000] + 10.0), x.__setitem__(505_000, x[505_000] - 10.0), (lambda got: got[0] == 495_001 and abs(got[1] - (x[500_000] - x[505_000])) < 1e-12)(max_swing((lambda buf: (buf.__setitem__(slice(0, len(x[a:a + 50_000])), x[a:a + 50_000]) or buf[:len(x[a:a + 50_000])] for a in range(0, len(x), 50_000)))(np.empty(50_000)), 10_000)))[2])(np.random.default_rng(5).uniform(0.0, 1.0, 1_000_000))
+
++++ problem | Flight times for a dispersion, a block of cases at a time
+--- task
+For one case, the flight time of a sounding rocket launched straight up at `v0` is given by this loop, where the mass `m`, the drag area `cda` and the step `dt` are the same for every case:
+
+```python
+h, v, t = 0.0, v0, 0.0
+while h >= 0.0:
+    rho = 1.225 * math.exp(-h / 8500.0)
+    v = v + (-9.81 - 0.5 * rho * v * abs(v) * cda / m) * dt
+    h = h + v * dt
+    t = t + dt
+```
+
+Write a function `flight_times(v0, m, cda, dt, block)` that returns a float64 array with the flight time of every case, for a 1-D array `v0` of launch speeds.
+
+- Work on at most `block` cases at a time, so memory stays small however many cases there are.
+- Within a block, loop over the time steps but not over the cases: each step works on every case of the block at once, and a case that has landed must not change any more.
+- The results must agree with the loop above to within 1e-9 s, whatever `block` is. One check runs 40,000 cases, which a loop over the cases cannot finish in time.
+--- starter
+import numpy as np
+
+
+def flight_times(v0, m, cda, dt, block):
+    pass
+--- solution
+import numpy as np
+
+
+def flight_times(v0, m, cda, dt, block):
+    """Flight time of every case, vectorized over the cases of each block."""
+    v0 = np.asarray(v0, dtype=np.float64)
+    out = np.empty(v0.size)
+    for s in range(0, v0.size, block):
+        v = v0[s:s + block].copy()
+        h = np.zeros_like(v)
+        t = np.zeros_like(v)
+        flying = np.ones(v.shape, dtype=bool)
+        while flying.any():
+            rho = 1.225 * np.exp(-h / 8500.0)
+            v_new = v + (-9.81 - 0.5 * rho * v * np.abs(v) * cda / m) * dt
+            h_new = h + v_new * dt
+            v = np.where(flying, v_new, v)             # landed cases keep their values
+            h = np.where(flying, h_new, h)
+            t = np.where(flying, t + dt, t)
+            flying = flying & (h >= 0.0)
+        out[s:s + block] = t
+    return out
+--- check case | Four cases in blocks of two
+flight_times(np.array([300.0, 250.0, 100.0, -1.0]), 25.0, 0.36, 0.01, 2).round(6).tolist()
+=> [14.72, 14.05, 10.4, 0.01]
+--- check test | The block size does not change the answer
+(lambda v0: (lambda ref: all(np.allclose(flight_times(v0, 30.0, 0.3, 0.02, b), ref, rtol=0.0, atol=1e-9) for b in (1, 7, 1000)))(flight_times(v0, 30.0, 0.3, 0.02, 50)))(np.random.default_rng(1).uniform(50.0, 300.0, 50))
+--- check test | 40,000 cases, each the same as on its own
+(lambda v0: (lambda r: r.shape == (40_000,) and abs(r[0] - 15.15) < 1e-6 and abs(r[39_999] - 14.61) < 1e-6 and all(abs(r[i] - flight_times(v0[i:i + 1], 25.0, 0.36, 0.01, 1)[0]) < 1e-9 for i in (3, 20_000, 39_998)))(flight_times(v0, 25.0, 0.36, 0.01, 5000)))(np.random.default_rng(9).uniform(250.0, 350.0, 40_000))
+
++++ problem | Deal the cases out, and time the pool
+--- task
+Predict what a process pool does with a dispersion. Write a function `pool_run(durations, workers, chunksize, trip_s)` that returns a tuple `(wall, speedup, efficiency)`:
+
+- `durations` lists each case's run time in seconds; there is at least one case.
+- The cases are cut, in order, into chunks of `chunksize` consecutive cases (the last chunk may be shorter). Each chunk goes, in order, to whichever of the `workers` workers is free first; at the start every worker is free. A chunk keeps its worker busy for `trip_s` (the fixed cost of one trip through the pipe) plus the sum of its cases' durations.
+- `wall` is when the last worker finishes, rounded to 3 decimal places.
+- `speedup` is the serial time, the plain sum of the durations with no trips, divided by the unrounded wall time, rounded to 2 decimal places. `efficiency` is the unrounded speed-up divided by `workers`, rounded to 2 decimal places.
+
+So eight cases of 1 s on 4 workers, one case per trip and trips that cost nothing, give `(2.0, 4.0, 1.0)`.
+--- starter
+def pool_run(durations, workers, chunksize, trip_s):
+    pass
+--- solution
+import heapq
+
+
+def pool_run(durations, workers, chunksize, trip_s):
+    """Wall time, speed-up and efficiency of a pool that deals out chunks of cases."""
+    chunks = [trip_s + sum(durations[i:i + chunksize]) for i in range(0, len(durations), chunksize)]
+    free_at = [0.0] * min(workers, len(chunks))
+    for c in chunks:
+        heapq.heappush(free_at, heapq.heappop(free_at) + c)   # to the worker free soonest
+    wall = max(free_at)
+    s = sum(durations) / wall
+    return round(wall, 3), round(s, 2), round(s / workers, 2)
+--- check case | Equal cases, free trips
+pool_run([1.0] * 8, 4, 1, 0.0)
+=> (2.0, 4.0, 1.0)
+--- check case | 20,000 tiny tasks, one per trip and 500 per trip
+(pool_run([1e-5] * 20_000, 4, 1, 2e-4), pool_run([1e-5] * 20_000, 4, 500, 2e-4))
+=> ((1.05, 0.19, 0.05), (0.052, 3.85, 0.96))
+--- check case | One long case holds up a chunk
+pool_run([5.0, 1.0, 1.0, 1.0, 1.0, 1.0], 2, 2, 0.0)
+=> (6.0, 1.67, 0.83)
+--- check case | More workers than chunks
+pool_run([2.0, 2.0, 2.0], 8, 1, 0.1)
+=> (2.1, 2.86, 0.36)
+
++++ problem | Statistics from raw bytes that do not line up
+--- task
+A recorder's file holds raw float64 numbers in row-major order, `n_channels` per row, and always a whole number of rows (at least one). It is read in blocks of bytes: `read_blocks()` returns a new iterator over the whole file each time you call it, and yields blocks of any length. A block can end in the middle of a row, or even in the middle of a number. The reader reuses one buffer, so a block's bytes are only valid until the next block arrives.
+
+Write a function `block_stats(read_blocks, n_channels)` that returns a tuple of three float64 arrays, one entry per channel: the mean, the standard deviation about the mean dividing by the number of rows, and the largest size (absolute value) of any sample. Use two passes over the file, and never hold more than a block and one partial row at a time.
+--- starter
+import numpy as np
+
+
+def block_stats(read_blocks, n_channels):
+    pass
+--- solution
+import numpy as np
+
+
+def block_stats(read_blocks, n_channels):
+    """Per-channel mean, standard deviation and peak size from byte blocks that ignore row edges."""
+    row_bytes = 8 * n_channels
+
+    def rows():
+        leftover = b""
+        for block in read_blocks():
+            data = leftover + bytes(block)                   # copy out of the reader's buffer
+            usable = len(data) - len(data) % row_bytes        # whole rows only
+            if usable:
+                yield np.frombuffer(data[:usable], dtype=np.float64).reshape(-1, n_channels)
+            leftover = data[usable:]                          # the part of a row still to come
+
+    n = 0
+    total = np.zeros(n_channels)
+    peak = np.zeros(n_channels)
+    for r in rows():
+        total += r.sum(axis=0)
+        peak = np.maximum(peak, np.abs(r).max(axis=0))
+        n += len(r)
+    mean = total / n
+    sq = np.zeros(n_channels)
+    for r in rows():
+        sq += ((r - mean) ** 2).sum(axis=0)
+    return mean, np.sqrt(sq / n), peak
+--- check test | Blocks cut at awkward places, from a reused buffer
+(lambda data, cuts: (lambda raw: (lambda m, s, p: np.allclose(m, data.mean(axis=0)) and np.allclose(s, data.std(axis=0)) and np.allclose(p, np.abs(data).max(axis=0)))(*block_stats(lambda: (lambda buf: (lambda mv: (buf.__setitem__(slice(0, b - a), raw[a:b]) or mv[:b - a] for a, b in zip(cuts[:-1], cuts[1:])))(memoryview(buf)))(bytearray(90_000)), 4)))(data.tobytes()))(np.random.default_rng(1).normal(2.0, 3.0, (5000, 4)), [0, 1, 7, 13, 1000, 1001, 4095, 50_000, 77_777, 159_999, 160_000])
+--- check test | One block per row, and the whole file in one block
+(lambda data: (lambda raw: all((lambda m, s, p: np.allclose(m, [2.0, -20.0]) and np.allclose(s, data.std(axis=0)) and p.tolist() == [3.0, 30.0])(*block_stats(reader, 2)) for reader in (lambda: iter([raw[i:i + 16] for i in range(0, len(raw), 16)]), lambda: iter([raw]))))(data.tobytes()))(np.array([[1.0, -10.0], [2.0, -20.0], [3.0, -30.0]]))
+--- check test | One byte at a time
+(lambda data: (lambda raw: (lambda m, s, p: np.allclose(m, data.mean(axis=0)) and np.allclose(s, data.std(axis=0)) and np.allclose(p, np.abs(data).max(axis=0)))(*block_stats(lambda: (raw[i:i + 1] for i in range(len(raw))), 3)))(data.tobytes()))(np.random.default_rng(2).uniform(-5.0, 5.0, (40, 3)))
+
++++ problem | A Kepler table sized for its accuracy
+--- task
+For an orbit of eccentricity `e`, the eccentric anomaly `E` follows from the mean anomaly `M` through `E - e * sin(E) = M`. Build a lookup table sized by the straight-line rule: the worst error is about the gap squared, over 8, times the largest bend of the curve.
+
+Write two functions:
+
+- `kepler_table(e, tol)` returns a tuple `(M_tab, E_tab)` of float64 arrays. `M_tab` holds `n` evenly spaced values from 0 to 2π, both ends included, and `E_tab` the matching `E`, solved by Newton's method until each step changes `E` by less than `1e-12` (vectorize the solve). Choose `n` as the fewest points for which `gap**2 / 8 * bend` is at most `tol`, where `gap = 2π / (n - 1)` and `bend` is the largest value of `e * |sin(E)| / (1 - e * cos(E))**3` over 200,001 evenly spaced values of `E` from 0 to 2π.
+- `kepler_E(M, M_tab, E_tab)` returns `E` for any real `M`, a single number (giving a plain float) or an array (giving an array). Write `M` as `2π * k` plus a remainder from 0 up to 2π, with `k` a whole number; look the remainder up by straight-line interpolation, and add `2π * k` back.
+--- starter
+import math
+
+import numpy as np
+
+
+def kepler_table(e, tol):
+    pass
+
+
+def kepler_E(M, M_tab, E_tab):
+    pass
+--- solution
+import math
+
+import numpy as np
+
+
+def kepler_table(e, tol):
+    """The fewest-point table of E against M whose straight-line error meets tol."""
+    E_grid = np.linspace(0.0, 2 * math.pi, 200_001)
+    bend = np.max(e * np.abs(np.sin(E_grid)) / (1 - e * np.cos(E_grid)) ** 3)
+    gap = math.sqrt(8 * tol / bend)
+    n = math.ceil(2 * math.pi / gap) + 1
+    M = np.linspace(0.0, 2 * math.pi, n)
+    E = M.copy()
+    while True:                                    # Newton's method on every table point at once
+        step = (E - e * np.sin(E) - M) / (1 - e * np.cos(E))
+        E -= step
+        if np.max(np.abs(step)) < 1e-12:
+            return M, E
+
+
+def kepler_E(M, M_tab, E_tab):
+    """E for any M: wrap into one orbit, interpolate, unwrap."""
+    M = np.asarray(M, dtype=np.float64)
+    k = np.floor(M / (2 * math.pi))
+    E = np.interp(M - 2 * math.pi * k, M_tab, E_tab) + 2 * math.pi * k
+    return float(E) if E.ndim == 0 else E
+--- check case | The table size for e = 0.5 and 1e-7
+len(kepler_table(0.5, 1e-7)[0])
+=> 8294
+--- check test | Both ends of one orbit, and the table's own points are solved
+(lambda M, E: M[0] == 0.0 and abs(M[-1] - 2 * math.pi) < 1e-15 and np.max(np.abs(E - 0.3 * np.sin(E) - M)) < 1e-11)(*kepler_table(0.3, 1e-6))
+--- check test | The error stays within the target, for any M
+(lambda e, tol: (lambda M_tab, E_tab: (lambda Mt: (lambda Et: np.max(np.abs(kepler_E(Mt, M_tab, E_tab) - Et)) <= 1.01 * tol)(__import__("functools").reduce(lambda E, _: E - (E - e * np.sin(E) - Mt) / (1 - e * np.cos(E)), range(60), Mt.copy())))(np.random.default_rng(0).uniform(-20.0, 20.0, 100_000)))(*kepler_table(e, tol)))(0.5, 1e-7)
+--- check test | Whole orbits wrap, and a single number gives a float
+(lambda M_tab, E_tab: (lambda a, b: type(a) is float and abs(a - (b + 4 * math.pi)) < 1e-12 and abs(kepler_E(-math.pi, M_tab, E_tab) + math.pi) < 1e-9 and abs(kepler_E(2 * math.pi, M_tab, E_tab) - 2 * math.pi) < 1e-9)(kepler_E(4 * math.pi + 1.0, M_tab, E_tab), kepler_E(1.0, M_tab, E_tab)))(*kepler_table(0.2, 1e-8))
+
++++ problem | Merge the ground stations' passes
+--- task
+Several ground stations recorded the same satellite, so the same packet can arrive more than once. Each stream is a list of `(time, packet_id)` pairs sorted by time. Write a function `merge_passes(streams)` that returns a tuple `(merged, dropped)`:
+
+- `merged` is one list of `(time, packet_id)` pairs sorted by time. On equal times, a pair from an earlier stream comes first, and pairs from the same stream keep their order. A pair whose `packet_id` has already been put in `merged` is left out.
+- `dropped` is a list with one whole number per stream: how many of its pairs were left out.
+- It must handle 8 streams of 40,000 pairs in well under a second: no check of "is this ID already in the list" that walks the list.
+--- starter
+def merge_passes(streams):
+    pass
+--- solution
+import heapq
+
+
+def merge_passes(streams):
+    """One time-ordered stream of first arrivals, and how many repeats each station had."""
+    tagged = [[(t, k, pid) for t, pid in s] for k, s in enumerate(streams)]
+    seen = set()
+    merged = []
+    dropped = [0] * len(streams)
+    for t, k, pid in heapq.merge(*tagged, key=lambda p: (p[0], p[1])):    # stable: equal keys keep order
+        if pid in seen:
+            dropped[k] += 1
+        else:
+            seen.add(pid)
+            merged.append((t, pid))
+    return merged, dropped
+--- check case | Ties go to the earlier stream
+merge_passes([[(0.0, 1), (2.0, 2), (3.0, 3)], [(1.0, 2), (2.0, 4), (2.0, 1)], []])
+=> ([(0.0, 1), (1.0, 2), (2.0, 4), (3.0, 3)], [1, 1, 0])
+--- check case | No streams, and one empty stream
+(merge_passes([]), merge_passes([[]]))
+=> (([], []), ([], [0]))
+--- check test | 8 streams of 40,000 packets
+(lambda streams: (lambda got, seen: got[0] == [p for p in sorted(__import__("itertools").chain(*streams), key=lambda p: p[0]) if not (p[1] in seen or seen.add(p[1]))] and sum(got[1]) == 320_000 - len(got[0]))(merge_passes(streams), set()))([list(zip(__import__("numpy").sort(__import__("numpy").random.default_rng(k).uniform(0.0, 1000.0, 40_000)).round(3).tolist(), __import__("numpy").random.default_rng(100 + k).integers(0, 150_000, 40_000).tolist())) for k in range(8)])
+
++++ problem | A benchmark that decides for itself
+--- task
+Write a function `benchmark(old, new, warmup, rounds, noise_pct, clock)` that compares two versions of a function and returns a dictionary.
+
+- First call `old` then `new`, alternately, `warmup` times each, untimed.
+- Then run `rounds` rounds, numbered from 0. In an even-numbered round time `old` first, then `new`; in an odd-numbered round time `new` first, then `old`, so neither version always runs second. Time a call by reading `clock()` just before and just after it.
+- The dictionary has the keys `"old_min"` and `"new_min"` (each version's fastest time, rounded to 6 decimal places), `"speedup"` (the unrounded old minimum over the unrounded new minimum, rounded to 2 decimal places), `"new_wins"` (the rounds in which `new` was strictly faster than `old`) and `"verdict"`.
+- The verdict is `"faster"` when the old minimum is greater than the new minimum times `(1 + noise_pct / 100)` and `new` won at least three quarters of the rounds; `"slower"` when the new minimum is greater than the old minimum times `(1 + noise_pct / 100)` and `old` was strictly faster in at least three quarters of the rounds; otherwise `"no change"`.
+--- starter
+def benchmark(old, new, warmup, rounds, noise_pct, clock):
+    pass
+--- solution
+def benchmark(old, new, warmup, rounds, noise_pct, clock):
+    """Warm up, time in rounds of alternating order, and give a verdict that respects the noise."""
+    for _ in range(warmup):
+        old()
+        new()
+
+    def timed(f):
+        t0 = clock()
+        f()
+        return clock() - t0
+
+    t_old, t_new = [], []
+    for r in range(rounds):
+        if r % 2 == 0:
+            t_old.append(timed(old))
+            t_new.append(timed(new))
+        else:
+            t_new.append(timed(new))
+            t_old.append(timed(old))
+    old_min, new_min = min(t_old), min(t_new)
+    new_wins = sum(n < o for o, n in zip(t_old, t_new))
+    old_wins = sum(o < n for o, n in zip(t_old, t_new))
+    margin = 1 + noise_pct / 100
+    if old_min > new_min * margin and 4 * new_wins >= 3 * rounds:
+        verdict = "faster"
+    elif new_min > old_min * margin and 4 * old_wins >= 3 * rounds:
+        verdict = "slower"
+    else:
+        verdict = "no change"
+    return {"old_min": round(old_min, 6), "new_min": round(new_min, 6), "speedup": round(old_min / new_min, 2),
+            "new_wins": new_wins, "verdict": verdict}
+--- check case | The order of calls
+(lambda log, st: (benchmark(lambda: (log.append("old"), st.__setitem__("t", st["t"] + 1.0)), lambda: (log.append("new"), st.__setitem__("t", st["t"] + 0.5)), 1, 4, 10, lambda: st["t"]), log)[1])([], {"t": 0.0})
+=> ["old", "new", "old", "new", "new", "old", "old", "new", "new", "old"]
+--- check case | A clear win
+(lambda st: benchmark(lambda: st.__setitem__("t", st["t"] + st["old"].pop(0)), lambda: st.__setitem__("t", st["t"] + st["new"].pop(0)), 1, 4, 10, lambda: st["t"]))({"t": 0.0, "old": [5.0, 1.0, 1.0, 1.0, 1.0], "new": [5.0, 0.5, 0.5, 0.5, 0.5]})
+=> {"old_min": 1.0, "new_min": 0.5, "speedup": 2.0, "new_wins": 4, "verdict": "faster"}
+--- check case | Inside the noise
+(lambda st: benchmark(lambda: st.__setitem__("t", st["t"] + st["old"].pop(0)), lambda: st.__setitem__("t", st["t"] + st["new"].pop(0)), 0, 4, 5, lambda: st["t"]))({"t": 0.0, "old": [1.0, 1.0, 1.0, 1.0], "new": [1.0, 0.96875, 1.03125, 1.0]})
+=> {"old_min": 1.0, "new_min": 0.96875, "speedup": 1.03, "new_wins": 1, "verdict": "no change"}
+--- check case | A lucky best run is not enough
+(lambda st: benchmark(lambda: st.__setitem__("t", st["t"] + st["old"].pop(0)), lambda: st.__setitem__("t", st["t"] + st["new"].pop(0)), 0, 4, 10, lambda: st["t"]))({"t": 0.0, "old": [1.0, 1.0, 1.0, 1.0], "new": [0.25, 2.0, 2.0, 0.5]})
+=> {"old_min": 1.0, "new_min": 0.25, "speedup": 4.0, "new_wins": 2, "verdict": "no change"}
+--- check case | A real slowdown
+(lambda st: benchmark(lambda: st.__setitem__("t", st["t"] + 0.5), lambda: st.__setitem__("t", st["t"] + 1.0), 2, 4, 10, lambda: st["t"]))({"t": 0.0})
+=> {"old_min": 0.5, "new_min": 1.0, "speedup": 0.5, "new_wins": 0, "verdict": "slower"}
+
++++ problem | Plan a Parquet read
+--- task
+A telemetry file in Parquet format is cut into row groups. For each row group, its metadata gives the number of rows, the smallest and largest time `t` in it, and the stored size in bytes of each column. Write a function `plan_read(groups, columns, t0, t1)` that works out what a reader must fetch for the rows with `t0 <= t < t1`, and returns a tuple `(picked, rows, nbytes)`:
+
+- `groups` is a list of dictionaries with the keys `"rows"`, `"t_min"`, `"t_max"` and `"bytes"`; `"bytes"` maps each column name to its size in that row group.
+- A row group must be read when its time range can hold a wanted row: its `t_max` is at least `t0` and its `t_min` is less than `t1`. Every other row group is skipped using its statistics alone.
+- `picked` is the list of indexes of the row groups read, in order; `rows` is their total number of rows.
+- `nbytes` is the total size of the column chunks fetched from the picked row groups: the columns named in `columns`, plus the time column `"t"`, which the filter needs. Each column is fetched once, even if `"t"` is also named in `columns`.
+--- starter
+def plan_read(groups, columns, t0, t1):
+    pass
+--- solution
+def plan_read(groups, columns, t0, t1):
+    """Row groups whose statistics overlap [t0, t1), their rows, and the bytes of the needed column chunks."""
+    wanted = ["t"] + [c for c in dict.fromkeys(columns) if c != "t"]
+    picked = [i for i, g in enumerate(groups) if g["t_max"] >= t0 and g["t_min"] < t1]
+    rows = sum(groups[i]["rows"] for i in picked)
+    nbytes = sum(groups[i]["bytes"][c] for i in picked for c in wanted)
+    return picked, rows, nbytes
+--- check case | The ascent window of a 2000 s test
+plan_read([{"rows": 250_000, "t_min": 250.0 * i, "t_max": 250.0 * i + 249.999, "bytes": {"t": 1_000_000, "chamber_p": 600_000 + 10_000 * i, "tank_temp": 300_000, "phase": 2_000}} for i in range(8)], ["chamber_p"], 600.0, 1400.0)
+=> ([2, 3, 4, 5], 1000000, 6540000)
+--- check case | A window that ends on a group's first time, with "t" named twice
+plan_read([{"rows": 250_000, "t_min": 250.0 * i, "t_max": 250.0 * i + 249.999, "bytes": {"t": 1_000_000, "chamber_p": 600_000, "tank_temp": 300_000, "phase": 2_000}} for i in range(8)], ["t", "tank_temp", "phase", "t"], 0.0, 250.0)
+=> ([0], 250000, 1302000)
+--- check case | A window after the end of the file
+plan_read([{"rows": 10, "t_min": 0.0, "t_max": 9.0, "bytes": {"t": 80, "x": 40}}], ["x"], 50.0, 60.0)
+=> ([], 0, 0)
+--- check case | A window that starts on a group's last time
+plan_read([{"rows": 5, "t_min": 0.0, "t_max": 4.0, "bytes": {"t": 40, "x": 20}}, {"rows": 5, "t_min": 5.0, "t_max": 9.0, "bytes": {"t": 40, "x": 30}}], ["x"], 4.0, 5.0)
+=> ([0], 5, 60)
+
++++ question | Where to point the line profiler
+--- ask
+Part of a cProfile table, sorted by cumulative time, for a 10-second run:
+
+```text
+   ncalls  tottime  cumtime  function
+        1    0.010    9.950  run_dispersion
+      500    0.300    9.900  run_case
+   500000    0.800    9.500  step
+   500000    7.900    8.600  aero_coefficients
+  2000000    0.700    0.700  interp_row
+```
+
+Which single function should `line_profiler` look at first?
+--- choice
+`run_dispersion`, because it has the largest cumulative time.
+--- choice
+`step`, because it is called 500,000 times and holds 9.5 s.
+--- choice correct
+`aero_coefficients`, because 7.9 s of its 8.6 s is spent in its own lines.
+--- choice
+`interp_row`, because it is called most often.
+--- why
+Cumulative time shows the path the time takes; own time shows where it is burned. Walking down, `run_dispersion`, `run_case` and `step` each spend almost nothing in their own lines. `aero_coefficients` spends 7.9 of the run's 10 seconds in its own lines, so line_profiler pointed at it will show which line. The 2,000,000 calls of `interp_row` add up to only 0.7 s.
+
++++ question | The cost of a harmless-looking line
+--- ask
+What is the time complexity of this function, for `n` packets?
+
+```python
+def order_seen(ids):
+    out = []
+    for x in ids:
+        out.append(ids.index(x))
+    return out
+```
+--- choice
+O(n), because there is one loop.
+--- choice
+O(n log n), because `index` searches cleverly.
+--- choice correct
+O(n squared), because `ids.index(x)` walks the list from the start on every pass.
+--- choice
+O(1) per packet, because `append` is amortized O(1).
+--- why
+`list.index` is a hidden loop: it compares `x` with each item from the front until it finds a match, up to `n` comparisons. Doing that once per packet gives up to n × n comparisons. Building a dictionary from ID to first position in one pass beforehand makes each lookup about O(1), and the whole function O(n).
+
++++ question | Why the loop beat the broadcast
+--- ask
+A fully broadcast distance calculation builds a 1.5 GB temporary array and takes 2.1 s. The same arithmetic done in strips of 8 rows, with a Python loop over the strips and temporaries of about 5 MB, takes 0.7 s and gives the same answers. What is the main reason the version with a loop is faster?
+--- choice
+Python loops are faster than NumPy for large arrays.
+--- choice correct
+Each strip's temporaries stay close to the processor's caches, while the broadcast's huge temporaries must be written to and read back from main memory, and the operating system must first hand over 1.5 GB of fresh memory.
+--- choice
+The broadcast version computes each distance twice.
+--- choice
+NumPy switches to single precision for arrays over 1 GB.
+--- why
+Once the temporaries of a vectorized expression no longer fit in cache, NumPy's loops run at the speed memory can deliver data, not at the speed of arithmetic, and a first touch of fresh memory costs page faults as well. With a few hundred strips, the Python loop's overhead is tiny, and each strip works on data that fits in fast memory. Vectorize by default, but estimate the biggest temporary, and chunk when it is large.
+
++++ question | Safe lines on a memory map
+--- ask
+`tlm = np.load("campaign.npy", mmap_mode="r")` opens a 40 GB float64 array on a laptop with 16 GB of RAM. Which line is safe to run?
+--- choice
+`copy = np.array(tlm)`
+--- choice
+`scaled = tlm * 2.0`
+--- choice
+`centered = tlm - tlm.mean(axis=0)`
+--- choice correct
+`piece = tlm[5_000_000:5_001_000] * 2.0`
+--- why
+A memory map reads only the pages you touch, but arithmetic on it makes an ordinary array in RAM the size of the result. `np.array(tlm)`, `tlm * 2.0` and `tlm - tlm.mean(axis=0)` each ask for a new 40 GB array, which cannot fit. The slice touches a small part of the file and its result is small. Whole-file calculations belong in a loop over chunks.
+
++++ question | The race inside prange
+--- ask
+Each of these lines sits inside a `for i in prange(n):` loop of an `@njit(parallel=True)` function. Which one is a race that can silently lose updates?
+--- choice
+`out[i] = coast(v0[i], m, dt)`
+--- choice
+`s += miss[i]`, where `s` is a local float set to 0.0 before the loop
+--- choice
+`sq += miss[i] * miss[i]`, where `sq` is a local float set to 0.0 before the loop
+--- choice correct
+`hits[bin_of[i]] += 1`, where `hits` is an array shared by every iteration
+--- why
+Writing only to your own slot, `out[i]`, is safe. Numba recognizes `s += ...` and `sq += ...` on a local scalar as reductions and gives each thread a private partial sum to combine at the end. But two iterations that fall in the same bin can read, add and write the same element of `hits` at the same moment, and one update is lost. Store each case's bin in its own slot inside the loop, and count the bins afterwards in one serial pass, for example with `np.bincount`.
+
++++ question | Numba made the sort slower
+--- ask
+A post-processing function spends 90 percent of its time in one call, `order = np.argsort(miss)`, on 5 million values. Someone adds `@njit`, warms it up, and the function becomes several times slower. What is the most likely explanation?
+--- choice
+The warm-up did not work, so every call still compiles.
+--- choice
+The function fell back to object mode.
+--- choice correct
+The time was already inside one NumPy call written in tuned C; under `@njit`, Numba replaces it with its own general sort, which is slower, and there were no per-element Python steps to remove.
+--- choice
+`argsort` returns integers, and Numba only compiles floating-point code.
+--- why
+`@njit` pays off on loops you wrote, where the interpreter does work for every element. A single NumPy call does that work once per call, in compiled code that has been tuned for years. Inside `@njit`, Numba uses its own implementation of `np.argsort`, which is correct and compiled but slower. If the profile points at one library call, the fix is to call it less often or pick a better algorithm, not to compile around it.
+
++++ question | Four threads and a C++ core
+--- ask
+A pybind11 function runs a long pure C++ loop over a batch of cases. Four Python threads each call it with a quarter of the cases, on a 4-core machine, but the batch takes as long as one call with every case. What is the most likely cause?
+--- choice
+pybind11 functions can only be called from the main thread.
+--- choice
+The four threads each receive a copy of the whole batch.
+--- choice correct
+The binding never releases the GIL, so each thread holds the lock for its whole C++ loop and the threads run one at a time.
+--- choice
+C++ code cannot use more than one core without OpenMP.
+--- why
+A thread must hold the GIL while it is inside the extension unless the extension releases it. With `py::gil_scoped_release` around the pure C++ loop (reading the NumPy input and creating the output before releasing), other threads can enter the core at the same time, and four threads approach a 4 times speed-up. Without it, the threads queue for the lock exactly as they would for Python bytecode.
+
++++ question | What the GIL leaves alone
+--- ask
+Which statement about CPython's GIL is true?
+--- choice
+It stops a Python program from using more than one core, whatever the program does.
+--- choice
+It makes every line of Python atomic, so `total += 1` from several threads never loses an update.
+--- choice correct
+It lets only one thread run Python bytecode at a time, but a thread waiting on I/O or running compiled code that releases the lock does not hold it, so those parts can overlap.
+--- choice
+It is taken only by threads started with `ThreadPoolExecutor`, not by processes.
+--- why
+The GIL guards the interpreter loop: two threads cannot execute bytecode at the same moment. It says nothing about waiting, and NumPy, BLAS and well-written extensions release it while they compute. Nor does it make a line atomic: `total += 1` is several bytecode steps, and the lock can change hands between them. Each process has its own interpreter and its own GIL.
+
++++ question | Data through the pipes
+--- ask
+A process-pool dispersion sends a 50 MB NumPy array as an argument with every one of its 200 tasks. How many gigabytes (1 GB = 1,000 MB) are pickled, sent through pipes and unpickled in total?
+--- answer
+10
+10 GB
+10 gb
+10.0
+10000 MB
+--- why
+Every task pickles its own copy of the argument: 200 × 50 MB = 10,000 MB, which is 10 GB, however little of the array each case reads. Sending it once per worker with an `initializer` (8 workers: 400 MB), memory-mapping a saved `.npy` file, or using shared memory moves a small fraction of that, and often turns a parallel run that is slower than serial into a real speed-up.
+
++++ question | Row groups that cannot be skipped
+--- ask
+Two Parquet files hold the same 2,000 s of telemetry in 8 row groups each. In file A the rows are sorted by time; in file B they are shuffled. A read with `filters=[("t", ">=", 600.0), ("t", "<", 1400.0)]` fetches about half of file A's time column but all of file B's. Why?
+--- choice
+File B was written with a weaker compression method.
+--- choice correct
+In file B every row group holds times from the whole test, so its minimum and maximum of `t` always overlap the filter and no row group can be skipped.
+--- choice
+Filters only work on the first column of a file.
+--- choice
+Shuffled rows make Parquet store each column by row instead of by column.
+--- why
+A reader skips a row group only when its stored minimum and maximum prove that no row can match. Sorted by time, each row group covers a narrow slice of time, and 4 of the 8 fall entirely outside 600 to 1400 s. Shuffled, every row group spans nearly 0 to 2000 s, so every one must be read and filtered row by row. Writing the file sorted by the column you filter on is what makes the statistics useful.
+
++++ question | Always second
+--- ask
+To compare two versions, a script warms up nothing, then times the old version followed by the new one, 20 times in a row, always in that order. The new version wins 14 of the 20 pairs, and its fastest run is 3 percent faster. What is the right conclusion?
+--- choice
+The new version is 3 percent faster: 14 wins out of 20 settles it.
+--- choice
+The new version is slower: the old one's slowest run was faster than some new runs.
+--- choice correct
+Nothing yet: whatever runs second can inherit warm caches and a clock that has sped up, so the order alone could produce this; warm both up and alternate the order.
+--- choice
+Take the mean of all 40 runs instead of the minimum, and the answer will be reliable.
+--- why
+Order is a hidden variable. With no warm-up and the new version always second, every advantage the machine gives a second call goes to it, and a 3 percent gap is the size of ordinary noise. Warm up both versions, alternate which runs first, check that the answers match, and compare the minimum, the median and the number of wins before claiming a speed-up.
+
++++ question | After the cases got fast
+--- ask
+A dispersion spends 30 s in serial set-up and 2,400 s in its cases, one after another. You compile the case code, which makes every case 10 times faster, and then run the cases on 8 processes with perfect scaling. The set-up is unchanged. How many seconds does the whole run take now?
+--- answer
+60
+60 s
+60.0
+60 seconds
+--- why
+Compiling brings the cases to 2,400 / 10 = 240 s, and 8 processes bring that to 30 s. The serial set-up still takes 30 s, so the total is 30 + 30 = 60 s, a 40.5 times speed-up from 2,430 s. Half of what is left is now the serial part: by Amdahl's law, more processes can never take the run below 30 s, so the set-up is the next thing to profile.

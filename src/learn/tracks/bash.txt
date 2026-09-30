@@ -89,6 +89,126 @@ printed /home/you/project
 ran ls
 printed README.md
 
++++ practice | Somewhere new
+--- task
+This time the terminal has put you in a different folder. Print the full address of the folder you are in with `pwd`. Then list what is inside it with `ls`.
+--- starter
+mkdir -p rocket/parts
+touch rocket/engine.txt
+touch rocket/fuel.csv
+cd rocket
+--- solution
+pwd
+ls
+--- hint
+The same two commands as in the lesson: one prints where you are, one lists what is here.
+--- hint
+`pwd` should print an address that ends in `/rocket`. Then `ls` shows two files and one folder.
+--- check shell | You printed where you are
+ran pwd
+printed-line /home/you/project/rocket
+--- check shell | You listed the two files
+ran ls
+printed engine.txt
+printed fuel.csv
+--- check shell | The folder shows in the list, with its slash
+printed parts/
+
++++ practice | Starting from home
+--- task
+You start in your home folder this time, not in `project`. Print the full address of where you are, then list what is here. Your home folder holds more than just `project`.
+--- starter
+mkdir -p ~/downloads
+touch ~/todo.txt
+cd
+--- solution
+pwd
+ls
+--- hint
+Nothing new: print the working directory, then list.
+--- hint
+`pwd` should print `/home/you`, with no `/project` on the end. `ls` then shows two folders and one file.
+--- check shell | You printed your home folder's address
+ran pwd
+printed-line /home/you
+--- check shell | You listed both folders
+ran ls
+printed project/
+printed downloads/
+--- check shell | You listed the file too
+printed todo.txt
+
++++ practice | An empty folder
+--- task
+You are in a brand-new folder called `hangar`. Print where you are with `pwd`. Then run `ls`, as your last command. The folder is empty, so `ls` prints nothing at all. A blank answer from `ls` is the correct one: it means "there is nothing here".
+--- starter
+mkdir hangar
+cd hangar
+--- solution
+pwd
+ls
+--- hint
+Run `pwd` first and `ls` second, so `ls` is the last thing you type.
+--- hint
+`pwd` prints `/home/you/project/hangar`. `ls` prints no lines, and the prompt comes straight back.
+--- check shell | You printed where you are
+ran pwd
+printed-line /home/you/project/hangar
+--- check shell | You listed the folder last
+ran ls
+status 0
+--- check shell | The list was empty
+last-printed-exactly
+
++++ practice | Fix the capitals
+--- task
+A teammate wanted to see where they were and what was there. They typed `PWD`, then `Ls`, and both times the terminal answered `command not found`. Type the two commands the way the terminal understands them: first where you are, then what is here.
+--- starter
+mkdir logbook
+touch logbook/day1.txt
+touch logbook/day2.txt
+cd logbook
+--- solution
+pwd
+ls
+--- hint
+The terminal is exact about capitals. Look at how each letter was typed.
+--- hint
+Commands are all lowercase: `pwd`, then `ls`.
+--- check shell | You printed where you are
+ran pwd
+printed-line /home/you/project/logbook
+--- check shell | You listed the first day
+ran ls
+printed day1.txt
+--- check shell | You listed the second day
+printed day2.txt
+
++++ practice | Deep in the station
+--- task
+You are several folders deep, somewhere inside `project`. Find out exactly where: print the full address with `pwd`. Then list what is here with `ls`. Among the names, one is a folder: it is the one shown with a slash at the end.
+--- starter
+mkdir -p station/modules/lab/samples
+touch station/modules/lab/sample-log.txt
+touch station/modules/lab/crew.txt
+cd station/modules/lab
+--- solution
+pwd
+ls
+--- hint
+The prompt shows where you are, but `pwd` prints the whole address, from the very top.
+--- hint
+`pwd` should print an address with four folder names after `/home/you`. Then run `ls`.
+--- check shell | You printed the full address
+ran pwd
+printed-line /home/you/project/station/modules/lab
+--- check shell | You listed the folder inside
+ran ls
+printed samples/
+--- check shell | You listed the files
+printed sample-log.txt
+printed crew.txt
+
 === term-02 | Making folders and moving into them
 --- teach
 Last lesson you used `pwd` to see where you are and `ls` to see what is there. Now you will make a new folder and step inside it.
@@ -170,6 +290,141 @@ dir notes
 --- check shell | You are inside it
 cwd notes
 
++++ practice | Into the hangar
+--- task
+There is already a folder called `hangar` in `project`. Move into it. Make a folder called `rover` inside `hangar`, then move into `rover`. When you are done, the prompt should end in `rover $`.
+--- starter
+mkdir hangar
+--- solution
+cd hangar
+mkdir rover
+cd rover
+--- hint
+Three steps: walk into `hangar`, build the new folder there, then walk into it.
+--- hint
+`mkdir` makes the folder in the place you are standing, so move into `hangar` before you make `rover`.
+--- hint
+`cd hangar`, then `mkdir rover`, then `cd rover`.
+--- check shell | rover is inside hangar
+dir hangar/rover
+--- check shell | You are in rover
+cwd hangar/rover
+--- check shell | No stray rover folder in project
+missing rover
+
++++ practice | Back out, then build
+--- task
+You are two folders deep, in `base/camp`. Go back up to `project` using `cd ..`, one level at a time. Then make a folder called `supplies` there, in `project`.
+--- starter
+mkdir base
+mkdir base/camp
+cd base
+cd camp
+--- solution
+cd ..
+cd ..
+mkdir supplies
+--- hint
+Each `cd ..` climbs one level. How many levels are there between `camp` and `project`?
+--- hint
+Two: `camp` to `base`, then `base` to `project`. Run `cd ..` twice, check the prompt, then make the folder.
+--- check shell | supplies is in project
+dir supplies
+--- check shell | You climbed back up to project
+used ..
+cwd .
+--- check shell | supplies was not made too deep
+missing base/supplies
+missing base/camp/supplies
+
++++ practice | Two folders, one command
+--- task
+With a single `mkdir` command, make two folders: `fuel` and `oxygen`. Name them in that order, with a space between them. Then move into `oxygen` and print its full address with `pwd`.
+--- starter
+--- solution
+mkdir fuel oxygen
+cd oxygen
+pwd
+--- hint
+The shell splits what you type at the spaces. Every word after `mkdir` is one folder to make.
+--- hint
+Give `mkdir` both names, `fuel` first. Then `cd` into `oxygen`, then `pwd`.
+--- check shell | Both folders exist
+dir fuel
+dir oxygen
+--- check shell | One mkdir made both
+used mkdir fuel oxygen
+--- check shell | You are in oxygen and printed it
+cwd oxygen
+printed-line /home/you/project/oxygen
+
++++ practice | Capitals count
+--- task
+There is a folder called `Logs`, with a capital L. Make a new folder called `logs`, all lowercase, next to it in `project`. Then move into the lowercase one. The terminal treats `Logs` and `logs` as two different names.
+--- starter
+mkdir Logs
+touch Logs/old.txt
+--- solution
+mkdir logs
+cd logs
+--- hint
+Capitals matter to the terminal, so `logs` is a brand-new name, even though `Logs` is already here.
+--- hint
+Make `logs` with `mkdir`, then `cd` into it. Look at the prompt: it should end in `logs $`, with a small l.
+--- check shell | The lowercase logs folder exists
+dir logs
+--- check shell | You are in the lowercase one
+cwd logs
+--- check shell | Logs was left as it was
+file Logs/old.txt
+missing Logs/logs
+
++++ practice | Wrong order
+--- task
+A teammate wanted a folder called `reports`, and to be inside it. They typed `cd reports` first, then `mkdir reports`. The `cd` failed, because the folder did not exist yet, so they were still in `project` when the folder got made. Type the two commands in the order that works.
+--- starter
+--- solution
+mkdir reports
+cd reports
+--- hint
+You cannot walk through a door before the room is built.
+--- hint
+Make the folder first, then move into it.
+--- check shell | reports exists
+dir reports
+--- check shell | You are inside it
+cwd reports
+--- check shell | There is no second reports inside the first
+missing reports/reports
+
++++ practice | A mission layout
+--- task
+Build this layout using only `mkdir`, `cd` and `cd ..`:
+
+- a folder `mission` in `project`
+- inside `mission`, two folders: `launch` and `landing`
+
+Then go into `landing` and stay there. `launch` and `landing` must be inside `mission`, not loose in `project`.
+--- starter
+--- solution
+mkdir mission
+cd mission
+mkdir launch landing
+cd landing
+--- hint
+Folders are made where you stand. Be inside `mission` before you make the two folders that belong in it.
+--- hint
+Make `mission` and move in. One `mkdir` can make both inner folders at once. Then move into `landing`.
+--- check shell | launch is inside mission
+dir mission/launch
+--- check shell | landing is inside mission
+dir mission/landing
+--- check shell | You are in mission/landing
+cwd mission/landing
+--- check shell | Nothing loose in project
+missing launch
+missing landing
+
 === term-03 | Files: create, write, read
 --- teach
 Last lesson you made folders and moved between them. Folders are only boxes, though. This lesson puts something inside: files with words in them.
@@ -240,6 +495,142 @@ file hello.txt == Hello, terminal!
 --- check shell | You read it back with cat
 ran cat
 printed Hello, terminal!
+
++++ practice | An empty page and a motto
+--- task
+Make an empty file called `checklist.txt` with `touch`. Then make a file called `motto.txt` that holds exactly `Ad astra`. Read `motto.txt` back with `cat`.
+--- starter
+--- solution
+touch checklist.txt
+echo "Ad astra" > motto.txt
+cat motto.txt
+--- hint
+Two different ways to make a file: `touch` makes an empty one, and `echo` with the greater-than sign makes one with words in it.
+--- hint
+Put the words in double quotes, then `>` and the file name. Finish with `cat motto.txt`.
+--- check shell | checklist.txt exists and is empty
+file checklist.txt empty
+--- check shell | motto.txt holds the motto
+file motto.txt == Ad astra
+--- check shell | You read it back with cat
+ran cat motto.txt
+printed-line Ad astra
+
++++ practice | Change the status
+--- task
+`status.txt` holds the word `HOLD`. Change it so that it holds exactly `GO for launch`, and nothing else. Then print it with `cat` to prove it.
+--- starter
+echo "HOLD" > status.txt
+--- solution
+echo "GO for launch" > status.txt
+cat status.txt
+--- hint
+The greater-than sign replaces whatever a file held. Here that is exactly what you want.
+--- hint
+`echo` the new words, in double quotes, into `status.txt`. Then `cat status.txt`.
+--- check shell | status.txt says GO for launch, and only that
+file status.txt == GO for launch
+--- check shell | You read it back with cat
+ran cat status.txt
+--- check shell | cat showed the new status
+printed-line GO for launch
+
++++ practice | A crew folder
+--- task
+Make a folder called `crew` and move into it. Inside `crew`, make a file `pilot.txt` that holds exactly `Mae Jemison`. Then read it back with `cat`.
+--- starter
+--- solution
+mkdir crew
+cd crew
+echo "Mae Jemison" > pilot.txt
+cat pilot.txt
+--- hint
+First the folder and the move, from the last lesson. Then the file, from this one.
+--- hint
+Be inside `crew` before you write the file, so it lands there. The name has a space in it, so keep it in double quotes.
+--- check shell | crew/pilot.txt holds the name
+file crew/pilot.txt == Mae Jemison
+--- check shell | You are in crew
+cwd crew
+--- check shell | You read it back
+ran cat pilot.txt
+printed-line Mae Jemison
+--- check shell | The file is not loose in project
+missing pilot.txt
+
++++ practice | Symbols in the text
+--- task
+Make a file called `reading.txt` that holds exactly this line, symbols and all:
+
+`Fuel > 90% & rising`
+
+Then read it back with `cat`. Be careful: left bare, the greater-than sign and the ampersand (the `&` sign) are instructions to the shell, not text.
+--- starter
+--- solution
+echo "Fuel > 90% & rising" > reading.txt
+cat reading.txt
+--- hint
+Something has to tell the shell "all of this is plain text, including the symbols".
+--- hint
+Double quotes around the whole line do that. Only the last `>`, outside the quotes, is the redirect.
+--- check shell | reading.txt holds the whole line
+file reading.txt == Fuel > 90% & rising
+--- check shell | No stray file was made from the text
+missing 90%
+missing rising
+--- check shell | You read it back
+ran cat reading.txt
+printed-line Fuel > 90% & rising
+
++++ practice | The space in the name
+--- task
+A teammate wanted a file called `status_report.txt` holding `All clear`. They typed `echo "All clear" > status report.txt`, with a space where the underscore should be. The shell split the name at the space, so now there is a file called `status` holding `All clear report.txt`, and no report.
+
+Make the file they wanted, then read it back with `cat`. Leave `status` where it is; a later lesson shows how to delete files.
+--- starter
+echo "All clear" > status report.txt
+--- solution
+echo "All clear" > status_report.txt
+cat status_report.txt
+--- hint
+The shell splits at spaces, so the file name must be one piece with no space in it.
+--- hint
+Use the name with the underscore, `status_report.txt`, after the `>`.
+--- check shell | status_report.txt holds exactly All clear
+file status_report.txt == All clear
+--- check shell | You read it back
+ran cat status_report.txt
+--- check shell | cat showed the report
+printed-line All clear
+
++++ practice | One message from three parts
+--- task
+A radio message is split across files. `part1.txt` and `part2.txt` hold its first two lines. Do three things:
+
+1. Make `part3.txt` holding exactly `Over and out`.
+2. Join all three parts, in order, into one new file called `message.txt`, using a single `cat` command and `>`.
+3. Print `message.txt` with `cat`.
+--- starter
+echo "Houston, this is Orbit." > part1.txt
+echo "All systems nominal." > part2.txt
+--- solution
+echo "Over and out" > part3.txt
+cat part1.txt part2.txt part3.txt > message.txt
+cat message.txt
+--- hint
+`cat` can take several files. It prints them one after the other, as if they were one.
+--- hint
+Whatever a command would print, `>` can send into a file instead. That works for `cat` as well as for `echo`.
+--- hint
+Give `cat` the three part files in order, then `> message.txt`.
+--- check shell | part3.txt holds the last line
+file part3.txt == Over and out
+--- check shell | message.txt holds all three lines, in order
+file message.txt ~= Houston, this is Orbit.\nAll systems nominal.\nOver and out
+--- check shell | One cat joined the parts
+used part1.txt part2.txt part3.txt
+--- check shell | You printed the whole message
+printed-exactly Houston, this is Orbit.\nAll systems nominal.\nOver and out
 
 === term-04 | Paths
 --- teach
@@ -324,6 +715,139 @@ ran cd docs/guides
 used ..
 cwd .
 
++++ practice | Four levels in one go
+--- task
+With one command, make the folders `data/2026/march/day1`: a `day1` folder, inside `march`, inside `2026`, inside `data`. Then, with one `cd`, move into `data/2026/march`, which is one level short of the bottom.
+--- starter
+--- solution
+mkdir -p data/2026/march/day1
+cd data/2026/march
+--- hint
+Plain `mkdir` makes one level and fails when the folder above is missing. A flag fixes that.
+--- hint
+`mkdir -p` with the whole path makes every level. Then give `cd` a path with three folder names in it.
+--- check shell | data/2026/march/day1 exists
+dir data/2026/march/day1
+--- check shell | One mkdir with -p made it
+ran mkdir -p
+--- check shell | You are in data/2026/march
+cwd data/2026/march
+
++++ practice | Straight there
+--- task
+You are deep inside `ground/station/antenna`. Jump straight to the `logs` folder in `project` with one `cd` and its absolute path: the full address, starting with `/home/you`. Then print where you are with `pwd`.
+--- starter
+mkdir -p ground/station/antenna
+mkdir logs
+cd ground/station/antenna
+--- solution
+cd /home/you/project/logs
+pwd
+--- hint
+An absolute path starts at the very top of the computer, with a slash, and names every folder down to where you want to go.
+--- hint
+Your home folder is `/home/you`, and `project` is inside it. Add `/logs` to the end.
+--- check shell | You used the absolute path
+ran cd /home/you/project/logs
+--- check shell | You are in logs
+cwd logs
+--- check shell | pwd confirms it
+printed-line /home/you/project/logs
+
++++ practice | A report deep in a tree
+--- task
+Make the folders `reports/week1` with one command. Then, staying in `project` the whole time, write `3 tests passed` into a file called `summary.txt` inside `reports/week1`, and read it back with `cat`. Use paths instead of `cd`.
+--- starter
+--- solution
+mkdir -p reports/week1
+echo "3 tests passed" > reports/week1/summary.txt
+cat reports/week1/summary.txt
+--- hint
+A path works anywhere a file name does: after `>`, and after `cat`.
+--- hint
+Write to `reports/week1/summary.txt`, and read from the same path.
+--- check shell | summary.txt is in reports/week1, with the words
+file reports/week1/summary.txt == 3 tests passed
+--- check shell | You stayed in project
+cwd .
+missing summary.txt
+--- check shell | You read it back
+printed-line 3 tests passed
+
++++ practice | Count the dots
+--- task
+You are in `mission/stage1/engines`. Without leaving this folder, make the folders `mission/stage2/engines`, using one `mkdir -p` with a relative path that climbs up with `..` first. When you finish, you should still be in `mission/stage1/engines`.
+
+Count carefully. One `..` too few or too many puts the new folders in the wrong place.
+--- starter
+mkdir -p mission/stage1/engines
+cd mission/stage1/engines
+--- solution
+mkdir -p ../../stage2/engines
+--- hint
+Climb until you are in the folder that should hold `stage2`. Which folder is that?
+--- hint
+`stage2` belongs in `mission`. From `engines`, that is two levels up: `engines` to `stage1`, then `stage1` to `mission`.
+--- check shell | mission/stage2/engines exists
+dir mission/stage2/engines
+--- check shell | You did not move
+cwd mission/stage1/engines
+used ..
+--- check shell | Nothing landed a level too low
+missing mission/stage1/stage2
+missing mission/stage1/engines/stage2
+--- check shell | Nothing landed a level too high
+missing stage2
+
++++ practice | The slash in front
+--- task
+A teammate in `project` typed `cd /reports/q1` and got `No such file or directory`, even though `reports/q1` is right there in `project`. Fix the command so that it takes you into `reports/q1`, using a relative path.
+--- starter
+mkdir -p reports/q1
+--- solution
+cd reports/q1
+--- hint
+A path that starts with a slash starts from the very top of the computer, not from where you are.
+--- hint
+Leave the slash off the front, so the path starts from `project`.
+--- check shell | You used a relative path
+ran cd reports/q1
+--- check shell | You are in reports/q1
+cwd reports/q1
+--- check shell | The last command worked
+status 0
+
++++ practice | A rover project
+--- task
+Set up this project skeleton:
+
+- the folders `rover/src/drivers`, `rover/tests` and `rover/docs`, all made by a single `mkdir -p`
+- a file `rover/docs/README.txt` holding exactly `Rover control software`
+
+Then move into `rover/src` with a path that starts with `~`, so the same command would work from anywhere.
+--- starter
+--- solution
+mkdir -p rover/src/drivers rover/tests rover/docs
+echo "Rover control software" > rover/docs/README.txt
+cd ~/project/rover/src
+--- hint
+`mkdir` takes several arguments, one per folder to make, and `-p` works for all of them.
+--- hint
+Write the file with a path after `>`. The tilde means your home folder, and `project` is inside it.
+--- hint
+The last step is `cd` with a path that starts `~/project/`.
+--- check shell | All the folders exist
+dir rover/src/drivers
+dir rover/tests
+dir rover/docs
+--- check shell | README.txt holds the description
+file rover/docs/README.txt == Rover control software
+--- check shell | mkdir -p made them
+ran mkdir -p
+--- check shell | You moved into rover/src with a ~ path
+used ~/project/rover/src
+cwd rover/src
+
 === term-05 | Copying and moving
 --- teach
 Last lesson you learned to name any folder with a path. Now you will use paths to copy files and move them around.
@@ -405,6 +929,158 @@ file backup.txt == Our first mission plan
 --- check shell | draft.txt is now final.txt
 file final.txt == Our first mission plan
 missing draft.txt
+
++++ practice | Into the backup folder
+--- task
+Copy `engine.cfg` into the folder `backup`, keeping its name. The original must stay where it is.
+--- starter
+mkdir backup
+echo "thrust=750" > engine.cfg
+--- solution
+cp engine.cfg backup/
+--- hint
+Copying is `cp`: source first, destination second.
+--- hint
+When the destination is a folder, the copy goes inside it and keeps its name.
+--- check shell | The copy is in backup
+file backup/engine.cfg == thrust=750
+--- check shell | The original is still here
+file engine.cfg == thrust=750
+--- check shell | You copied with cp
+ran cp
+
++++ practice | Move and rename at once
+--- task
+Move `photo1.jpg` into the `gallery` folder and give it the new name `moon.jpg`, all with a single `mv`.
+--- starter
+mkdir gallery
+echo "moon photo" > photo1.jpg
+--- solution
+mv photo1.jpg gallery/moon.jpg
+--- hint
+The destination of `mv` can be a path that names both the folder and the new file name.
+--- hint
+Destination: `gallery/moon.jpg`.
+--- check shell | gallery/moon.jpg is the photo
+file gallery/moon.jpg == moon photo
+--- check shell | The old name is gone from project
+missing photo1.jpg
+--- check shell | It was renamed on the way
+missing gallery/photo1.jpg
+
++++ practice | Ship a release
+--- task
+Do these four steps, in order:
+
+1. Write `v1.0` into a new file `version.txt`.
+2. Make the folders `release/2026` with one command.
+3. Copy `version.txt` into `release/2026`, keeping its name.
+4. Rename the original `version.txt` to `version-old.txt`.
+--- starter
+--- solution
+echo "v1.0" > version.txt
+mkdir -p release/2026
+cp version.txt release/2026/
+mv version.txt version-old.txt
+--- hint
+Step 1 is `echo` with `>`. Step 2 needs the flag that makes the parent folder too.
+--- hint
+Copy before you rename: once the file is renamed, `version.txt` is not there any more.
+--- check shell | The release holds the version
+file release/2026/version.txt == v1.0
+--- check shell | The original is now version-old.txt
+file version-old.txt == v1.0
+missing version.txt
+--- check shell | You made the folders with mkdir -p, copied with cp and renamed with mv
+ran mkdir -p
+ran cp
+ran mv
+
++++ practice | A folder inside a folder
+--- task
+Make a full copy of the `settings` folder, called `settings-backup`. It must include everything inside, even the `profiles` folder and the file in it. Then rename `settings` to `settings-live`.
+--- starter
+mkdir -p settings/profiles
+echo "volume=5" > settings/audio.conf
+echo "user=ada" > settings/profiles/ada.conf
+--- solution
+cp -r settings settings-backup
+mv settings settings-live
+--- hint
+Plain `cp` skips folders. It needs a flag that makes it go into every folder inside.
+--- hint
+`mv` renames a folder the same way it renames a file, with no flag.
+--- check shell | The backup has the top-level file
+file settings-backup/audio.conf == volume=5
+--- check shell | The backup has the folder inside, too
+file settings-backup/profiles/ada.conf == user=ada
+--- check shell | settings is now settings-live
+file settings-live/profiles/ada.conf == user=ada
+missing settings
+
++++ practice | Backwards copy
+--- task
+`report.txt` holds today's report, and `backup.txt` holds an old one. A teammate wants to save today's report over the old backup, and wrote `cp backup.txt report.txt`. Running that would wipe today's report with the old one. Type the correct command. When you are done, both files must hold `Wednesday: 14 burns`.
+--- starter
+echo "Wednesday: 14 burns" > report.txt
+echo "Monday: 9 burns" > backup.txt
+--- solution
+cp report.txt backup.txt
+--- hint
+`cp` copies from its first argument into its second. Which file should be copied, and which one replaced?
+--- hint
+Today's report is the source. The old backup is the destination.
+--- check shell | backup.txt now holds today's report
+file backup.txt == Wednesday: 14 burns
+--- check shell | report.txt was not wiped
+file report.txt == Wednesday: 14 burns
+--- check shell | You copied with cp
+ran cp
+
++++ practice | Tidy the desk
+--- task
+The `project` folder is a mess. Tidy it so that:
+
+- `shot1.png` and `shot2.png` are inside a new folder `images`
+- `boot.log` is inside a new folder `logs`
+- `notes.md` is renamed to `README.md`, and there is also a copy of it, called `README.md` too, inside a new folder `docs`
+- the folder `old-stuff` is renamed to `archive`
+--- starter
+echo "picture one" > shot1.png
+echo "picture two" > shot2.png
+echo "boot ok" > boot.log
+echo "Rover notes" > notes.md
+mkdir old-stuff
+echo "draft" > old-stuff/a.txt
+--- solution
+mkdir images logs docs
+mv shot1.png images/
+mv shot2.png images/
+mv boot.log logs/
+mv notes.md README.md
+cp README.md docs/
+mv old-stuff archive
+--- hint
+Make the three new folders first. One `mkdir` can make all of them.
+--- hint
+Moving into a folder keeps the name, and moving to a new name renames. The same `mv` renames a folder.
+--- hint
+Rename `notes.md` first, then copy `README.md` into `docs`.
+--- check shell | The pictures are in images
+file images/shot1.png == picture one
+file images/shot2.png == picture two
+missing shot1.png
+missing shot2.png
+--- check shell | The log is in logs
+file logs/boot.log == boot ok
+missing boot.log
+--- check shell | notes.md is README.md, with a copy in docs
+file README.md == Rover notes
+file docs/README.md == Rover notes
+missing notes.md
+--- check shell | old-stuff is now archive
+file archive/a.txt == draft
+missing old-stuff
 
 === term-06 | Deleting
 --- teach
@@ -502,6 +1178,152 @@ missing junk.txt
 missing old
 --- check shell | keep.txt is still there
 file keep.txt
+
++++ practice | Clear the temp files
+--- task
+Delete the files `temp1.txt` and `temp2.txt`. Keep `data.csv` exactly as it is.
+--- starter
+touch temp1.txt
+touch temp2.txt
+echo "a,b" > data.csv
+--- solution
+rm temp1.txt
+rm temp2.txt
+--- hint
+Removing a file is `rm` and the file's name.
+--- hint
+One `rm` for each temp file. Leave `data.csv` out of it.
+--- check shell | temp1.txt is gone
+missing temp1.txt
+--- check shell | temp2.txt is gone
+missing temp2.txt
+--- check shell | data.csv is untouched
+file data.csv == a,b
+
++++ practice | The safe way
+--- task
+Remove the empty folder `old-builds` with `rmdir`, the command that refuses to delete a folder that is not empty. Leave `src`, and what is in it, alone.
+--- starter
+mkdir old-builds
+mkdir src
+echo "main" > src/app.txt
+--- solution
+rmdir old-builds
+--- hint
+`rmdir` takes the folder's name, just like `mkdir` does.
+--- check shell | old-builds is gone
+missing old-builds
+--- check shell | You used rmdir
+ran rmdir old-builds
+--- check shell | src is untouched
+file src/app.txt == main
+
++++ practice | Save it, then clear it
+--- task
+Copy `logs/today.log` into the `archive` folder, keeping its name. Then delete the whole `logs` folder, with everything in it.
+--- starter
+mkdir logs
+mkdir archive
+echo "10:00 boot" > logs/today.log
+echo "09:00 old" > logs/yesterday.log
+--- solution
+cp logs/today.log archive/
+rm -r logs
+--- hint
+Copy first, while the file still exists. A path works as the source of `cp`.
+--- hint
+The `logs` folder is not empty, so `rm` needs the flag that means "all the way down".
+--- check shell | The archive has today's log
+file archive/today.log == 10:00 boot
+--- check shell | logs is gone
+missing logs
+--- check shell | Only today's log was saved
+missing archive/yesterday.log
+
++++ practice | A name with a space
+--- task
+There is a file whose name has a space in it: `old report.txt`. Delete it. Careful: there are also two other files, called `old` and `report.txt`, and both must survive. Typed without protection, `rm old report.txt` would delete those two instead.
+--- starter
+touch "old report.txt"
+echo "keep me" > old
+echo "keep me too" > report.txt
+--- solution
+rm "old report.txt"
+--- hint
+The shell splits what you type at spaces. The name has to reach `rm` as one piece.
+--- hint
+Double quotes keep text together as one piece, for file names as well as for `echo`.
+--- check shell | old report.txt is gone
+count old?report.txt == 0
+--- check shell | The file old survived
+file old == keep me
+--- check shell | The file report.txt survived
+file report.txt == keep me too
+
++++ practice | Delete only what you meant
+--- task
+A teammate wanted to clear out `test-output`, the folder of old test results, and typed `rm -r test`. That deletes the wrong folder: `test` holds the real tests. Type the command they meant, so that only `test-output` goes.
+--- starter
+mkdir test
+mkdir test-output
+echo "check 1" > test/unit.txt
+echo "junk" > test-output/run1.txt
+--- solution
+rm -r test-output
+--- hint
+The folder's full name has to follow `rm -r`, letter by letter.
+--- check shell | test-output is gone
+missing test-output
+--- check shell | The real tests survived
+file test/unit.txt == check 1
+--- check shell | You removed the right folder
+ran rm -r test-output
+
++++ practice | Spring cleaning
+--- task
+Clean up the project before handing it over:
+
+- delete the `build` folder and everything in it
+- delete the file `tmp.log`
+- remove `dist`, which is empty, with `rmdir`
+- remove `empty-a`, which holds only the empty folder `empty-b`, using only `rmdir`. It refuses a folder that is not empty, so think about the order.
+- keep `src` exactly as it is
+
+Finish with `ls`. It should show only `src/`.
+--- starter
+mkdir -p build/cache
+mkdir dist
+mkdir -p src/lib
+mkdir -p empty-a/empty-b
+echo "binary" > build/app.bin
+echo "cached" > build/cache/c1
+echo "temp" > tmp.log
+echo "code" > src/lib/util.txt
+--- solution
+rm -r build
+rm tmp.log
+rmdir dist
+rmdir empty-a/empty-b
+rmdir empty-a
+ls
+--- hint
+Three kinds of deleting: `rm` for a file, `rm -r` for a full folder, `rmdir` for an empty folder.
+--- hint
+`empty-a` is not empty while `empty-b` is inside it. Remove the inner one first, with a path.
+--- check shell | build and tmp.log are gone
+missing build
+missing tmp.log
+--- check shell | dist is gone
+missing dist
+--- check shell | empty-a went with rmdir, inner folder first
+ran rmdir empty-a/empty-b
+ran rmdir empty-a
+missing empty-a
+--- check shell | src is untouched
+file src/lib/util.txt == code
+--- check shell | ls shows only src
+ran ls
+last-printed-exactly src/
 
 === term-07 | Looking inside files
 --- teach
@@ -644,6 +1466,168 @@ ran grep
 printed 09:02 ERROR valve 3 stuck
 printed 09:04 ERROR telemetry dropout
 
++++ practice | Top and bottom of the readings
+--- task
+`temps.csv` holds one temperature reading per line, oldest first. Show the first 3 readings with `head`. Then show the last 2 readings with `tail`.
+--- starter
+echo "06:00,18.2" > temps.csv
+echo "07:00,19.0" >> temps.csv
+echo "08:00,20.4" >> temps.csv
+echo "09:00,22.1" >> temps.csv
+echo "10:00,23.8" >> temps.csv
+echo "11:00,25.0" >> temps.csv
+echo "12:00,26.3" >> temps.csv
+echo "13:00,26.9" >> temps.csv
+--- solution
+head -n 3 temps.csv
+tail -n 2 temps.csv
+--- hint
+`head` takes lines from the top and `tail` from the bottom. The flag `-n` and a number say how many.
+--- hint
+Put the flag and the number before the file name.
+--- check shell | You used head and tail
+ran head
+ran tail
+--- check shell | head showed exactly the first three readings
+printed-exactly 06:00,18.2\n07:00,19.0\n08:00,20.4
+--- check shell | tail showed exactly the last two readings
+printed-exactly 12:00,26.3\n13:00,26.9
+
++++ practice | Which steps touch a valve
+--- task
+`checklist.txt` is a list of launch steps, one per line. Show every step that mentions `valve`, each with its line number in front. Then count how many steps the whole checklist has, with `wc -l`.
+--- starter
+echo "power on" > checklist.txt
+echo "open valve A" >> checklist.txt
+echo "check pressure" >> checklist.txt
+echo "start pumps" >> checklist.txt
+echo "close valve A" >> checklist.txt
+echo "open valve B" >> checklist.txt
+echo "radio check" >> checklist.txt
+--- solution
+grep -n valve checklist.txt
+wc -l checklist.txt
+--- hint
+`grep` finds lines. One of its flags puts the line number in front of each match.
+--- hint
+The flag for line numbers is `-n`. For the count, `wc` needs the flag for lines.
+--- check shell | You showed the three valve steps with their numbers
+printed-exactly 2:open valve A\n5:close valve A\n6:open valve B
+--- check shell | You counted the steps
+ran wc -l
+printed-line 7 checklist.txt
+--- check shell | You searched with grep
+ran grep
+
++++ practice | Save the errors, then count them
+--- task
+Put every line of `server.log` that contains `ERROR` into a new file called `errors.txt`, using `grep` and `>`. Then count the lines in `errors.txt` with `wc -l`.
+--- starter
+echo "08:00 INFO start" > server.log
+echo "08:01 ERROR disk slow" >> server.log
+echo "08:02 INFO request ok" >> server.log
+echo "08:03 ERROR timeout" >> server.log
+echo "08:04 INFO request ok" >> server.log
+echo "08:05 INFO request ok" >> server.log
+echo "08:06 ERROR timeout" >> server.log
+echo "08:07 INFO stop" >> server.log
+--- solution
+grep ERROR server.log > errors.txt
+wc -l errors.txt
+--- hint
+`>` works after any command that prints, not only `echo`. It sends what `grep` would have shown into a file.
+--- hint
+Count the new file, not the log: `wc -l errors.txt`.
+--- check shell | errors.txt holds exactly the three error lines
+file errors.txt ~= 08:01 ERROR disk slow\n08:03 ERROR timeout\n08:06 ERROR timeout
+--- check shell | You counted errors.txt
+ran wc -l errors.txt
+printed-line 3 errors.txt
+--- check shell | The log itself was not changed
+file server.log lines == 8
+
++++ practice | Two words, one search
+--- task
+`valves.log` is a log of valve events. Show only the lines about `valve 3`, with their line numbers in front. The text you search for has a space in it, and `grep` treats everything after the first space as the name of a file to search, unless you keep the text together.
+--- starter
+echo "09:00 valve 2 open" > valves.log
+echo "09:01 valve 3 stuck" >> valves.log
+echo "09:02 valve 3 reset" >> valves.log
+echo "09:03 check valve 7" >> valves.log
+--- solution
+grep -n "valve 3" valves.log
+--- hint
+Double quotes keep several words together as one piece of text.
+--- hint
+Quote the search text, and use the flag for line numbers.
+--- check shell | The first valve 3 line, with its number
+printed-line 2:09:01 valve 3 stuck
+--- check shell | The second valve 3 line, with its number
+printed-line 3:09:02 valve 3 reset
+--- check shell | Only those two lines, in one search
+printed-exactly 2:09:01 valve 3 stuck\n3:09:02 valve 3 reset
+
++++ practice | The search that found nothing
+--- task
+A teammate typed `grep warning engine.log` to find the warnings, and it printed nothing. The log does have warnings, but they are written as `WARNING` and `Warning`. Fix the search so that it shows both warning lines, and nothing else.
+--- starter
+echo "10:00 INFO ignition" > engine.log
+echo "10:01 WARNING chamber temp high" >> engine.log
+echo "10:02 INFO throttle 80" >> engine.log
+echo "10:03 Warning vibration" >> engine.log
+echo "10:04 INFO shutdown" >> engine.log
+--- solution
+grep -i warning engine.log
+--- hint
+`grep` cares about capital and small letters, so `warning` does not match `WARNING`.
+--- hint
+One flag tells `grep` to ignore case.
+--- check shell | Both warnings, and only them, in one search
+printed-exactly 10:01 WARNING chamber temp high\n10:03 Warning vibration
+--- check shell | The capitals version was found
+printed-line 10:01 WARNING chamber temp high
+--- check shell | The mixed-case version was found
+printed-line 10:03 Warning vibration
+
++++ practice | Alarm report
+--- task
+`sensors.log` has one reading per line. Some lines are alarms, written as `ALARM` or as `alarm`. Do three things:
+
+1. Save every alarm line, whatever its capitals, into a new file `alarms.txt`.
+2. Print how many alarms there were with `wc -l alarms.txt`.
+3. Show the first alarm on its own, then the last alarm on its own, using `head` and `tail` on `alarms.txt`.
+--- starter
+echo "00:00 temp 20 ok" > sensors.log
+echo "00:10 temp 21 ok" >> sensors.log
+echo "00:20 ALARM temp 45" >> sensors.log
+echo "00:30 temp 22 ok" >> sensors.log
+echo "00:40 pressure 101 ok" >> sensors.log
+echo "00:50 alarm pressure 140" >> sensors.log
+echo "01:00 temp 23 ok" >> sensors.log
+echo "01:10 ALARM temp 47" >> sensors.log
+echo "01:20 pressure 102 ok" >> sensors.log
+echo "01:30 alarm door open" >> sensors.log
+echo "01:40 temp 21 ok" >> sensors.log
+--- solution
+grep -i alarm sensors.log > alarms.txt
+wc -l alarms.txt
+head -n 1 alarms.txt
+tail -n 1 alarms.txt
+--- hint
+Step 1 is a search that ignores case, sent into a file with `>`.
+--- hint
+Once `alarms.txt` exists, it is a file like any other: `wc`, `head` and `tail` all work on it.
+--- hint
+One line from the top is `head -n 1`, and one from the bottom is `tail -n 1`.
+--- check shell | alarms.txt holds all four alarms, in order
+file alarms.txt ~= 00:20 ALARM temp 45\n00:50 alarm pressure 140\n01:10 ALARM temp 47\n01:30 alarm door open
+--- check shell | You counted them
+printed-line 4 alarms.txt
+--- check shell | You showed the first alarm on its own
+printed-exactly 00:20 ALARM temp 45
+--- check shell | You showed the last alarm on its own
+printed-exactly 01:30 alarm door open
+
 === term-08 | Chaining and appending
 --- teach
 Last lesson you looked inside files with `head`, `tail`, `wc` and `grep`. This lesson adds two small tools for writing commands and files: one joins commands into a sequence, the other adds to a file without wiping it.
@@ -739,6 +1723,153 @@ cwd logs
 file logs/todo.txt contains buy fuel
 file logs/todo.txt contains check engines
 used >>
+
++++ practice | A three-line packing list
+--- task
+In the folder `gear`, build a file `packing.txt` with exactly three lines, in this order: `helmet`, `gloves`, `oxygen tank`. Start the file with `>` and add the other two lines with `>>`. Then show it with `cat`.
+--- starter
+mkdir gear
+--- solution
+echo "helmet" > gear/packing.txt
+echo "gloves" >> gear/packing.txt
+echo "oxygen tank" >> gear/packing.txt
+cat gear/packing.txt
+--- hint
+One greater-than sign starts a file fresh. Two add a line to its end.
+--- hint
+Use the path `gear/packing.txt` every time, or move into `gear` first.
+--- check shell | packing.txt has the three lines, in order
+file gear/packing.txt ~= helmet\ngloves\noxygen tank
+--- check shell | You appended with >>
+used >>
+--- check shell | You showed the list
+printed-exactly helmet\ngloves\noxygen tank
+
++++ practice | Add to the log
+--- task
+`mission.log` already holds two events. Add a third line to the end, `10:05 docking complete`, without losing the first two. Then count the lines with `wc -l`, to check there are now 3.
+--- starter
+echo "10:00 undocking" > mission.log
+echo "10:02 thrusters on" >> mission.log
+--- solution
+echo "10:05 docking complete" >> mission.log
+wc -l mission.log
+--- hint
+One arrow would wipe the two events. You want the arrows that add.
+--- hint
+Two greater-than signs, then the file name. Then `wc -l mission.log`.
+--- check shell | All three events, in order
+file mission.log ~= 10:00 undocking\n10:02 thrusters on\n10:05 docking complete
+--- check shell | You counted the lines
+ran wc -l
+printed-line 3 mission.log
+--- check shell | You appended with >>
+used >>
+
++++ practice | Errors from two days
+--- task
+Collect the lines containing `ERROR` from `monday.log` and from `tuesday.log` into one file, `all-errors.txt`: Monday's errors first, then Tuesday's. Use `grep` with `>` for Monday and `grep` with `>>` for Tuesday.
+--- starter
+echo "MON 09:00 INFO start" > monday.log
+echo "MON 09:10 ERROR fan stopped" >> monday.log
+echo "MON 09:20 INFO fan restarted" >> monday.log
+echo "TUE 09:00 INFO start" > tuesday.log
+echo "TUE 09:15 ERROR low voltage" >> tuesday.log
+echo "TUE 09:30 ERROR fan stopped" >> tuesday.log
+--- solution
+grep ERROR monday.log > all-errors.txt
+grep ERROR tuesday.log >> all-errors.txt
+--- hint
+`>` and `>>` work after `grep` exactly as they do after `echo`.
+--- hint
+The first search starts the file. The second adds to its end.
+--- check shell | all-errors.txt has all three errors, Monday first
+file all-errors.txt ~= MON 09:10 ERROR fan stopped\nTUE 09:15 ERROR low voltage\nTUE 09:30 ERROR fan stopped
+--- check shell | Nothing but errors
+file all-errors.txt excludes INFO
+file all-errors.txt lines == 3
+--- check shell | Tuesday was appended
+used >>
+
++++ practice | Start fresh
+--- task
+`week/todo.txt` holds two stale lines from last week. Make it hold exactly these two lines, in this order, and nothing from last week: `refuel`, then `test radio`.
+--- starter
+mkdir week
+echo "old task 1" > week/todo.txt
+echo "old task 2" >> week/todo.txt
+--- solution
+echo "refuel" > week/todo.txt
+echo "test radio" >> week/todo.txt
+--- hint
+Appending both lines would keep last week's lines above them.
+--- hint
+The first new line has to wipe the file, and the second has to add to it.
+--- check shell | todo.txt holds exactly the two new lines
+file week/todo.txt ~= refuel\ntest radio
+--- check shell | Nothing from last week is left
+file week/todo.txt excludes old task
+--- check shell | Exactly two lines
+file week/todo.txt lines == 2
+
++++ practice | Only if it worked
+--- task
+A teammate wrote `cd deploy ; rm old.txt` to delete the `old.txt` inside a `deploy` folder. On this computer there is no `deploy` folder. So `cd` fails, the semicolon runs `rm` anyway, and it deletes the `old.txt` in `project`, which is important.
+
+Rewrite the line so that `rm` runs only if `cd` worked, and run it, as one line. Here the `cd` fails, so the right result is that nothing gets deleted.
+--- starter
+echo "important" > old.txt
+--- solution
+cd deploy && rm old.txt
+--- hint
+You need the joiner that means "and then, only if that worked".
+--- hint
+Replace the semicolon with two ampersands.
+--- check shell | The important old.txt survived
+file old.txt == important
+--- check shell | You wrote both steps, joined with &&
+used &&
+ran cd deploy
+ran rm old.txt
+--- check shell | You are still in project
+cwd .
+
++++ practice | A launch report
+--- task
+Build a file `report.txt` that looks exactly like this:
+
+```
+== ERRORS ==
+T-45 ERROR sensor 4 offline
+T-10 ERROR gimbal slow
+== LAST EVENT ==
+T-0 INFO liftoff
+```
+
+Take the error lines from `flight.log` with `grep`, and the last event with `tail`, instead of typing them. Use `>` only once, for the first line, and `>>` for everything after it.
+--- starter
+echo "T-60 INFO fueling" > flight.log
+echo "T-45 ERROR sensor 4 offline" >> flight.log
+echo "T-30 INFO sensor 4 back" >> flight.log
+echo "T-10 ERROR gimbal slow" >> flight.log
+echo "T-0 INFO liftoff" >> flight.log
+--- solution
+echo "== ERRORS ==" > report.txt
+grep ERROR flight.log >> report.txt
+echo "== LAST EVENT ==" >> report.txt
+tail -n 1 flight.log >> report.txt
+--- hint
+Build the file top to bottom, one command per part: a heading, the errors, a heading, the last event.
+--- hint
+`>>` works after `grep` and `tail` as well as after `echo`.
+--- hint
+The last event is the last line of the log: `tail -n 1`.
+--- check shell | report.txt looks exactly right
+file report.txt ~= == ERRORS ==\nT-45 ERROR sensor 4 offline\nT-10 ERROR gimbal slow\n== LAST EVENT ==\nT-0 INFO liftoff
+--- check shell | The errors came from grep
+ran grep
+--- check shell | The last event came from tail
+ran tail
 
 === term-09 | Hidden files, and the long listing
 --- teach
@@ -837,6 +1968,138 @@ printed .env
 --- check shell | You used the long listing
 printed -rw-r--r--
 
++++ practice | What is hiding here
+--- task
+List everything in `project`, hidden names included.
+--- starter
+mkdir src
+touch app.py
+echo "node_modules" > .gitignore
+echo "DEBUG=1" > .env
+--- solution
+ls -a
+--- hint
+Plain `ls` skips names that start with a dot. One flag shows all of them.
+--- check shell | You found .gitignore
+printed .gitignore
+--- check shell | You found .env
+printed .env
+--- check shell | The visible names are there too
+printed app.py
+printed src
+
++++ practice | How big is it
+--- task
+Find the size of `readings.csv`, in bytes, using the long listing. Then write just that number into a new file called `size.txt`, with `echo` and `>`.
+--- starter
+echo "0,100" > readings.csv
+echo "1,250" >> readings.csv
+echo "2,475" >> readings.csv
+--- solution
+ls -l
+echo "18" > size.txt
+--- hint
+The long listing shows the size in bytes, just before each name.
+--- hint
+`ls -l` shows it. Then `echo` that number into `size.txt`.
+--- check shell | size.txt holds the right size
+file size.txt == 18
+--- check shell | You used the long listing
+printed -rw-r--r--
+--- check shell | The listing showed readings.csv
+printed readings.csv
+
++++ practice | A hidden settings folder
+--- task
+Make a hidden folder called `.config`. Inside it, make a file called `settings` that holds exactly `theme=dark`. Then show that `.config` is really there, with `ls -a`.
+--- starter
+touch main.py
+--- solution
+mkdir .config
+echo "theme=dark" > .config/settings
+ls -a
+--- hint
+A name that starts with a dot is hidden. You make it the same way as any other folder.
+--- hint
+Write the file with a path after `>`: `.config/settings`. Plain `ls` will not show the folder, but `ls -a` will.
+--- check shell | .config/settings holds the setting
+file .config/settings == theme=dark
+--- check shell | The listing showed .config
+ran ls -a
+printed .config
+--- check shell | .config is a folder
+dir .config
+
++++ practice | Sizes of hidden and empty files
+--- task
+Make a file `sizes.txt` with two lines: on the first, the size in bytes of the hidden file `.token`; on the second, the size in bytes of `empty.txt`. Read both sizes from a long listing. Keep in mind that `ls -l` on its own leaves hidden files out.
+--- starter
+echo "abc123" > .token
+touch empty.txt
+mkdir data
+--- solution
+ls -la
+echo "7" > sizes.txt
+echo "0" >> sizes.txt
+--- hint
+You need the long listing and the hidden names at once. Flags can share one dash.
+--- hint
+`ls -la` shows both files with their sizes. An empty file has a size too. Write the first number with `>` and the second with `>>`.
+--- check shell | sizes.txt holds both sizes, in order
+file sizes.txt ~= 7\n0
+--- check shell | Exactly two lines
+file sizes.txt lines == 2
+--- check shell | The listing showed the hidden file
+printed .token
+
++++ practice | The missing file
+--- task
+A teammate ran `ls -l` to check the settings file `.env`, did not see it, and decided it was missing. It is there. Type the listing they should have used: the long listing, with hidden files included.
+--- starter
+echo "KEY=abc" > .env
+echo "x" > main.py
+--- solution
+ls -la
+--- hint
+The long listing hides dot names too. You need a second flag.
+--- hint
+Put both letters after one dash.
+--- check shell | The long line for .env shows its size
+printed-line -rw-r--r--  you      8  .env
+--- check shell | The long line for main.py is there too
+printed-line -rw-r--r--  you      2  main.py
+--- check shell | Hidden entries are listed
+printed ../
+
++++ practice | Files or folders
+--- task
+Some names here are folders and some are files, and a few are hidden. Use a long listing that includes hidden names to tell them apart. Then write the names of the folders only into a new file `folders.txt`, one per line, in the order the listing shows them. Leave out `.` and `..`, and leave off the slash at the end of each name.
+--- starter
+mkdir data
+mkdir run
+mkdir .cache
+touch data.bak
+touch notes
+touch .profile
+--- solution
+ls -la
+echo ".cache" > folders.txt
+echo "data" >> folders.txt
+echo "run" >> folders.txt
+--- hint
+The very first character of each long line says what it is: `d` for a folder, a dash for a file.
+--- hint
+There are three folders, and one of them is hidden. Write the first name with `>` and the rest with `>>`.
+--- check shell | folders.txt lists the three folders, in listing order
+file folders.txt ~= .cache\ndata\nrun
+--- check shell | No files crept in
+file folders.txt excludes notes
+file folders.txt excludes .profile
+file folders.txt excludes bak
+--- check shell | You used a long listing with hidden names
+printed .profile
+printed drwxr-xr-x
+
 === term-10 | Getting home, and back again
 --- teach
 Last lesson you used `ls -a` and `ls -l` to see everything in a folder. This last lesson of the basics course is about moving around fast. Deep inside a project, typing `cd ../../..` over and over gets tiring. Three shortcuts fix that.
@@ -928,3 +2191,627 @@ printed-line /home/you
 --- check shell | You came back with cd -
 ran cd -
 cwd src/app/components
+
++++ practice | A quick trip home
+--- task
+You are in `mission/logs`. Go to your home folder, make a folder called `downloads` there, then come straight back to `mission/logs` with `cd -`.
+--- starter
+mkdir -p mission/logs
+cd mission/logs
+--- solution
+cd ~
+mkdir downloads
+cd -
+--- hint
+The tilde, `~`, is home. `mkdir` makes the folder wherever you are standing.
+--- hint
+`cd ~`, then make the folder, then `cd -` to go back.
+--- check shell | downloads is in your home folder
+dir ~/downloads
+--- check shell | Not in mission/logs
+missing mission/logs/downloads
+--- check shell | You came back with cd -
+ran cd -
+cwd mission/logs
+
++++ practice | Far and back
+--- task
+You are in `ground/antenna`. Jump to `rocket/stage1` with one `cd` and its absolute path. Write `ready` into a new file `check.txt` there. Then return to `ground/antenna` with `cd -`.
+--- starter
+mkdir -p ground/antenna
+mkdir -p rocket/stage1
+cd ground/antenna
+--- solution
+cd /home/you/project/rocket/stage1
+echo "ready" > check.txt
+cd -
+--- hint
+An absolute path starts with a slash and spells out every folder from the top: `/home/you/project/...`.
+--- hint
+Once you are in `stage1`, write the file with `echo` and `>`. Then `cd -` takes you back.
+--- check shell | check.txt is in rocket/stage1
+file rocket/stage1/check.txt == ready
+--- check shell | You jumped with the absolute path
+ran cd /home/you/project/rocket/stage1
+--- check shell | cd - brought you back
+ran cd -
+printed-line ~/project/ground/antenna
+cwd ground/antenna
+
++++ practice | Copy from anywhere
+--- task
+You are deep in `lab/deep/inside`. Without moving, copy `reports/q3.txt` from `project` into the `backup` folder in your home folder. Use paths that start with `~` for both. Then check with `cat` that the copy is there, again with a `~` path.
+--- starter
+mkdir -p reports
+mkdir -p lab/deep/inside
+mkdir ~/backup
+echo "Q3: on target" > reports/q3.txt
+cd lab/deep/inside
+--- solution
+cp ~/project/reports/q3.txt ~/backup/
+cat ~/backup/q3.txt
+--- hint
+A path that starts with `~` works from anywhere, so you do not have to move.
+--- hint
+The source is `~/project/reports/q3.txt`. The destination is the folder `~/backup/`.
+--- check shell | The copy is in ~/backup
+file ~/backup/q3.txt == Q3: on target
+--- check shell | You did not move
+cwd lab/deep/inside
+--- check shell | You read the copy back with a ~ path
+ran cat ~/backup/q3.txt
+printed-line Q3: on target
+
++++ practice | Only one step back
+--- task
+You start in `alpha`. Go to `beta` with `cd ../beta`, then to `gamma` with `cd ../gamma`. Now go back to `beta` with `cd -`. Finally, get back to `alpha`, where you started.
+
+`cd -` remembers only one step, so pressing it again would take you to `gamma`. Reach `alpha` another way.
+--- starter
+mkdir alpha
+mkdir beta
+mkdir gamma
+cd alpha
+--- solution
+cd ../beta
+cd ../gamma
+cd -
+cd ../alpha
+--- hint
+After `cd -` takes you to `beta`, the folder it remembers is `gamma`, the one you just left.
+--- hint
+From `beta`, `alpha` is up one level and then down into `alpha`, the same kind of path you used to get to `beta`.
+--- check shell | You went to gamma on the way
+ran cd ../gamma
+--- check shell | cd - took you back to beta
+ran cd -
+printed-line ~/project/beta
+--- check shell | You ended in alpha
+cwd alpha
+
++++ practice | Works from anywhere
+--- task
+A script used `cd logs` to reach the `logs` folder in `project`. That worked when the script started in `project`. This time it starts in your home folder, and `cd logs` fails. Type a `cd` that reaches `project/logs` from anywhere, using an absolute path, the kind that starts with a slash. Then show `boot.log` with `cat`.
+--- starter
+mkdir logs
+echo "boot ok" > logs/boot.log
+cd
+--- solution
+cd /home/you/project/logs
+cat boot.log
+--- hint
+A relative path depends on where you start. An absolute path gives the whole address.
+--- hint
+The whole address starts `/home/you`, then `project`, then `logs`.
+--- check shell | You used the absolute path
+used /home/you/project/logs
+--- check shell | You are in logs
+cwd logs
+--- check shell | You showed boot.log
+printed-line boot ok
+
++++ practice | Carry the results home
+--- task
+You are in `lab/experiments/run-7`, and `results.txt` there holds the results. Do all of this, in order:
+
+1. Copy `results.txt` into your home folder with the new name `run-7-results.txt`, using a path that starts with `~`.
+2. Go home, and list what is there with `ls`, to see the copy.
+3. Come back to `run-7` with `cd -`.
+4. Delete the original `results.txt`, now that the copy is safe.
+--- starter
+mkdir -p lab/experiments/run-7
+echo "peak 88.1" > lab/experiments/run-7/results.txt
+cd lab/experiments/run-7
+--- solution
+cp results.txt ~/run-7-results.txt
+cd ~
+ls
+cd -
+rm results.txt
+--- hint
+The destination of `cp` can be a path with a new name at the end: `~/` and then the new name.
+--- hint
+After listing your home folder, `cd -` takes you back to `run-7`. Then `rm` the original there.
+--- check shell | The copy is in your home folder
+file ~/run-7-results.txt == peak 88.1
+--- check shell | You listed your home folder and saw it
+printed run-7-results.txt
+--- check shell | You came back with cd -
+ran cd -
+cwd lab/experiments/run-7
+--- check shell | The original is gone
+missing lab/experiments/run-7/results.txt
+
+=== term-gate | Linux and the command line: mastery gate
+--- teach
+This gate covers the whole course: moving around with paths, making, copying, moving and deleting files and folders, looking inside files with `head`, `tail`, `wc` and `grep`, joining commands with `&&`, building files with `>` and `>>`, and hidden files with the long listing. Most problems mix several of these. There are 10 problems and 12 questions in 112 minutes. You pass with 7 problems and 9 questions right, and there are no hints. To get ready, redo the practice problems of the lessons that felt hard, without opening their hints.
+--- gate
+pass 7
+questions 9
+minutes 112
+
++++ problem | Set up a ground station
+--- task
+Starting in `project`, build exactly this:
+
+- the folders `station/logs` and `station/config`
+- a file `station/config/radio.cfg` with two lines, in this order: `freq=437.5`, then `power=low`
+
+Finish inside `station/logs`.
+--- starter
+--- solution
+mkdir -p station/logs station/config
+echo "freq=437.5" > station/config/radio.cfg
+echo "power=low" >> station/config/radio.cfg
+cd station/logs
+--- check shell | Both folders exist
+dir station/logs
+dir station/config
+--- check shell | radio.cfg holds both lines, in order
+file station/config/radio.cfg ~= freq=437.5\npower=low
+--- check shell | You finished in station/logs
+cwd station/logs
+--- check shell | Nothing loose in project
+missing radio.cfg
+missing logs
+
++++ problem | Triage a server log
+--- task
+Make a file `triage.txt` that holds, in this order:
+
+1. every line of `server.log` that contains `error`, in any capitals, each with its line number in front, the way `grep` shows line numbers
+2. then the last 2 lines of `server.log`
+
+Then print how many lines `triage.txt` has, with `wc -l`.
+--- starter
+echo "07:00 INFO boot" > server.log
+echo "07:01 ERROR disk full" >> server.log
+echo "07:02 INFO retry" >> server.log
+echo "07:03 error cache miss" >> server.log
+echo "07:04 INFO request ok" >> server.log
+echo "07:05 Error timeout" >> server.log
+echo "07:06 INFO request ok" >> server.log
+echo "07:07 INFO shutdown" >> server.log
+--- solution
+grep -in error server.log > triage.txt
+tail -n 2 server.log >> triage.txt
+wc -l triage.txt
+--- check shell | triage.txt holds the numbered errors, then the last two lines
+file triage.txt ~= 2:07:01 ERROR disk full\n4:07:03 error cache miss\n6:07:05 Error timeout\n07:06 INFO request ok\n07:07 INFO shutdown
+--- check shell | You counted triage.txt
+ran wc -l triage.txt
+printed-line 5 triage.txt
+--- check shell | The log was not changed
+file server.log lines == 8
+
++++ problem | The middle of the countdown
+--- task
+`countdown.txt` has 10 lines. Save lines 4, 5 and 6 of it, and only those, into a new file `middle.txt`. You may make a helper file along the way, but delete it before you finish: at the end, `countdown.txt` and `middle.txt` must be the only things in `project`.
+--- starter
+echo "T-10" > countdown.txt
+echo "T-9" >> countdown.txt
+echo "T-8" >> countdown.txt
+echo "T-7" >> countdown.txt
+echo "T-6" >> countdown.txt
+echo "T-5" >> countdown.txt
+echo "T-4" >> countdown.txt
+echo "T-3" >> countdown.txt
+echo "T-2" >> countdown.txt
+echo "T-1" >> countdown.txt
+--- solution
+head -n 6 countdown.txt > first-six.txt
+tail -n 3 first-six.txt > middle.txt
+rm first-six.txt
+--- check shell | middle.txt holds lines 4 to 6
+file middle.txt ~= T-7\nT-6\nT-5
+--- check shell | countdown.txt is unchanged
+file countdown.txt lines == 10
+--- check shell | No helper file is left behind
+count * == 2
+
++++ problem | Reorganise the archive
+--- task
+Tidy `project` so that:
+
+- a folder `archive/2026` exists
+- `jan.log` and `feb.log` are inside it, renamed to `01.log` and `02.log`
+- `config-backup` is a full copy of the folder `config`, everything inside included, and `config` itself is still there
+- the folder `tmp` is gone, with everything in it
+--- starter
+echo "january" > jan.log
+echo "february" > feb.log
+mkdir -p config/keys
+echo "port=80" > config/server.conf
+echo "k1" > config/keys/main.key
+mkdir -p tmp/cache
+echo "x" > tmp/cache/a
+echo "y" > tmp/b
+--- solution
+mkdir -p archive/2026
+mv jan.log archive/2026/01.log
+mv feb.log archive/2026/02.log
+cp -r config config-backup
+rm -r tmp
+--- check shell | The logs are in the archive, renamed
+file archive/2026/01.log == january
+file archive/2026/02.log == february
+missing jan.log
+missing feb.log
+--- check shell | config-backup is a full copy
+file config-backup/server.conf == port=80
+file config-backup/keys/main.key == k1
+--- check shell | config is still there
+file config/keys/main.key == k1
+--- check shell | tmp is gone
+missing tmp
+
++++ problem | Audit the hidden file
+--- task
+There is exactly one hidden file in `project` (there is also a hidden folder, which does not count). Make a file `audit.txt` with two lines: the hidden file's name on the first, and its size in bytes on the second. Then copy the hidden file into a new folder called `safe`, keeping its name.
+--- starter
+echo "SECRET=42" > .env
+mkdir .cache
+echo "hello" > notes.txt
+echo "1234567890" > big.dat
+--- solution
+ls -la
+echo ".env" > audit.txt
+echo "10" >> audit.txt
+mkdir safe
+cp .env safe/
+--- check shell | audit.txt names the file and its size
+file audit.txt ~= .env\n10
+--- check shell | The hidden file was copied into safe
+file safe/.env == SECRET=42
+--- check shell | The original is still there
+file .env == SECRET=42
+--- check shell | You looked with a long listing
+printed -rw-r--r--
+
++++ problem | Clean up in one line
+--- task
+Type one line, with its steps joined by `&&`, that does this: move into `release`; then delete the `old` folder inside `release`, with everything in it; then make an empty folder called `new` there. You should finish inside `release`. There is another `old` folder, in `project`, and it must not be touched.
+--- starter
+mkdir -p release/old
+mkdir old
+echo "v1" > release/old/app.bin
+echo "keep" > old/keep.txt
+--- solution
+cd release && rm -r old && mkdir new
+--- check shell | release/old is gone and release/new is there
+missing release/old
+dir release/new
+--- check shell | The old folder in project survived
+file old/keep.txt == keep
+--- check shell | The steps were joined with &&
+used && rm -r old
+used && mkdir new
+--- check shell | You finished in release
+cwd release
+
++++ problem | A round trip through the inbox
+--- task
+You are in `site/pages`. Your home folder has a folder `inbox` with a file `draft.txt` in it. Do this, in order:
+
+1. Go to `~/inbox` and add the line `reviewed` to the end of `draft.txt` there, keeping what it already holds.
+2. Come back to `site/pages` with `cd -`.
+3. With one `mv` and a path that starts with `~`, move `draft.txt` out of the inbox into `site/pages`, renamed to `index.txt`.
+--- starter
+mkdir -p ~/inbox
+mkdir -p site/pages
+echo "Welcome aboard" > ~/inbox/draft.txt
+cd site/pages
+--- solution
+cd ~/inbox
+echo "reviewed" >> draft.txt
+cd -
+mv ~/inbox/draft.txt index.txt
+--- check shell | index.txt holds both lines
+file site/pages/index.txt ~= Welcome aboard\nreviewed
+--- check shell | The inbox is empty but still there
+missing ~/inbox/draft.txt
+dir ~/inbox
+--- check shell | You came back with cd -
+ran cd -
+cwd site/pages
+--- check shell | You moved it with a ~ path
+ran mv ~/inbox/draft.txt
+
++++ problem | Assemble the flight manual
+--- task
+The folder `chapters` holds three files. Join `chapters/intro.txt`, `chapters/launch.txt` and `chapters/landing.txt`, in that order, into a new file `manual.txt` in `project`. Add one last line to it, `END OF MANUAL`. Then, as your last command, show every line of `manual.txt` that mentions `abort`, in any capitals, each with its line number in front.
+--- starter
+mkdir chapters
+echo "Welcome to the flight manual." > chapters/intro.txt
+echo "Check fuel before launch." > chapters/launch.txt
+echo "If pressure drops, ABORT the launch." >> chapters/launch.txt
+echo "Deploy the parachutes." > chapters/landing.txt
+echo "Abort landing if wind is high." >> chapters/landing.txt
+--- solution
+cat chapters/intro.txt chapters/launch.txt chapters/landing.txt > manual.txt
+echo "END OF MANUAL" >> manual.txt
+grep -in abort manual.txt
+--- check shell | manual.txt holds the chapters in order, then the last line
+file manual.txt ~= Welcome to the flight manual.\nCheck fuel before launch.\nIf pressure drops, ABORT the launch.\nDeploy the parachutes.\nAbort landing if wind is high.\nEND OF MANUAL
+--- check shell | The search found both abort lines, with their numbers
+last-printed-exactly 3:If pressure drops, ABORT the launch.\n5:Abort landing if wind is high.
+--- check shell | The chapters are unchanged
+file chapters/launch.txt lines == 2
+
++++ problem | Fix the setup commands
+--- task
+A teammate wrote these commands to set up a `data` folder:
+
+```
+mkdir data/raw
+echo "id,value" > data/raw/header.csv
+cp templates data/templates
+echo "setup done" > data/log.txt
+echo "templates copied" > data/log.txt
+```
+
+Some of these lines fail, and one quietly does the wrong thing. Type a fixed version. When you finish:
+
+- `data/raw/header.csv` holds `id,value`
+- `data/templates` is a full copy of `templates`, including the folder inside it
+- `data/log.txt` holds two lines: `setup done`, then `templates copied`
+--- starter
+mkdir -p templates/email
+echo "Hi" > templates/email/welcome.txt
+echo "Bye" > templates/footer.txt
+--- solution
+mkdir -p data/raw
+echo "id,value" > data/raw/header.csv
+cp -r templates data/templates
+echo "setup done" > data/log.txt
+echo "templates copied" >> data/log.txt
+--- check shell | header.csv is in place
+file data/raw/header.csv == id,value
+--- check shell | templates was copied in full
+file data/templates/footer.txt == Bye
+file data/templates/email/welcome.txt == Hi
+--- check shell | log.txt holds both lines, in order
+file data/log.txt ~= setup done\ntemplates copied
+--- check shell | The original templates are still there
+file templates/email/welcome.txt == Hi
+
++++ problem | Take the nest apart
+--- task
+Take apart the folder `nest` completely, without `-r` anywhere. Delete the one file inside it with `rm`: its name, `flight notes.txt`, has a space in it. Then remove every folder in `nest` with `rmdir`, and finish with `rmdir nest`. The files `flight` and `notes.txt` in `project` must survive.
+--- starter
+mkdir -p nest/a/b
+mkdir -p nest/c
+touch "nest/c/flight notes.txt"
+echo "keep" > flight
+echo "keep too" > notes.txt
+--- solution
+rm "nest/c/flight notes.txt"
+rmdir nest/a/b
+rmdir nest/a
+rmdir nest/c
+rmdir nest
+--- check shell | nest is gone
+missing nest
+--- check shell | Every folder went with rmdir
+ran rmdir nest/a/b
+ran rmdir nest/a
+ran rmdir nest/c
+ran rmdir nest
+--- check shell | flight survived
+file flight == keep
+--- check shell | notes.txt survived
+file notes.txt == keep too
+
++++ question | Where the dots land
+--- ask
+You type these lines one after another. What does the last one print?
+
+```
+cd ~/project
+mkdir -p a/b/c
+cd a/b/c
+cd ../..
+pwd
+```
+--- answer
+/home/you/project/a
+~/project/a
+--- why
+`mkdir -p` makes the folders but does not move you. `cd a/b/c` goes three levels down, and `../..` climbs two of them, from `c` to `b` to `a`. `pwd` always prints the full address, `/home/you/project/a`.
+
++++ question | One arrow too few
+--- ask
+What does the last line print?
+
+```
+echo "one" > list.txt
+echo "two" >> list.txt
+echo "three" > list.txt
+wc -l list.txt
+```
+--- answer
+1 list.txt
+1
+--- why
+The third line uses a single `>`, which replaces everything the file held. `one` and `two` are gone, so `list.txt` has one line, `three`, and `wc -l` prints `1 list.txt`.
+
++++ question | What grep matches
+--- ask
+`words.txt` holds these four lines: `fuel`, `GO`, `radio`, `no`. What does `grep -n o words.txt` print?
+--- choice
+```
+2:GO
+3:radio
+4:no
+```
+--- choice correct
+```
+3:radio
+4:no
+```
+--- choice
+```
+1:radio
+2:no
+```
+--- choice
+```
+radio
+no
+```
+--- why
+Without `-i`, `grep` cares about capitals, so the small `o` does not match the capital `O` in `GO`. With `-n`, each match starts with its line number in the whole file (3 and 4), not its place among the matches.
+
++++ question | A semicolon instead of &&
+--- ask
+You are in `project`, and there is no folder called `build`, but there is a folder called `old` in `project`. You type `cd build ; rm -r old`. What happens?
+--- choice
+Nothing: the whole line stops as soon as `cd` fails.
+--- choice correct
+`cd` fails and you stay in `project`, then `rm -r old` still runs and deletes the `old` folder in `project`.
+--- choice
+The shell makes `build` for you, moves in, and deletes nothing, because `build` is empty.
+--- choice
+`rm -r old` asks "are you sure?" first, because `cd` failed.
+--- why
+A semicolon runs the next command whatever happened to the one before. With `cd build && rm -r old`, the failed `cd` would have stopped the `rm`. That is why careful scripts join risky steps with `&&`.
+
++++ question | The file ls does not show
+--- ask
+`.env` is in your folder, but plain `ls` does not list it. Why?
+--- choice
+The file is protected, so only `ls -l` has permission to see it.
+--- choice correct
+`ls` skips every name that starts with a dot unless you add `-a`.
+--- choice
+`.env` is empty, and `ls` leaves out empty files.
+--- choice
+A name that starts with a dot is a folder, and `ls` shows only files.
+--- why
+A dot at the start of a name only means "hidden from a plain listing". Anyone can still read the file. `ls -a` shows it, and `ls -la` shows it in the long listing too, because `-l` alone hides dot names as well.
+
++++ question | Spot the bug in the log
+--- ask
+These lines should leave `logs/2026/day1.log` holding two lines, `boot` then `ready`. Which line is wrong?
+
+```
+1  mkdir -p logs/2026
+2  echo "boot" > logs/2026/day1.log
+3  echo "ready" > logs/2026/day1.log
+4  cat logs/2026/day1.log
+```
+--- choice
+Line 1: `-p` is not needed, and it stops the folders being made.
+--- choice
+Line 2: it should use `>>`, because the file does not exist yet.
+--- choice correct
+Line 3: `>` wipes `boot`. It should be `>>`, to add `ready` underneath.
+--- choice
+Line 4: `cat` cannot read a file two folders down, so it needs a `cd` first.
+--- why
+`>` starts a file fresh and `>>` adds to its end, so the first line of a new file can use either. The second line must use `>>`, or it replaces what is there. Line 1 is right: plain `mkdir` would fail, because `logs` does not exist yet.
+
++++ question | How long wc takes
+--- ask
+`wc -l big.log` takes about one second. The log grows to twice as many lines, all about as long as before. About how long does `wc -l` take now?
+--- choice
+About one second. It reads the line count from a note the system keeps about the file.
+--- choice correct
+About two seconds. It reads every character to count the line endings, so the time grows in step with the file: O(n), linear.
+--- choice
+About four seconds. It compares every line with every other line: O(n²), quadratic.
+--- why
+The system does not keep a line count for a file. `wc` has to read the whole file once and count the end-of-line characters, so twice the file means about twice the work. `grep` is the same: it reads every line once.
+
++++ question | rmdir on a full folder
+--- ask
+`photos` holds one file, `moon.jpg`. What happens when you run `rmdir photos`?
+--- choice
+The folder and `moon.jpg` are both deleted.
+--- choice
+`moon.jpg` is deleted, but the folder stays.
+--- choice correct
+It refuses with "Directory not empty", and nothing changes.
+--- choice
+It asks whether to delete `moon.jpg` first.
+--- why
+`rmdir` only removes empty folders, and it never asks: it simply refuses. That makes it the safe choice when you believe a folder is empty. To delete a folder with everything in it, you need `rm -r`.
+
++++ question | A path that works from anywhere
+--- ask
+You want one `cd` command that reaches the folder `src` inside `project`, no matter which folder you are in when you type it. Which of these work? Pick every one that does.
+--- choice
+`cd /src`
+--- choice
+`cd src`
+--- choice correct
+`cd ~/project/src`
+--- choice correct
+`cd /home/you/project/src`
+--- choice
+`cd ../src`
+--- why
+A path that starts with `~` or `/` names the same place wherever you stand. `/src` means a folder called `src` at the very top of the computer, not in `project`. `src` and `../src` are relative paths: they work only from `project`, or from a folder next to `src`.
+
++++ question | What cd - prints
+--- ask
+You type these three lines. What does the last one print?
+
+```
+cd ~/project
+cd /home/you
+cd -
+```
+--- answer
+~/project
+/home/you/project
+--- why
+`cd -` goes back to the folder you were in before your last `cd`, here `project`, and prints where it landed. This terminal writes your home folder as `~`, so it prints `~/project`.
+
++++ question | Copying onto a file that exists
+--- ask
+`b.txt` holds important notes. You run `cp a.txt b.txt`. What happens to `b.txt`?
+--- choice
+Nothing: `cp` stops with "File exists".
+--- choice
+`cp` asks whether to replace it.
+--- choice
+The contents of `a.txt` are added to the end of `b.txt`.
+--- choice correct
+It is replaced by a copy of `a.txt`, without a warning, and the notes are gone.
+--- why
+`cp` and `mv` replace a destination that already exists, and they do not ask. That is why it pays to run `ls` before copying, and why source first, destination second, matters so much.
+
++++ question | What the 4096 means
+--- ask
+A long listing shows `drwxr-xr-x  you   4096  logs/`. What does `4096` tell you?
+--- choice
+The files inside `logs` add up to 4096 bytes.
+--- choice
+There are 4096 files inside `logs`.
+--- choice correct
+Very little: it is the size of the small record the system keeps about the folder, and it is the same however much the folder holds.
+--- choice
+Anyone may read `logs`, because 4096 is its permission number.
+--- why
+For a file, the size column is the file's size in bytes. For a folder, it is the size of the folder's own record, usually 4096, not the size of what is inside. The `d` at the start tells you `logs` is a folder, and the nine letters after it are the permissions.

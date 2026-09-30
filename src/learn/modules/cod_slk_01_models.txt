@@ -1,0 +1,1110 @@
+@track python
+@course mod-cod_slk_01_models
+@module cod_slk_01_models
+@title Simulink block diagrams and first models: practice and test
+
+=== slk01-l01 | Practice: The Simulink Editor, the Library Browser and block search
+--- for
+l01-the-simulink-editor
+
++++ question | A script that never sets the stop time
+--- ask
+This script builds a model and runs it. It never sets the stop time.
+
+```matlab
+mdl = 'coolant';
+new_system(mdl);
+add_block('simulink/Sources/Constant', [mdl '/Heating'], 'Value', '3');
+add_block('simulink/Continuous/Integrator', [mdl '/Temp'], ...
+          'InitialCondition', '-6');
+add_block('simulink/Sinks/To Workspace', [mdl '/Log'], ...
+          'VariableName', 'h', 'SaveFormat', 'Timeseries');
+add_line(mdl, 'Heating/1', 'Temp/1');
+add_line(mdl, 'Temp/1', 'Log/1');
+out = sim(mdl);
+out.h.Data(end)
+```
+
+What value is printed?
+--- answer
+24
+24.0
+--- why
+A new model's stop time is 10 s, so the run covers 0 to 10 s. The Integrator starts at its Initial condition, $-6$, and adds up a constant 3 every second: $-6 + 3 \times 10 = 24$. It passes through zero at $t = 2$ s on the way. Leaving the stop time at its default is legal, but a script that means a particular run length should set `StopTime` itself.
+
++++ question | The line that will not draw
+--- ask
+This script should build a descending probe: a sink rate feeding an altitude Integrator, logged to the workspace. One line stops the script with an error. Which one?
+
+```matlab
+mdl = 'probe';                                                   % line 1
+new_system(mdl);                                                 % line 2
+add_block('simulink/Sources/Constant', [mdl '/Sink rate'], 'Value', '-6');     % line 3
+add_block('simulink/Continuous/Integrator', [mdl '/Altitude'], ...
+          'InitialCondition', '1500');                           % line 4
+add_line(mdl, 'Sink rate/1', 'Altitude/1');                      % line 5
+add_block('simulink/Sinks/To Workspace', [mdl '/Log'], 'VariableName', 'h');   % line 6
+add_line(mdl, 'Altitude', 'Log/1');                              % line 7
+```
+--- choice
+Line 3, because a block name may not contain a space.
+--- choice
+Line 5, because `'Sink rate/1'` has a space, so the path cannot be found.
+--- choice correct
+Line 7, because `'Altitude'` has no port number: `add_line` needs `'Altitude/1'`.
+--- choice
+Line 4, because an initial condition must be passed as the number `1500`, not as text.
+--- why
+In `add_line`, each end is a block name followed by `/` and a port number. `'Altitude'` alone names a block, not a port, so the call fails; `'Altitude/1'` is output port 1. Block names may contain spaces, as long as the path matches exactly, so lines 3 and 5 are fine. Parameter values are always passed as text, so `'1500'` in line 4 is correct and a bare `1500` would be the mistake.
+
++++ question | Why the autopilot gets its own file
+--- ask
+A vehicle simulation has grown to 4,000 blocks in one flat .slx file. The lead splits the autopilot, the navigation filter and the dynamics into separate .slx files, each included in a thin top model through a Model block. What is the real reason?
+--- choice
+A referenced model always simulates faster than the same blocks drawn in place, and speed is the whole point.
+--- choice correct
+Each small file can be reviewed, compared between versions, tested and rebuilt on its own, several engineers can work at once, and the Model block's ports form a checked interface.
+--- choice
+A single .slx file cannot hold more than a few hundred blocks, so a big model has to be split.
+--- choice
+Git can show a line-by-line text diff of a small .slx file but not of a large one.
+--- why
+Model reference is about working on the model, not about a size limit. A flat diagram cannot be reviewed or tested piece by piece, and two people cannot edit it at once. Separate files give separate compilation and checked interfaces, the same argument as splitting a C++ program into translation units. A .slx is a compressed package, so Git sees it as one binary file whatever its size; a small model simply makes the MathWorks comparison tool's picture readable.
+
++++ question | Two lines into one port
+--- ask
+An Integrator should add up the sum of two accelerations: one from thrust and one from gravity. You drag the thrust line onto the Integrator's input port, then drag the gravity line onto the same port. What is true?
+--- choice
+Simulink adds the two lines together automatically where they meet.
+--- choice
+The second line quietly replaces the first, and the model runs with gravity only.
+--- choice correct
+An input port accepts only one line. Put a Sum block in front of the Integrator, wire both accelerations into it, and wire the Sum into the Integrator.
+--- choice
+Simulink stacks the two values into a 2-element vector, and the Integrator integrates each one.
+--- why
+An output port can feed many inputs, because a branch is a copy of the same value. An input port can take only one line, because a block cannot guess what two values should mean together: added, subtracted, multiplied or bundled. You say which by placing the block that does it. Here that is a Sum with List of signs `++`.
+
++++ question | A wheel that spins backwards
+--- ask
+A reaction wheel spins at 300 rad/s when friction starts slowing it at a steady 4 rad/s every second. After 50 s it should spin at $300 - 4 \times 50 = 100$ rad/s. This script prints $-200$ instead. Which line is the bug?
+
+```matlab
+mdl = 'wheel';                                                           % line 1
+new_system(mdl);                                                         % line 2
+add_block('simulink/Sources/Constant', [mdl '/Friction'], 'Value', '-4');   % line 3
+add_block('simulink/Continuous/Integrator', [mdl '/Speed']);             % line 4
+add_block('simulink/Sinks/To Workspace', [mdl '/Log'], ...
+          'VariableName', 'w', 'SaveFormat', 'Timeseries');              % line 5
+add_line(mdl, 'Friction/1', 'Speed/1');                                  % line 6
+add_line(mdl, 'Speed/1', 'Log/1');                                       % line 7
+set_param(mdl, 'StopTime', '50');                                        % line 8
+out = sim(mdl);  out.w.Data(end)                                         % line 9
+```
+--- choice
+Line 3: the Value should be `'4'`, because friction is a positive number.
+--- choice correct
+Line 4: the Integrator keeps its default Initial condition of 0. It needs `'InitialCondition', '300'`.
+--- choice
+Line 8: the stop time must be passed as the number `50`.
+--- choice
+Line 9: `Data(end)` is the first logged value, not the last.
+--- why
+From 0 the Integrator adds up $-4$ for 50 s and reaches $-200$, which is exactly the printed number. The missing piece is the starting value: $300 - 200 = 100$. Changing line 3 to `'4'` would give $+200$, still wrong. A wrong initial condition never raises an error, so the only way to catch it is to know the answer you expect.
+
++++ question | Two Integrators in a row
+--- ask
+A model is wired left to right: a Step block with its default settings, a Gain of 4, an Integrator with Initial condition 0, a second Integrator with Initial condition 0, and a To Workspace block. The stop time is 5 s. What is the last logged value?
+--- answer
+32
+32.0
+--- why
+The default Step is 0 until $t = 1$ s and 1 afterwards, so the first Integrator receives 4 from $t = 1$ s. Its output is $4(t - 1)$, a ramp. The second Integrator adds up that ramp: $\int_1^{t} 4(t' - 1)\,dt' = 2(t - 1)^2$. At $t = 5$ s that is $2 \times 4^2 = 32$. Integrating a constant gives a ramp, and integrating a ramp gives a parabola: that is acceleration, then speed, then distance.
+
+=== slk01-l02 | Practice: Signals, lines and the five blocks in every model
+--- for
+l02-signals-and-basic-blocks
+
++++ question | A Sum with a spacer
+--- ask
+A Sum block has List of signs `+|--`. The signals wired to its ports, from the top port down, are 10, 3 and 4. What does it output?
+--- answer
+3
+3.0
+--- why
+The `|` is a spacer: it takes a place around the circle but makes no port. So the block has three ports, with signs $+$, $-$ and $-$ in port order. The output is $10 - 3 - 4 = 3$. The signs belong to the ports, not to the lines, so the order in which the lines are plugged in decides the answer.
+
++++ question | A row gain times a column signal
+--- ask
+A Gain block holds $K = [1\ 2\ 3]$, a 1-by-3 row, and its Multiplication is set to Matrix(K*u). Its input is the 3-element column $u = [4;\ 5;\ 6]$. What comes out?
+--- answer
+32
+32.0
+--- why
+Matrix(K*u) is MATLAB's `*`. A 1-by-3 row times a 3-by-1 column is a 1-by-1 result: $1 \times 4 + 2 \times 5 + 3 \times 6 = 4 + 10 + 18 = 32$. With the default Element-wise(K.*u), the block would instead multiply partners one by one and output the vector $[4,\ 10,\ 18]$. Same block, same numbers, and a different size of answer: that is why the Multiplication setting deserves a glance.
+
++++ question | A gain in the feedback path
+--- ask
+A Step (Step time 0, Final value 1) feeds port 1 of a Sum with List of signs `+-`. The Sum feeds a Gain of 3, the Gain feeds an Integrator with Initial condition 0, and the Integrator's output is $y$. The signal $y$ is also branched through a Gain of 2 into the Sum's port 2. What value does $y$ settle at?
+--- answer
+0.5
+1/2
+0.50
+.5
+--- why
+Read the wiring as an equation: $\dot{y} = 3(u - 2y) = 3u - 6y$. It settles when nothing changes, so $\dot{y} = 0$ and $3u = 6y$, giving $y = u/2 = 0.5$. The time constant is $\frac{1}{6}$ s. A gain in the feedback path changes where the loop settles: the loop drives the Sum's output to zero, so it makes $2y$ equal the command, not $y$.
+
++++ question | A loop with no memory
+--- ask
+A Step feeds port 1 of a Sum with List of signs `+-`. The Sum feeds a Gain of 4, and the Gain's output is wired straight back into the Sum's port 2. There is no Integrator anywhere. What happens when you run it?
+--- choice
+The model cannot start, because nobody gave the loop a first value, so Simulink stops with "undefined signal".
+--- choice
+Simulink uses the Gain's output from the previous time step, so the loop acts as a small delay.
+--- choice correct
+Simulink reports an algebraic loop: at every time step it must solve $y = 4(u - y)$, which it does by iteration. That works here, giving $y = 0.8u$, but it is slow and fragile.
+--- choice
+The loop gain is 4, which is more than 1, so the output grows without limit.
+--- why
+Every block in the loop is memoryless, so each one needs the other's answer before it can produce its own. That is an equation to solve at each step, $y = 4u - 4y$, so $y = 0.8u$, not a formula to evaluate. Simulink detects it and iterates. An Integrator would break the loop, because its output is already known before its input is computed. A real system nearly always has the lag that is missing here.
+
++++ question | A spring that runs away
+--- ask
+You build the mass-spring-damper $\ddot{x} = \frac{1}{m}(u - c\dot{x} - kx)$ with $m = 1$, $c = 0.4$ and $k = 4$, from a Sum, three Gains and two Integrators, driven by a unit step. The position does not wiggle at all. It grows faster and faster, without limit. Which mistake explains that?
+--- choice correct
+The Sum's List of signs is `+-+`, with $c\dot{x}$ on port 2 and $kx$ on port 3, so the spring force is added instead of subtracted.
+--- choice
+The Sum's List of signs is `++-`, with $c\dot{x}$ on port 2 and $kx$ on port 3, so the damping force is added instead of subtracted.
+--- choice
+The damping Gain is 4 and the spring Gain is 0.4, swapped.
+--- choice
+The position Integrator's Initial condition is 1 instead of 0.
+--- why
+With the spring sign flipped, the model solves $\ddot{x} + 0.4\dot{x} - 4x = u$. Its roots are about $+1.81$ and $-2.21$, and the positive one grows like $e^{1.81t}$ with no wiggle: the "spring" pushes the mass away. A flipped damper gives $\ddot{x} - 0.4\dot{x} + 4x = u$, whose roots are $0.2 \pm 1.99j$: an oscillation that grows. Swapped gains give a heavily damped spring that creeps toward $1/0.4 = 2.5$, and a wrong initial condition gives a ringing that still dies away. The shape of a wrong answer tells you which sign to look at.
+
++++ question | The first peak of a new equation
+--- ask
+A sensor mount obeys $0.5\ddot{y} + 3\dot{y} + 18y = 9u$. You build it from blocks, both Integrators start at 0, and $u$ is a unit step at $t = 0$. What is the value of the first peak of $y$? Give three decimal places.
+--- answer
+0.581
+0.58
+0.5815
+0.582
+--- why
+Solve for the highest derivative first: $\ddot{y} = 18u - 6\dot{y} - 36y$. That is the wiring, and it also reads as $\ddot{y} + 6\dot{y} + 36y = 18u$. So $\omega_n = \sqrt{36} = 6$ rad/s and $2\zeta\omega_n = 6$, giving $\zeta = 0.5$. It settles where $36y = 18$, at $y = 0.5$. The overshoot is $e^{-\pi \times 0.5/\sqrt{0.75}} = e^{-1.814} = 0.163$, so the peak is $0.5 \times 1.163 = 0.581$, at $t = \pi/(6\sqrt{0.75}) = 0.605$ s.
+
+=== slk01-l03 | Practice: Sources and sinks
+--- for
+l03-sources-and-sinks
+
++++ question | A sine on a Display
+--- ask
+A Sine Wave block has Amplitude 3, Bias 1, Frequency `pi/4` and Phase 0. It feeds a Display. The stop time is 6 s. What does the Display show at the end of the run?
+--- answer
+-2
+-2.0
+--- why
+The block computes $y = 3\sin(\frac{\pi}{4}t) + 1$, with the Frequency in rad/s. At $t = 6$ s the angle is $\frac{6\pi}{4} = \frac{3\pi}{2}$, where the sine is $-1$. So $y = 3 \times (-1) + 1 = -2$. The Display holds the last value of the run.
+
++++ question | A wave three times too slow
+--- ask
+A test needs a 3 Hz vibration, and an engineer types `3` into a Sine Wave block's Frequency field. How many seconds does one cycle of the wave actually take? Give two decimal places.
+--- answer
+2.09
+2.1
+2.094
+2.09 s
+2*pi/3
+2pi/3
+--- why
+The Frequency field is in radians per second, so `3` means 3 rad/s. One cycle is $2\pi$ radians, so it takes $2\pi/3 = 2.09$ s. A real 3 Hz wave repeats every $1/3 = 0.33$ s, so this one is $2\pi$ times too slow. The right entry is `2*pi*3`, about 18.8 rad/s.
+
++++ question | A step that goes down
+--- ask
+A Step block has Step time 3, Initial value 2 and Final value $-1$. It feeds an Integrator with Initial condition 0, which feeds a Display. The stop time is 10 s. What does the Display show?
+--- answer
+-1
+-1.0
+--- why
+The Integrator adds up the area under the input. For the first 3 s the input is 2, which adds $2 \times 3 = 6$. For the remaining 7 s it is $-1$, which adds $-7$. The total is $6 - 7 = -1$. The Initial value of the Step is not zero here, so the Integrator starts climbing at $t = 0$, not at the step.
+
++++ question | Proving a change made no difference
+--- ask
+You changed a filter's gain from 0.50 to 0.52. A reviewer asks you to prove that the altitude response moved by less than 0.01 m everywhere, and to keep the evidence so it can be checked again after the next change. What do you do?
+--- choice
+Take a screenshot of the Scope before and after the change, and put the two pictures side by side.
+--- choice
+Add a Display block on the altitude and write down its final value in each run.
+--- choice correct
+Log the altitude signal, run the model before and after the change, and compare the two runs in the Simulation Data Inspector with the old run as the baseline and an absolute tolerance of 0.01.
+--- choice
+Wire both runs into one Scope with two inputs, so the curves are drawn on the same axes.
+--- why
+A Scope shows only the run you just did, and two pictures cannot be subtracted. A Display gives one number, the last value, and says nothing about the rest of the run. The Data Inspector keeps each run, lines up the matching signals, plots their difference and marks the signal as inside or outside the tolerance you set. The saved baseline is also what the next change gets compared against.
+
++++ question | One number, or a whole row of them
+--- ask
+This script should print the largest difference between a logged lag response and its exact formula. Instead it prints a long row of numbers.
+
+```matlab
+out = sim('lag2');
+t = out.y.Time;
+y = out.y.Data;
+yref = 1 - exp(-t'/2);
+err = max(abs(y - yref))
+```
+
+What is wrong?
+--- choice
+`out.y.Data` is a row, so `y - yref` is fine, but `max` works down each column.
+--- choice correct
+`t'` turns the time column into a row, so `yref` is a row. A column minus a row expands into an N-by-N matrix, and `max` returns the largest value of each column. Drop the transpose so both are columns.
+--- choice
+Nothing is wrong with the shapes. `max` returns one value per element, so write `max(abs(y - yref), [], 'all')` to get one number.
+--- choice
+The solver logs unevenly spaced times, so `exp` returns a separate vector for each time step.
+--- why
+Logged Timeseries data comes in columns, one row per time step. Subtracting a 1-by-N row from an N-by-1 column does not fail in MATLAB: implicit expansion builds every pairing, $y_i - y_{\text{ref}}(t_j)$. Adding `'all'` would print one number, but it would be the largest of those meaningless pairings. The fix is to keep both as columns, for example `yref = 1 - exp(-t/2)`.
+
++++ question | How big the lag's answer is
+--- ask
+A Sine Wave with Amplitude 2, Frequency 4 (rad/s) and Bias 0 drives a first-order lag with time constant $\tau = 0.75$ s. Once the start-up part has died away, what is the amplitude of the lag's output? Give three decimal places.
+--- answer
+0.632
+0.63
+0.6325
+0.633
+--- why
+A lag answers a steady sine with a sine of the same frequency, scaled by $\frac{1}{\sqrt{1 + (\omega\tau)^2}}$. Here $\omega\tau = 4 \times 0.75 = 3$, so the scale is $\frac{1}{\sqrt{10}} = 0.316$, and the amplitude is $2 \times 0.316 = 0.632$. The phase is $-\arctan(3) = -71.6^\circ$, which is a delay of $1.249/4 = 0.31$ s. Read those two numbers from the logged data, not from a picture.
+
+=== slk01-l04 | Practice: Checking against the analytic answer
+--- for
+l04-checking-against-the-analytic-answer
+
++++ question | Where a lag should be
+--- ask
+A first-order lag has gain $K = 3$ and time constant $\tau = 0.4$ s, and it is driven by a unit step at $t = 0$ from rest. What should the logged output read at $t = 0.8$ s? Give three decimal places.
+--- answer
+2.594
+2.59
+2.5940
+2.6
+--- why
+The exact answer is $y(t) = K(1 - e^{-t/\tau}) = 3(1 - e^{-t/0.4})$. At $t = 0.8$ s that is two time constants: $e^{-2} = 0.1353$, so $y = 3 \times 0.8647 = 2.594$. After two time constants a lag has covered 86.5% of the way to its final value, here 3.
+
++++ question | Reading the time constant off the data
+--- ask
+A lag with gain $K = 1$ is driven by a unit step at $t = 0$ from rest. The logged output at $t = 3$ s reads 0.8647. What is the time constant, in seconds?
+--- answer
+1.5
+1.5 s
+1.50
+--- why
+Set $1 - e^{-3/\tau} = 0.8647$. Then $e^{-3/\tau} = 0.1353 = e^{-2}$, so $3/\tau = 2$ and $\tau = 1.5$ s. Recognizing $0.8647$ as "two time constants" and $0.632$ as "one" turns a single logged number into a check on the Gain that sets $\frac{1}{\tau}$.
+
++++ question | A reference that shares the mistake
+--- ask
+To check a new mass-spring-damper model, a colleague copies the model's equation into a MATLAB script, solves it with `ode45` at the same tolerance, and compares. The two agree to $10^{-9}$. Why is this a weak check?
+--- choice
+`ode45` in a script uses a different method from Simulink's `ode45`, so the two can never agree properly.
+--- choice correct
+The script was written from the same equation, so a wrong sign or a swapped gain in that equation is in both. They agree with each other and are both wrong.
+--- choice
+$10^{-9}$ is tighter than a double can hold, so the agreement is only rounding error.
+--- choice
+A check only counts if the reference is computed on a neat grid such as `0:0.01:20`.
+--- why
+A reference is worth something only if it reaches the answer by a different road. An exact formula derived on paper, `step(tf(1, [m c k]))`, a hand calculation of one point, or a conservation law do not share the model's equation, so they can catch its mistakes. A copy of the model's equations inherits every typo. Test engineers call this independence.
+
++++ question | Tighter RelTol, same error
+--- ask
+You verify the lesson's spring ($m = 1$, $c = 0.4$, $k = 4$, unit step) against its exact formula. With RelTol $10^{-10}$ and AbsTol $10^{-6}$ you get $e_{\max} = 2.1 \times 10^{-6}$. With RelTol $10^{-12}$ and the same AbsTol you get $2.1 \times 10^{-6}$ again. What is the best explanation?
+--- choice
+The error did not shrink when the tolerance got tighter, so the diagram is wrong.
+--- choice correct
+AbsTol is now the loose setting. The solver accepts an error of about $\text{RelTol} \times |x| + \text{AbsTol}$, and for states smaller than 1 m the $10^{-6}$ floor dominates. Tighten AbsTol too, say to $10^{-12}$, and the error should fall far below $10^{-6}$.
+--- choice
+RelTol cannot go below $10^{-10}$, so Simulink ignored the $10^{-12}$.
+--- choice
+The spring is lightly damped, so no tolerance can bring the error below $10^{-6}$.
+--- why
+The rule "tighten the tolerance and rerun" means both tolerances. Here RelTol times a state of about 0.4 m is around $10^{-11}$, far below AbsTol's $10^{-6}$, so changing RelTol changes nothing. In a Python run of the same solver family, RelTol $10^{-10}$ with AbsTol $10^{-12}$ brings the error to about $3 \times 10^{-11}$. Only when the error stays put after both are tightened should you blame the wiring.
+
++++ question | A reference with one wrong letter
+--- ask
+A model of the lesson's spring ($m = 1$, $c = 0.4$, $k = 4$) is checked with this script. The error is $4.6 \times 10^{-3}$ at RelTol $10^{-6}$ and still $4.6 \times 10^{-3}$ at $10^{-10}$ with AbsTol $10^{-12}$. The diagram has been rebuilt twice and looks right. Which line is the bug?
+
+```matlab
+t = out.x.Time;  x = out.x.Data;                        % line 1
+wn = sqrt(k/m);  zeta = c/(2*sqrt(k*m));                % line 2
+wd = wn*sqrt(1 - zeta^2);                               % line 3
+x_exact = (1/k)*(1 - exp(-zeta*wn*t).*(cos(wn*t) ...
+          + zeta/sqrt(1-zeta^2)*sin(wn*t)));            % line 4
+e_max = max(abs(x(:) - x_exact(:)));                    % line 5
+```
+--- choice
+Line 1: the reference must be computed on an even grid, not at the logged times.
+--- choice
+Line 2: the damping ratio should be $c/(2km)$.
+--- choice correct
+Line 4: the cosine and sine use `wn`, the undamped frequency, where they need `wd`.
+--- choice
+Line 5: the `(:)` changes the order of the samples.
+--- why
+The mass wiggles at $\omega_d = 1.990$ rad/s, not at $\omega_n = 2$ rad/s. The difference is half a percent, invisible on a plot, but over ten swings the two curves drift apart by a few millimeters. An error that does not move with the tolerance points at something fixed: here the reference, not the diagram. Checking the reference against a second one, such as `step(tf(1, [m c k]), t)` on a neat grid, would have caught it at once.
+
++++ question | When the stiffer spring peaks
+--- ask
+A mass-spring-damper has $m = 0.5$ kg, $c = 0.6$ N·s/m and $k = 18$ N/m, and starts at rest. A unit step force is applied at $t = 0$. At what time, in seconds, does the first peak of the exact answer come? Give three decimal places.
+--- answer
+0.526
+0.53
+0.5262
+0.526 s
+--- why
+$\omega_n = \sqrt{18/0.5} = 6$ rad/s and $\zeta = 0.6/(2\sqrt{18 \times 0.5}) = 0.6/6 = 0.1$. So $\omega_d = 6\sqrt{0.99} = 5.970$ rad/s, and the peak comes half a wiggle in, at $t_p = \pi/\omega_d = 0.526$ s. It settles at $1/k = 0.0556$ m and peaks at $0.0556 \times 1.729 = 0.0961$ m. Knowing both numbers before the run is what makes the logged data a check.
+
+=== slk01-l05 | Practice: Transfer Fcn, State-Space, and the Derivative trap
+--- for
+l05-transfer-fcn-state-space-and-the-derivative-trap
+
++++ question | An integrator hidden in a denominator
+--- ask
+What do you type into a Transfer Fcn block for $G(s) = \dfrac{4}{s(s + 2)}$?
+--- choice
+Numerator `[4]`, Denominator `[1 2]`.
+--- choice correct
+Numerator `[4]`, Denominator `[1 2 0]`.
+--- choice
+Numerator `[4]`, Denominator `[0 2 1]`.
+--- choice
+Numerator `[4 0]`, Denominator `[1 2]`.
+--- why
+Multiply out the bottom: $s(s + 2) = s^2 + 2s + 0$. The coefficients go in descending powers of $s$, including the zero for the missing constant: `[1 2 0]`. Dropping the trailing 0 gives $\frac{4}{s + 2}$, a lag instead of a lag with an integrator. `[0 2 1]` is written in ascending order, and `[4 0]` over `[1 2]` is $\frac{4s}{s+2}$.
+
++++ question | A State-Space block that outputs velocity
+--- ask
+A State-Space block holds $0.5\ddot{x} + 2\dot{x} + 8x = F$ with state $[x;\ \dot{x}]$, and its output should be the velocity only. Which set of parameters is right?
+--- choice correct
+A = `[0 1; -16 -4]`, B = `[0; 2]`, C = `[0 1]`, D = `0`.
+--- choice
+A = `[0 1; -8 -2]`, B = `[0; 1]`, C = `[0 1]`, D = `0`.
+--- choice
+A = `[0 1; 16 4]`, B = `[0; 2]`, C = `[0 1]`, D = `0`.
+--- choice
+A = `[0 1; -16 -4]`, B = `[0; 2]`, C = `[1 0]`, D = `0`.
+--- why
+Divide by the mass first: $\ddot{x} = -16x - 4\dot{x} + 2F$. The first row of A says "the rate of change of position is the velocity", and the second row is that equation. So A = `[0 1; -16 -4]` and B = `[0; 2]`. Leaving out the division gives the second choice, and dropping the minus signs gives a system that runs away. C picks what comes out: `[0 1]` is the velocity, `[1 0]` the position.
+
++++ question | How far a filtered derivative jumps
+--- ask
+A filtered derivative $\dfrac{s}{0.04s + 1}$, built as a Transfer Fcn block, is fed a signal that jumps by 0.5 at $t = 2$ s and is flat before and after. What value does its output jump to right after the jump?
+--- answer
+12.5
+12.50
+--- why
+For a step of size $\Delta u$, the filter's output jumps to $\Delta u/\tau$ and then decays as $e^{-t/\tau}$. Here $0.5/0.04 = 12.5$. The value is set by $\tau$, not by the solver's step size, so it is the same on every run and at every tolerance. A Derivative block would output 0.5 divided by whatever step the solver took, which could be thousands.
+
++++ question | The one the block rejects
+--- ask
+Which of these will a Transfer Fcn block refuse?
+--- choice
+Numerator `[1 0 1]`, Denominator `[1 2 1]`.
+--- choice
+Numerator `[1 1]`, Denominator `[1 0 1]`.
+--- choice correct
+Numerator `[1 0 0]`, Denominator `[1 1]`.
+--- choice
+Numerator `[5]`, Denominator `[1]`.
+--- why
+The block needs a proper transfer function: the numerator's highest power of $s$ may not be larger than the denominator's. `[1 0 0]` over `[1 1]` is $\frac{s^2}{s + 1}$, second order over first order, so its gain grows without limit as frequency rises. Equal orders, as in the first choice, are allowed, and so is a plain gain of 5, which is zero order over zero order.
+
++++ question | Initial conditions for someone else's states
+--- ask
+An engineer wants the lesson's spring released from 0.1 m at rest. She types `ss(tf(1, [1 0.4 4]))` into MATLAB, copies the A, B, C and D it prints into a State-Space block, and sets Initial conditions to `[0.1; 0]`. The output does not start at 0.1 m. Why?
+--- choice
+The State-Space block ignores initial conditions unless D is nonzero.
+--- choice
+Initial conditions only work in a Transfer Fcn block.
+--- choice correct
+The conversion chose its own states, which may be scaled or reordered, so `[0.1; 0]` does not mean "position 0.1, velocity 0" for those matrices. Write A, B, C and D from the physics, with state $[x;\ \dot{x}]$.
+--- choice
+`ss` returns a discrete-time model, which the continuous block cannot use.
+--- why
+Many sets of matrices give the same input-output behavior. `ss(tf(...))` picks one by its own rules, and its first state need not be the position in meters. The step response from rest matches, because that never depends on what the states mean. An initial state does. When the states must mean something physical, write the matrices yourself: A = `[0 1; -4 -0.4]`, B = `[0; 1]`, C = `[1 0]`.
+
++++ question | Rate from a gyro
+--- ask
+A pitch model is a pure inertia, $\theta = \frac{1}{s^2}u$. The controller uses the measured rate: $u = K_p(r - \theta) - K_d\omega$, with $K_p = 9$, $K_d = 3$ and $\omega = \dot{\theta}$ from a gyro. For a unit step in $r$, what percent overshoot does the closed loop give? Give one decimal place.
+--- answer
+16.3
+16.3%
+16
+16.30
+--- why
+Put $\ddot{\theta} = u$ into the controller: $\ddot{\theta} + 3\dot{\theta} + 9\theta = 9r$. So $\omega_n = 3$ rad/s, $2\zeta\omega_n = 3$ gives $\zeta = 0.5$, and the overshoot is $e^{-\pi \times 0.5/\sqrt{0.75}} = 0.163$, or 16.3%. At the step the torque jumps only to $K_p \times 1 = 9$, because the step in $r$ never passes through a derivative. With the derivative on the error, filtered with $\tau = 0.02$ s, it would jump to $K_d/\tau = 150$.
+
+=== slk01-l06 | Practice: Mux, buses, Selector and Demux
+--- for
+l06-mux-buses-selector-demux
+
++++ question | Picking from a mixed Mux
+--- ask
+A Mux has three inputs: the scalar 7 on port 1, the vector $[1,\ 2,\ 3]$ on port 2 and the vector $[8,\ 9]$ on port 3. A Selector with Index mode One-based and Index `[5 1]` reads the Mux output. What comes out? Write the numbers in order, like `[4 2]`.
+--- answer
+[8 7]
+8 7
+[8, 7]
+8, 7
+8,7
+[8,7]
+--- why
+The Mux stacks its inputs in port order into one 6-element vector: $[7,\ 1,\ 2,\ 3,\ 8,\ 9]$. Element 5 is 8 and element 1 is 7, and the Selector outputs them in the order listed. The names of the input lines are gone after the Mux; only the positions remain.
+
++++ question | The third piece of a Demux
+--- ask
+A Demux with Number of outputs `[1 3 2]` splits the vector $[10,\ 20,\ 30,\ 40,\ 50,\ 60]$. What does its third output carry? Write the numbers in order, like `[4 2]`.
+--- answer
+[50 60]
+50 60
+[50, 60]
+50, 60
+50,60
+[50,60]
+--- why
+A vector of widths splits the input into pieces of those sizes, in order. The first output takes 1 element, $[10]$. The second takes the next 3, $[20,\ 30,\ 40]$. The third takes the last 2, $[50,\ 60]$. The widths add up to 6, the length of the vector, as they must.
+
++++ question | A vector inside a bus
+--- ask
+A navigation bus has three elements: `pos`, a 3-element position vector in meters; `mach`, a double; and `mode`, a `uint8`. The autopilot needs only the vertical component, the third element of `pos`. Which blocks get it?
+--- choice
+A Selector with Index `3` on the bus.
+--- choice
+A Demux with Number of outputs `[3 1 1]` on the bus, then its first output.
+--- choice correct
+A Bus Selector that picks `pos`, then a Selector with Index mode One-based and Index `3` on that vector.
+--- choice
+A Bus Selector that picks `pos(3)` directly, because a bus element can be indexed by name and number at once.
+--- why
+The two containers work together, and each is taken apart with its own tool. The bus is opened by name: a Bus Selector outputs the element `pos`, wherever it sits. The vector is opened by position: a Selector picks element 3. A Selector and a Demux work on vectors, not on buses, because a bus is not a list of same-typed numbers.
+
++++ question | Widths that do not add up
+--- ask
+A 6-element vector feeds a Demux whose Number of outputs is `[3 2]`. What happens when you update the diagram with Ctrl+D?
+--- choice
+The Demux outputs elements 1 to 3 and 4 to 5, and element 6 is quietly dropped.
+--- choice
+The Demux pads the second piece to 3 elements with a zero.
+--- choice correct
+Simulink reports an error: the widths must add up to the length of the input vector, and $3 + 2 = 5$ is not 6.
+--- choice
+The Demux ignores the widths and makes six scalar outputs.
+--- why
+With a vector of widths, the pieces must cover the input exactly. The mismatch is found when the diagram is updated, before anything runs, and the Diagnostic Viewer names the Demux. If you really want only some elements, a Selector states that directly, for example Index `[1 2 3 4 5]`.
+
++++ question | An IMU split one place off
+--- ask
+An IMU sample is $[0.20,\ -0.10,\ 9.80,\ 0.004,\ 0.001,\ -0.002]$: three accelerations, then three rates. A Selector meant to output the three accelerations shows $[-0.10,\ 9.80,\ 0.004]$. Its Index is `[1 2 3]`. Which setting is wrong?
+--- choice
+The Index should be `[0 1 2]` with Index mode One-based.
+--- choice correct
+Index mode is set to Zero-based, so `[1 2 3]` picks the second, third and fourth elements. Set it to One-based, or keep Zero-based and use `[0 1 2]`.
+--- choice
+The Selector must have its number of input dimensions set to 2.
+--- choice
+The Selector reverses the order of any vector longer than 3.
+--- why
+In Zero-based mode the first element is number 0, as in C, so index 1 is the second element. The output starts at $-0.10$ and ends with the roll rate 0.004, which is exactly one place off. The acceleration's size, $\sqrt{0.01 + 96.04 + 0.000016} = 9.80$, looks almost right, which is why an off-by-one index can hide. Always check the index mode next to the index.
+
++++ question | Packing a telemetry frame
+--- ask
+A spacecraft's telemetry subsystem must send on one line: the attitude quaternion (4 doubles), three reaction-wheel speeds (doubles, in rad/s), the battery voltage (a double, in volts), an eclipse flag (boolean) and the flight mode (an enumeration). Which structure is best?
+--- choice
+One Mux with all eleven values, and a comment on the diagram listing what each position means.
+--- choice correct
+A bus defined by a Simulink.Bus object, with elements `q` (a 4-element vector), `wheel` (a 3-element vector), `vbat`, `eclipse` (boolean) and `mode` (the enumeration).
+--- choice
+A bus with eleven scalar elements, `q1` to `q4`, `w1` to `w3`, `vbat`, `eclipse` and `mode`, all of type double so they match.
+--- choice
+Two Muxes, one for the doubles and one for the flag and the mode, fed into a third Mux.
+--- why
+The group is heterogeneous: different quantities, units and types, so it belongs in a bus, and a bus object makes its contents a checked contract. Inside the bus, the quaternion and the wheel speeds are each several components of one quantity, so they travel as vectors. Making everything a double throws away the types that said what the flag and the mode are. A Mux cannot hold a boolean and an enumeration next to doubles, and a Mux of Muxes is still one flat vector known only by position.
+
+=== slk01-l07 | Practice: Nonlinear blocks
+--- for
+l07-nonlinear-blocks
+
++++ question | A lopsided dead zone
+--- ask
+A Dead Zone block has Start of dead zone $-1$ and End of dead zone 2. What does it output for the inputs 3.5, $-0.4$ and $-2.5$? Write the three numbers in order, separated by spaces.
+--- answer
+1.5 0 -1.5
+1.5, 0, -1.5
+1.5,0,-1.5
+[1.5 0 -1.5]
+[1.5, 0, -1.5]
+--- why
+Inside the band from $-1$ to 2 the output is zero, so $-0.4$ gives 0. Above the band, the output is the input minus the end: $3.5 - 2 = 1.5$. Below the band, it is the input minus the start: $-2.5 - (-1) = -1.5$. The band does not have to be centered on zero, and the output never jumps at its edges.
+
++++ question | Rounding a negative reading
+--- ask
+A Quantizer has Quantization interval 0.25. What does it output for an input of $-0.63$?
+--- answer
+-0.75
+-.75
+--- why
+$y = q \cdot \operatorname{round}(u/q)$. Here $-0.63/0.25 = -2.52$, which rounds to the nearest whole number, $-3$. So $y = 0.25 \times (-3) = -0.75$. The output is the nearest multiple of 0.25, and the error, 0.12, is never more than half the interval.
+
++++ question | A gimbal told to reverse
+--- ask
+A gimbal can reach $\pm 4^\circ$ and slew at most $10^\circ/\mathrm{s}$. The command is $7^\circ$ from $t = 0$ to $t = 2$ s, then $-7^\circ$. The actuator is modeled with the Rate Limiter first and the Saturation after it. At what time, in seconds, does the modeled gimbal reach $-4^\circ$?
+--- answer
+3.1
+3.1 s
+3.10
+--- why
+The Rate Limiter's own output climbs to the full $7^\circ$, reaching it at 0.7 s, while the Saturation shows $4^\circ$. At $t = 2$ s it starts down from $7^\circ$ toward $-7^\circ$ at $10^\circ/\mathrm{s}$. It must fall $7 - (-4) = 11^\circ$ to reach $-4^\circ$, which takes 1.1 s, so it arrives at 3.1 s. A real gimbal on its $+4^\circ$ stop only has $8^\circ$ to travel and arrives at 2.8 s. With the Saturation first, the model gets that right.
+
++++ question | A relay that remembers
+--- ask
+A Relay has Switch on point 0.5, Switch off point $-0.5$, Output when on $+1$ and Output when off $-1$. It starts off. Its input takes these values, one after another: 0, 0.3, 0.6, 0.2, $-0.4$, $-0.7$, 0.1. What does it output for the fifth value, $-0.4$?
+--- answer
+1
++1
+1.0
+--- why
+It stays off, outputting $-1$, until the input rises above 0.5, which first happens at 0.6. From then on it stays on until the input drops below $-0.5$. The values 0.2 and $-0.4$ are not below $-0.5$, so it is still on and outputs $+1$. Only $-0.7$ turns it off. The same input, $-0.4$, would give $-1$ if the relay had been off: the output depends on where the input has been.
+
++++ question | Post-separation gains from launch
+--- ask
+A Switch should pass the post-separation gains, on input 1, only after stage separation, and the pre-separation gains, on input 3, before it. Its control input is a staging flag that is 0 before separation and 1 after. The Switch's Criteria for passing first input is `u2 >= Threshold`, and Threshold is 0. In the simulation the vehicle flies on the post-separation gains from the moment of launch. What is the fix?
+--- choice
+Swap the gain signals, so the pre-separation gains are on input 1.
+--- choice correct
+Change the criteria to `u2 > Threshold` (or `u2 ~= 0`), or set Threshold to 0.5, so a flag of 0 no longer passes input 1.
+--- choice
+Change the flag so it is $-1$ before separation, because a Switch cannot use 0 as a control value.
+--- choice
+Replace the Switch with a Relay, because a Switch only works on continuous signals.
+--- why
+With `u2 >= 0`, a flag of 0 already meets the criteria, so input 1 passes before and after separation. Swapping the inputs would just give the pre-separation gains all the time. Any criteria that 1 meets and 0 does not fixes it: `u2 > 0`, `u2 ~= 0`, or `u2 >= 0.5`. When a Switch picks the wrong input, check the criteria and the threshold against the actual values the control input takes.
+
++++ question | A saturated loop, solved by hand
+--- ask
+A plant is a pure integrator, $\dot{y} = u$. A proportional controller asks for $u = 5(r - y)$, and a Saturation limits $u$ to $\pm 2$. The command is $r = 1$ from $t = 0$, and $y(0) = 0$. What is $y$ at $t = 0.5$ s? Give three decimal places.
+--- answer
+0.853
+0.85
+0.8528
+--- why
+At first $5(1 - y) = 5$ is above 2, so the actuator is pinned: $\dot{y} = 2$ and $y = 2t$. It leaves the limit when $5(1 - y) = 2$, at $y = 0.6$, which is $t = 0.3$ s. After that the loop is linear: $\dot{y} = 5(1 - y)$, so $1 - y = 0.4e^{-5(t - 0.3)}$. At 0.5 s, $y = 1 - 0.4e^{-1} = 0.853$. A linear model would say $1 - e^{-2.5} = 0.918$. Each piece has an exact answer, which is how you check a nonlinear model.
+
+=== slk01-l08 | Practice: Lookup tables
+--- for
+l08-lookup-tables
+
++++ question | Drag between two breakpoints
+--- ask
+A 1-D Lookup Table holds the drag coefficient against Mach, with linear interpolation:
+
+| Mach | 0 | 0.8 | 1.0 | 1.2 | 2.0 |
+|---|---|---|---|---|---|
+| $C_D$ | 0.30 | 0.32 | 0.55 | 0.60 | 0.40 |
+
+What does it output at Mach 1.1?
+--- answer
+0.575
+0.58
+.575
+--- why
+Mach 1.1 is halfway between the breakpoints 1.0 and 1.2. Linear interpolation draws a straight line between their values: $0.55 + 0.5 \times (0.60 - 0.55) = 0.575$. The answer lies between the two neighbors, as linear interpolation always does.
+
++++ question | Three methods, one Mach number
+--- ask
+The same drag table is read at Mach 0.95. What do the interpolation methods Flat, Nearest and Linear return, in that order?
+--- choice
+0.55, 0.55 and 0.4925.
+--- choice correct
+0.32, 0.55 and 0.4925.
+--- choice
+0.32, 0.32 and 0.435.
+--- choice
+0.55, 0.32 and 0.4925.
+--- why
+Flat uses the breakpoint at or below the input, 0.8, so it returns 0.32. Nearest uses the closest breakpoint: 0.95 is 0.05 from 1.0 and 0.15 from 0.8, so it returns 0.55. Linear goes three quarters of the way from 0.8 to 1.0: $0.32 + 0.75 \times 0.23 = 0.4925$. Near the transonic rise, the choice of method moves the answer by more than 50%.
+
++++ question | From a table to a force
+--- ask
+A 2-D Lookup Table with linear interpolation holds $C_N$ with Mach on Breakpoints 1 and angle of attack on Breakpoints 2:
+
+| $M$ \ $\alpha$ | 0° | 5° | 10° |
+|---|---|---|---|
+| 0.8 | 0 | 0.25 | 0.55 |
+| 1.2 | 0 | 0.35 | 0.75 |
+| 1.6 | 0 | 0.30 | 0.62 |
+
+A Product block multiplies its output by the dynamic pressure, 20 kPa, and a reference area of 2 m². What is the normal force at Mach 1.0 and $\alpha = 7.5°$, in kN?
+--- answer
+19
+19 kN
+19.0
+19.0 kN
+--- why
+Mach 1.0 is halfway between the rows 0.8 and 1.2, and $7.5°$ is halfway between the columns $5°$ and $10°$. Along $\alpha$: the 0.8 row gives $0.25 + 0.5 \times 0.30 = 0.40$, and the 1.2 row gives $0.35 + 0.5 \times 0.40 = 0.55$. Along Mach: $0.40 + 0.5 \times 0.15 = 0.475$. Then $N = qSC_N = 20{,}000 \times 2 \times 0.475 = 19{,}000$ N, or 19 kN.
+
++++ question | Past the fastest row
+--- ask
+The same $C_N$ table is read at Mach 2.0 and $\alpha = 7.5°$, with Extrapolation method Linear. What does it output?
+--- answer
+0.37
+.37
+0.370
+--- why
+$\alpha = 7.5°$ is inside the table, so the block interpolates along $\alpha$ as usual: 0.55 in the 1.2 row and $0.30 + 0.5 \times 0.32 = 0.46$ in the 1.6 row. Mach 2.0 is past the last row, so Linear continues the line through those two: the slope is $(0.46 - 0.55)/0.4 = -0.225$ per unit Mach, and $0.4$ further on gives $0.46 - 0.09 = 0.37$. Clip would hold Mach at 1.6 and return 0.46. Each input is handled on its own: one can be inside while the other is outside.
+
++++ question | A table written top down
+--- ask
+An engineer fills a 1-D thrust table from a report that lists altitudes from the top down: Breakpoints `[20 15 10 5 0]` (km) with the matching thrust values. When she updates the diagram, the Lookup Table block reports an error. Why?
+--- choice
+A thrust table needs at least ten breakpoints.
+--- choice
+Breakpoints must be evenly spaced.
+--- choice correct
+Each breakpoint list must increase, every entry larger than the one before. Reverse both the breakpoints and the thrust values to `[0 5 10 15 20]` and the matching order.
+--- choice
+Altitude must be given in meters, not kilometers.
+--- why
+The block finds the cell an input falls in by searching an increasing list, so a decreasing list is rejected. Reverse the breakpoints and the table data together, or each thrust value ends up next to the wrong altitude. Even spacing is allowed and can make the search faster, but it is not required.
+
++++ question | Thrust past the last breakpoint
+--- ask
+An engine has a vacuum thrust of 860 kN. Its 1-D thrust table has breakpoints 0, 10, 20 and 30 km with thrusts 760, 830, 850 and 855 kN, and Extrapolation method Linear. What thrust does the block output at 45 km, in kN?
+--- answer
+862.5
+862.5 kN
+862.50
+--- why
+Linear extrapolation continues the slope of the last two breakpoints, $(855 - 850)/10 = 0.5$ kN per km. Fifteen more kilometers adds 7.5 kN: $855 + 7.5 = 862.5$ kN. That is more than the vacuum thrust, which no engine can beat, so the number is invented. Clip would give 855 kN, a bounded error. The real fix is a breakpoint high enough that the vehicle never leaves the table.
+
+=== slk01-l09 | Practice: MATLAB code inside a model
+--- for
+l09-matlab-function-block
+
++++ question | A smoothing filter with memory
+--- ask
+A MATLAB Function block holds this code:
+
+```matlab
+function y = smooth2(u)
+persistent prev
+if isempty(prev)
+    prev = 0;
+end
+y = 0.5*prev + 0.5*u;
+prev = y;
+```
+
+It is called three times, with the input 4 each time. What is the third output?
+--- answer
+3.5
+3.50
+--- why
+On the first call `prev` is empty, so it becomes 0, and $y = 0.5 \times 0 + 0.5 \times 4 = 2$. Then `prev` holds 2, so the second call gives $1 + 2 = 3$, and the third gives $1.5 + 2 = 3.5$. Each call closes half the gap to the input, which is a first-order lag in discrete form. The persistent variable is the block's state.
+
++++ question | The body that will not compile
+--- ask
+Which of these MATLAB Function block bodies is rejected by the code-generation subset? Each one takes a scalar input `u` and a small whole number `n`.
+--- choice
+`y = zeros(1, 3); y(2) = u;`
+--- choice
+`y = u; if u < 0, y = 0; end`
+--- choice correct
+`y = []; for k = 1:n, y(end+1) = k*u; end`
+--- choice
+`y = 2*u + 1;`
+--- why
+`y` starts as an empty array and grows by one element per pass, to a length known only at run time. In the subset every variable keeps the size of its first assignment unless it is declared variable-size with a known maximum, and `y` is also the block's output signal, whose largest size Simulink must know before the run. So the growing array is refused. Give it a fixed size that covers the largest `n`, such as `zeros(1, 10)`, and fill it. The other bodies fix each variable's type and size once: a 1-by-3 array, and scalars that stay scalars.
+
++++ question | Mach above the tropopause
+--- ask
+The lesson's air-data function computes the temperature as `T = max(288.15 - 0.0065*h, 216.65)` and then `a = sqrt(1.4*287.05*T)` and `M = v/a`. What Mach number does it return for $v = 590$ m/s at $h = 15{,}000$ m? Give two decimal places.
+--- answer
+2.00
+2
+2.0
+--- why
+The straight-line formula would give $288.15 - 97.5 = 190.65$ K, which is below the floor, so `max` returns 216.65 K. Then $a = \sqrt{1.4 \times 287.05 \times 216.65} = 295.1$ m/s, and $M = 590/295.1 = 2.00$. Without the floor the speed of sound would be 276.8 m/s and Mach 2.13. The `max` does the job a MinMax block would do in a diagram.
+
++++ question | A square root at touchdown
+--- ask
+A lander's MATLAB Function block computes the impact speed as `v = sqrt(2*9.81*h)`, where `h` is the height above the pad. Near touchdown the solver hands it `h = -0.0004`. What happens?
+--- choice
+It returns `0 + 0.089i`, exactly as MATLAB would, and the simulation carries on with a complex speed.
+--- choice correct
+The simulation stops with a domain error, because `v` started real and must stay real. Guard it, for example `sqrt(2*9.81*max(h, 0))`, and ask why `h` went negative.
+--- choice
+It quietly returns 0, because the block clips square roots at zero.
+--- choice
+It returns `NaN`, and the rest of the model keeps running with `NaN` in it.
+--- why
+In the block every variable keeps the class, size and complexity of its first assignment, so a real `v` cannot become complex. MATLAB at the Command Window would return a complex number; the block refuses. That is useful: on a flight computer a negative number under a square root means something upstream is wrong. Here a height slightly below zero is a solver step past the ground, and the guard makes the block honest about it.
+
++++ question | An output that is not always set
+--- ask
+This MATLAB Function block picks a command by flight mode:
+
+```matlab
+function cmd = pick(mode, a, b)
+if mode == 1
+    cmd = a;
+elseif mode == 2
+    cmd = b;
+end
+```
+
+The block refuses to build. What is the fix?
+--- choice
+Replace `elseif` with a second `if`, because the subset does not support `elseif`.
+--- choice correct
+Give `cmd` a value on every path, for example `cmd = 0;` before the `if`, or an `else` branch. When `mode` is neither 1 nor 2, `cmd` is never set.
+--- choice
+Declare `cmd` as persistent, so it keeps its value from the last call.
+--- choice
+Pass `mode` as a Parameter instead of an input port.
+--- why
+C cannot return a value that was never set, so the block insists that every output is assigned on every path through the code. A default before the `if`, or an `else`, closes the gap and also says what the block does in an unexpected mode. Making it persistent would silently repeat an old command, which hides the case instead of handling it.
+
++++ question | A derivative written by hand
+--- ask
+A MATLAB Function block estimates a rate from a position signal:
+
+```matlab
+function r = rate(u, dt)
+persistent last
+if isempty(last)
+    last = u;
+end
+r = (u - last)/dt;
+last = u;
+```
+
+It is called with `dt = 0.001` and the inputs 0, 0, 1, 1. What is the third output?
+--- answer
+1000
+1000.0
+1e3
+--- why
+On the third call the input jumps from 0 to 1, so $r = (1 - 0)/0.001 = 1000$. The next call gives 0 again. This is the Derivative block's trap written out in code: a jump becomes a spike whose height is set by the time step, not by the physics, and every bit of sensor noise is divided by 0.001 too. The fix is the same: a filtered derivative, or a rate you measure or already have as a state.
+
+=== slk01-l10 | Practice: Where parameters live, and how to read a model error
+--- for
+l10-parameters-and-diagnostics
+
++++ question | Four names, four places
+--- ask
+A Gain block sits inside a masked subsystem, which sits inside a second masked subsystem. Its Gain field is `a + b + c + d`. The values are:
+
+- inner mask: `a = 1`
+- outer mask: `a = 10`, `b = 20`
+- model workspace: `b = 200`, `c = 300`
+- base workspace: `a = 1000`, `b = 2000`, `c = 3000`, `d = 4000`
+
+What gain does the block use?
+--- answer
+4321
+4321.0
+--- why
+Each name is looked up on its own, from the block outward, and the first match wins. `a` is found in the inner mask: 1. `b` is not in the inner mask, so the outer mask gives 20. `c` is in neither mask, so the model workspace gives 300. `d` is only in the base workspace: 4000. The sum is $1 + 20 + 300 + 4000 = 4321$.
+
++++ question | A callback that runs the script
+--- ask
+A model's `PreLoadFcn` callback runs `pitch_params.m`, which sets `Kp`, `tau` and `limit` in the base workspace. A colleague says this removes every base-workspace problem. What is still wrong?
+--- choice
+Nothing: the values are now stored inside the .slx file.
+--- choice correct
+The dependency is now written in the model, but the values still land in the shared base workspace. Another model or script that sets `tau` after loading still changes what this model uses.
+--- choice
+A `PreLoadFcn` runs only once per MATLAB installation, so a colleague never gets the values.
+--- choice
+Callbacks cannot run scripts, only single commands.
+--- why
+The callback fixes the missing-script problem: opening the model runs the script. It does not give the values a private home. They sit in the base workspace like any other variable, where a stale value typed at the Command Window or a colleague's `tau` can replace them without a warning. A mask, the model workspace or a data dictionary gives them a scope of their own.
+
++++ question | Two copies of one actuator
+--- ask
+A masked actuator subsystem holds a Saturation with limits `lim` and `-lim` followed by a Rate Limiter with slew rates `rate` and `-rate`. The pitch copy's dialog sets `lim = 5` and `rate = 25`; the yaw copy's sets `lim = 8` and `rate = 16`. Both receive a $10^\circ$ step at $t = 0$. What is the yaw actuator's angle, in degrees, at $t = 0.3$ s?
+--- answer
+4.8
+4.8 deg
+4.80
+--- why
+The yaw copy clips $10^\circ$ to $8^\circ$ and ramps toward it at $16^\circ/\mathrm{s}$, so at 0.3 s it is at $16 \times 0.3 = 4.8^\circ$, still climbing. It arrives at $8/16 = 0.5$ s. The pitch copy clips to $5^\circ$ and arrives at $5/25 = 0.2$ s. Both use the names `lim` and `rate`, yet each finds its own values in its own mask workspace.
+
++++ question | The rate nobody set
+--- ask
+A masked actuator has one mask parameter, `lim`. Inside it, the Rate Limiter's slew rates are `rate` and `-rate`, but nobody added `rate` to the mask. Earlier in the session, a script for another model set `rate = 100` in the base workspace. What happens when you run?
+--- choice
+Simulink stops with "Unrecognized function or variable 'rate'", because a masked subsystem only searches its own mask.
+--- choice correct
+The search goes past the mask to the model workspace and then the base workspace, finds `rate = 100` and uses it without a word. The actuator slews at $100^\circ/\mathrm{s}$.
+--- choice
+The Rate Limiter falls back to its default slew rate of 1.
+--- choice
+The mask copies every base-workspace variable into its own workspace when the model loads, so the block uses a frozen copy.
+--- why
+A mask does not stop the search. A name it does not define is looked up outward, and whatever the base workspace happens to hold is used. The model looks self-contained and is not. Check that every name used inside a mask is one of its parameters, then run after `clear`: with the base workspace empty, the missing name becomes a loud error instead of a quiet 100.
+
++++ question | Three errors, one cause
+--- ask
+The Diagnostic Viewer shows this:
+
+```text
+Error in 'rocket/Pitch act': Failed to evaluate mask initialization commands.
+  Caused by:
+    Error evaluating parameter 'UpperLimit' in 'rocket/Pitch act/Saturation'
+      Caused by:
+        Unrecognized function or variable 'lmt'.
+```
+
+The mask defines one parameter, named `lim`. What is the fix?
+--- choice
+Add `lmt = 6` to the base workspace, so the name is found.
+--- choice
+Delete the mask, because its initialization commands are broken.
+--- choice correct
+Click the Saturation's path, and change `lmt` to `lim` in its Upper limit (and Lower limit) field.
+--- choice
+Type the number 6 into the Saturation's Upper limit field, so no name is needed.
+--- why
+The top line says where the failure surfaced; the deepest cause says why: a name nobody defines, a misspelling of the mask's `lim`. Fixing the spelling keeps the value where it belongs, in the mask. Defining `lmt` in the base workspace would make the error go away and create a hidden dependency, and typing 6 would throw away the reason for the mask: each copy's own limit.
+
++++ question | Where each value belongs
+--- ask
+A vehicle model uses four copies of one gimbal actuator, each with its own position and rate limits. It also uses the gravity constant and the vehicle's dry mass, which three other models of the same vehicle share. The team reviews every parameter change. Where should the values live?
+--- choice
+All of them in the base workspace, set by one script everyone runs first.
+--- choice correct
+Each actuator's limits in its masked subsystem's dialog, and the shared constants in a data dictionary that all four models link to, kept under version control.
+--- choice
+All of them typed as numbers straight into the block fields, so nothing depends on a workspace.
+--- choice
+Each actuator's limits in the base workspace with prefixes such as `act1_lim`, and the shared constants in each model's own model workspace.
+--- why
+Values that belong to one copy of a block go in that block's mask: scoped, saved in the model, and different for each copy. Values shared by several models go in one data dictionary, so there is one source to change and review. Prefixes reduce collisions in the base workspace but leave it shared and unsaved. Copying shared constants into four model workspaces makes four places to keep in step, and typed numbers make every change a hunt through the diagram.
+
+=== slk01-test | Simulink block diagrams and first models: module test
+--- teach
+The test covers the whole module: the editor and scripted models, signals and the five basic blocks, sources and sinks, checking against an analytic answer, Transfer Fcn and State-Space blocks and the Derivative trap, Mux, buses, Selector and Demux, the nonlinear blocks, lookup tables, the MATLAB Function block, and where parameters live. Most questions combine two or more lessons, and many need a short calculation, so keep a calculator at hand. To get ready, redo the practice questions of the lessons that felt hard, and work each lesson's check questions again on paper.
+--- gate
+questions 12
+minutes 24
+
++++ question | A step that goes negative, integrated
+--- ask
+A Step block has Step time 2, Initial value 1 and Final value $-2$. It feeds a Gain of 3, which feeds an Integrator with Initial condition 4. The Integrator's output is logged by a To Workspace block with Variable name `h`, and the stop time is 6 s. What is `out.h.Data(end)`?
+--- answer
+-14
+-14.0
+--- why
+The Integrator receives $3 \times 1 = 3$ for the first 2 s and $3 \times (-2) = -6$ for the next 4 s. It adds $3 \times 2 + (-6) \times 4 = 6 - 24 = -18$ to its starting value of 4, ending at $-14$. The logged data sits inside the `out` object, and `Data(end)` is its last row.
+
++++ question | A spring with no damper
+--- ask
+Two Integrators are chained: the first one's output is the velocity, which feeds the second, whose output is the position $x$. The position goes through a Gain of $-9$ back into the first Integrator's input. There is no other input. The velocity Integrator starts at 0 and the position Integrator at 0.2. What is $x$ at $t = 2$ s? Give three decimal places.
+--- answer
+0.192
+0.19
+0.1920
+--- why
+The wiring says $\ddot{x} = -9x$, a spring with no damping, $\omega_n = 3$ rad/s. Released from 0.2 at rest, the exact answer is $x(t) = 0.2\cos(3t)$. At 2 s the angle is 6 rad, and $0.2\cos 6 = 0.2 \times 0.960 = 0.192$. This is also a free reference with no formula at all: the energy $\frac{1}{2}\dot{x}^2 + \frac{9}{2}x^2$ must stay at $0.18$, and a drift in it measures the solver's error.
+
++++ question | A difference that peaks at one second
+--- ask
+A first-order lag model with $K = 1$ and $\tau = 1$ s is compared with the exact step response $1 - e^{-t}$. The largest difference is 0.632, at $t = 1$ s. At RelTol $10^{-10}$ and AbsTol $10^{-12}$ it is still 0.632 at $t = 1$ s. What is the most likely cause?
+--- choice
+The solver is too loose; 0.632 is the default RelTol error piling up over one time constant.
+--- choice correct
+The Step block is still at its default Step time of 1 s, so the model's curve is the right curve one second late.
+--- choice
+The Gain that should be $1/\tau = 1$ was set to $1/2$, so the model's time constant is 2 s.
+--- choice
+The Integrator's Initial condition is 1 instead of 0.
+--- why
+An error that ignores the tolerance is a setup or wiring mistake. A one-second delay makes the model read 0 while the formula climbs to $1 - e^{-1} = 0.632$ at $t = 1$ s, and after that the gap shrinks as both head for 1. A time constant of 2 s would give a largest difference of only 0.25, near $t = 1.39$ s. An initial condition of 1 would make the model sit at 1, and the difference would be largest at $t = 0$, where it is 1. The size and the time of the largest difference identify the mistake.
+
++++ question | Noise through a filtered derivative
+--- ask
+A pitch angle swings with amplitude 0.05 rad at 0.5 Hz. The attitude sensor adds noise of amplitude 0.0005 rad at 40 Hz. The rate is computed with the filtered derivative $\dfrac{s}{0.01s + 1}$. What is the amplitude of the noise in the computed rate, in rad/s? Give two significant figures.
+--- answer
+0.046
+0.0465
+0.0464
+0.04646
+--- why
+In rad/s the noise is at $\omega = 2\pi \times 40 = 251.3$. The filter's gain there is $\frac{\omega}{\sqrt{1 + (\omega\tau)^2}} = \frac{251.3}{\sqrt{1 + 2.513^2}} = \frac{251.3}{2.705} = 92.9$, so the noise's rate is $0.0005 \times 92.9 = 0.046$ rad/s. An ideal derivative would give $0.0005 \times 251.3 = 0.126$. The signal's rate is $0.05 \times 2\pi \times 0.5 = 0.157$ rad/s, almost untouched by the filter. The noise falls from 80% of the signal's rate to about 30%.
+
++++ question | Velocity out of a State-Space block
+--- ask
+A State-Space block holds an undamped spring, $\ddot{x} + 16x = F$, with A = `[0 1; -16 0]`, B = `[0; 1]`, C = `eye(2)`, D = `[0; 0]` and Initial conditions `[0.05; 0]`. The force is 0. A Demux with Number of outputs `2` splits the output. What does the Demux's second output read at $t = \pi/8$ s?
+--- answer
+-0.2
+-0.20
+-0.200
+-.2
+-0.2 m/s
+--- why
+With C = `eye(2)` the output is the whole state, $[x;\ \dot{x}]$, and the Demux's second line is the velocity. Released from 0.05 m at rest, $x = 0.05\cos 4t$ and $\dot{x} = -0.2\sin 4t$. At $t = \pi/8$ s, $4t = \pi/2$, so the velocity is $-0.2$ m/s and the position is 0. A Transfer Fcn block could not run this case, because its states always start at zero.
+
++++ question | A rotation fed one element too many
+--- ask
+A 3-element position and a scalar altitude rate are combined by a Mux, and the Mux feeds a Gain holding a 3-by-3 direction cosine matrix with Multiplication Matrix(K*u). Ctrl+D reports a dimension error on the Gain. What is the right fix?
+--- choice
+Change the Gain's Multiplication to Element-wise(K.*u), so the sizes no longer have to match.
+--- choice
+Pad the matrix to 4-by-4 with zeros, so it accepts the 4-element vector.
+--- choice correct
+Rotate only the position: feed the Gain from the position vector itself (or a Selector with Index `[1 2 3]`), and send the altitude rate on its own line or in a bus with the position.
+--- choice
+Replace the Mux with a Demux, so the Gain receives separate lines.
+--- why
+The Mux makes a 4-element vector, and a 3-by-3 matrix cannot multiply it. The deeper problem is that a position and a rate are dissimilar, so they should never have shared a vector. Element-wise multiplication would run with the wrong meaning or fail again, and a 4-by-4 matrix hides the mistake. The rotation belongs to the three position components alone, and the other signal travels separately or as its own bus element.
+
++++ question | Quantize, then clip, or the other way round
+--- ask
+A sensor path has a Saturation with limits $\pm 1.0$ and a Quantizer with interval 0.3. The input is 1.3. What does the path output with the Quantizer first, and with the Saturation first?
+--- choice
+1.2 with the Quantizer first, and 0.9 with the Saturation first.
+--- choice correct
+1.0 with the Quantizer first, and 0.9 with the Saturation first.
+--- choice
+1.0 either way, because the Saturation always has the last word.
+--- choice
+0.9 with the Quantizer first, and 1.0 with the Saturation first.
+--- why
+Quantizer first: $1.3/0.3 = 4.33$ rounds to 4, giving 1.2, and the Saturation then clips it to 1.0. Saturation first: 1.3 becomes 1.0, and $1.0/0.3 = 3.33$ rounds to 3, giving 0.9. So the order changes the largest value the path can ever output. Nonlinear blocks do not commute, which is why the order of blocks in an actuator or sensor model must match the order in the hardware.
+
++++ question | Three loops, one small command
+--- ask
+Loop A is a PI loop with a saturating actuator and no anti-windup. Loop B is the same loop with anti-windup. Loop C is the same loop with no saturation at all. All three receive a command so small that the controller's output never reaches the actuator's limit. How do their responses compare?
+--- choice
+A overshoots most, B less, and C least, because windup builds up whenever an integrator is present.
+--- choice correct
+All three are identical, because the Saturation passes its input unchanged inside its limits and the anti-windup rule only acts while the actuator is saturated.
+--- choice
+B is slowest, because anti-windup always stops the integrator from building up the value it needs.
+--- choice
+C overshoots most, because without a saturation nothing limits the controller's output.
+--- why
+A nonlinear block behaves linearly when its input stays inside its limits, and anti-windup does nothing unless the actuator is pinned. So for a small command all three are the same linear loop. This is also how you check a nonlinear model: pick a case where the limit is never reached, and it must match the linear result exactly. Windup needs both an integral term and time spent on a limit.
+
++++ question | A table read past its edge, with Clip
+--- ask
+A 2-D Lookup Table with linear interpolation and Extrapolation method Clip holds $C_N$ with Mach on Breakpoints 1 and angle of attack on Breakpoints 2:
+
+| $M$ \ $\alpha$ | 0° | 4° | 8° |
+|---|---|---|---|
+| 0.6 | 0 | 0.20 | 0.44 |
+| 1.0 | 0 | 0.28 | 0.60 |
+| 1.4 | 0 | 0.32 | 0.66 |
+| 2.0 | 0 | 0.26 | 0.54 |
+
+What does it output at Mach 1.2 and $\alpha = 11°$?
+--- answer
+0.63
+.63
+0.630
+--- why
+$\alpha = 11°$ is past the last column, so Clip holds it at $8°$. Mach 1.2 is inside, halfway between the rows 1.0 and 1.4, so the block interpolates between 0.60 and 0.66: 0.63. With Linear extrapolation each row would continue its last slope, giving 0.84 and 0.915, and 0.878 after interpolating: 39% higher, with no data behind either number.
+
++++ question | An actuator written as code
+--- ask
+A MATLAB Function block models an actuator:
+
+```matlab
+function y = act(u)
+persistent last
+if isempty(last)
+    last = 0;
+end
+dt = 0.1;  R = 20;
+c = min(max(u, -6), 6);
+d = min(max(c - last, -R*dt), R*dt);
+last = last + d;
+y = last;
+```
+
+It is called once every 0.1 s with the inputs 10, 10, 10, 10, $-10$. What is the fifth output?
+--- answer
+4
+4.0
+--- why
+`c` clips the command to $\pm 6$, and `d` limits each move to $R \cdot dt = 2$. The outputs are 2, 4, 6, then 6 again, because the clipped command is already reached. On the fifth call `c` is $-6$, the wanted move is $-12$, and it is limited to $-2$, so the output is 4. The code clips first and then limits the rate, the same order as a Saturation followed by a Rate Limiter, so it starts back from $6$ at once instead of from a hidden 10.
+
++++ question | A value from MATLAB with no type
+--- ask
+A MATLAB Function block calls an old density routine during simulation:
+
+```matlab
+function rho = fcn(h)
+coder.extrinsic('legacy_density');
+rho = legacy_density(h);
+```
+
+The block fails to build, saying it cannot work out the type of `rho`. What is the fix, and what is the catch?
+--- choice
+Remove `coder.extrinsic`, and the block will compile `legacy_density` into C by itself.
+--- choice correct
+Assign `rho = 0;` before the call, so the block knows to convert the returned value to a real 1-by-1 double. The catch: the call is left out of generated code, so flight software built from this block cannot compute `rho` this way.
+--- choice
+Put the call inside an Interpreted MATLAB Function block instead, which can then be code-generated.
+--- choice
+Declare `rho` as persistent, which gives it a type.
+--- why
+A value coming back from MATLAB through an extrinsic call has no type the block can know in advance, so you assign the output first to say what to convert it into. Extrinsic calls run only in simulation and never reach the generated code. That is fine for a plot or a log, and wrong for anything the vehicle needs. An Interpreted MATLAB Function block cannot be code-generated at all.
+
++++ question | A capital letter in a mask
+--- ask
+A masked actuator's only mask parameter is `lim`, set to 6. The Saturation inside has Upper limit `Lim` and Lower limit `-Lim`. An old script left `Lim = 30` in the base workspace. The actuator receives a command of 12. What does the Saturation output?
+--- answer
+12
+12.0
+--- why
+MATLAB names are case-sensitive, so `Lim` is not `lim`. The mask does not define `Lim`, so the search continues outward and finds `Lim = 30` in the base workspace. A command of 12 is inside $\pm 30$ and passes unclipped. After `clear`, the same model stops with an undefined `Lim`, which is the fastest way to find this kind of mistake.
+
++++ question | A 5 Hz test that is not
+--- ask
+A test should shake a first-order lag with time constant $\tau = 0.1$ s at 5 Hz. The Sine Wave block has Amplitude 1 and Frequency `5`. What steady output amplitude does the logged data show? Give three decimal places.
+--- answer
+0.894
+0.89
+0.8944
+--- why
+The Frequency field is in rad/s, so the wave runs at 5 rad/s. There $\omega\tau = 0.5$, and the amplitude is $\frac{1}{\sqrt{1 + 0.25}} = 0.894$. At a real 5 Hz, $\omega = 31.4$ rad/s, $\omega\tau = 3.14$, and the amplitude would be $\frac{1}{\sqrt{1 + 9.87}} = 0.303$. Writing the expected number down before the run catches the mistake at once.
+
++++ question | A filtered PD controller in one block
+--- ask
+A PD controller with a filtered derivative is $C(s) = K_p + K_d\dfrac{s}{\tau s + 1}$, with $K_p = 4$, $K_d = 2$ and $\tau = 0.02$ s. What goes into a single Transfer Fcn block?
+--- choice
+Numerator `[2 4]`, Denominator `[0.02 1]`.
+--- choice correct
+Numerator `[2.08 4]`, Denominator `[0.02 1]`.
+--- choice
+Numerator `[4 2 0]`, Denominator `[0.02 1]`.
+--- choice
+Numerator `[2.08 4]`, Denominator `[1 0.02]`.
+--- why
+Put both terms over the common denominator $\tau s + 1$: $\frac{K_p(\tau s + 1) + K_d s}{\tau s + 1} = \frac{(K_p\tau + K_d)s + K_p}{\tau s + 1} = \frac{2.08s + 4}{0.02s + 1}$. Both are first order, so the block accepts it. Forgetting $K_p\tau$ gives `[2 4]`, and `[1 0.02]` is the denominator $s + 0.02$, a pole at $-0.02$ instead of $-50$. The block holds the same filter the PID Controller block builds, with $N = 1/\tau = 50$.
+
++++ question | A test bench for three cases
+--- ask
+A descent model must be run every night on three input cases (nominal, heavy gust, engine-out), and each result compared with a run the team has agreed is correct. What setup does that best?
+--- choice
+Three copies of the model, one per case, each with its own Scope, checked by eye each morning.
+--- choice correct
+One model with a Signal Editor block holding the three cases as scenarios; a script sets the Active scenario, runs each case with its signals logged, and compares each run with its baseline in the Simulation Data Inspector, within set tolerances.
+--- choice
+One model with three Step blocks and a Switch, and a Display on each output to read the final values.
+--- choice
+One model with an Interpreted MATLAB Function block that loads the case data at every time step.
+--- why
+Keeping the cases as scenarios means every case runs through exactly the same diagram, and a script can switch between them without anyone touching the mouse. Logged runs compared with a baseline, within tolerances, give a yes-or-no answer to "did anything change?". Copies of a model drift apart, a Scope or a Display is for looking, and an interpreted block is slow and cannot be code-generated.

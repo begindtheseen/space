@@ -43,7 +43,7 @@ It stops the compiler from caching or reordering accesses to that object, which 
 
 Here are both tools in one short program. It compiles with `g++ -std=c++17` and runs as shown. A plain object stands in for the device, so it runs on any computer.
 
-```cpp
+```cpp laptop
 #include <atomic>
 #include <cstdint>
 #include <cstdio>

@@ -24,6 +24,8 @@ function fenced(files: { t: string }[], tags: RegExp, sections: boolean): string
 /* ── Terminal and Git ─────────────────────────────────────────────────────── */
 
 const SYNTAX = new Set(['do', 'done', 'then', 'fi', 'else', 'elif', 'esac', 'in', '{', '}', '(', ')'])
+// Commands a lesson has her type because no such command exists: `launchnow` shows the 127 of "command not found".
+const NO_SUCH_COMMAND = new Set(['launchnow'])
 
 function taughtCommands(): Map<string, string> {
   const found = new Map<string, string>()
@@ -37,7 +39,7 @@ function taughtCommands(): Map<string, string> {
       for (const seg of line.split(/\|\||&&|\||;|\$\(|`/)) {
         const words = seg.trim().replace(/^(?:sudo|!)\s+/, '').split(/\s+/)
         let w = words[0] ?? ''
-        if (!/^[a-z[][\w.+-]*$/.test(w) || /=/.test(w) || SYNTAX.has(w) || defined.has(w)) continue
+        if (!/^[a-z[][\w.+-]*$/.test(w) || /=/.test(w) || SYNTAX.has(w) || defined.has(w) || NO_SUCH_COMMAND.has(w)) continue
         // A script run by name (`hi.sh`) and `name = value` (the spacing mistake a lesson shows on purpose) are not commands.
         if ((w.includes('.') && !has('shell', w)) || words[1] === '=') continue
         if (w === 'git' && /^[a-z][a-z-]*$/.test(words[1] ?? '')) w = `git ${words[1]}`

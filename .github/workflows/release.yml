@@ -92,15 +92,25 @@ jobs:
           [[ "${skip:-}" == "true" ]] || echo "Releasing ${tag}"
       - run: npm ci --legacy-peer-deps
         if: steps.meta.outputs.skip != 'true'
+      # Lesson code blocks run on CPython in the unit tests, as in CI.
+      - uses: actions/setup-python@v5
+        if: steps.meta.outputs.skip != 'true'
+        with:
+          python-version: '3.14'
+      - name: Python packages lessons may import
+        if: steps.meta.outputs.skip != 'true'
+        run: pip install numpy scipy matplotlib pandas
       - name: Stamp the version into package.json
         if: steps.meta.outputs.skip != 'true'
         run: npm version "${{ steps.meta.outputs.version }}" --no-git-tag-version --allow-same-version --ignore-scripts
       - name: Typecheck
         if: steps.meta.outputs.skip != 'true'
         run: npx tsc -b
+      # The lesson checker (every problem in every course, run for real) takes longer than this job
+      # may; CI runs it, split across machines, on every pull request and every push to main.
       - name: Unit tests
         if: steps.meta.outputs.skip != 'true'
-        run: npx vitest run
+        run: npx vitest run --exclude src/learn/solutions.test.ts
       - name: Build the bundle and manifest
         if: steps.meta.outputs.skip != 'true'
         run: npm run bundle

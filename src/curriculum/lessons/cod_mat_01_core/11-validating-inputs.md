@@ -322,7 +322,7 @@ The size and class checks run before your body. If you want a function to return
 :::
 
 ::: note Why check at the door, not inside
-Checking at the top is called **failing fast**. An error at the door names the function, the input and the broken rule, while the caller's line is still on screen. The same bad value caught ten calls deeper surfaces as "Index exceeds the number of array elements" in a function you did not write. There is a second payoff: the arguments block is also documentation. Anyone reading the first five lines knows exactly what the function accepts,, and nobody has to read the body to find out.
+Checking at the top is called **failing fast**. An error at the door names the function, the input and the broken rule, while the caller's line is still on screen. The same bad value caught ten calls deeper surfaces as "Index exceeds the number of array elements" in a function you did not write. There is a second payoff: the arguments block is also documentation. Anyone reading the first five lines knows exactly what the function accepts, and nobody has to read the body to find out.
 :::
 
 ## Check yourself

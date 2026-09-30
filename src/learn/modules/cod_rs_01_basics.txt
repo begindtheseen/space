@@ -1,0 +1,1473 @@
+@track python
+@course mod-cod_rs_01_basics
+@module cod_rs_01_basics
+@title Rust fundamentals and Cargo: practice and test
+
+=== rs01-l01 | Practice: rustup and Cargo
+--- for
+l01-rustup-and-cargo
+
++++ question | A pinned toolchain
+--- ask
+Your default toolchain is stable 1.94.1. You clone a team's repository whose top folder holds this `rust-toolchain.toml`:
+
+```toml
+[toolchain]
+channel = "1.90.0"
+```
+
+You run `cargo build` inside that folder. Which compiler builds the code?
+--- choice
+Stable 1.94.1, because it is your default and it is newer.
+--- choice correct
+Rust 1.90.0. rustup reads the file and uses that version for every command in the folder, installing it first if it is missing.
+--- choice
+Nightly, because a pinned version number is treated as an experimental build.
+--- choice
+None: Cargo stops with an error until you run `rustup default 1.90.0` by hand.
+--- why
+`rust-toolchain.toml` overrides your default for that folder. rustup reads it before `cargo` runs, and installs the named version if you do not have it yet. That is the point of the file: everyone who builds this repository, on any machine, gets the same compiler. Your default only applies in folders that do not pin one.
+
++++ question | A caret range on a young crate
+--- ask
+A `Cargo.toml` has this line under `[dependencies]`:
+
+```toml
+nalgebra = "0.33.1"
+```
+
+The published versions are 0.32.9, 0.33.0, 0.33.2, 0.34.0 and 1.0.0. There is no `Cargo.lock` yet. Which version does Cargo pick? Type the version number.
+--- answer
+0.33.2
+v0.33.2
+--- why
+`"0.33.1"` is a caret requirement: at least 0.33.1, and below the next version that may break you. For a crate whose version starts with 0, the MINOR number is the breaking one, so the range is at least 0.33.1 and below 0.34.0. That rules out 0.32.9 and 0.33.0 (too old) and 0.34.0 and 1.0.0 (may break). Cargo picks the newest version left, 0.33.2, and writes it into `Cargo.lock`.
+
++++ question | Making release stop like the tests
+--- ask
+A function adds two `u16` values that arrive in a telemetry packet. In the dev build, a sum that is too big stops the program with "attempt to add with overflow". The build you ship, made with `cargo build --release`, carries on with a wrong, wrapped number instead. Which one line under `[profile.release]` in `Cargo.toml` makes the release build stop on overflow too?
+--- choice
+`opt-level = 0`
+--- choice
+`debug = true`
+--- choice correct
+`overflow-checks = true`
+--- choice
+`edition = "2024"`
+--- why
+Whether integer overflow is caught is its own profile setting, `overflow-checks`: on in `dev`, off in `release`. Turning the optimizer down (`opt-level = 0`) makes the program slower but does not turn the check on. `debug = true` only adds debug information for the debugger. The edition is a `[package]` setting and has nothing to do with overflow. The safest code avoids relying on either profile and uses `checked_add` or `wrapping_add`, but this line at least makes the shipped program behave like the one you tested.
+
++++ question | A function nobody asked for
+--- ask
+A workspace has three crates. `units` has an optional feature `imperial` that adds `units::altitude_ft`. `sim` depends on `units` with `features = ["imperial"]`. `gui` depends on `units` with no features, yet its `main.rs` calls `units::altitude_ft`.
+
+Running `cargo build` at the top of the workspace, which builds all three, succeeds. Why, and what is the catch?
+--- choice
+`gui` gets every feature of `units` automatically, because they are in the same workspace. Nothing can go wrong.
+--- choice correct
+`units` is compiled once for the whole build, with the features any crate asked for, so `imperial` is on for `gui` too. Built on its own with `cargo build -p gui`, `gui` fails with "cannot find function `altitude_ft`".
+--- choice
+Features only affect release builds, so in the dev build every `#[cfg(feature = ...)]` item is compiled.
+--- choice
+`cargo build` ignores `#[cfg(feature = ...)]` lines unless `--features` is typed on the command line.
+--- why
+Features are unified: when one build needs a crate, it compiles it once with every feature any crate in that build asked for. So `gui` borrowed `sim`'s request by accident. Build `gui` alone and nobody asks for `imperial`, the function is never compiled, and the call breaks. This is why features must only add things, and why each crate should list the features it really uses.
+
++++ question | Two builds of the same commit
+--- ask
+Two engineers build the same git commit of a ground-station program and get programs that behave differently. `cargo tree`, which lists the exact dependency versions, shows `serde 1.0.210` on one machine and `serde 1.0.197` on the other. `Cargo.toml` says `serde = "1.0.150"`. The repository's `.gitignore` reads:
+
+```text
+/target
+Cargo.lock
+```
+
+What is the mistake?
+--- choice
+`/target` should be committed so that both machines share the same compiled files.
+--- choice
+The requirement `"1.0.150"` is wrong; it should be `"1.0"` so that Cargo picks one version.
+--- choice correct
+`Cargo.lock` is ignored, so each machine chose its own newest allowed version. Commit `Cargo.lock` for a program you build and ship.
+--- choice
+serde versions 1.0.197 and 1.0.210 have different MAJOR numbers, so Cargo should have refused to build.
+--- why
+`"1.0.150"` allows anything from 1.0.150 up to below 2.0.0, so both versions fit the range. The file that records the one version actually chosen, with a checksum, is `Cargo.lock`. With it ignored, each machine resolved the range on the day it first built. Commit the lock file and both get 1.0.210 until someone runs `cargo update` on purpose. `target/` holds build output and should stay out of git.
+
++++ question | A build server that catches everything
+--- ask
+You want a build server job that fails if any file is not in the standard format, or if any test fails, including the examples inside `///` doc comments. Which commands should the job run?
+--- choice
+`cargo fmt`, then `cargo test`.
+--- choice correct
+`cargo fmt --check`, then `cargo test`.
+--- choice
+`cargo fmt --check`, then `cargo test`, then `cargo doc` to run the doc examples.
+--- choice
+`cargo check`, then `cargo test`.
+--- why
+`cargo fmt` rewrites the files and succeeds, so the job would never fail on style; `cargo fmt --check` changes nothing and exits with an error if any file needs formatting. `cargo test` runs the unit tests and then the doc tests, so nothing more is needed for those. `cargo doc` only builds the documentation pages; it does not run the examples. `cargo check` looks for compile errors, not formatting.
+
+=== rs01-l02 | Practice: Variables, types and overflow
+--- for
+l02-variables-types-and-overflow
+
++++ question | Three ways to take 9 from 5
+--- ask
+What does this print?
+
+```rust
+fn main() {
+    let level: u8 = 5;
+    println!(
+        "{} {} {:?}",
+        level.saturating_sub(9),
+        level.wrapping_sub(9),
+        level.checked_sub(9)
+    );
+}
+```
+--- answer
+0 252 None
+--- why
+$5 - 9 = -4$ does not fit in a `u8`, whose range is 0 to 255. `saturating_sub` sticks at the floor: 0. `wrapping_sub` adds $2^8 = 256$ until the answer fits: $-4 + 256 = 252$. `checked_sub` reports the overflow as `None`, which `{:?}` prints as `None`. The same three operations give the same three answers in every build profile.
+
++++ question | Wrapping below the floor
+--- ask
+What does this print?
+
+```rust
+fn main() {
+    let x: i8 = -100;
+    println!("{}", x.wrapping_sub(50));
+}
+```
+--- answer
+106
+--- why
+An `i8` holds $-128$ to $127$. The true answer, $-100 - 50 = -150$, is below $-128$. Wrapping adds $2^8 = 256$ until it fits: $-150 + 256 = 106$. A reading that should be very negative has turned into a large positive one, which is why wrapping is only right when rolling over is the documented behavior.
+
++++ question | Half of seven, doubled
+--- ask
+What happens with this program?
+
+```rust
+fn main() {
+    println!("{}", 7 / 2 * 2.0);
+}
+```
+--- choice
+It prints `7`.
+--- choice
+It prints `6`.
+--- choice
+It prints `7.0`.
+--- choice correct
+It does not compile.
+--- why
+`7 / 2` is integer division of two whole numbers, which gives 3. Multiplying that integer by the decimal `2.0` would mix two number types, and Rust never converts between them by itself: the error is "cannot multiply `{integer}` by `{float}`". You say what you mean: `7.0 / 2.0 * 2.0` gives 7, and `(7 / 2) as f64 * 2.0` gives 6.
+
++++ question | A negative offset cast
+--- ask
+A calibration offset of $-1$ arrives as an `i32` and is cast to fit a `u8` field. What does this print?
+
+```rust
+fn main() {
+    let offset: i32 = -1;
+    println!("{}", offset as u8);
+}
+```
+--- answer
+255
+--- why
+`as` never fails; it keeps the low 8 bits, which is the same as wrapping into 0 to 255: $-1 + 256 = 255$. So a small negative correction silently becomes the largest possible value. When a value might not fit, `u8::try_from(offset)` returns an error instead of a wrong number, and the code has to deal with it.
+
++++ question | Fuel that came back
+--- ask
+This should subtract two burns, 120 kg and then 80 kg, from 500 kg and print 300. It prints `fuel left: 420 kg`.
+
+```rust
+fn main() {
+    let mut fuel_kg = 500.0;
+    {
+        let fuel_kg = fuel_kg - 120.0; // first burn
+    }
+    fuel_kg -= 80.0; // second burn
+    println!("fuel left: {fuel_kg} kg");
+}
+```
+
+What is wrong?
+--- choice
+`-=` does not work on decimal numbers; the second burn needs `fuel_kg = fuel_kg - 80.0`.
+--- choice correct
+The `let` inside the braces makes a new variable that shadows `fuel_kg` until the closing brace. The outer `fuel_kg` never changes. The line should be `fuel_kg -= 120.0;`.
+--- choice
+The outer variable needs to be declared inside the braces as well, so that both burns happen in the same scope.
+--- choice
+`500.0` is inferred as an integer, so the subtraction of `120.0` is thrown away.
+--- why
+A `let` always makes a new variable, even with a name that already exists. Inside the braces, `fuel_kg` means the new one, holding 380; at the brace it disappears and the outer 500 is back. Then $500 - 80 = 420$. The compiler even warns that the inner variable is never used. To change a value, write a plain assignment (no `let`) to a `let mut` variable.
+
++++ question | A microsecond clock for a year
+--- ask
+A flight computer counts microseconds since power-on in an unsigned integer. The mission lasts one year, about $3.2 \times 10^{7}$ seconds, and the counter must never overflow. Which is the smallest type that is enough?
+--- choice
+`u16`
+--- choice
+`u32`
+--- choice correct
+`u64`
+--- choice
+`u128`
+--- why
+One year is about $3.2 \times 10^{7} \times 10^{6} = 3.2 \times 10^{13}$ microseconds. A `u32` holds up to $2^{32} - 1 \approx 4.3 \times 10^{9}$, which is only about $4295$ seconds, or 72 minutes of microseconds. A `u64` holds up to about $1.8 \times 10^{19}$, enough for about 585 000 years. `u128` also works but doubles the size for nothing. Work out $2^n$ against the longest run before choosing a counter's width.
+
+=== rs01-l03 | Practice: Strings and control flow
+--- for
+l03-strings-and-control-flow
+
++++ question | Bytes and characters in a delta-v label
+--- ask
+The Greek letter Δ takes 2 bytes in UTF-8. What does this print? Type the two numbers separated by a space.
+
+```rust
+fn main() {
+    let s = "Δv=9.4";
+    println!("{} {}", s.len(), s.chars().count());
+}
+```
+--- answer
+7 6
+7, 6
+7,6
+--- why
+The characters are Δ, v, =, 9, . and 4: six of them. Δ takes 2 bytes and each of the other five takes 1, so there are $2 + 5 = 7$ bytes. `.len()` counts bytes and `.chars().count()` counts characters. For the same reason `&s[0..1]` would panic: byte 1 is in the middle of Δ.
+
++++ question | One label function, four callers
+--- ask
+Here is a function and one owned `String`:
+
+```rust
+fn label_len(s: &str) -> usize {
+    s.len()
+}
+
+let owned = String::from("STAGE 2");
+```
+
+Pick every call that compiles.
+--- choice correct
+`label_len("MECO")`
+--- choice correct
+`label_len(&owned)`
+--- choice correct
+`label_len(&owned[0..5])`
+--- choice
+`label_len(owned)`
+--- why
+A `&str` parameter takes any borrowed text: a literal, which is already a `&str`; a borrowed `String`, which Rust turns into a `&str` of the whole text by itself; and a slice of either. `label_len(owned)` hands over the `String` itself, which is not a borrow, so the compiler says "expected `&str`, found `String`" and suggests `&owned`. Had the parameter been `&String`, only `&owned` would work, which is why read-only text parameters take `&str`.
+
++++ question | Popping into a String
+--- ask
+What does this print?
+
+```rust
+fn main() {
+    let mut stack = vec!["A", "B", "C"];
+    let mut out = String::from(">");
+    while let Some(s) = stack.pop() {
+        out.push_str(s);
+        out.push('-');
+    }
+    println!("{out}");
+}
+```
+--- answer
+>C-B-A-
+--- why
+`pop` takes from the end, so the items come out last in, first out: C, then B, then A. Each pass adds the item with `push_str` and one `'-'` with `push`. When the list is empty, `pop` returns `None`, the pattern `Some(s)` no longer matches, and the loop ends. The last dash stays, because nothing removes it.
+
++++ question | Cutting a microsecond
+--- ask
+The micro sign µ takes 2 bytes in UTF-8. What happens here?
+
+```rust
+fn main() {
+    let t = "T+3µs";
+    println!("{}", &t[0..4]);
+}
+```
+--- choice
+It prints `T+3µ`.
+--- choice
+It prints `T+3`, dropping the half of µ that does not fit.
+--- choice correct
+It compiles, then panics: byte 4 is in the middle of µ.
+--- choice
+It does not compile, because strings cannot be sliced.
+--- why
+Slice ranges count bytes. `T`, `+` and `3` are bytes 0, 1 and 2, and µ is bytes 3 and 4. The range `0..4` stops before byte 4, which would cut µ in half. Rust checks this while the program runs and panics with "byte index 4 is not a char boundary", rather than hand you half a character. `&t[0..3]` gives `T+3` and `&t[0..5]` gives `T+3µ`.
+
++++ question | A gain that is never returned
+--- ask
+This does not compile. What is wrong?
+
+```rust
+fn gain(n: u32) -> u32 {
+    if n > 5 { 10 } else { 20 };
+}
+```
+--- choice
+An `if` cannot give back a value; you need `return 10;` and `return 20;`.
+--- choice
+The condition needs round brackets: `if (n > 5)`.
+--- choice correct
+The semicolon after the `if` turns its value into a statement and throws it away. The body then ends with no value, which is `()`, not a `u32`. Remove the semicolon.
+--- choice
+`10` and `20` are `i32` literals, which do not match the `u32` return type.
+--- why
+In Rust, `if` is an expression, and a function returns the value of its last expression when that expression has no semicolon. The semicolon turns the expression into a statement, so the function's body produces `()`, Rust's "nothing" value, and the compiler says "expected `u32`, found `()`", suggesting you remove the semicolon. The literals take their type from what is expected, so they become `u32`.
+
++++ question | Which loop does break leave?
+--- ask
+What does this print? Then what would it print if the outer loop were labeled `'outer:` and the `break` became `break 'outer`? Type the two numbers separated by a space.
+
+```rust
+fn main() {
+    let mut count = 0;
+    for a in 1..=4 {
+        for b in 1..=4 {
+            if b > a {
+                break;
+            }
+            count += 1;
+        }
+    }
+    println!("{count}");
+}
+```
+--- answer
+10 1
+10, 1
+10,1
+--- why
+A plain `break` leaves only the loop it is in. For each `a`, the inner loop counts `b` from 1 up to `a` and then stops, so `count` grows by 1, 2, 3 and 4: $1 + 2 + 3 + 4 = 10$. With `break 'outer`, the first time `b > a` happens (when `a` is 1 and `b` is 2) both loops end at once, after only one count.
+
+=== rs01-l04 | Practice: Structs, enums and match
+--- for
+l04-structs-enums-and-match
+
++++ question | Speed bands
+--- ask
+What does this print?
+
+```rust
+fn class(v_m_s: u32) -> &'static str {
+    match v_m_s {
+        0 => "stopped",
+        1..=340 => "subsonic",
+        341..=1_700 => "supersonic",
+        _ => "hypersonic",
+    }
+}
+
+fn main() {
+    println!("{} {} {}", class(340), class(341), class(7800));
+}
+```
+--- answer
+subsonic supersonic hypersonic
+--- why
+A range pattern with `..=` includes both ends, so 340 is the last value of `1..=340` and 341 the first of `341..=1_700`. 7800 fits none of the ranges and falls to the wildcard `_`. The arms are tried from top to bottom and the first that fits wins.
+
++++ question | Readings of three kinds
+--- ask
+What does this print?
+
+```rust
+enum Reading {
+    Temp(f64),
+    Pressure { kpa: f64 },
+    Offline,
+}
+
+fn status(r: Reading) -> &'static str {
+    match r {
+        Reading::Temp(t) if t > 85.0 => "hot",
+        Reading::Temp(_) => "ok",
+        Reading::Pressure { kpa } if kpa < 10.0 => "vacuum",
+        Reading::Pressure { kpa: _ } => "ok",
+        Reading::Offline => "no data",
+    }
+}
+
+fn main() {
+    let all = [
+        Reading::Temp(90.0),
+        Reading::Temp(20.0),
+        Reading::Pressure { kpa: 5.0 },
+        Reading::Offline,
+    ];
+    for r in all {
+        print!("{} ", status(r));
+    }
+}
+```
+--- answer
+hot ok vacuum no data
+--- why
+Each pattern first checks the variant, then names the data inside, then the guard after `if` must also be true. `Temp(90.0)` fits the first arm. `Temp(20.0)` fails its guard and falls to `Temp(_)`. `Pressure { kpa: 5.0 }` passes the guard $5 < 10$. `Offline` carries nothing and fits its own arm. The unguarded arms for `Temp` and `Pressure` are what make the match cover every value.
+
++++ question | A counter that will not count
+--- ask
+What happens with this program?
+
+```rust
+struct Counter {
+    hits: u32,
+}
+
+impl Counter {
+    fn hit(&mut self) {
+        self.hits += 1;
+    }
+    fn hits(&self) -> u32 {
+        self.hits
+    }
+}
+
+fn main() {
+    let c = Counter { hits: 0 };
+    c.hit();
+    println!("{}", c.hits());
+}
+```
+--- choice
+It prints `1`.
+--- choice
+It prints `0`, because `hit` changed a copy.
+--- choice correct
+It does not compile: `hit` takes `&mut self`, and `c` was not declared `mut`.
+--- choice
+It does not compile: a method cannot have the same name as a field.
+--- why
+`c.hit()` means `Counter::hit(&mut c)`, a mutable borrow, and you can only borrow a variable mutably if it was declared with `let mut`. The compiler says "cannot borrow `c` as mutable" and suggests `let mut c`. A field and a method may share a name: `c.hits` is the field and `c.hits()` is the method. With `let mut c`, it prints 1.
+
++++ question | Almost every byte
+--- ask
+What happens when this is compiled?
+
+```rust
+fn band(n: u8) -> &'static str {
+    match n {
+        0..=99 => "low",
+        100..=199 => "mid",
+        200..=254 => "high",
+    }
+}
+```
+--- choice
+It compiles. `band(255)` panics while the program runs.
+--- choice
+It compiles, with a warning that 255 is not handled.
+--- choice correct
+It does not compile: error E0004, non-exhaustive patterns, naming the one missing value `u8::MAX`, which is 255.
+--- choice
+It does not compile, because a `match` on an integer must always end with `_`.
+--- why
+Exhaustiveness is checked for integers too. A `u8` has 256 values, 0 to 255, and the three ranges cover 0 to 254, so the compiler finds the single value left over and names it. You fix it with `200..=255` or `200..=u8::MAX`, and no wildcard is needed, because the ranges then cover every value.
+
++++ question | The limit that never fires
+--- ask
+`check(90.0)` should return `"too hot"`, but it returns `"warm"`. The compiler gives no warning.
+
+```rust
+fn check(temp_c: f64) -> &'static str {
+    match temp_c {
+        t if t > 60.0 => "warm",
+        t if t > 85.0 => "too hot",
+        _ => "ok",
+    }
+}
+```
+
+What is wrong?
+--- choice
+`t` is a copy of `temp_c`, so the second guard compares an old value.
+--- choice correct
+The arms are tried in order, and 90 is already above 60, so the first arm wins. Put the `> 85.0` arm first. The compiler cannot warn, because it does not work out what guards will do.
+--- choice
+Guards only work on integers, so the float comparisons are skipped.
+--- choice
+A `match` on an `f64` always takes the first arm that has a guard.
+--- why
+The first arm that fits runs. Every value above 85 is also above 60, so the second arm can never be reached. For patterns without guards, such as a `_` placed first, the compiler spots the unreachable arm and warns. A guard is an arbitrary condition, though, so the compiler does not reason about it, and the order is up to you.
+
++++ question | States with no meaning
+--- ask
+Compare two ways to store a throttle:
+
+```rust
+enum Throttle {
+    Off,
+    On(u8),
+}
+
+struct ThrottleBox {
+    on: bool,
+    level: u8,
+}
+```
+
+`ThrottleBox` can hold states such as "off, at level 40", which mean nothing. How many more possible values does `ThrottleBox` have than `Throttle`? Type a number.
+--- answer
+255
+--- why
+The enum has $1 + 256 = 257$ values: `Off`, or `On` with one of 256 levels. The struct has $2 \times 256 = 512$: every combination of `on` and `level`. Its 256 "off" states all mean the same thing as `Off`, so 255 of them are extra, and every piece of code that reads a `ThrottleBox` has to decide what they mean. $512 - 257 = 255$. A sum type leaves no room for them.
+
+=== rs01-l05 | Practice: Modules and collections
+--- for
+l05-modules-and-collections
+
++++ question | Building a packet from outside
+--- ask
+What happens when this is compiled?
+
+```rust
+mod telemetry {
+    pub struct Packet {
+        pub id: u16,
+        crc: u32,
+    }
+
+    impl Packet {
+        pub fn new(id: u16) -> Packet {
+            Packet { id, crc: 0 }
+        }
+    }
+}
+
+fn main() {
+    let p = telemetry::Packet { id: 7, crc: 0 };
+    println!("{}", p.id);
+}
+```
+--- choice
+It compiles and prints 7: the struct is `pub`, so all of it is public.
+--- choice correct
+It does not compile: `crc` is private, so code outside `telemetry` cannot build a `Packet` with braces. It has to call `telemetry::Packet::new(7)`.
+--- choice
+It compiles, because `main` only reads `id`, which is `pub`; private fields are only checked when they are read.
+--- choice
+It does not compile, because `main` needs `use telemetry::Packet;` first.
+--- why
+`pub struct` makes the type public, but each field needs its own `pub`. Building a struct with braces means giving every field a value, and you cannot name a private field from outside the module, so the error is "field `crc` of struct `Packet` is private". That is how a module guards an invariant, such as a correct checksum: the only way in is its own `new`. A full path like `telemetry::Packet` needs no `use`.
+
++++ question | A slice of a slice
+--- ask
+What does this print?
+
+```rust
+fn main() {
+    let a = [10, 20, 30, 40, 50, 60];
+    let s = &a[1..4];
+    println!("{} {:?} {:?}", s.len(), s.get(3), &s[1..]);
+}
+```
+--- answer
+3 None [30, 40]
+3 None [30,40]
+--- why
+`&a[1..4]` takes positions 1, 2 and 3 of `a`, so `s` is `[20, 30, 40]`, with length $4 - 1 = 3$. Positions in `s` count from its own start, so `s.get(3)` asks for a fourth element that does not exist and gives `None` instead of panicking. `&s[1..]` is `s` from its position 1 on: `[30, 40]`.
+
++++ question | Counting events in order
+--- ask
+What does this print?
+
+```rust
+use std::collections::BTreeMap;
+
+fn main() {
+    let events = ["ARM", "FIRE", "ARM", "SAFE", "ARM"];
+    let mut counts: BTreeMap<&str, u32> = BTreeMap::new();
+    for e in events {
+        *counts.entry(e).or_insert(0) += 1;
+    }
+    for (k, v) in &counts {
+        print!("{k}={v} ");
+    }
+}
+```
+--- answer
+ARM=3 FIRE=1 SAFE=1
+--- why
+`entry(e).or_insert(0)` finds the slot for `e`, puts 0 there the first time, and hands back a mutable reference, which `+= 1` bumps. ARM arrives three times, FIRE and SAFE once each. A `BTreeMap` keeps its keys sorted, so the loop visits them in alphabetical order on every run. With a `HashMap` the counts would be the same, but the order could change from run to run.
+
++++ question | The last reading of nothing
+--- ask
+What happens when this function is called with an empty slice in a debug build?
+
+```rust
+fn last_reading(v: &[f64]) -> f64 {
+    v[v.len() - 1]
+}
+```
+--- choice
+It returns `0.0`, the default for a missing `f64`.
+--- choice
+It returns `NaN`, because there is no reading.
+--- choice
+It panics with "index out of bounds: the len is 0 but the index is 0".
+--- choice correct
+It panics with "attempt to subtract with overflow", before any indexing happens.
+--- why
+`v.len()` is a `usize`, which cannot be negative, so `0 - 1` overflows, and a debug build stops right there. In a release build the subtraction wraps to the largest `usize`, and then the index check panics instead. Either way it crashes. `v.last()` returns an `Option<&f64>`, `None` for an empty slice, which makes the caller deal with the empty case.
+
++++ question | Zeroing through a read-only view
+--- ask
+This does not compile. The function should set the first `n` elements to zero.
+
+```rust
+fn zero_first(xs: &[f64], n: usize) {
+    for x in xs[..n].iter_mut() {
+        *x = 0.0;
+    }
+}
+
+fn main() {
+    let mut buf = [1.0, 2.0, 3.0];
+    zero_first(&buf, 2);
+    println!("{:?}", buf);
+}
+```
+
+Which change fixes it?
+--- choice
+Make the parameter `mut xs: &[f64]`.
+--- choice correct
+Make the parameter `xs: &mut [f64]` and call it with `zero_first(&mut buf, 2)`.
+--- choice
+Replace `iter_mut()` with `iter()`, since `buf` is already `mut`.
+--- choice
+Pass `buf` by value, `zero_first(buf, 2)`, so the function can change it.
+--- why
+`&[f64]` is a shared, read-only view: nothing can change the elements through it, whatever the caller declared. A function that changes elements takes a mutable slice, `&mut [f64]`, and the caller lends it with `&mut buf`. It then prints `[0.0, 0.0, 3.0]`. `mut xs` would only let the function point `xs` at a different slice. Passing the array by value would give the function its own copy, and `buf` would not change.
+
++++ question | How often a Vec moves
+--- ask
+Assume the growth rule the lesson measured: an empty `Vec<u32>` gets room for 4 elements on its first `push`, and doubles its capacity each time it runs out. How many times does it get a new block of memory while 1000 values are pushed onto `Vec::new()`? Type a number.
+--- answer
+9
+nine
+--- why
+The capacity goes 4, 8, 16, 32, 64, 128, 256, 512, 1024. That is 9 blocks, and 1024 is the first capacity that holds 1000. Each growth copies the elements so far, but the copies add up to less than $2 \times 1000$, so each push costs a small fixed amount on average. `Vec::with_capacity(1000)` would allocate once, which is what a control loop wants.
+
+=== rs01-l06 | Practice: Option, Result and the question mark
+--- for
+l06-option-result-and-the-question-mark
+
++++ question | Doubling maybe a number
+--- ask
+What does this print?
+
+```rust
+fn main() {
+    let some: Option<u32> = Some(4);
+    let none: Option<u32> = None;
+    println!(
+        "{} {}",
+        some.map(|x| x * 2).unwrap_or(7),
+        none.map(|x| x * 2).unwrap_or(7)
+    );
+}
+```
+--- answer
+8 7
+8, 7
+8,7
+--- why
+`map` changes the value inside a `Some` and leaves `None` alone. So `Some(4)` becomes `Some(8)`, and `unwrap_or` takes the 8 out. `None` stays `None`, the closure never runs, and `unwrap_or` gives the fallback 7.
+
++++ question | The second word
+--- ask
+What does this print?
+
+```rust
+fn second_word_len(line: &str) -> Option<usize> {
+    let mut words = line.split_whitespace();
+    words.next()?;
+    let w = words.next()?;
+    Some(w.len())
+}
+
+fn main() {
+    println!(
+        "{:?} {:?} {:?}",
+        second_word_len("SET THROTTLE 80"),
+        second_word_len("HOLD"),
+        second_word_len("")
+    );
+}
+```
+--- answer
+Some(8) None None
+--- why
+In a function that returns an `Option`, `?` on an `Option` gives the value inside a `Some`, or returns `None` from the whole function at once. For `"SET THROTTLE 80"` the second word is `THROTTLE`, 8 bytes. `"HOLD"` has no second word, so the second `?` returns `None`. The empty string has no words at all, so the first `?` returns `None`.
+
++++ question | Throttle 300
+--- ask
+What does `throttle_pct("THR 300")` return? Type it the way `{:?}` would print it.
+
+```rust
+#[derive(Debug)]
+enum CmdError {
+    NoValue,
+    BadNumber(String),
+}
+
+fn throttle_pct(line: &str) -> Result<u8, CmdError> {
+    let (_, value) = line.split_once(' ').ok_or(CmdError::NoValue)?;
+    value
+        .parse::<u8>()
+        .map_err(|_| CmdError::BadNumber(value.to_string()))
+}
+```
+--- answer
+Err(BadNumber("300"))
+Err(CmdError::BadNumber("300"))
+--- why
+`split_once(' ')` finds the space, so `value` is `"300"` and `?` passes it on. Parsing it as a `u8` fails, because a `u8` holds 0 to 255, and `map_err` turns that failure into `BadNumber("300")`. The parse is the last expression of the function, so its `Result` is returned as it is. `"THR 80"` would give `Ok(80)` and `"THR"`, with no space, `Err(NoValue)`.
+
++++ question | Text that will not parse
+--- ask
+Pick every input for which `s.parse::<u32>()` returns an `Err`.
+--- choice correct
+`" 42"`, with a space in front
+--- choice correct
+`"42\n"`, with a newline at the end, as a line read from a radio would have
+--- choice correct
+`"1_000"`
+--- choice
+`"042"`
+--- why
+`parse` is strict: every character must be a digit, so a space, a newline or an underscore gives `Err(ParseIntError { kind: InvalidDigit })`. Underscores are allowed in number literals in your code, like `1_000`, but not in text being parsed. A leading zero is still a digit, so `"042"` gives `Ok(42)`. Text from outside usually needs `.trim()` before `.parse()`.
+
++++ question | A question mark with nowhere to go
+--- ask
+This does not compile. What is the problem?
+
+```rust
+enum ConfigError {
+    MissingEquals,
+}
+
+fn read_limit(line: &str) -> Result<f64, ConfigError> {
+    let (_, v) = line.split_once('=').ok_or(ConfigError::MissingEquals)?;
+    let limit: f64 = v.trim().parse::<f64>()?;
+    Ok(limit)
+}
+```
+--- choice
+`?` can only be used once per function.
+--- choice
+`ok_or` returns an `Option`, so the first `?` is not allowed in a function that returns a `Result`.
+--- choice correct
+The second `?` has a `ParseFloatError` to pass up, and there is no way to turn it into a `ConfigError`. Add a variant for it with `impl From<ParseFloatError> for ConfigError`, or convert it with `map_err` before the `?`.
+--- choice
+`parse::<f64>()` returns an `Option`, which cannot be used with `?` here.
+--- why
+On a `Result`, `?` returns `Err(From::from(e))`, so the error must be convertible into the function's own error type. The compiler says "`?` couldn't convert the error to `ConfigError`", because `From<ParseFloatError>` is not implemented for it. The first `?` is fine: `ok_or` already turned the `Option` into a `Result<_, ConfigError>`.
+
++++ question | Parse, then look up
+--- ask
+`LookupError` is an enum with a variant `NotFound(u16)`, and it has `impl From<ParseIntError> for LookupError`. What does the compiler say about this function?
+
+```rust
+fn parse_id(s: &str) -> Result<u16, ParseIntError> { s.trim().parse() }
+fn find_sensor(id: u16) -> Option<Sensor> { /* ... */ }
+
+fn sensor_from_text(s: &str) -> Result<Sensor, LookupError> {
+    let id = parse_id(s)?;
+    let sensor = find_sensor(id)?;
+    Ok(sensor)
+}
+```
+--- choice
+It compiles: `?` works on both `Result` and `Option`, whatever the function returns.
+--- choice
+The first `?` fails, because `ParseIntError` is not a `LookupError`.
+--- choice correct
+The second `?` fails: in a function that returns a `Result`, `None` carries no error to return. Write `find_sensor(id).ok_or(LookupError::NotFound(id))?`.
+--- choice
+Both fail, because two different error sources can never share one `?`-based function.
+--- why
+The first `?` is fine: the `From` impl turns a `ParseIntError` into a `LookupError`. The second is an `Option` in a function returning a `Result`, and the compiler says `?` "can only be used on `Result`s, not `Option`s, in a function that returns `Result`", suggesting `.ok_or(...)?`. `ok_or` supplies the error that `None` lacks, here one that names the missing id.
+
+=== rs01-l07 | Practice: Iterators and closures
+--- for
+l07-iterators-and-closures
+
++++ question | Skip, take, and which index
+--- ask
+What does this print?
+
+```rust
+fn main() {
+    let alts = [100, 250, 400, 550, 700];
+    let picked: Vec<(usize, i32)> = alts
+        .iter()
+        .copied()
+        .enumerate()
+        .skip(1)
+        .take(2)
+        .collect();
+    println!("{picked:?}");
+}
+```
+--- answer
+[(1, 250), (2, 400)]
+[(1,250), (2,400)]
+[(1,250),(2,400)]
+[(1, 250),(2, 400)]
+--- why
+`enumerate` pairs each item with its position before anything is skipped, so the pairs keep their original positions: `(0, 100)`, `(1, 250)`, `(2, 400)` and so on. `skip(1)` drops the first pair and `take(2)` keeps the next two. Put `enumerate` after `skip` and the positions would start from 0 again.
+
++++ question | How many were checked?
+--- ask
+What does this print?
+
+```rust
+fn main() {
+    let mut checked = 0;
+    let hot = [21, 35, 90, 22, 95].iter().any(|&t| {
+        checked += 1;
+        t > 80
+    });
+    println!("{hot} {checked}");
+}
+```
+--- answer
+true 3
+--- why
+Iterators hand out items one at a time, and `any` stops asking for more as soon as the closure says `true`. 21 and 35 are not above 80; 90 is, on the third call. So the closure ran 3 times, and 22 and 95 were never looked at. The closure changes `checked`, so it is an `FnMut`, and `any` accepts that.
+
++++ question | Speeds from two logs
+--- ask
+What does this print?
+
+```rust
+fn main() {
+    let t_s = [0.0, 1.0, 3.0];
+    let x_m = [0.0, 10.0, 50.0];
+    let v: Vec<f64> = t_s
+        .windows(2)
+        .zip(x_m.windows(2))
+        .map(|(t, x)| (x[1] - x[0]) / (t[1] - t[0]))
+        .collect();
+    println!("{v:?}");
+}
+```
+--- answer
+[10.0, 20.0]
+[10.0,20.0]
+--- why
+`windows(2)` gives each pair of neighbors, and `zip` walks the time pairs and the position pairs side by side. First pair: $(10 - 0) / (1 - 0) = 10$. Second: $(50 - 10) / (3 - 1) = 20$. Three samples give two windows, so two speeds. `{:?}` prints an `f64` with its decimal point, so 10 appears as `10.0`.
+
++++ question | The largest of nothing
+--- ask
+`peak` finds the largest reading:
+
+```rust
+fn peak(xs: &[f64]) -> f64 {
+    xs.iter().copied().fold(f64::MIN, f64::max)
+}
+```
+
+What does `peak(&[])` return, and why does that matter?
+--- choice
+It panics, because there is nothing to compare.
+--- choice
+It returns `NaN`, which marks "no value".
+--- choice correct
+It returns `f64::MIN`, about $-1.8 \times 10^{308}$. That looks like a real number, so a caller cannot tell "no readings" apart from a reading. `xs.iter().max_by(|a, b| a.total_cmp(b))` returns `None` for an empty slice instead.
+--- choice
+It returns `0.0`, the starting value of every `fold`.
+--- why
+`fold` starts from the value you give it and combines it with each item in turn. With no items, the start value comes straight back. `f64::MIN` is a good start when there is at least one reading and a quiet lie when there is none. An answer of type `Option` makes the empty case impossible to miss.
+
++++ question | The last one above the limit
+--- ask
+This should return the position of the last sample above the limit. For `[1.0, 9.0, 3.0, 9.0, 2.0]` and a limit of 5.0 the answer should be `Some(3)`, but it returns `Some(1)`.
+
+```rust
+fn last_above(xs: &[f64], limit: f64) -> Option<usize> {
+    xs.iter().rev().position(|&x| x > limit)
+}
+```
+
+Which change fixes it?
+--- choice
+Remove `.rev()`.
+--- choice
+Replace `x > limit` with `x >= limit`.
+--- choice correct
+Keep the chain and add `.map(|i| xs.len() - 1 - i)` after `position`, turning a count from the end into a position from the start.
+--- choice
+Put `.rev()` after `.position(...)`.
+--- why
+After `.rev()`, `position` counts along the reversed order: 2.0 is step 0, and 9.0 is step 1. Step `i` from the end is position $5 - 1 - i$ from the start, so step 1 is position 3. Removing `.rev()` finds the first match, position 1, not the last. `position` returns an `Option`, not an iterator, so nothing can be reversed after it.
+
++++ question | Two counters from one factory
+--- ask
+What does this print?
+
+```rust
+fn make_counter() -> impl FnMut() -> u32 {
+    let mut n = 0;
+    move || {
+        n += 1;
+        n
+    }
+}
+
+fn main() {
+    let mut a = make_counter();
+    let mut b = make_counter();
+    a();
+    a();
+    println!("{} {}", a(), b());
+}
+```
+--- answer
+3 1
+3, 1
+3,1
+--- why
+`move` gives each closure its own `n`, taken over from the call of `make_counter` that made it. The closure changes `n`, so it is `FnMut`, and each call adds one to its own copy. `a` has been called twice already, so its third call gives 3. `b` is a separate closure with a separate `n`, so its first call gives 1.
+
+=== rs01-l08 | Practice: derive, cfg, doc tests and clippy
+--- for
+l08-derive-cfg-doc-tests-and-clippy
+
++++ question | A key you can print
+--- ask
+You want to use this struct as a `HashMap` key and print it with `{:?}`:
+
+```rust
+struct Key {
+    id: u16,
+    name: String,
+}
+```
+
+Which `derive` line does that?
+--- choice
+`#[derive(Debug, Clone, Copy, Hash)]`
+--- choice
+`#[derive(Debug, Hash)]`
+--- choice
+`#[derive(Debug, PartialEq, Hash)]`
+--- choice correct
+`#[derive(Debug, PartialEq, Eq, Hash)]`
+--- why
+A `HashMap` key needs `Hash`, to pick a bucket, and `Eq`, to confirm a match, and `Eq` needs `PartialEq`. `Debug` gives `{:?}`. `Copy` is impossible here, because a `String` owns heap memory and cannot be copied bit for bit. The lines without `Eq` compile, but the first `insert` fails with "the trait bound `Key: Eq` is not satisfied".
+
++++ question | Sorting by severity
+--- ask
+What does this print?
+
+```rust
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum Severity {
+    Info,
+    Warning,
+    Fault,
+}
+
+fn main() {
+    let mut v = vec![Severity::Fault, Severity::Info, Severity::Warning, Severity::Info];
+    v.sort();
+    println!(
+        "{:?} {:?} {}",
+        v.first(),
+        v.iter().max(),
+        Severity::Warning > Severity::Fault
+    );
+}
+```
+--- answer
+Some(Info) Some(Fault) false
+--- why
+A derived order on an enum follows the order the variants are written in: `Info` is less than `Warning`, which is less than `Fault`. After `sort`, the list is Info, Info, Warning, Fault, so the first is `Info`. `max` needs `Ord`, which is derived, and gives `Fault`. Both come back as an `Option`, because a list can be empty. `Warning > Fault` is `false`.
+
++++ question | Which line survives release
+--- ask
+What does this print when run with `cargo run --release`? Type the two words separated by a space.
+
+```rust
+fn main() {
+    #[cfg(debug_assertions)]
+    println!("dev");
+    #[cfg(not(debug_assertions))]
+    println!("release");
+    println!("{}", cfg!(test));
+}
+```
+--- answer
+release false
+release, false
+release,false
+--- why
+The release profile turns `debug_assertions` off, so the first `println!` is removed before compiling and the second one is kept. `cfg!(test)` removes nothing; it becomes a plain `true` or `false`, and `test` is only true while `cargo test` builds. So it prints `release`, then `false`.
+
++++ question | A fix equal to its copy
+--- ask
+What does this print?
+
+```rust
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Fix {
+    lat: f64,
+    lon: f64,
+}
+
+fn main() {
+    let f = Fix { lat: f64::NAN, lon: 0.0 };
+    let g = f;
+    println!("{}", f == g);
+}
+```
+--- answer
+false
+--- why
+`Copy` makes `g` an exact copy, bit for bit. But the derived `==` compares field by field with the `f64` rule, and NaN is not equal to anything, itself included. So `f == g` is `false`. This is exactly why a struct of floats can derive `PartialEq` but never `Eq`: `Eq` promises that every value equals itself.
+
++++ question | A doc test that cannot find its function
+--- ask
+In the library crate `orbits`, `src/lib.rs` holds:
+
+```rust
+/// Speed of a circular orbit, in km/s.
+///
+/// ```
+/// let v = circular_speed(398_600.0, 6_778.0);
+/// assert!((v - 7.668).abs() < 1e-3);
+/// ```
+pub fn circular_speed(mu: f64, r: f64) -> f64 {
+    (mu / r).sqrt()
+}
+```
+
+`cargo test` reports the doc test as FAILED, with "cannot find function `circular_speed` in this scope". What is wrong?
+--- choice
+The number is wrong: $\sqrt{398\,600 / 6\,778}$ is not close to 7.668.
+--- choice
+Doc tests only run under `cargo test --release`.
+--- choice correct
+Each doc test is compiled as a separate program outside the crate, so it must bring the function in the way a user would: add `use orbits::circular_speed;` (as a hidden `# ` line if you like) or call `orbits::circular_speed`.
+--- choice
+Doc tests cannot call functions that take arguments.
+--- why
+A doc test is compiled like a small program that depends on your library, so the library's items are not in scope by themselves. The number is fine: $398\,600 / 6\,778 \approx 58.81$, and its square root is about 7.669, within 0.001 of 7.668. Writing the `use` line with `# ` in front runs it in the test but hides it from the published page.
+
++++ question | An exception that went stale
+--- ask
+A function carries `#[expect(clippy::needless_return, reason = "old style, to clean up")]`. Later a teammate removes the `return`, so the lint no longer fires there. The build server runs `cargo clippy -- -D warnings`. What happens on the next run?
+--- choice
+Nothing: an `#[expect]` that is not needed is simply ignored.
+--- choice correct
+Clippy warns that the lint expectation is unfulfilled, and `-D warnings` turns that warning into an error, so the build fails until the stale `#[expect]` is removed.
+--- choice
+Clippy turns `needless_return` off for the whole crate from then on.
+--- choice
+The build fails because `reason = "..."` is only allowed on `#[allow]`.
+--- why
+`#[expect(...)]` silences a lint like `#[allow(...)]`, but it also checks that the lint really fires. When it stops firing, you get the warning `unfulfilled_lint_expectations`. With `-D warnings` every warning is an error, so an exception nobody needs any more cannot stay in the code. `#[allow]` would have stayed silently.
+
+=== rs01-test | Rust fundamentals and Cargo: module test
+--- teach
+The test covers the whole module: Cargo and its profiles, integer overflow, strings and loops, structs, enums and exhaustive matching, modules and collections, Option, Result and `?`, iterators and closures, and derive, cfg, doc tests and clippy. Most questions combine two or more lessons, and you predict what code does, spot why it fails, or pick the real reason. To get ready, redo the practice questions of the lessons that felt hard, and trace each program on paper before you answer.
+--- gate
+questions 13
+minutes 25
+
++++ question | Overflow checks switched back on
+--- ask
+A project's `Cargo.toml` contains:
+
+```toml
+[profile.release]
+overflow-checks = true
+```
+
+and its program holds:
+
+```rust
+fn total_frames(a: u16, b: u16) -> u16 {
+    a + b
+}
+```
+
+A packet arrives while the program runs, and it calls `total_frames(60_000, 10_000)`. What happens in the build made with `cargo run --release`?
+--- choice
+It returns 4464, because release builds wrap.
+--- choice
+It returns 65535, because the sum sticks at the largest `u16`.
+--- choice correct
+The program panics with "attempt to add with overflow".
+--- choice
+The build fails with "this arithmetic operation will overflow".
+--- why
+$60\,000 + 10\,000 = 70\,000$, which is more than the `u16` limit of $65\,535$. Release builds wrap only because `overflow-checks` is off by default there; this project switched it on, so plain `+` panics in release just as in dev. Without the setting it would wrap to $70\,000 - 65\,536 = 4464$. The compile-time error only appears when the compiler can see both numbers in the code; these arrive in a packet. Code that must behave the same in every build uses `checked_add`, `wrapping_add` or `saturating_add`.
+
++++ question | Initials of a crew
+--- ask
+É and Ø each take 2 bytes in UTF-8, and N takes 1. What does this print? Type the two numbers separated by a space.
+
+```rust
+fn initials(name: &str) -> String {
+    let mut out = String::from("");
+    for word in name.split_whitespace() {
+        if let Some(c) = word.chars().next() {
+            out.push(c);
+        }
+    }
+    out
+}
+
+fn main() {
+    let crew = String::from("Élodie   Ng  Øystein");
+    let s = initials(&crew);
+    println!("{} {}", s.len(), s.chars().count());
+}
+```
+--- answer
+5 3
+5, 3
+5,3
+--- why
+`split_whitespace` ignores runs of spaces, so the words are Élodie, Ng and Øystein. `chars().next()` takes each word's first character, a whole character rather than a byte, so `s` is "ÉNØ". That is 3 characters and $2 + 1 + 2 = 5$ bytes. `&crew` works for the `&str` parameter because Rust turns a `&String` into a `&str` by itself.
+
++++ question | A guard that leaves a gap
+--- ask
+What happens when this is compiled?
+
+```rust
+enum Valve {
+    Open,
+    Closed,
+    Stuck(u8),
+}
+
+fn safe_to_fire(v: Valve, armed: bool) -> bool {
+    match (v, armed) {
+        (Valve::Open, true) => true,
+        (Valve::Stuck(pct), true) if pct > 90 => true,
+        (_, false) => false,
+        (Valve::Closed, true) => false,
+    }
+}
+```
+--- choice
+It compiles: every variant appears with both `true` and `false`.
+--- choice
+It compiles, and `safe_to_fire(Valve::Stuck(3), true)` panics at run time.
+--- choice correct
+It does not compile: error E0004, "`(Valve::Stuck(_), true)` not covered", because a guarded arm does not count toward covering its pattern.
+--- choice
+It does not compile, because a tuple of an enum and a `bool` cannot be matched.
+--- why
+The compiler does not work out what guards will do, so for exhaustiveness the arm with `if pct > 90` covers nothing. A stuck valve with `armed` true and a reading of 90 or less falls through every arm, and the compiler names exactly that case. Add `(Valve::Stuck(_), true) => false` after the guarded arm. Leaving a `_` arm at the end would also compile, but then a new variant would slip in silently.
+
++++ question | A bad pair before the key
+--- ask
+What does this print? Type it exactly.
+
+```rust
+#[derive(Debug)]
+enum E {
+    Missing,
+    Bad(String),
+}
+
+fn field(line: &str, key: &str) -> Result<f64, E> {
+    for pair in line.split(',') {
+        let (k, v) = pair.split_once('=').ok_or(E::Bad(pair.to_string()))?;
+        if k == key {
+            return v.parse().map_err(|_| E::Bad(v.to_string()));
+        }
+    }
+    Err(E::Missing)
+}
+
+fn main() {
+    println!("{:?}", field("t=1.5,alt,v=3", "v"));
+}
+```
+--- answer
+Err(Bad("alt"))
+Err(E::Bad("alt"))
+--- why
+The pairs are `"t=1.5"`, `"alt"` and `"v=3"`. The first splits fine, but its key is not `v`. The second has no `=`, so `split_once` gives `None`, `ok_or` makes it `Err(Bad("alt"))`, and `?` returns that from the function at once. The loop never reaches `v=3`, although it would have parsed to `Ok(3.0)`. Every `?` is a place where the function may leave.
+
++++ question | Parsing that stops early
+--- ask
+What number does this print?
+
+```rust
+fn main() {
+    let mut tried = 0;
+    let r: Result<Vec<u8>, _> = ["12", "7", "x", "400", "5"]
+        .iter()
+        .map(|s| {
+            tried += 1;
+            s.parse::<u8>()
+        })
+        .collect();
+    if let Err(_) = r {
+        println!("failed after {tried}");
+    }
+}
+```
+--- answer
+3
+failed after 3
+--- why
+Collecting into a `Result<Vec<_>, _>` gives `Ok` with every value, or the first `Err`. Because iterators are lazy, `collect` pulls one item at a time, and once `"x"` fails it stops pulling. So the closure ran for `"12"`, `"7"` and `"x"`: 3 times. `"400"`, which does not fit a `u8` either, was never tried.
+
++++ question | What outside code may do
+--- ask
+Here is a module:
+
+```rust
+mod nav {
+    pub struct Estimate {
+        pub t_s: f64,
+        quality: u8,
+    }
+
+    impl Estimate {
+        pub fn new(t_s: f64) -> Estimate {
+            Estimate { t_s, quality: 0 }
+        }
+        pub fn quality(&self) -> u8 {
+            self.quality
+        }
+        fn reset(&mut self) {
+            self.quality = 0;
+        }
+    }
+
+    pub enum Source {
+        Gps,
+        Imu(u8),
+    }
+}
+```
+
+`main`, outside the module, has already run `let mut e = nav::Estimate::new(1.0);`. Pick every line that does **not** compile there.
+--- choice
+`e.t_s = 2.0;`
+--- choice
+`println!("{}", e.quality());`
+--- choice correct
+`e.reset();`
+--- choice
+`let s = nav::Source::Imu(3);`
+--- choice correct
+`let e2 = nav::Estimate { t_s: 0.0, quality: 9 };`
+--- why
+Everything in a module is private unless marked `pub`. `reset` has no `pub`, so it is private to `nav`. `quality` is a private field, so outside code cannot name it, even to build an `Estimate` with braces. It can only read it through the public method `quality()`. `t_s` is a `pub` field, so it can be changed through a `mut` variable. The variants of a `pub enum` are all public.
+
++++ question | A time range in a log
+--- ask
+What does this print? Type it exactly.
+
+```rust
+use std::collections::BTreeMap;
+
+fn main() {
+    let mut log = BTreeMap::new();
+    for (t, p) in [(300, 9.1), (100, 2.0), (250, 7.7), (400, 9.4)] {
+        log.insert(t, p);
+    }
+    let n = log.range(100..300).count();
+    let first = log.range(260..).next();
+    println!("{n} {:?}", first);
+}
+```
+--- answer
+2 Some((300, 9.1))
+2 Some((300,9.1))
+--- why
+A `BTreeMap` keeps its keys sorted: 100, 250, 300, 400, whatever order they went in. `100..300` includes 100 and stops before 300, so it holds 100 and 250: a count of 2. `260..` starts at the first key of at least 260, which is 300. `next` wraps that entry in an `Option`, because a range can be empty. A `HashMap` has no order, so it could not answer "everything from 260 on" without checking every key.
+
++++ question | What text operations cost
+--- ask
+`text` is a `String` holding $n$ bytes. What do `text.len()`, `text.chars().count()` and `&text[10..20]` cost, in that order?
+--- choice correct
+$O(1)$, $O(n)$, $O(1)$
+--- choice
+$O(1)$, $O(1)$, $O(1)$: a `String` stores its character count beside its length.
+--- choice
+$O(1)$, $O(n)$, $O(n)$: a slice copies the bytes it covers.
+--- choice
+$O(n)$, $O(n)$, $O(n)$: every string operation walks the text.
+--- why
+A `String` stores its length in bytes, so `len` just reads it. It does not store a character count, and UTF-8 characters take 1 to 4 bytes, so counting them means walking every byte. A slice copies nothing: it is a pointer and a length, plus a check that bytes 10 and 20 are on character boundaries. That is also why Rust gives no `text[i]` for the i-th character: finding it would be $O(n)$.
+
++++ question | A gain captured by move
+--- ask
+What number does `scale(3.0)` return here?
+
+```rust
+fn main() {
+    let mut gain = 2.0;
+    let scale = move |x: f64| x * gain;
+    gain = 10.0;
+    println!("{}", scale(3.0));
+}
+```
+--- answer
+6
+6.0
+--- why
+`move` makes the closure take its own copy of `gain` at the moment the closure is made, while `gain` is 2.0. An `f64` is copied, not given away, so the outer `gain` can still be changed. Setting it to 10.0 afterwards changes only the outer variable, and the closure still has 2.0: $3 \times 2 = 6$. Without `move`, the closure would borrow `gain`, and the assignment while it is borrowed would not compile.
+
++++ question | What cargo test really runs
+--- ask
+A library crate is tested with plain `cargo test`, no features. Pick every item whose code actually runs.
+--- choice correct
+The `#[test]` functions inside `#[cfg(test)] mod tests` in `src/lib.rs`.
+--- choice correct
+An ordinary code example in a `///` comment on a `pub fn` in `src/lib.rs`.
+--- choice
+A code example marked `no_run` in a `///` comment in `src/lib.rs`.
+--- choice
+A `#[test]` function marked `#[cfg(feature = "sim")]`.
+--- choice correct
+A `debug_assert!` inside a function that a test calls.
+--- choice
+An example in a `///` comment in the `src/main.rs` of a separate program crate.
+--- why
+`cargo test` builds with `cfg(test)` on, so the test module exists, and it runs each doc example in the library as its own small program. A `no_run` example is compiled but not run. The feature-gated test is removed, because `sim` is not switched on. Tests build in the dev profile, where `debug_assertions` is on, so `debug_assert!` checks. Doc examples in a program's `main.rs` are not run at all.
+
++++ question | Clippy on the build server
+--- ask
+The build server runs `cargo fmt --check`, then `cargo clippy -- -D warnings`, then `cargo test`. A pull request adds these two correctly formatted functions:
+
+```rust
+pub fn deg_to_rad(d: f64) -> f64 {
+    d * 3.1416 / 180.0
+}
+
+pub fn total(xs: &Vec<f64>) -> f64 {
+    xs.iter().sum()
+}
+```
+
+What happens?
+--- choice
+Every step passes: both functions compile, and no test covers them.
+--- choice correct
+The clippy step fails: `3.1416` trips `approx_constant`, which is an error by default, and `-D warnings` also turns the `ptr_arg` warning about `&Vec<f64>` into an error.
+--- choice
+Clippy passes, because both findings are only warnings; the server would need `-W clippy::pedantic` to catch them.
+--- choice
+`cargo test` fails, because 3.1416 is not exactly pi.
+--- why
+`approx_constant` is in clippy's correctness group, which denies by default: a hand-typed pi is almost always a bug, and `std::f64::consts::PI` or `d.to_radians()` is the fix. `ptr_arg` only warns, but `-D warnings` makes every warning an error, so it fails the build as well; the fix is `xs: &[f64]`, which also accepts arrays and parts of vectors. Tests only fail if an assertion fails, and none checks these functions.
+
++++ question | An average of percentages
+--- ask
+What happens when `mean_pct(&[90, 95, 80])` runs in a debug build?
+
+```rust
+fn mean_pct(xs: &[u8]) -> u8 {
+    let total: u8 = xs.iter().sum();
+    total / xs.len() as u8
+}
+```
+--- choice
+It returns 88, the mean rounded down.
+--- choice
+It returns 3.
+--- choice correct
+It panics with "attempt to add with overflow", because the sum is kept in a `u8`.
+--- choice
+It does not compile, because `sum` cannot add `&u8` values.
+--- why
+The total is $90 + 95 + 80 = 265$, and it is being added up in a `u8`, which stops at 255. A debug build panics; a release build wraps it to $265 - 256 = 9$ and returns $9 / 3 = 3$, a silently wrong answer. The fix is to add up in a wider type: `xs.iter().map(|&x| x as u32).sum::<u32>()`. There are more traps here: an empty slice divides by zero, and `xs.len() as u8` squeezes a length above 255.
+
++++ question | A command line from the ground
+--- ask
+What does `classify("  THR 150\n")` return? Type the text.
+
+```rust
+fn classify(cmd: &str) -> String {
+    let cmd = cmd.trim();
+    match cmd.split_once(' ') {
+        Some(("THR", v)) => match v.parse::<u8>() {
+            Ok(p) if p <= 100 => format!("throttle {p}"),
+            Ok(p) => format!("reject {p}"),
+            Err(_) => String::from("bad"),
+        },
+        Some((other, _)) => format!("unknown {other}"),
+        None => format!("single {cmd}"),
+    }
+}
+```
+--- answer
+reject 150
+--- why
+The shadowing `let` replaces `cmd` with a trimmed view, `"THR 150"`, with no spaces around it and no newline. `split_once(' ')` gives `Some(("THR", "150"))`, which fits the first arm, with `v` = `"150"`. 150 fits in a `u8`, so the parse is `Ok(150)`. The guard $150 \le 100$ is false, so the next arm, `Ok(p)`, gives "reject 150". Without the `trim`, the leading spaces would make `split_once` split at the first space, giving an empty first part, and the result would be "unknown ".
+
++++ question | A benchmark in the wrong build
+--- ask
+A teammate times an iterator chain against a hand-written index loop that does the same work, using `cargo run`. The iterator version takes twice as long, so they propose banning iterators from flight code. What is the right reply?
+--- choice
+Agree: each adapter builds a temporary `Vec`, so chains always cost more.
+--- choice
+Agree: closures are called through function pointers, like in C.
+--- choice correct
+That was a debug build, where every `next` and every closure call stays a real function call. In an optimized build the chain is made into concrete code for this closure and inlined into the same loop. Measure with `--release`, or read the assembly.
+--- choice
+Disagree: iterators are always faster, because they run on several cores.
+--- why
+Each closure has its own type, and the adapters are generic, so the compiler writes code for exactly this combination and pastes it inline, which leaves a plain loop, often without bounds checks. That only happens when the optimizer runs. `cargo run` builds the dev profile, with `opt-level` 0, so it says nothing about the speed of the shipped program. Adapters are lazy and build no temporary lists, and nothing runs in parallel unless you ask.
+
++++ question | Counting packets per channel
+--- ask
+The compiler rejects this:
+
+```rust
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct Channel {
+    id: u8,
+    gain: f64,
+}
+```
+
+You want to count packets per channel in a `HashMap`. What is the best fix?
+--- choice
+Keep the derive line and write `impl Eq for Channel {}` by hand, so `Channel` can be the key.
+--- choice
+Use a `BTreeMap<Channel, u32>` instead, since a `BTreeMap` does not hash its keys.
+--- choice correct
+Derive only `Debug, Clone, Copy, PartialEq` for `Channel`, and key the map by the channel's `id`: `HashMap<u8, u32>`.
+--- choice
+Remove `Copy`, which is what stops `Eq` and `Hash` from being derived.
+--- why
+`Eq` and `Hash` cannot be derived because the `f64` field has neither: NaN is not equal to itself, so floats cannot promise `Eq`. Writing an empty `impl Eq` would break that promise, and `Hash` would still be missing. A `BTreeMap` key needs `Ord`, which floats lack for the same reason. `Copy` is fine, because every field is `Copy`. The honest key is the part that really identifies a channel: its `u8` id.
+
++++ question | A lock file and an update
+--- ask
+`Cargo.toml` has `hifitime = "3.8"`. The committed `Cargo.lock` pins 3.8.2. Since then, 3.8.5, 3.9.0 and 4.0.0 have been published. Which version does `cargo build` use now, and which one after `cargo update`? Type the two versions separated by a space.
+--- answer
+3.8.2 3.9.0
+3.8.2, 3.9.0
+3.8.2,3.9.0
+3.8.2 and 3.9.0
+--- why
+While `Cargo.lock` exists, Cargo builds the exact version it records, 3.8.2, on every machine, even though newer ones are allowed. `cargo update` chooses again: `"3.8"` allows at least 3.8.0 and below 4.0.0, so the newest allowed is 3.9.0, not 3.8.5, and not 4.0.0, which is a new MAJOR that may break your code. The new choice is written back into `Cargo.lock`.

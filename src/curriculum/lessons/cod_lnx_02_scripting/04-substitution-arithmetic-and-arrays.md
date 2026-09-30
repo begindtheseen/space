@@ -74,7 +74,12 @@ out=$(printf "a\nb\n\n\n"; echo x); out=${out%x}; printf '%s' "$out" | od -c
 0000006
 ```
 
-All six bytes survived. The newlines were no longer at the end — the `x` was — so nothing was stripped. Then `${out%x}` (from lesson 03: remove the shortest match of `x` from the end) took the marker away.
+All six bytes survived. The newlines were no longer at the end — the `x` was — so nothing was stripped. Then `${out%x}` took the marker away. It is a **trimming expansion**: `${var%pattern}` removes the shortest match of the pattern from the end of the value. There are four of them, and the rest of this module uses them all:
+
+- `${var#pat}` removes the shortest match from the front, `${var##pat}` the longest match from the front.
+- `${var%pat}` removes the shortest match from the end, `${var%%pat}` the longest match from the end.
+
+The pattern is a glob, so `*` matches any run of characters. With `f=logs/run.log`, `${f#*/}` is `run.log` and `${f%.*}` is `logs/run`. One `#` or `%` is the shortest match; doubling it asks for the longest.
 
 ### The result still gets split unless you quote it
 
@@ -452,7 +457,7 @@ WHEEL_RPM -> 3
 
 The keys come out in **[[hash order|hash-order]]**, not the order you added them. Pipe through `sort` when you need a steady order.
 
-To ask "is this key there?" without creating it, use the `+` form from lesson 03 — `${var+word}` gives `word` only if `var` is set:
+To ask "is this key there?" without creating it, use the `+` form from lesson 02 — `${var+word}` gives `word` only if `var` is set:
 
 ```bash
 declare -A seen; seen[a]=1

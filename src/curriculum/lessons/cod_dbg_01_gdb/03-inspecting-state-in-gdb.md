@@ -161,7 +161,7 @@ The frame itself carries the right velocity. Decoded properly, bytes 32 to 39 ar
 
 With gdb 15.1, `/x` on a `double` shows the 8 bytes of its storage as one hex number: `print/x 7668.56` gives `0x40bdf48f5c28f5c3`. Keep that number in mind.
 
-Two relatives help when you are not sure what something is: **`whatis state`** prints its type (`double *`), and **`ptype`** prints the full definition of a type, including every field of a struct.
+Two relatives help when you are not sure what something is: **`whatis state`** prints its type (`const double *`), and **`ptype`** prints the full definition of a type, including every field of a struct.
 
 ::: warning Names belong to frames
 After `up`, you are in `main`, and `check_state`'s variables are out of reach. `print *state@n` there fails with `No symbol "n" in current context.`, because `n` is an argument of `check_state`, not a variable of `main`. When `print` cannot find a name, check which frame is selected (`frame` with no number tells you) before deciding the variable does not exist.
@@ -178,9 +178,9 @@ $1 = (const double *) 0x55555556b2b0
 (gdb) print *state
 $2 = 6778137
 (gdb) print *state@6
-$4 = {6778137, 0, 0, 0, -2.439312395553656e+19, 5.2173332200835635e-320}
+$3 = {6778137, 0, 0, 0, -2.439312395553656e+19, 5.2173332200835635e-320}
 (gdb) print state[3]@3
-$5 = {0, -2.439312395553656e+19, 5.2173332200835635e-320}
+$4 = {0, -2.439312395553656e+19, 5.2173332200835635e-320}
 ```
 
 Compare with the truth, `{6778137, 0, 0, 0, 7668.56, 12.5}`:

@@ -54,7 +54,7 @@ In the RAII module you wrote `MutexLock`: a class whose constructor calls `lock(
 Since C++17 the compiler can work out the template argument from the constructor, so `std::lock_guard lock(m);` means the same thing. That feature is **[[class template argument deduction|ctad]]**.
 
 ::: example Fixing the counter
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <mutex>
 #include <thread>
@@ -119,7 +119,7 @@ While one thread holds a mutex, every thread that wants it waits. So copy the sh
 The flag and a pointer make it 16 bytes against the lock guard's 8. The extra freedom is extra room for mistakes, so use `std::lock_guard` unless you need one of these powers.
 
 ::: example Four things a unique_lock can do
-```cpp
+```cpp laptop
 #include <chrono>
 #include <cstdio>
 #include <mutex>
@@ -188,7 +188,7 @@ Sometimes one operation needs two locks. Moving propellant between two tank reco
 C++17's **`std::scoped_lock`** takes any number of mutexes and locks them all, using a **[[deadlock-avoidance algorithm|try-and-back-off]]**, so it never ends up holding some while waiting forever for the rest. It unlocks them all in its destructor.
 
 ::: example Two tanks, two threads, opposite directions
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <mutex>
 #include <thread>
@@ -241,7 +241,7 @@ That is the **[[readers–writer lock|readers-writers]]**, and in C++17 it is **
 A navigation state is the textbook case: written by the estimator 100 times a second, read by guidance, control, telemetry and fault monitoring.
 
 ::: example Readers in parallel
-```cpp
+```cpp laptop
 #include <chrono>
 #include <cstdio>
 #include <mutex>
@@ -353,7 +353,7 @@ Re-locking is allowed only for the thread that already owns the mutex. Two *diff
 "Locks are slow" is often said. Here is a measurement.
 
 ::: example Timing a lock, honestly
-```cpp
+```cpp laptop
 #include <chrono>
 #include <cstdio>
 #include <mutex>

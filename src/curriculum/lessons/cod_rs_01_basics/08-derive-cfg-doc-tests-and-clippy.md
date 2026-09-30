@@ -468,7 +468,7 @@ You control clippy with the same attributes as everything else in this lesson:
 ```rust
 #[expect(
     clippy::cast_precision_loss,
-    reason = "sample counts stay far below 2^52"
+    reason = "sample counts stay far below 2^53"
 )]
 fn mean_thrust(samples: &[f64]) -> f64 {
 ```

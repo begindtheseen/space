@@ -1,0 +1,1452 @@
+@track python
+@course mod-cod_cad_03_tools
+@module cod_cad_03_tools
+@title CAD tools: practice and test
+
+=== cad03-l01 | Practice: The command line and exact points
+--- for
+l01-the-autocad-command-line
+
++++ question | Three corners of a cable tray
+--- ask
+Dynamic Input is off. You draw part of a cable tray outline:
+
+```text
+Command: L
+LINE
+Specify first point: 20,10
+Specify next point or [Undo]: @45,0
+Specify next point or [Undo]: @30<90
+```
+
+Where is the third point? Type it as x,y.
+--- answer
+65,40
+(65,40)
+65, 40
+(65, 40)
+--- why
+The first point is absolute: $(20, 10)$. `@45,0` is relative, so add 45 to $x$: $(65, 10)$. `@30<90` is polar from that point: 30 units at 90°, which is straight up, so $\Delta x = 30\cos 90^\circ = 0$ and $\Delta y = 30\sin 90^\circ = 30$. The third point is $(65, 40)$.
+
++++ question | A diagonal with ortho on
+--- ask
+Ortho mode (F8) is on. The last point is $(40, 40)$. You need the next line to be exactly 50 long, pointing down and to the left at 225°. Which entry draws it?
+--- choice
+Point the cursor down and to the left and type `50`. Ortho allows any direction as long as the distance is typed.
+--- choice correct
+Type `@50<225`. A typed coordinate goes exactly where it says, whatever ortho is doing with the cursor.
+--- choice
+Type `@50<-225`. Negative angles are measured the other way, so this is the same as 225°.
+--- choice
+Type `50<225`. The `<` already says the point is measured from the last point.
+--- why
+Ortho only holds the cursor to horizontal and vertical, so direct distance entry with ortho on can only go along 0°, 90°, 180° or 270°. A typed coordinate is not affected. $-225^\circ$ means turning 225° clockwise, which lands on 135°, up and to the left. And without the `@`, `50<225` is measured from the origin $(0,0)$, not from $(40, 40)$. For many lines at 45° steps, switch on polar tracking (F10) at 45°, which switches ortho off, and type distances along its guide lines.
+
++++ question | Starting from a snapped quadrant
+--- ask
+A circle is centered at $(50, 50)$ and is 40 across. You start a line like this:
+
+```text
+Command: L
+LINE
+Specify first point: QUA
+of  (click near the rightmost point of the circle)
+Specify next point or [Undo]: @30<120
+```
+
+Where does the line end? Type it as x,y, rounded to two decimals.
+--- answer
+55,75.98
+(55,75.98)
+55, 75.98
+(55, 75.98)
+55.00,75.98
+--- why
+40 across means a radius of 20. The quadrant snap at the right of the circle is the point at 0°: $(50 + 20, 50) = (70, 50)$. The polar move gives $\Delta x = 30\cos 120^\circ = 30 \times (-0.5) = -15$ and $\Delta y = 30\sin 120^\circ = 30 \times 0.8660 = 25.98$. The end is $(70 - 15,\; 50 + 25.98) = (55, 75.98)$. The minus sign on $\Delta x$ is right: 120° is past 90°, so the line leans left.
+
++++ question | The same text, two answers
+--- ask
+You start a line at $(100, 100)$ and type `20,0` for the second point. Where does the line end with Dynamic Input on, and where with Dynamic Input off?
+--- choice
+At $(20, 0)$ both times: a point without `@` is always absolute.
+--- choice
+At $(120, 100)$ both times: the second point of a line is always relative.
+--- choice correct
+At $(120, 100)$ with Dynamic Input on, and at $(20, 0)$ with it off.
+--- choice
+At $(20, 0)$ with Dynamic Input on, and at $(120, 100)$ with it off.
+--- why
+With Dynamic Input on, AutoCAD treats a typed second point as relative even without `@`, so `20,0` means 20 to the right: $(120, 100)$. On the plain command line with Dynamic Input off, `20,0` is the absolute point $(20, 0)$. Typing `@` forces relative and `#` forces absolute in either mode, which is why careful drafters always type the prefix.
+
++++ question | A frame that shoots off the sheet
+--- ask
+A drafter meant to draw a 150 by 90 frame with its first corner at $(500, 300)$. Dynamic Input is off.
+
+```text
+Command: L
+LINE
+Specify first point: 500,300
+Specify next point or [Undo]: @150,0
+Specify next point or [Undo]: 0,90
+Specify next point or [Close/Undo]: @-150,0
+Specify next point or [Close/Undo]: C
+```
+
+What went wrong?
+--- choice
+`@-150,0` is wrong: negative values are not allowed after `@`.
+--- choice correct
+The third line, `0,90`, has no `@`. It sends the line to the absolute point $(0, 90)$ near the origin instead of 90 up from $(650, 300)$. It should be `@0,90`.
+--- choice
+The first point should be `@500,300`, because every point in a command must be relative.
+--- choice
+`C` closes back to the origin instead of to the first point, so the last side is wrong.
+--- why
+Without `@`, a typed point is measured from the origin. So the second side runs from $(650, 300)$ all the way to $(0, 90)$, the next point is $(0 - 150, 90) = (-150, 90)$, and Close draws back to the true first point, $(500, 300)$. Negative relative values are normal: `@-150,0` means 150 to the left. The first point of a shape is often absolute, and Close always returns to the first point of the command.
+
++++ question | From two corners to one polar entry
+--- ask
+The last point is $(40, 30)$. The next corner must be at $(10, 70)$, and you want to type it as a polar point, `@d<angle`. What do you type? Round the angle to two decimals.
+--- answer
+@50<126.87
+@50<126.9
+--- why
+First the relative move: $\Delta x = 10 - 40 = -30$ and $\Delta y = 70 - 30 = 40$. The distance is $\sqrt{30^2 + 40^2} = \sqrt{2500} = 50$. For the angle, $\arctan(40 / 30) = 53.13^\circ$ is only the size of the angle to the $x$ axis. The move goes left and up, so it lies in the second quarter of the circle, between 90° and 180°: $180 - 53.13 = 126.87^\circ$. A calculator's plain $\arctan(40 / -30)$ gives $-53.13^\circ$, which points right and down, the wrong way. Here `@-30,40` would be the simpler and exact entry.
+
+=== cad03-l02 | Practice: Drawing and editing shapes
+--- for
+l02-draw-and-modify
+
++++ question | Two offsets of one hole
+--- ask
+A circle is 30 across. You run OFFSET with a distance of 5, pick the circle and click outside it. Then you pick the original circle again and click inside it. What are the diameters of the two new circles?
+--- answer
+40 and 20
+40, 20
+40 20
+20 and 40
+20, 40
+20 40
+--- why
+Offsetting a circle changes its radius by the offset distance. The original radius is 15. Outside: $15 + 5 = 20$, a diameter of 40. Inside: $15 - 5 = 10$, a diameter of 20. A common slip is to change the diameter by 5 instead of the radius, which would give 35 and 25.
+
++++ question | Five holes on a flange
+--- ask
+ARRAYPOLAR puts 5 holes evenly around a full circle, on a pitch circle 80 mm across. How far apart are two neighboring hole centers, in a straight line? Round to two decimals, in millimeters.
+--- answer
+47.02
+47.02 mm
+47.0
+--- why
+Five holes over 360° are $360 / 5 = 72^\circ$ apart. The pitch circle radius is $80 / 2 = 40$. The chord between two points $\alpha$ apart on a circle of radius $r$ is $2r\sin(\alpha / 2) = 2 \times 40 \times \sin 36^\circ = 80 \times 0.5878 = 47.02$ mm. It is not the radius, as it was for six holes: only a hexagon has sides equal to its radius.
+
++++ question | A stretch that breaks the spacing
+--- ask
+A plate is 150 by 90, with its bottom-left corner at $(0, 0)$. It has six separate hole circles at $x = 15, 75, 135$ and $y = 15, 75$. You run STRETCH with a crossing box from $(160, 100)$ to $(100, -10)$ and move it by `@30,0`. After the stretch, how far is the middle column of holes from the new middle of the plate, in millimeters?
+--- answer
+15
+15 mm
+--- why
+The box spans $x = 100$ to $160$. The right edge and the right-hand corners are inside, so they move 30 and the plate becomes $150 + 30 = 180$ long. The holes at $x = 135$ have their centers inside, so they move to $165$, still 15 from the new edge. The middle holes at $x = 75$ are outside the box and stay put. The new middle of the plate is at $180 / 2 = 90$, so the middle holes are $90 - 75 = 15$ mm off center. STRETCH moves what is inside the box; it knows nothing about "evenly spaced". Move the middle column by `@15,0` as well.
+
++++ question | Fillet on a parallel pair
+--- ask
+The FILLET radius is set to 5. You pick two parallel lines that are 20 apart, near their bottom ends. What happens?
+--- choice
+AutoCAD reports an error, because parallel lines have no corner to round.
+--- choice
+It draws a quarter arc of radius 5 at the end of each line.
+--- choice correct
+It joins the ends with a half circle of radius 10, ignoring the radius setting.
+--- choice
+It makes a sharp corner, as if the radius were 0.
+--- why
+Two parallel lines have no corner, so no arc of any chosen radius can turn one into the other. The only arc that touches both is a half circle whose diameter is the gap: 20 across, radius 10. AutoCAD draws that and ignores the radius setting. It is a quick way to round the end of a slot.
+
++++ question | A plate that would not stretch
+--- ask
+A plate outline is one closed polyline, 100 by 60, with a hole near each right-hand corner. A drafter runs STRETCH, drags a box from $(70, -5)$ to $(110, 65)$, types `@40,0`, and gets this: the two right-hand holes move 40 to the right, and the plate outline does not change at all. What went wrong?
+--- choice
+STRETCH cannot change a polyline; the outline should have been drawn with LINE.
+--- choice correct
+The box was dragged from left to right, which makes a window selection. It picked only objects wholly inside it: the two holes. The polyline was not wholly inside, so it was not picked. Drag from right to left to get a crossing box.
+--- choice
+The displacement should have been typed as `40,0`, without the `@`.
+--- choice
+The holes were an associative array, which blocked the stretch.
+--- why
+The direction of the drag decides the kind of box. Left to right is a window: only whole objects inside are picked, and STRETCH simply moves them. Right to left is a crossing: anything inside or touched is picked, vertices inside move and lines crossing the edge stretch. Here the box started at $x = 70$ and ended at $x = 110$, so it went left to right. STRETCH works fine on polylines; it moves the vertices that are inside a crossing box.
+
++++ question | Working back from the slot depth
+--- ask
+The top edge of a plate is at $y = 100$. You need a slot 16 wide, centered at $x = 50$, whose round bottom's lowest point is at $y = 60$. You will draw the left side with LINE up to the top edge, offset it to the right by 16, and fillet the two lines near their bottom ends. Where must the left side's bottom end be? Type it as x,y.
+--- answer
+42,68
+(42,68)
+42, 68
+(42, 68)
+--- why
+The slot is centered at $x = 50$ and is 16 wide, so its sides are at $50 - 8 = 42$ and $50 + 8 = 58$. Filleting the two parallel sides gives a half circle whose diameter is the 16 gap, so its radius is 8 and its center sits level with the line ends. The lowest point of the half circle is one radius below the line ends, so the ends must be at $60 + 8 = 68$. The left side runs from $(42, 68)$ up to $(42, 100)$.
+
+=== cad03-l03 | Practice: Layers
+--- for
+l03-layers
+
++++ question | Half of it follows
+--- ask
+Layer `E-COND` is red, `HIDDEN` and 0.25 mm. A line on it has these properties: Color ByLayer, Linetype `CENTER`, Lineweight ByLayer. Someone changes `E-COND` to green, `Continuous` and 0.35 mm. How does the line look now?
+--- choice
+Green, continuous and 0.35 mm: it is on the layer, so it follows every change.
+--- choice correct
+Green, dashed in the `CENTER` pattern, and 0.35 mm.
+--- choice
+Red, `CENTER` and 0.25 mm: a line keeps the look it was drawn with.
+--- choice
+Red, continuous and 0.35 mm.
+--- why
+Each property is its own setting. Color and lineweight are ByLayer, so they follow the layer: green and 0.35 mm. Linetype is a per-object override, `CENTER`, so it ignores the layer's change to `Continuous`. That mixed result is exactly why overrides make a drawing hard to manage. `SETBYLAYER` would put the linetype back to ByLayer.
+
++++ question | Trace it, never move it
+--- ask
+A new propellant line is drawn over a surveyed site plan. The survey must stay visible, you must be able to snap to it, and nobody may move or erase it by accident. Which layer setting fits?
+--- choice
+Turn the survey layers off.
+--- choice
+Freeze the survey layers.
+--- choice correct
+Lock the survey layers.
+--- choice
+Set the survey layers to No Plot.
+--- why
+Lock keeps the objects visible and snappable but stops them being edited. Off and freeze both hide the survey, so you could not trace it. No Plot only keeps it off the printed sheet; on screen it is as editable as anything else.
+
++++ question | What ERASE ALL really takes
+--- ask
+A drawing has four layers. `SURVEY` is off and holds 40 objects. `CONTOURS` is frozen and holds 25. `GRID` is locked and holds 10. `SKETCH` is on, thawed and unlocked, and holds 100. You run `ERASE`, type `ALL` and press Enter. How many objects are erased?
+--- answer
+140
+--- why
+Select All picks up objects on layers that are off, so the 40 hidden survey objects are erased along with the 100 on `SKETCH`: $100 + 40 = 140$. Frozen layers are set aside and Select All does not pick them up. Objects on a locked layer cannot be edited, so they are not erased either. Turning a layer off is not protection.
+
++++ question | Hiding the layer you are on
+--- ask
+`S-STEL` is the current layer. You try two things in turn: freeze `S-STEL`, and then turn `S-STEL` off. What happens?
+--- choice
+Both work; AutoCAD makes layer 0 current by itself.
+--- choice correct
+The freeze is refused, because new objects go on the current layer. Turning it off works, with a warning, and anything you draw next is invisible.
+--- choice
+Both are refused until you make another layer current.
+--- choice
+The freeze works, and the off is refused because a frozen layer cannot also be off.
+--- why
+A frozen layer is skipped entirely, and new objects are drawn onto the current layer, so AutoCAD will not freeze it. Off is allowed with a warning, which sets a trap: you keep drawing onto a layer you cannot see. Make another layer current first, then freeze or turn off the one you want out of the way.
+
++++ question | Construction lines on the printout
+--- ask
+The layer `G-CONS` is set to No Plot, yet the gray construction lines appeared on the printed sheet. You click one. The Properties palette shows Layer: 0, Color: 8. What happened, and what is the fix?
+--- choice
+The No Plot setting only works on layouts, not in model space; move the lines to paper space.
+--- choice
+The plot style table printed color 8 as black; switch to a different table.
+--- choice correct
+The lines were drawn on layer 0, which plots, and colored gray with an override so they only looked like `G-CONS`. Move them to `G-CONS`, for example with MATCHPROP from a real `G-CONS` object, and reset the color with `SETBYLAYER`.
+--- choice
+Layer 0 can never be set to No Plot, so the drawing must be started again from the template.
+--- why
+Whether something prints is set by its layer's Plot setting, and these objects were never on `G-CONS`. Someone drew them with layer 0 current and forced the color to 8, so on screen they looked like construction geometry. Checking Properties, not the color, is how you catch it. Once the lines are on `G-CONS` with color ByLayer, they stop printing and they follow the layer.
+
++++ question | One sheet, three needs
+--- ask
+One sheet has two viewports of the same plan. You need all of these at once:
+
+1. The electrical layer `E-COND` shows only in viewport 2.
+2. The old survey is hidden everywhere, and a careless `ERASE ALL` must not reach it.
+3. Construction geometry shows on screen but never prints.
+
+Which set-up does it?
+--- choice
+Turn `E-COND` off in viewport 1; turn the survey off; set the construction layer to No Plot.
+--- choice correct
+Freeze `E-COND` in viewport 1 only (viewport freeze); freeze the survey; set the construction layer to No Plot.
+--- choice
+Freeze `E-COND` everywhere; lock the survey; turn the construction layer off.
+--- choice
+Freeze `E-COND` in viewport 1 only; turn the survey off; freeze the construction layer.
+--- why
+Only freeze can be set per viewport; off is one switch for the whole drawing, so "off in viewport 1" does not exist. Freezing the survey hides it and keeps it out of Select All, which off does not do. Locking would stop the erase but leave it visible. No Plot is the setting for "visible on screen, not on paper"; turning the layer off or freezing it would hide it on screen too.
+
+=== cad03-l04 | Practice: Blocks, attributes and external references
+--- for
+l04-blocks-and-xrefs
+
++++ question | Counting a mixed drawing
+--- ask
+A harness drawing uses a connector block whose definition holds 18 objects. There are 45 references to it. Someone also exploded 6 more copies of the connector to tweak them. How many objects does the drawing hold for connectors in total?
+--- answer
+171
+--- why
+The definition is stored once: 18 objects. Each reference is 1 object: 45. Each exploded copy is 18 loose objects again: $6 \times 18 = 108$. Total $18 + 45 + 108 = 171$. The 6 exploded copies are also cut off from the definition, so a later BEDIT fix will not reach them.
+
++++ question | Where the rotated symbol lands
+--- ask
+A sensor symbol is defined as a block whose base point is its bottom-left corner. The symbol's center sits 10 to the right of and 5 above that corner. You insert it at `300,200` with a scale of 1 and a rotation of 90. Where does the symbol's center land? Type it as x,y.
+--- answer
+295,210
+(295,210)
+295, 210
+(295, 210)
+--- why
+The base point lands on the insertion point, $(300, 200)$, and rotation turns the block about that point. Turning the offset $(10, 5)$ by 90° counterclockwise gives $(-5, 10)$: what was "right" now points up, and what was "up" now points left. So the center is at $(300 - 5,\; 200 + 10) = (295, 210)$. The base point is the pivot for rotation and scale as well as the handle.
+
++++ question | Three parts, three colors
+--- ask
+A valve block holds three kinds of geometry:
+
+- the body, drawn on layer 0 with color ByLayer;
+- the handle, drawn on layer 0 with color ByBlock;
+- the tag text, drawn on the layer `TEXT`, which is white.
+
+A reference is inserted on the layer `VALVES-LOX`, which is blue, and the reference's own Color property is set to red. What colors show?
+--- choice
+All three blue, because the reference is on a blue layer.
+--- choice
+All three red, because the reference's own color is red.
+--- choice correct
+Body blue, handle red, tag text white.
+--- choice
+Body red, handle blue, tag text white.
+--- why
+Layer 0 geometry takes on the reference's layer, `VALVES-LOX`, and ByLayer then means that layer's color: blue. ByBlock means "take the property from the reference itself", and the reference is set to red, so the handle is red. The tag text sits on a named layer, `TEXT`, and keeps it wherever the block goes: white.
+
++++ question | A new default for an old tag
+--- ask
+A title block's `DRAWN_BY` attribute has the default `TBD`. Forty sheets already have the block, each with a name typed in. You open the definition in the Block Editor and change the default to `JLEE`. What happens to the forty sheets?
+--- choice
+Every sheet now reads `JLEE`, because the references update from the definition.
+--- choice
+Every sheet that still read `TBD` switches to `JLEE`; the others keep their names.
+--- choice correct
+Nothing changes on them. Each reference stores its own value; the default only applies to new insertions.
+--- choice
+The forty references lose their values and go blank until ATTSYNC is run.
+--- why
+An attribute's value belongs to each reference, not to the definition. The default is only the answer offered at insertion time. Changing geometry in the definition updates every reference, but it does not rewrite values people typed. To change the names you edit each reference's value, for example with the Enhanced Attribute Editor (EATTEDIT).
+
++++ question | The site plan that went missing
+--- ask
+The host drawing is `P:\Pad39\Elec\E-101.dwg`. It attaches the site plan with the relative path `..\Site\SITE-PLAN.dwg`. Two things happen:
+
+1. The whole `Pad39` folder is copied to `Q:\Archive\Pad39\`, and `E-101.dwg` is opened there.
+2. Separately, someone emails only `E-101.dwg` to a contractor.
+
+Where does the site plan show?
+--- choice
+In neither: moving or sending a drawing always breaks its xrefs.
+--- choice correct
+It shows in the archive copy, because the relative path still finds `..\Site` next to `Elec`. The contractor sees it Not Found, because the site plan file was not sent. ETRANSMIT would have packed it.
+--- choice
+It shows for the contractor, because the xref is stored inside `E-101.dwg`, but not in the archive.
+--- choice
+It shows in both, because AutoCAD keeps a copy of every xref in the host drawing.
+--- why
+An xref is only a pointer: the host stores the path, not the geometry. A relative path means "go up one folder, then into Site", and that is still true after the whole project folder moves together. An email with only the host carries no site plan at all, so the pointer finds nothing. ETRANSMIT gathers the drawing, its xrefs, fonts and plot style files into one package for exactly this reason.
+
++++ question | Which way the site plan travels
+--- ask
+Four drawings: the site plan `S`, the piping plan `P`, the electrical plan `E`, and a master sheet `M`.
+
+- `P` attaches `S`.
+- `E` overlays `S` and attaches `P`.
+- `M` attaches `E`.
+
+Does `S` appear in `M`, and if so, how many times and by which route?
+--- choice
+No: `E` overlaid `S`, so `S` stays behind.
+--- choice correct
+Yes, once, through `P`: `P` attached `S`, so `S` travels inside `P`, and `P` travels inside `E`.
+--- choice
+Yes, twice: once through `E` and once through `P`.
+--- choice
+Yes, once, through `E`, because `M` attached `E`.
+--- why
+Follow each link. `M` attaches `E`, so `E` comes in. `E` attached `P`, so `P` travels along into `M`. `P` attached `S`, so `S` travels along with `P`. `E`'s own link to `S` is an overlay, and an overlay stays behind when its host is referenced, so it adds nothing to `M`. The site plan arrives exactly once, by the only route made of attaches.
+
+=== cad03-l05 | Practice: Annotation, paper space and plotting
+--- for
+l05-annotation-and-paper-space
+
++++ question | A pad on the sheet
+--- ask
+A concrete pad is 36 m long in model space, drawn at full size in millimeters. It is shown in a viewport set to 1:200. How long is it on the printed sheet, in millimeters?
+--- answer
+180
+180 mm
+180mm
+--- why
+36 m is $36\,000$ mm in the model. A 1:200 viewport has a scale factor of $1/200 = 0.005$, paper over model. So the pad prints $36\,000 \times 0.005 = 180$ mm long. The layout itself is plotted at 1:1; the viewport carries the 1:200.
+
++++ question | Working out a viewport's scale
+--- ask
+A plotted sheet has no scale written on it. A frame member that is 2.4 m long in the model measures 48 mm on the paper. At what standard scale was the viewport set? Type it as 1:n.
+--- answer
+1:50
+1/50
+1 : 50
+--- why
+The scale factor is paper over model: $48 / 2400 = 0.02$, which is $1/50$. So the viewport is 1:50, one of the standard series. Checking one known length like this is how you confirm a sheet is really to scale, for example after someone may have zoomed an unlocked viewport.
+
++++ question | Two copies of one note
+--- ask
+A sheet has a 1:20 general view and a 1:5 detail view of the same model. Your office does not use annotative text, so each note is drawn twice in model space, once for each scale, on its own layer: `NOTES-20` and `NOTES-5`. Every note must print 2.5 mm tall. Which set-up is right?
+--- choice
+`NOTES-20` text is 12.5 mm tall and `NOTES-5` text is 50 mm tall. Freeze `NOTES-5` in the 1:5 viewport and `NOTES-20` in the 1:20 viewport.
+--- choice correct
+`NOTES-20` text is 50 mm tall and `NOTES-5` text is 12.5 mm tall. Freeze `NOTES-5` in the 1:20 viewport and `NOTES-20` in the 1:5 viewport.
+--- choice
+Both layers use 2.5 mm text, because the viewport scales text to the right size by itself.
+--- choice
+`NOTES-20` text is 50 mm tall and `NOTES-5` text is 12.5 mm tall. Turn `NOTES-5` off in the 1:20 viewport and `NOTES-20` off in the 1:5 viewport.
+--- why
+Non-annotative model text must be drawn at printed height times the scale's second number: $2.5 \times 20 = 50$ mm for the 1:20 view and $2.5 \times 5 = 12.5$ mm for the 1:5 view. Each viewport must hide the copy made for the other scale, and hiding in one viewport only is viewport freeze; off has no per-viewport form. This bookkeeping is what annotative objects replace: one note, a paper height of 2.5 mm, and both scales on its list.
+
++++ question | Gray lines that printed anyway
+--- ask
+Construction lines sit on the layer `G-CONS`, color 8 (gray). The layout plots with `monochrome.ctb`. The team expected the plot style table to leave the gray lines off the sheet, but they printed in black. Why, and what is the fix?
+--- choice
+`monochrome.ctb` prints every color as black, so no layer can ever be kept off the sheet with it. Switch to an STB table.
+--- choice correct
+A plot style table decides how an object prints, such as its color and lineweight, not whether its layer prints. `G-CONS` still has Plot switched on. Set `G-CONS` to No Plot.
+--- choice
+Color 8 is not in a CTB table, so AutoCAD printed it with the default settings. Change the lines to color 7.
+--- choice
+The layout should be plotted at 1:20 so the construction lines become too thin to print.
+--- why
+A CTB table maps each color to print settings: `monochrome.ctb` turns every color black. Whether a layer reaches the paper at all is the layer's own Plot or No Plot setting, which is still on. The fix is one click in the Layer Properties Manager. Plotting at another scale would not help either: a layout normally plots at 1:1, and its viewports carry the scale.
+
++++ question | Dimension text five times too big
+--- ask
+A non-annotative dimension style has a text height of 2.5 mm and an overall scale, DIMSCALE, of 100. Its dimensions are shown in a 1:20 viewport, and the text prints 12.5 mm tall. What is wrong, and what should DIMSCALE be?
+--- choice
+The text height should be 0.5 mm; DIMSCALE is right.
+--- choice
+DIMSCALE should be 1, because the viewport already scales everything.
+--- choice correct
+DIMSCALE was set for a 1:100 view. The text is $2.5 \times 100 = 250$ mm in the model and prints $250 \times 0.05 = 12.5$ mm. For a 1:20 viewport, DIMSCALE must be 20.
+--- choice
+DIMSCALE should be 0.05, the viewport's scale factor.
+--- why
+For non-annotative dimensions, DIMSCALE multiplies every size in the style, and it must equal the viewport scale's second number. With 20, the model text is $2.5 \times 20 = 50$ mm, and the 1:20 viewport shrinks it by $0.05$ to $2.5$ mm. With DIMSCALE 1, the text would print $2.5 \times 0.05 = 0.125$ mm, a speck. Setting DIMSCALE to the scale factor, 0.05, would be smaller still.
+
++++ question | A cart and its wheel bracket on one A3
+--- ask
+An A3 layout leaves a space about 380 mm by 250 mm for the main view, and a space 120 mm by 90 mm for a detail. The main view shows a ground support cart 3200 mm long and 1900 mm tall. The detail shows a wheel bracket 180 mm by 120 mm. Using the largest standard scale that fits each space, and non-annotative notes that must print 2.5 mm tall, which is right?
+--- choice correct
+Main view 1:10, detail 1:2. Notes in the main view are drawn 25 mm tall, in the detail 5 mm tall.
+--- choice
+Main view 1:5, detail 1:1. Notes 12.5 mm and 2.5 mm.
+--- choice
+Main view 1:10, detail 1:2. Notes 0.25 mm and 1.25 mm.
+--- choice
+Main view 1:20, detail 1:2. Notes 50 mm and 5 mm.
+--- why
+Main view: $3200 / 380 = 8.4$ and $1900 / 250 = 7.6$, so it must shrink at least 8.4 times, and the next standard scale is 1:10, giving $320 \times 190$ mm, which fits. 1:5 would be 640 mm long. Detail: $180 / 120 = 1.5$ and $120 / 90 = 1.33$, so 1:2, giving $90 \times 60$ mm. 1:20 also fits but is not the largest scale that does. Non-annotative note heights are printed height times the second number: $2.5 \times 10 = 25$ mm and $2.5 \times 2 = 5$ mm. Dividing instead of multiplying gives the tiny heights in the third choice.
+
+=== cad03-l06 | Practice: Templates, file formats and where AutoCAD lives
+--- for
+l06-templates-formats-and-where-autocad-lives
+
++++ question | Four file endings
+--- ask
+Which list matches each file ending to what it holds?
+--- choice
+`.dwt` a standards file; `.dws` a template; `.dst` a plot style table; `.ctb` a sheet set.
+--- choice correct
+`.dwt` a template; `.dws` a standards file; `.dst` a sheet set; `.ctb` a color-dependent plot style table.
+--- choice
+`.dwt` a template; `.dws` a sheet set; `.dst` a standards file; `.ctb` a named plot style table.
+--- choice
+`.dwt` a drawing exchange file; `.dws` a template; `.dst` a sheet set; `.ctb` a color-dependent plot style table.
+--- why
+A template (`.dwt`) is the starting drawing NEW copies. A standards file (`.dws`) holds the approved layers and styles that CHECKSTANDARDS compares against. A sheet set (`.dst`) collects layouts from many drawings into one ordered, publishable set. A `.ctb` table sets print settings by object color; the named kind is `.stb`. The exchange format is `.dxf`.
+
++++ question | A supplier on an older release
+--- ask
+You work in AutoCAD 2024 and save in the 2018 DWG format, the default. A supplier runs AutoCAD 2012 and cannot open your file. The DWG formats are named after the release that introduced them: 2004, 2007, 2010, 2013 and 2018. What do you send?
+--- choice
+The same file again: newer software always opens older files, and the supplier's is older.
+--- choice
+SAVEAS in the 2013 DWG format, the newest before 2018.
+--- choice correct
+SAVEAS in the 2010 DWG format, the newest one that a 2012 release can read.
+--- choice
+A DXF in the 2018 format, because DXF can be read by any software.
+--- why
+An older release cannot open a file saved in a newer format. AutoCAD 2012 came before the 2013 format existed, so the newest format it understands is 2010. Newer software opening older files is the direction that works, which is why saving down fixes it. A 2018-format DXF has the same problem: DXF versions match DWG versions.
+
++++ question | Cut length for a connector plate
+--- ask
+A waterjet shop will cut this plate from your DXF:
+
+- an outline 160 mm by 100 mm;
+- six holes 9 mm across;
+- one slot 30 mm long overall and 10 mm wide, with round ends.
+
+The file you first exported also held a duplicate copy of one hole and the title block. You clean it with OVERKILL and delete the title block. How long is the cut path of the cleaned file, in millimeters, to two decimals?
+--- answer
+761.06
+761.06 mm
+761.1
+--- why
+Outline: $2 \times (160 + 100) = 520$ mm. Holes: $6 \times \pi \times 9 = 169.65$ mm. The slot is two straight sides and two half circles. Each straight side is the overall length minus the two end radii: $30 - 10 = 20$ mm, so $2 \times 20 = 40$ mm. The two half circles make one full circle 10 across: $\pi \times 10 = 31.42$ mm. Total $520 + 169.65 + 40 + 31.42 = 761.06$ mm. The duplicate hole would have been cut twice, and the machine would have tried to cut every line of the title block too.
+
++++ question | The units error on the price
+--- ask
+You draw a 200 mm by 120 mm plate and send the DXF without saying the units. The shop's software assumes inches. Its material estimate is based on the plate's area. By what factor is that area estimate too big? Give the number.
+--- answer
+645.16
+645.2
+645
+--- why
+Every length is read 25.4 times too big. Area is length times length, so it grows by $25.4^2 = 645.16$. The plate's true area is $200 \times 120 = 24\,000\ \mathrm{mm^2}$; read as square inches it becomes more than 15 square meters. Lengths go up by 25.4, areas by $25.4^2$ and volumes by $25.4^3$, so the same slip hurts each quantity differently.
+
++++ question | New drawings come up wrong
+--- ask
+Your company template, `COMPANY-A1.dwt`, is metric with the company layers, styles and title block. But every drawing a new hire starts comes up in inches, with only layer 0 and none of the company styles. The new hire always starts with QNEW. What is the likely cause?
+--- choice
+The company template is broken and must be rebuilt from an old project drawing.
+--- choice correct
+QNEW starts from the default template set in the options, and on this machine that is still AutoCAD's plain inch template, `acad.dwt`. Point the default at `COMPANY-A1.dwt`, or start with NEW and pick it.
+--- choice
+QNEW ignores templates and always starts an empty drawing.
+--- choice
+The new hire's drawings need CHECKSTANDARDS run on them to add the missing layers.
+--- why
+QNEW makes an untitled copy of whichever template the options name, without asking. Out of the box that is a plain starter template, so the company set-up never arrives. CHECKSTANDARDS reports what does not match a standard; it is not the way to start a drawing right. Building a template from an old project drawing would drag in everything that drifted into that drawing.
+
++++ question | Which jobs belong in AutoCAD
+--- ask
+A launch company designs its vehicle in NX. Which list holds only jobs where AutoCAD is the right tool?
+--- choice
+The umbilical tower's site layout; the turbopump housing; the avionics harness schematic.
+--- choice correct
+The factory cell's tooling layout; the pad's propellant P&ID; the umbilical tower's site layout on the civil firm's xref'd background.
+--- choice
+The engine gimbal bracket; the pad's propellant P&ID; the second-stage fairing.
+--- choice
+The test-stand layout; the interstage structure; the tank dome.
+--- why
+AutoCAD's home is flat work around the vehicle: facility and site layouts, ground support equipment, test-stand drawings, schematics, P&IDs and tooling layouts. The turbopump housing, the gimbal bracket, the fairing, the interstage and the tank dome are flight hardware: 3D parametric models under PLM control. One flight part is enough to make a list wrong.
+
+=== cad03-l07 | Practice: Parametric sketches and constraints
+--- for
+l07-parametric-sketches
+
++++ question | Freedom before any rule
+--- ask
+A sketch holds two arcs, four line segments and one point, with no constraints yet. How many degrees of freedom does it have?
+--- answer
+28
+--- why
+An arc has 5 (center $x$ and $y$, radius, start angle, end angle), a line segment 4 (two endpoints of 2 each), and a point 2. So $2 \times 5 + 4 \times 4 + 2 = 10 + 16 + 2 = 28$.
+
++++ question | A slot, nearly there
+--- ask
+You sketch a slot: two straight lines and two arcs, joined end to end. You add:
+
+- four point-on-point coincidents where each line meets an arc;
+- four tangents, one at each of those joins;
+- an equal constraint between the two arcs;
+- a horizontal constraint on one line.
+
+How many degrees of freedom are left?
+--- answer
+4
+--- why
+Start: $2 \times 4 + 2 \times 5 = 18$. The four coincidents remove $4 \times 2 = 8$, leaving 10. The four tangents remove 4, leaving 6: two arc centers (4) and two radii (2), because lines tangent to both arcs are then set. Equal removes 1 and horizontal removes 1, leaving 4. They are the slot's position ($x$ and $y$), the distance between the arc centers, and the radius. Two dimensions and one coincident of an arc center on the origin would finish it.
+
++++ question | The slot that stays centered
+--- ask
+A plate sketch is 100 mm wide and centered on the origin, so the vertical axis through the origin runs down the plate's middle. A slot in it must stay centered left to right when the plate width changes, and its width must stay 12 mm. Which set of rules records that intent?
+--- choice
+Dimension the slot's left side 44 mm from the plate's left edge, and its right side 44 mm from the plate's right edge.
+--- choice
+Fix the slot where it is, so nothing can move it.
+--- choice correct
+Make the slot's two sides symmetric about the vertical axis through the origin, and give one 12 mm dimension between them.
+--- choice
+Dimension the slot's left side 44 mm from the plate's left edge, and give one 12 mm dimension between the sides.
+--- why
+A symmetric constraint writes "centered" into the model, and one 12 mm dimension writes the width. The first choice fixes the edge distances instead: widen the plate and the slot itself grows, because both 44 mm distances hold. The fourth is centered today only because $44 + 6 = 50$ is half of 100; widen the plate to 120 and the slot follows the left edge, 10 mm off center. Fix records no reason at all, so nothing follows a change. In AutoCAD you would have redrawn the slot; here the rules move it.
+
++++ question | Zero on paper, two in truth
+--- ask
+A rectangle sketch has four point-on-point corner coincidents, horizontal on top and bottom, vertical on both sides, a width, a height, and an equal constraint between the top and bottom edges. It is not tied to the origin. Subtracting every constraint from the start gives $16 - 8 - 4 - 2 - 1 = 1$. How many degrees of freedom does the sketch really have?
+--- answer
+2
+--- why
+Horizontal and vertical sides already force the top and bottom to be equal, so the equal constraint is redundant and removes nothing. Without it: $16 - 8 - 4 - 2 = 2$, the rectangle's $x$ and $y$ position. The arithmetic only counts independent constraints; a redundant one makes the count look better than the sketch is. The software flags the equal constraint, and dragging the rectangle shows it still slides.
+
++++ question | Fifteen, forty-five, sixty
+--- ask
+A plate sketch is 60 mm wide. The hole is dimensioned 15 mm from the left edge and 45 mm from the right edge. Everything else is fully defined. What is the state of the sketch, and what happens when the width is changed to 80 mm?
+--- choice
+It is fully defined; at 80 mm the hole moves to stay in the middle.
+--- choice correct
+It is over-defined: the three numbers repeat one fact, since $15 + 45 = 60$. At 80 mm they conflict, because no position is both 15 from the left and 45 from the right. Delete the hole dimension that carries no intent.
+--- choice
+It is under-defined, because a hole needs three dimensions.
+--- choice
+It is fully defined; at 80 mm the solver keeps 15 and 45 and quietly ignores the width.
+--- why
+The width fixes the right edge, and the 15 mm dimension then fixes the hole's $x$, so the 45 mm dimension has no freedom left to remove: it is redundant. While the numbers agree it may only be flagged; once they disagree, no shape satisfies all three, and the solver reports a conflict. Keep the dimension that matches the design's reason, for example the 15 mm from the edge the part locates on, and delete the other, or turn it into a reference dimension.
+
++++ question | Which set over-defines the gusset
+--- ask
+A right-triangle gusset sketch has three lines with coincident corners, a horizontal base, a vertical upright, and the right-angle corner on the origin. That leaves 2 degrees of freedom. Which set of dimensions makes the sketch over-defined?
+--- choice
+The base, 40 mm, and the height, 30 mm.
+--- choice
+The base, 40 mm, and the hypotenuse, 50 mm.
+--- choice
+The hypotenuse, 50 mm, and the angle between the base and the hypotenuse, 36.87°.
+--- choice correct
+The base, 40 mm, the height, 30 mm, and the angle between the base and the hypotenuse, 36.87°.
+--- why
+Two degrees of freedom are left: the two leg lengths. Any two independent dimensions settle them, so the first three choices each fully define the sketch. The last adds a third number when base and height already fix the angle, $\arctan(30 / 40) = 36.87^\circ$. It removes nothing, so it is redundant, and it becomes a conflict the day someone changes the height. Show the angle as a reference dimension if people need to see it.
+
+=== cad03-l08 | Practice: Features
+--- for
+l08-features
+
++++ question | One wrong pairing
+--- ask
+Which pairing of a part and the feature you would reach for first is wrong?
+--- choice
+A helical spring: a circle swept along a helix.
+--- choice
+A duct from a round pipe to a rectangular port: a loft between a circle and a rectangle.
+--- choice correct
+A thin-walled star tracker case: a revolve of the outline, then a draft.
+--- choice
+A triangular web stiffening an L bracket: a rib from one open line.
+--- why
+A thin-walled electronics case is a solid block hollowed out with shell, removing the open face. Revolve makes shapes that are round in cross-section, and draft is a taper for parts that come out of a mold. The other three are the textbook uses: sweep follows a path, loft blends between different profiles, and a rib adds a thin web from a single open line.
+
++++ question | The most draft that still fits
+--- ask
+A molded cover has side walls 30 mm tall. A board inside means the top of each wall may be at most 0.5 mm further in than the bottom. What is the largest draft angle you can use, in degrees, to two decimals?
+--- answer
+0.95
+0.955
+--- why
+The top edge moves in by $h\tan\theta$. Set $30\tan\theta = 0.5$, so $\tan\theta = 0.5 / 30 = 0.01667$ and $\theta = \arctan(0.01667) \approx 0.95^\circ$. A common 1° draft would move the top in $30 \times \tan 1^\circ = 0.52$ mm, just too much. Small angles still matter when something has to fit inside.
+
++++ question | Two more holes in the pattern
+--- ask
+A circular pattern of 10 mm holes goes through a 6 mm aluminum plate ($2700\,\mathrm{kg/m^3}$). The pattern count is changed from 8 to 10. How much lighter is the plate, in grams, to two decimals?
+--- answer
+2.54
+2.54 g
+2.5
+--- why
+A pattern stores the rule, so two new holes appear. Each hole is a cylinder: $\pi \times 5^2 \times 6 = 471.24\ \mathrm{mm^3}$. Two of them are $942.48\ \mathrm{mm^3} = 942.48 \times 10^{-9}\ \mathrm{m^3}$. Times $2700$: $2.54 \times 10^{-3}$ kg, or 2.54 g. The holes also move to $360 / 10 = 36^\circ$ spacing.
+
++++ question | An avionics box the weight of a ship
+--- ask
+A spreadsheet takes a shelled housing's volume from CAD, $42\,752\ \mathrm{mm^3}$, multiplies by aluminum's density, $2700\,\mathrm{kg/m^3}$, and reports a mass of $115\,430\,400$ kg. What went wrong?
+--- choice
+The density of aluminum should be 2.7, not 2700.
+--- choice correct
+The volume was in cubic millimeters and the density in kilograms per cubic meter. It needed the factor $10^{-9}$ to turn $\mathrm{mm^3}$ into $\mathrm{m^3}$, giving about 0.115 kg.
+--- choice
+The shell feature failed and the spreadsheet used the solid block's volume.
+--- choice
+The volume should be divided by 1000 to turn cubic millimeters into cubic meters.
+--- why
+$m = \rho V$ only works when the units match. One cubic meter is $10^9$ cubic millimeters, so $42\,752\ \mathrm{mm^3} = 4.2752 \times 10^{-5}\ \mathrm{m^3}$, and times 2700 that is 0.115 kg, about 115 g. Dividing by 1000 gives cubic centimeters, not cubic meters; with density written as $2.7\ \mathrm{g/cm^3}$ that route works too. A mass bigger than a ship for a hand-sized box is the sanity check that catches it.
+
++++ question | The bolt that will not go through
+--- ask
+A bracket must bolt to a panel with an M6 bolt that passes through the bracket and screws into the panel. The modeler used the hole wizard on the bracket and picked "Tapped, M6". What is wrong?
+--- choice
+Nothing: a tapped hole is the stronger choice for any bolt.
+--- choice correct
+A tapped M6 hole is drilled smaller than the bolt and threaded, so the bolt cannot slide through it. The bracket needs an M6 clearance hole, such as 6.6 mm; the tapped hole, or a thread insert, belongs in the panel.
+--- choice
+The hole wizard cannot make M6 holes; the hole should be a 6 mm cut-extrude.
+--- choice
+It should have been a countersink, because every aerospace bolt has a flat head.
+--- why
+Clearance means the bolt passes through; tapped means the bolt screws in. In a bolted joint the part the bolt passes through gets clearance holes, and the part it screws into gets the thread. A plain 6 mm cut-extrude would be too tight for a 6 mm bolt and loses the standard hole data the wizard adds to the model.
+
++++ question | A titanium flange ring
+--- ask
+A flange ring is made by revolving a rectangle 10 mm wide in the radial direction and 8 mm tall, whose center sits 45 mm from the axis, through 360°. It is titanium alloy, $4430\,\mathrm{kg/m^3}$. What is its mass, in grams, to one decimal?
+--- answer
+100.2
+100.2 g
+100
+--- why
+Pappus's theorem: $V = 2\pi\bar{r}A = 2\pi \times 45 \times (10 \times 8) = 2\pi \times 45 \times 80 = 22\,619\ \mathrm{mm^3}$. Check directly: the ring runs from radius 40 to 50, so $V = \pi(50^2 - 40^2) \times 8 = \pi \times 900 \times 8 = 22\,619\ \mathrm{mm^3}$. Mass $= 22\,619 \times 10^{-9} \times 4430 = 0.1002$ kg, about 100.2 g.
+
+=== cad03-l09 | Practice: The feature tree and design intent
+--- for
+l09-the-feature-tree-and-design-intent
+
++++ question | Whose child is Sketch 4
+--- ask
+In a bracket's tree, Sketch 4 is drawn on the top face of Extrude 2 and has one dimension to an edge made by Fillet 1. Fillet 1 rounds the edge where Extrude 2 meets Extrude 1. Which features must Sketch 4 wait for, directly or through a chain, before it can rebuild?
+--- choice
+Only Extrude 2, because that is the face it sits on.
+--- choice
+Only Fillet 1, because that is the feature just above it.
+--- choice correct
+Extrude 2 and Fillet 1 directly, and Extrude 1 through Fillet 1.
+--- choice
+None: a sketch has no parents, because it is flat.
+--- why
+Sketching on a face makes the feature that made the face a parent, so Extrude 2 is one. Dimensioning to an edge makes the feature that made the edge a parent, so Fillet 1 is another. Fillet 1 is itself a child of both extrudes, so Extrude 1 is in the chain too. Suppress or change any of them and Sketch 4 may be affected.
+
++++ question | A reorder the software allows
+--- ask
+The tree is: Sketch 1 on Top; Extrude 1, the plate; Sketch 2 on Front, with the upright's bottom edge made coincident with the plate's top edge; Extrude 2, the upright; Fillet 1, where the upright meets the plate; Hole 1, sketched on Top and cut Through all, well away from the upright. Which reorder is allowed?
+--- choice
+Move Fillet 1 above Extrude 2.
+--- choice
+Move Extrude 2 above Extrude 1.
+--- choice correct
+Move Hole 1 above Extrude 2.
+--- choice
+Move Sketch 2 below Fillet 1 while leaving Extrude 2 where it is.
+--- why
+A child must come after all its parents. Hole 1 is sketched on the Top plane and cut Through all, so it leans on no feature that Extrude 2 makes, and it can move above it. Fillet 1 rounds an edge that Extrude 2 makes. Extrude 2 is built from Sketch 2, which leans on the plate's edge, so it cannot go above Extrude 1. And Sketch 2 must stay above the extrude that uses it. Short chains like Hole 1's are what make a tree easy to change.
+
++++ question | A pattern that follows the wrong number
+--- ask
+A plate carries a row of holes that must match a star tracker's bolt pattern, 70 mm apart, centered on the plate. Today the plate is 100 mm wide. Which way of modeling the holes captures the intent?
+--- choice
+Set the hole spacing with the equation W − 30, where W is the plate width.
+--- choice correct
+Make the holes symmetric about the plate's center plane, with one 70 mm dimension between them.
+--- choice
+Place each hole 15 mm from the nearest end of the plate.
+--- choice
+Place the holes by eye and Fix them.
+--- why
+The 70 mm comes from the star tracker, so it should be a number in the model, not a result of the plate width. The equation and the 15 mm edge distances both give 70 today, and both give 90 if the plate grows to 120, with no error at all. An equation is the right tool when one number really depends on another; here the spacing does not depend on the plate. Fix records no reason and follows nothing.
+
++++ question | Thinner, then thicker
+--- ask
+Through-holes in a plate were cut Blind 10 mm, because the plate was 10 mm thick. Later the plate is changed to 7 mm, and later still to 12 mm. What does each change do to the holes?
+--- choice
+Both changes produce rebuild errors, so the mistake is found at once.
+--- choice
+At 7 mm the holes fail, because the cut is deeper than the part; at 12 mm they are fine.
+--- choice correct
+At 7 mm nothing visible happens; the holes still go through. At 12 mm the model rebuilds with no error and the holes stop 2 mm short of the bottom.
+--- choice
+Neither change matters, because the hole wizard updates the depth by itself.
+--- why
+A blind cut deeper than the part simply goes through, so the thinner plate hides the flaw. The thicker plate exposes it silently: $12 - 10 = 2$ mm of metal is left under each hole, and nothing turns red. "Through all" says what the designer meant, and it keeps saying it at any thickness.
+
++++ question | The sketch that jumped
+--- ask
+A connector boss was sketched on the top face of a housing. Later, someone inserts a slot above it in the tree that cuts that top face into two separate faces. After the rebuild there is no error, but the boss now sits on the wrong side of the slot. What happened?
+--- choice
+The slot has an error that the software failed to report.
+--- choice correct
+The topological naming problem: the face the sketch referenced was split in two, and the software re-attached the reference to one of the new faces, the wrong one.
+--- choice
+The sketch was under-defined, so the boss slid across the slot.
+--- choice
+Inserting a feature above another always moves every later sketch to the Top plane.
+--- why
+The software names faces by how they were made. When a change splits a face, there is no single right answer to "which face did you mean?", so it guesses, and here it guessed wrong, silently. The robust fix is to sketch the boss on a datum plane made from the default planes, or on a default plane, which no feature can split.
+
++++ question | The riskiest line in the tree
+--- ask
+You review a colleague's tree for a mounting bracket:
+
+1. Sketch 1 on Top, fully defined, dimensioned to the origin.
+2. Extrude 1, the plate, blind 6 mm.
+3. Fillet 1, 2 mm, on all the plate's edges.
+4. Sketch 2 on a face made by Fillet 1, with the upright's outline dimensioned to Fillet 1's edges.
+5. Extrude 2, the upright.
+6. Hole 1, sketched on Top, cut Through all.
+
+Which is the most fragile choice, and what is the fix?
+--- choice
+Hole 1, because a hole sketched on Top cannot know where the plate is.
+--- choice
+Extrude 1, because a plate should never be blind.
+--- choice correct
+Sketch 2 leans on faces and edges made by an early fillet. Move the fillet to the end of the tree and sketch the upright on a default or datum plane, dimensioned to the origin.
+--- choice
+Sketch 1, because a first sketch should not be dimensioned to the origin.
+--- why
+Change the fillet radius, or suppress the fillet for an analysis model, and Sketch 2 loses its references: the upright and everything after it may fail or shift. Fillets belong near the end, with few children. A plate's thickness is a real design number, so blind is right there. Hole 1 is the robust pattern: sketched on a plane and cut Through all.
+
+=== cad03-l10 | Practice: Assemblies, mates and clash checks
+--- for
+l10-assemblies
+
++++ question | Flat on the panel, on a pin
+--- ask
+A sensor block is mated face to face with a panel (coincident), then a round pin on the block, whose axis is at right angles to that face, is made concentric with a hole in the panel. How many degrees of freedom does the block have left?
+--- answer
+1
+--- why
+Start at 6. The coincident removes 3: movement off the panel and the two tilts. Left: sliding two ways on the panel and spinning about the panel's normal. The pin's axis is that normal, so the concentric mate's tilts are already gone and it only removes the two slides. Left: $3 - 2 = 1$, spinning about the pin. A second pin, or an angle mate, would lock it.
+
++++ question | A carriage on a rail
+--- ask
+A carriage sits on a straight rail. Its bottom face is coincident with the rail's top face, and its side face is coincident with the rail's side face, which is at right angles to the top. How many degrees of freedom does the carriage have left?
+--- answer
+1
+--- why
+The first coincident removes 3, leaving the two slides across the top and the spin about the vertical. The second face is vertical, so of the three things a coincident would normally remove, only two are still free: the slide towards the side face and the spin. Left: $3 - 2 = 1$, sliding along the rail, which is what a carriage should do. A distance mate from the rail's end would take that last one if a fixed position is wanted.
+
++++ question | Four parts, counted
+--- ask
+An assembly has four parts. The panel is grounded. The bracket is coincident with the panel and concentric with it at two holes. The reaction wheel is concentric with the bracket's bore and coincident with its shoulder. A cover is coincident with a face of the bracket and concentric with one bolt hole in it. How many free degrees of freedom does the assembly have?
+--- answer
+2
+--- why
+Panel: 0. Bracket: $6 - 3 - 2 - 1 = 0$. Wheel: $6 - 4 - 1 = 1$, the spin about its shaft, which is intended. Cover: the coincident removes 3, and the concentric on a bolt hole at right angles to that face removes only the 2 slides, leaving the spin about that bolt: 1. Total $0 + 0 + 1 + 1 = 2$. The cover's spin is not intended: it needs a second concentric on another hole. Counting is how you find loose parts like that.
+
++++ question | A third hole
+--- ask
+The bracket above is already at 0 degrees of freedom: coincident with the panel and concentric at holes A and B. Someone adds a third concentric mate at hole C. What happens in each case?
+
+- Case 1: hole C lines up exactly with its partner in the panel.
+- Case 2: hole C is 0.1 mm off.
+--- choice
+Case 1: the bracket loses 4 more degrees of freedom. Case 2: the solver moves hole C to fit.
+--- choice correct
+Case 1: the mate is redundant and removes nothing; many tools flag it. Case 2: the mates conflict, the assembly is over-defined, and the offset is a real message that the parts do not fit as drawn.
+--- choice
+Both cases solve silently, because concentric mates only matter for the first hole.
+--- choice
+Case 1: the assembly is over-defined and cannot be saved. Case 2: the extra mate is ignored.
+--- why
+With every degree of freedom already gone, a new mate can only repeat what other mates say. If the geometry agrees, it is redundant. If it does not, no position satisfies all the mates, and the solver reports a conflict. Delete the extra mate, or find the wrong hole position; do not suppress mates until the red goes away.
+
++++ question | Three parts in a loop
+--- ask
+Three parts were all designed in context. The cover's cut-out was sketched on the bracket's edges. The bracket's holes were snapped to the panel's holes. Then the panel's pocket was drawn around the cover's outline. Now a rebuild gives different results depending on which file was opened first. What is the problem, and the fix?
+--- choice
+One of the files is corrupt; rebuild it from a STEP export.
+--- choice correct
+A circular dependency: each part leans on the next, all the way round. Break the loop by having all three reference one controlled skeleton model with the interface positions, and lock or break the references when parts are released.
+--- choice
+The assembly needs more mates, so the solver has a unique answer.
+--- choice
+In-context design is forbidden; redraw all three parts bottom-up with typed dimensions.
+--- why
+Cover leans on bracket, bracket on panel, panel on cover: there is no first part to rebuild, so the order and the result depend on how the files were opened. A skeleton model holds only the shared interface, so every part points one way, at it, and never at each other. In-context design is useful; loops and unmanaged references are the danger.
+
++++ question | The harness near the hot line
+--- ask
+A harness 12 mm across runs past a hot line 16 mm across. In the model their center lines are 30 mm apart. The rule says the gap between their surfaces must be at least 10 mm. The harness clamps may put the harness up to 4 mm off its modeled position, and the hot line's supports may put it up to 3 mm off. What is the worst-case gap, in millimeters?
+--- answer
+9
+9 mm
+--- why
+Nominal gap: center distance minus both radii, $30 - 6 - 8 = 16$ mm, which passes easily. In the worst case both parts move towards each other: $16 - 4 - 3 = 9$ mm, which fails the 10 mm rule. A clearance check on the nominal model says "pass". Run it with the parts at their worst-case positions, and at the extremes of anything that moves.
+
+=== cad03-l11 | Practice: Mass properties
+--- for
+l11-mass-properties
+
++++ question | Balance point of three boxes
+--- ask
+Three parts sit in a flat layout: 2 kg at $(0, 0)$, 3 kg at $(0.4, 0)$ and 5 kg at $(0.2, 0.3)$, in meters. Where is the center of gravity? Type it as x,y in meters.
+--- answer
+0.22,0.15
+(0.22,0.15)
+0.22, 0.15
+(0.22, 0.15)
+--- why
+Total mass $2 + 3 + 5 = 10$ kg. In $x$: $(2 \times 0 + 3 \times 0.4 + 5 \times 0.2) / 10 = (1.2 + 1.0) / 10 = 0.22$ m. In $y$: $(2 \times 0 + 3 \times 0 + 5 \times 0.3) / 10 = 1.5 / 10 = 0.15$ m. Each direction is its own weighted average.
+
++++ question | Which way a plate is hardest to spin
+--- ask
+A steel plate ($7850\,\mathrm{kg/m^3}$) is 0.4 m along $x$, 0.2 m along $y$ and 0.01 m thick along $z$. About its own center, which is right?
+--- choice
+$I_{xx}$ is largest, because the plate is longest along $x$.
+--- choice correct
+$I_{zz} \approx 0.105\ \mathrm{kg\,m^2}$ is largest, $I_{yy} \approx 0.084$, and $I_{xx} \approx 0.021$ is smallest.
+--- choice
+All three are equal, because the plate is one solid piece of one material.
+--- choice
+$I_{zz} \approx 0.0010\ \mathrm{kg\,m^2}$ is smallest, because the plate is thinnest along $z$.
+--- why
+Mass: $7850 \times 0.4 \times 0.2 \times 0.01 = 6.28$ kg. Each moment uses the two sides at right angles to its axis: $I_{zz} = \frac{6.28}{12}(0.4^2 + 0.2^2) = 0.105$, $I_{yy} = \frac{6.28}{12}(0.4^2 + 0.01^2) = 0.084$, $I_{xx} = \frac{6.28}{12}(0.2^2 + 0.01^2) = 0.021$. Spinning about $z$, the axis through the thin direction, swings all the mass far out, so it is hardest. The long side makes spin about $x$ easy, not hard.
+
++++ question | The harness nobody modeled
+--- ask
+A vehicle's CAD model gives 400 kg with the CG at $x = 1.20$ m. A 12 kg harness was never modeled; its own CG is at $x = 2.10$ m. With it added, where is the CG along $x$, in meters to three decimals?
+--- answer
+1.226
+1.226 m
+1.23
+--- why
+New total $400 + 12 = 412$ kg. Sum of mass times position: $400 \times 1.20 + 12 \times 2.10 = 480 + 25.2 = 505.2$ kg m. Divide: $505.2 / 412 = 1.226$ m. A mass of 3% of the total moved the CG 26 mm, because it sits far from the old CG. Missing mass shifts the CG and the inertia, not only the total.
+
++++ question | A product of inertia from two masses
+--- ask
+Two 1 kg point masses sit at $(1, 1, 0)$ and $(-1, -1, 0)$ in meters. Using the tensor convention, $I_{xy} = -\sum m\,x\,y$, what is $I_{xy}$ in $\mathrm{kg\,m^2}$?
+--- answer
+-2
+−2
+-2 kg m^2
+-2.0
+--- why
+Each mass has $x\,y = 1 \times 1 = 1$ or $(-1) \times (-1) = 1$, so $\sum m\,x\,y = 2$ and $I_{xy} = -2$. The mass lies along the line where $x$ and $y$ have the same sign, so the product is not zero. Add two more 1 kg masses at $(-1, 1, 0)$ and $(1, -1, 0)$ and their $x\,y$ values are $-1$ each, so the sum becomes 0: balanced across the axes. A tool that lists $+\sum m\,x\,y$ would print $+2$ for the same part.
+
++++ question | A tensor about the wrong point
+--- ask
+This function should return the inertia tensor about the assembly CG. One line is wrong.
+
+```python
+import numpy as np
+
+def inertia_about_cg(m, centres, own):
+    # m: masses; centres: part centres (x, y, z); own: each part's tensor about its own centre
+    M = m.sum()
+    cg = (m[:, None] * centres).sum(axis=0) / M
+    I = np.zeros((3, 3))
+    for mi, ci, Ii in zip(m, centres, own):
+        d = ci
+        I += Ii + mi * ((d @ d) * np.eye(3) - np.outer(d, d))
+    return cg, I
+```
+
+What does it compute instead, and what is the fix?
+--- choice
+It computes the right tensor; the CG is only returned for reference.
+--- choice correct
+It shifts every part to the model origin, so it returns the tensor about the origin, which is larger than the one about the CG unless the CG is at the origin. The line should be `d = ci - cg`.
+--- choice
+It adds tensors about different points, so NumPy raises an error.
+--- choice
+It computes the principal moments instead of the tensor. It should call `np.linalg.eigvalsh`.
+--- why
+The parallel-axis shift needs the vector from the new reference point to each part's center. With `d = ci`, that point is the origin. The result is a valid tensor, but about the wrong point, and nothing fails. The tensor about the CG is the smallest one, so a simulator given this one would turn the vehicle too slowly for a given torque.
+
++++ question | Which export cannot be real
+--- ask
+Four CAD reports give the principal moments of a part at its CG, in $\mathrm{kg\,mm^2}$. Which one must contain an error?
+--- choice
+$48\,000$, $61\,000$, $77\,000$
+--- choice
+$20\,000$, $95\,000$, $105\,000$
+--- choice correct
+$20\,000$, $61\,000$, $104\,000$
+--- choice
+$61\,000$, $61\,000$, $61\,000$
+--- why
+No principal moment can be bigger than the other two added together. In the third report, $20\,000 + 61\,000 = 81\,000$, which is less than $104\,000$, so it is impossible. The second is a thin, flat part: $20\,000 + 95\,000 = 115\,000 \ge 105\,000$. Three equal moments are what a cube or a sphere gives. In the simulator's units, $1\ \mathrm{kg\,m^2} = 10^6\ \mathrm{kg\,mm^2}$, so the first report is $0.048$, $0.061$ and $0.077\ \mathrm{kg\,m^2}$.
+
+=== cad03-l12 | Practice: Drawings, PMI, sheet metal and the outer mold line
+--- for
+l12-drawings-pmi-and-special-modelling
+
++++ question | A thin bracket's bend
+--- ask
+A 90° bend is made in 1.6 mm aluminum sheet with an inside radius of 1.6 mm. The shop's K-factor is 0.42. What is the bend allowance, in millimeters, to two decimals?
+--- answer
+3.57
+3.57 mm
+--- why
+The angle in radians is $\pi / 2 = 1.5708$. The neutral radius is $R + KT = 1.6 + 0.42 \times 1.6 = 1.6 + 0.672 = 2.272$ mm. $BA = 1.5708 \times 2.272 = 3.57$ mm. Check: the inside arc is $1.5708 \times 1.6 = 2.51$ mm and the outside arc $1.5708 \times 3.2 = 5.03$ mm, and 3.57 lies between them, nearer the inside.
+
++++ question | The K-factor from a test piece
+--- ask
+The shop bends a test L-bracket from 2 mm sheet with an inside radius of 2 mm and one 90° bend. Its outside legs are 50 mm and 30 mm. The flat blank they cut to get it was 76.52 mm long. What K-factor does that imply, to two decimals?
+--- answer
+0.44
+--- why
+Each straight part of a leg ends $R + T = 4$ mm short of the outside corner, so the flat flanges are $50 - 4 = 46$ and $30 - 4 = 26$ mm, together 72 mm. The bend used the rest: $BA = 76.52 - 72 = 4.52$ mm. Then $R + KT = 4.52 / 1.5708 = 2.8775$, so $KT = 0.8775$ and $K = 0.8775 / 2 = 0.44$. Working back from a real test bend is how a shop finds the K-factor to put in the model.
+
++++ question | What moved on the drawing
+--- ask
+A bracket's drawing was made from its model. Two things change in the model: its material goes from aluminum to titanium, and a sharp corner is replaced by a fillet. On the sheet, which is right?
+--- choice
+Nothing on the sheet changes until the drawing is redrawn.
+--- choice correct
+The views update, and the title block's material and mass fields update. A reference dimension that was attached to the sharp corner's edge now dangles. A mass typed as plain text in a note still shows the old number.
+--- choice
+The views update, but the title block keeps the old material until someone types the new one.
+--- choice
+Every dimension on the sheet is deleted and must be placed again.
+--- why
+Views are associative, and title block fields read the model's properties, so both follow the change. A reference dimension hangs on particular edges; when its edge is gone it is flagged as dangling rather than deleted, and must be fixed before release. Text someone typed is not linked to anything, which is why mass and material belong in property fields, not in notes.
+
++++ question | A crease in the reflection
+--- ask
+A surfaced nose fairing shows a faint line in its reflections along one seam. The two surfaces there meet with no gap and with the same slope. What is going on?
+--- choice
+The surfaces do not touch; the seam is G0 at best.
+--- choice
+The model is a solid, so reflections are drawn wrongly on it.
+--- choice correct
+The seam is G1 but not G2: slope matches but curvature jumps, and reflections show that as a crease. Aero skins often need G2.
+--- choice
+The surfaces overlap, so the software is drawing both of them.
+--- why
+G0 means the surfaces touch, G1 means they also share a slope, and G2 means they also share curvature. Light reflects according to curvature, so a jump in it shows as a crease even when the slopes match. An aerodynamic skin that becomes part of the OML usually wants at least G1 and often G2.
+
++++ question | Tolerances the inspection program cannot read
+--- ask
+You release a bracket as an annotated model with its tolerances, datums and feature control frames placed on it. The supplier's CMM software opens the exported file and shows every annotation on screen, but cannot build an inspection program from them. What is the most likely cause?
+--- choice
+CMM software can only read 2D drawings, never a model.
+--- choice correct
+The PMI arrived as graphic PMI, pictures of text, not semantic PMI linked to the faces. Export it as STEP AP242 with semantic PMI.
+--- choice
+The model needs more saved views so the CMM software can find the annotations.
+--- choice
+The general tolerance note is missing, so the CMM software refuses the whole file.
+--- why
+An inspection program needs to know which faces each tolerance controls, its type, value, modifiers and datums. Graphic PMI only draws the symbols for human eyes; the software sees no link to any face. Semantic PMI stores those links as data, and STEP AP242 is the neutral format made to carry it. Saved views organize annotations for people; they do not add meaning.
+
++++ question | Thermal protection on the reference area
+--- ask
+A stage's structure is 2.0 m across. Its thermal protection is 25 mm thick all the way round, so the outer mold line is bigger. An aero database was built on the bare 2.0 m structure by mistake. By about how many percent is the true reference area bigger than the one the database used?
+--- answer
+5.06
+5.06%
+5.1
+5.1%
+5
+5%
+--- why
+The OML diameter is $2.0 + 2 \times 0.025 = 2.05$ m, since the layer adds to both sides. Area goes with diameter squared: $(2.05 / 2.0)^2 = 1.0506$, so the true area is about 5.06% bigger. Every force computed from that area is off by the same amount. The air only sees the OML, which includes the protection; the structure sits inside it.
+
+=== cad03-l13 | Practice: Interchange formats and the CAD landscape
+--- for
+l13-interchange-and-the-cad-landscape
+
++++ question | Reviewing the whole vehicle on a laptop
+--- ask
+A program manager wants to walk through a 20,000-part vehicle assembly on a laptop during a review, with the assembly tree visible. Nobody will edit anything. Which format fits best?
+--- choice
+IGES, because it is the oldest and so the most widely read.
+--- choice
+Parasolid `.x_t`, because it needs no translation.
+--- choice correct
+JT, because it stores the product structure and light triangle versions of each part that graphics hardware draws fast.
+--- choice
+The native NX files, because only they are exact.
+--- why
+JT is built for viewing big assemblies: the tree of parts plus faceted shapes, often at several levels of detail. Exact solids in Parasolid or native files are much heavier to load, and IGES carries curves and surfaces, often not even closed solids, with no product structure worth reviewing. Measurements taken from triangles are approximate, which does not matter in a walk-through.
+
++++ question | What each file carries
+--- ask
+Which one statement is true?
+--- choice
+A STEP AP214 file carries semantic PMI, so a CMM program can read its tolerances.
+--- choice
+A Parasolid `.x_t` file from NX carries the feature tree into SolidWorks, because both use the same kernel.
+--- choice correct
+An `.x_t` file passed from Onshape to NX brings the exact solid across with no translation, but no feature tree.
+--- choice
+A JT file always carries exact B-rep geometry, so it is safe for mass properties.
+--- why
+Onshape and NX both run on the Parasolid kernel, so the receiver reads exactly the math the sender wrote. But a shared kernel shares geometry, not history: no neutral or kernel file carries the feature tree. Semantic PMI arrived with AP242, not AP214. JT may carry exact geometry, but only optionally; its core is triangles.
+
++++ question | Centimeters read as millimeters
+--- ask
+A model saved in centimeters travels in a format with no units, and the receiver's software reads the numbers as millimeters. By what factor are the imported part's moments of inertia too small?
+--- answer
+100000
+100 000
+1e5
+10^5
+--- why
+Every length is read 10 times too small, because 1 cm is 10 mm. Volume, and so mass, goes with length cubed: $10^3$ too small. A moment of inertia is mass times distance squared: $10^3 \times 10^2 = 10^5$ too small. A simulated vehicle with inertia a hundred thousand times too small would spin up absurdly fast on the first thruster pulse.
+
++++ question | Counting open edges
+--- ask
+A bracket comes from a program whose modeling tolerance is $0.005$ mm. Five of its edges have tiny gaps: $0.0003$, $0.001$, $0.0045$, $0.0002$ and $0.0049$ mm. It is imported into a program whose tolerance is $0.0005$ mm. How many open edges does the receiver see?
+--- answer
+3
+--- why
+At home every gap is smaller than $0.005$, so the bracket is a valid solid. The receiver only counts a gap as closed if it is smaller than $0.0005$: $0.0003$ and $0.0002$ pass, while $0.001$, $0.0045$ and $0.0049$ do not. That is 3 open edges, so the bracket arrives as an open shell with no volume. Healing with the sender's tolerance, $0.005$ mm, would close all five; then compare the volume and CG with the sender's numbers.
+
++++ question | A face that moved alone
+--- ask
+A supplier received a housing as a STEP file. To enlarge a boss, they used a direct editing tool to push the boss's outer face out 2 mm. The hole in the middle of the boss did not move, and the wall on one side is now 2 mm thicker than on the other. What went wrong?
+--- choice
+The STEP file was corrupt; a clean STEP file would have kept the hole centered.
+--- choice correct
+STEP carries a dumb solid: the faces, with no rule that the hole is concentric with the boss. Direct editing moved one face and nothing followed it. The originator should make the change in the native model, where the concentric rule lives.
+--- choice
+Direct editing only works on IGES files, so the supplier should have asked for IGES.
+--- choice
+The supplier should have healed the file first; healing restores the design intent.
+--- why
+A neutral file has the shape without the reasons. Direct editing can push faces around, but any relationship, such as "this hole stays concentric with that boss", was never in the file, so it cannot be kept. Healing only closes small gaps and removes slivers. Parametric changes belong with whoever holds the native model and its feature tree.
+
++++ question | Three routes out of an NX shop
+--- ask
+Your team works in NX. You must send:
+
+1. A bracket to a machine shop that runs SolidWorks.
+2. A tolerance-critical fitting to a Boeing team in CATIA that inspects from the model's PMI.
+3. The whole stage assembly to an executive for a quick look on a laptop.
+
+Which set of formats fits?
+--- choice
+STEP AP203 for all three, because STEP works everywhere.
+--- choice correct
+Parasolid `.x_t` to the SolidWorks shop; STEP AP242 with semantic PMI to the CATIA team; JT for the executive.
+--- choice
+Native NX files to all three, so nothing is lost.
+--- choice
+IGES to the SolidWorks shop; Parasolid `.x_t` to the CATIA team; STEP AP242 for the executive.
+--- why
+NX and SolidWorks share the Parasolid kernel, so `.x_t` passes the solid with no translation. CATIA is not built on Parasolid, and the team needs readable tolerances, which only AP242 carries as semantic PMI. A viewer wants JT's light triangles and product structure. AP203 has no PMI, and other programs generally cannot read NX's native files.
+
+=== cad03-l14 | Practice: Part numbers, revisions and which version is real
+--- for
+l14-plm-revisions-and-effectivity
+
++++ question | Saves and releases
+--- ask
+A designer saves a bracket model 12 times and it is released as revision B. Later an approved change calls for a fix; the designer saves 5 more times, and the fix is released as revision C. Which is right?
+--- choice
+17 revisions exist, one per save; the shop builds from the newest one.
+--- choice correct
+There are 17 versions and 2 revisions, B and C. New hardware is built to C once it is effective; nobody builds from the in-between versions.
+--- choice
+There are 2 versions and 17 revisions.
+--- choice
+There are 17 versions and 1 revision, because B was overwritten by C.
+--- why
+A version is any saved state; a revision is a released, controlled configuration with a letter. B stays in the record, frozen: hardware built to it is still correctly described by it. Versions are the designer's working history. Which revision applies to which unit is set by effectivity, not by which revision is newest.
+
++++ question | Three revisions in one build
+--- ask
+A build of 20 spacecraft, serials 001 to 020, uses bracket `40221`. Revision B is effective for serials 001 to 007, revision C from serial 008, and revision D from serial 015. Nothing is swapped. How many spacecraft carry revision C?
+--- answer
+7
+--- why
+Revision C runs from serial 008 up to the last serial before D takes over, 014. That is serials 008 to 014: $14 - 8 + 1 = 7$ units. B covers 001 to 007, which is 7 units, and D covers 015 to 020, which is 6. Check: $7 + 7 + 6 = 20$. Counting "from 008 to 014" as $14 - 8 = 6$ is the classic off-by-one.
+
++++ question | Revision or new number
+--- ask
+Which change must get a new part number, not just a new revision?
+--- choice
+A lightening pocket is made 1 mm deeper; the part is 4 g lighter, and it fits and works the same everywhere it is used.
+--- choice correct
+The two mounting holes move from 60 mm apart to 64 mm apart, to suit a new wheel.
+--- choice
+A spelling mistake in a drawing note is corrected.
+--- choice
+A thread insert is changed to an approved equivalent from a second supplier; form, fit and function are unchanged.
+--- why
+A part keeps its number while it stays interchangeable: same form, fit and function. Holes 64 mm apart no longer fit the old 60 mm wheel mounts, so old and new parts cannot be swapped, and they must not share a number. The new design might become a new dash number, such as `40017-03`, or a new configuration in the same file with its own number. The other three are revisions released under an ECO.
+
++++ question | Built slightly off the drawing
+--- ask
+Serial 011's bracket was machined with one hole 0.2 mm off position. Engineering judges it safe to fly and approves it. What changes in the records?
+--- choice
+The drawing gets a new revision showing the hole 0.2 mm off, so it matches serial 011.
+--- choice
+A new part number is made for serial 011's bracket.
+--- choice correct
+A deviation or waiver is recorded against serial 011. The drawing does not change; serial 011's as-built record now differs from its as-designed one.
+--- choice
+Nothing is recorded, because the part was judged safe.
+--- why
+The design was right; one piece of hardware departed from it. That decision belongs to that serial number, not to the drawing that every other unit is built to. So the as-built record for serial 011 carries the deviation, and it differs from the as-designed record, which is exactly what an anomaly investigation needs to know later.
+
++++ question | The quick fix to a released model
+--- ask
+An engineer spots a wrong hole size in revision C of a released bracket model. The system still lets her open the file, so she corrects the diameter and saves it as revision C. What is wrong with that?
+--- choice
+Nothing: the model is now correct, which is what matters.
+--- choice
+She should have saved it as a new part number instead.
+--- choice correct
+A released revision must stay frozen. Hardware and suppliers may already be working from C, and nobody would know it changed. She should raise an ECR; if the change board approves, an ECO releases revision D with its effectivity and a disposition for existing parts.
+--- choice
+She should have issued the ECO herself first, then edited revision C.
+--- why
+Revision C is a promise that everyone holding it has the same definition. Editing it in place breaks that silently: parts built last month and parts built tomorrow would both claim "rev C" and differ. The ECR asks, the board decides, the ECO authorizes and lists what changes, and the fix comes out as a new revision. An engineer does not authorize her own change.
+
++++ question | The IMU swapped at the pad
+--- ask
+After an attitude anomaly on serial 009, the GNC engineer must rebuild its mass properties. The effectivity plan says serial 009 carries revision B of an IMU bracket. The build record shows a revision C bracket was fitted after a scratch. The pad log shows the IMU itself was replaced the night before launch. Which description of the vehicle should she build from, and which system links them?
+--- choice
+As-designed, from the NX model, because it is the official definition.
+--- choice
+As-built, because the pad work happened after the build was finished.
+--- choice correct
+As-flown: the C bracket from the build record plus the replacement IMU from the pad log. The PLM system, such as Teamcenter, links serial 009 to all three records.
+--- choice
+Whatever the effectivity plan says, because swaps are not allowed in flight hardware.
+--- why
+As-designed gives the B bracket and the original IMU, both wrong for this vehicle. As-built has the C bracket but not the pad swap. As-flown is what was in the vehicle at the moment of flight, and it is what the simulation must match. NX makes the geometry; it does not know which serial got which part. Teamcenter's revisions, effectivity and traceability do.
+
+=== cad03-test | CAD tools: module test
+--- teach
+The test covers the whole module: coordinate entry and editing in AutoCAD, layers and blocks, xrefs, annotation and paper space, cut files, parametric sketches, features and the feature tree, assemblies, mass properties, sheet metal and the outer mold line, interchange formats and the CAD landscape, and PLM. Most questions combine two or more lessons, and many ask you to calculate, so have paper and a calculator ready. To get ready, redo the practice questions of the lessons that felt hard, and work each number out before you look at the choices.
+--- gate
+questions 13
+minutes 30
+
++++ question | A corner pulled up
+--- ask
+Dynamic Input is off. A plate outline is drawn as one closed polyline:
+
+```text
+Command: PL
+Specify start point: 0,0
+Specify next point or [Arc/Halfwidth/Length/Undo/Width]: @90,0
+Specify next point or [Arc/Close/Halfwidth/Length/Undo/Width]: @0,60
+Specify next point or [Arc/Close/Halfwidth/Length/Undo/Width]: @-90,0
+Specify next point or [Arc/Close/Halfwidth/Length/Undo/Width]: C
+```
+
+A hole circle is centered at $(70, 30)$. You run STRETCH with a crossing box dragged from $(100, 70)$ to $(60, 40)$, pick any base point, and type `@20<90`. What is the area of the outline afterwards, in square millimeters, ignoring the hole?
+--- answer
+6300
+6300 mm2
+6 300
+--- why
+The corners are $(0,0)$, $(90,0)$, $(90,60)$ and $(0,60)$. The box spans $x = 60$ to $100$ and $y = 40$ to $70$, so only the vertex $(90, 60)$ is inside it. `@20<90` is 20 straight up, so that vertex moves to $(90, 80)$ and the two sides meeting it stretch. The hole's center, at $y = 30$, is outside the box, so it stays. The outline is now a trapezoid with parallel vertical sides 60 and 80, 90 apart: area $= 90 \times (60 + 80) / 2 = 6300\ \mathrm{mm^2}$, up from 5400.
+
++++ question | A pump block on a layer switched off
+--- ask
+A block `PUMP` holds:
+
+- the casing, on layer 0 with color ByLayer;
+- the bolt heads, on layer 0 with color ByBlock;
+- the nameplate text, on the layer `P-TEXT`, which is white.
+
+A reference is inserted on layer `P-EQPT`, which is green, and the reference's own Color property is set to red. What colors show, and what is still visible after `P-EQPT` is turned off?
+--- choice
+All green. After off, nothing is visible.
+--- choice correct
+Casing green, bolt heads red, nameplate white. After off, only the nameplate is visible.
+--- choice
+All red. After off, nothing is visible.
+--- choice
+Casing green, bolt heads red, nameplate white. After off, the casing is hidden and the bolt heads and nameplate stay.
+--- why
+Layer 0 geometry takes on the reference's layer, so the casing shows `P-EQPT`'s green, and the bolt heads, also on layer 0, take their ByBlock color from the reference: red. The nameplate keeps its own named layer. Turning `P-EQPT` off hides everything drawn on layer 0 inside the block, whatever its color setting, so the casing and bolt heads both go, while the nameplate on `P-TEXT` stays. Freezing `P-EQPT` would have hidden the whole block.
+
++++ question | A note in the wrong viewport
+--- ask
+A layout has a 1:20 general view and a 1:5 detail view of the same model. A non-annotative note was drawn 50 mm tall in model space, sized for the 1:20 view. Nobody froze its layer in the detail viewport, and the note falls inside the detail's area. How tall does the note print in the detail view, in millimeters?
+--- answer
+10
+10 mm
+10mm
+--- why
+The 1:5 viewport's scale factor is $1/5 = 0.2$, so a 50 mm note prints $50 \times 0.2 = 10$ mm tall, four times the intended 2.5 mm. In the 1:20 view it prints $50 \times 0.05 = 2.5$ mm, as meant. Either freeze the note's layer in the detail viewport and add a 12.5 mm copy, or make the note annotative with both 1:20 and 1:5 on its scale list.
+
++++ question | A retired drive
+--- ask
+The project sat on the `P:` drive:
+
+- `P:\Pad39\Site\SITE.dwg`, the site plan;
+- `P:\Pad39\Elec\E-101.dwg`, which attaches the site plan with the relative path `..\Site\SITE.dwg`;
+- `P:\Pad39\Mech\M-201.dwg`, which overlays `E-101` with the full path `P:\Pad39\Elec\E-101.dwg`.
+
+The whole `Pad39` folder is copied to `Q:\Jobs\Pad39\` and the `P:` drive is retired. You open `Q:\Jobs\Pad39\Mech\M-201.dwg`. What shows?
+--- choice
+Everything: `E-101` and, inside it, the site plan.
+--- choice correct
+Only `M-201`'s own work. The full path to `E-101` points at a drive that is gone, so `E-101` is Not Found, and the site plan, which only came through `E-101`, is missing too.
+--- choice
+`E-101` shows, but not the site plan, because `M-201` only overlays `E-101`.
+--- choice
+`E-101` is Not Found, but the site plan still shows, because its own path is relative.
+--- why
+`M-201`'s link to `E-101` is a full path on `P:`, which no longer exists, so that xref breaks, and everything nested inside it goes with it. The relative path inside `E-101` would have worked, but `E-101` never loads. Had `M-201` used a relative path too, `..\Elec\E-101.dwg`, the whole folder would have moved safely. The overlay does not matter here: overlay only decides whether `E-101` would travel on into a drawing that references `M-201`.
+
++++ question | What the machine will cut
+--- ask
+You send a waterjet shop this DXF of a plate:
+
+- an outline 150 mm by 90 mm, one closed polyline;
+- four holes 11 mm across;
+- by mistake, a second copy of one hole lying exactly on top of it;
+- by mistake, a centerline 170 mm long on layer `G-CNTR`, left in the export.
+
+The machine cuts every line it is given. How long is the cut path as sent, in millimeters, to two decimals?
+--- answer
+822.79
+822.79 mm
+822.8
+--- why
+Outline: $2 \times (150 + 90) = 480$ mm. Holes: five circles are in the file, counting the duplicate, so $5 \times \pi \times 11 = 172.79$ mm. The centerline: 170 mm. Total $480 + 172.79 + 170 = 822.79$ mm. The clean file would be $480 + 4 \times \pi \times 11 = 618.23$ mm. OVERKILL removes the duplicate, and deleting everything that is not cut geometry removes the centerline, which would otherwise be cut straight across the plate.
+
++++ question | A redundant rule that looks like the last one
+--- ask
+A sketch has three pieces joined end to end: a line L1, an arc, and a line L2. You add:
+
+- two point-on-point coincidents where the arc meets each line;
+- two tangents, one at each of those joins;
+- horizontal on L1 and vertical on L2;
+- the arc's radius, L1's length and L2's length;
+- the free end of L1 on the $x$ axis (point on a line).
+
+Then you add a perpendicular constraint between L1 and L2. What is the state of the sketch?
+--- choice
+Fully defined: the perpendicular removed the last degree of freedom.
+--- choice correct
+Still under-defined by 1, the slide along the $x$ axis, and the perpendicular is flagged as redundant.
+--- choice
+Over-defined with a conflict: a perpendicular cannot be added to lines joined by an arc.
+--- choice
+Under-defined by 2, because a point on a line removes nothing.
+--- why
+Start: $4 + 5 + 4 = 13$. Coincidents $-4$ leave 9; tangents $-2$ leave 7; horizontal and vertical $-2$ leave 5: position (2), radius, and the two lengths. Three dimensions leave 2, and the point on the axis leaves 1: sliding along $x$. The perpendicular adds nothing, because a horizontal L1 and a vertical L2 are already at right angles. Plain subtraction reaches 0 and hides the free slide. A coincident of L1's end with the origin, instead of the perpendicular, would finish the sketch.
+
++++ question | Which choices break silently
+--- ask
+A bracket plate is 8 mm thick and 100 mm wide. A reaction wheel bolts to two holes 70 mm apart. The model was built with these four choices:
+
+1. The holes are symmetric about the Right plane, with one 70 mm dimension between them.
+2. The holes are cut Blind 8 mm.
+3. A row of cable-tie holes is spaced by the equation W − 30, where W is the plate width, because the harness clamp holes are 70 mm apart.
+4. The upright is extruded up to a datum plane 40 mm above the Top plane.
+
+The plate is changed to 10 mm thick and 120 mm wide. Which choices rebuild with no error into a part that no longer does its job?
+--- choice
+1 and 4
+--- choice
+2 only
+--- choice correct
+2 and 3
+--- choice
+3 and 4
+--- why
+Choice 2: the holes stay 8 mm deep in a 10 mm plate, so 2 mm of metal is left under them. Choice 3: $120 - 30 = 90$ mm, so the cable-tie holes no longer match the clamp's 70 mm. Neither turns red. Choice 1 keeps the wheel holes 70 mm apart and centered, and choice 4 keeps the upright's top at 40 mm whatever the plate does: both say what the design needs. "Through all" and a plain 70 mm dimension would have fixed 2 and 3.
+
++++ question | A gimbal, rigid and flexible
+--- ask
+An engine gimbal is built as a sub-assembly. Its frame is grounded. The gimbal ring is concentric with the frame's pivot axis and coincident with a thrust face on the frame, so it can only swing about that axis. The engine is concentric with the ring's second pivot axis, at right angles to the first, and coincident with a thrust face on the ring. The sub-assembly is then placed in the vehicle assembly with its frame fully mated. How many free degrees of freedom does the vehicle assembly show from the gimbal while the sub-assembly is rigid, and how many when it is set to flexible? Type the two numbers.
+--- answer
+0 and 2
+0, 2
+0 2
+0,2
+0 then 2
+rigid 0, flexible 2
+--- why
+Inside: the ring has $6 - 4 - 1 = 1$, its swing, and the engine has $6 - 4 - 1 = 1$, its swing about the second axis, so the sub-assembly has 2, pitch and yaw. A rigid sub-assembly moves as one block at the top level, and its frame is fully mated, so the vehicle shows 0. Set flexible, the two inner freedoms show up in the parent: 2. You need that for checking clearances with the engine at full gimbal.
+
++++ question | Two parts about their CG
+--- ask
+Part A is 4 kg, with $I_{zz} = 0.02\ \mathrm{kg\,m^2}$ about its own center, which is at $x = 0$. Part B is 2 kg, with $I_{zz} = 0.01\ \mathrm{kg\,m^2}$ about its own center, which is at $x = 0.6$ m. Both centers lie on the $x$ axis. What is $I_{zz}$ of the pair about their combined CG?
+--- choice
+$0.75\ \mathrm{kg\,m^2}$
+--- choice correct
+$0.51\ \mathrm{kg\,m^2}$
+--- choice
+$0.48\ \mathrm{kg\,m^2}$
+--- choice
+$0.57\ \mathrm{kg\,m^2}$
+--- why
+CG: $(4 \times 0 + 2 \times 0.6) / 6 = 0.2$ m. Shift each part: A is 0.2 m away, adding $4 \times 0.2^2 = 0.16$; B is 0.4 m away, adding $2 \times 0.4^2 = 0.32$. Total $0.02 + 0.16 + 0.01 + 0.32 = 0.51$. The value about A's center is $0.03 + 2 \times 0.6^2 = 0.75$, and subtracting $6 \times 0.2^2 = 0.24$ gives 0.51 again. Leaving out the parts' own moments gives 0.48, and using the halfway point 0.3 m instead of the CG gives 0.57.
+
++++ question | Copying a tensor into the simulator
+--- ask
+A CAD tool reports, about the CG in body axes, in $\mathrm{kg\,mm^2}$: $I_{xx} = 2\,400\,000$, $I_{yy} = 3\,100\,000$, $I_{zz} = 3\,600\,000$, and products listed as $P_{xy} = 120\,000$, $P_{xz} = -40\,000$, $P_{yz} = 0$. Its documentation says the products are listed as $+\int x\,y\,dm$. The simulator wants the tensor in $\mathrm{kg\,m^2}$ with the tensor convention, $I_{xy} = -\int x\,y\,dm$. Which entries go in?
+--- choice correct
+$I_{xx} = 2.4$, $I_{yy} = 3.1$, $I_{zz} = 3.6$, $I_{xy} = -0.12$, $I_{xz} = 0.04$, $I_{yz} = 0$.
+--- choice
+$I_{xx} = 2.4$, $I_{yy} = 3.1$, $I_{zz} = 3.6$, $I_{xy} = 0.12$, $I_{xz} = -0.04$, $I_{yz} = 0$.
+--- choice
+$I_{xx} = 2400$, $I_{yy} = 3100$, $I_{zz} = 3600$, $I_{xy} = -120$, $I_{xz} = 40$, $I_{yz} = 0$.
+--- choice
+$I_{xx} = 2.4$, $I_{yy} = 3.1$, $I_{zz} = 3.6$, $I_{xy} = -0.12$, $I_{xz} = -0.04$, $I_{yz} = 0$.
+--- why
+$1\ \mathrm{kg\,m^2} = 10^6\ \mathrm{kg\,mm^2}$, so divide every entry by a million, not a thousand. The tool lists $+\int xy\,dm$ and the simulator wants $-\int xy\,dm$, so every product flips its sign: $120\,000$ becomes $-0.12$ and $-40\,000$ becomes $+0.04$. Flipping only one, or none, gives a tensor with the wrong principal axes, and the simulated vehicle couples its spin onto the wrong axes.
+
++++ question | A U-channel blank
+--- ask
+A U-channel is bent from 2 mm sheet with two 90° bends. The inside radius is 3 mm and the shop's K-factor is 0.40. Measured to the sharp outside corners, the two side flanges are each 20 mm and the web between them is 40 mm. How long is the flat blank?
+--- choice
+80.00 mm
+--- choice correct
+71.94 mm
+--- choice
+69.42 mm
+--- choice
+76.94 mm
+--- why
+For a 90° bend, each straight part ends $R + T = 5$ mm short of the outside corner. Side flanges: $20 - 5 = 15$ mm each. The web loses 5 mm at each end: $40 - 10 = 30$ mm. Each bend: $BA = 1.5708 \times (3 + 0.40 \times 2) = 1.5708 \times 3.8 = 5.97$ mm. Blank $= 15 + 30 + 15 + 2 \times 5.97 = 71.94$ mm. Adding the outside lengths gives 80. Using the inside radius instead of the neutral radius gives $1.5708 \times 3 = 4.71$ per bend and 69.42. Taking the setback off the web only once gives 76.94.
+
++++ question | What to hand the aero team
+--- ask
+The aerodynamics team needs the stage's outer mold line to build a CFD mesh and to set the reference area. You have three files:
+
+1. The native NX model of the propellant tank structure.
+2. A JT file of the whole stage, with insulation and raceways, triangles only.
+3. A STEP AP242 file of the stage's outer surfaces, including the sprayed insulation, raceways and fairing, as exact geometry.
+
+Which should they get, and why?
+--- choice
+File 1, because the native model is the most accurate and carries its feature tree.
+--- choice
+File 2, because it includes the insulation and opens fast.
+--- choice correct
+File 3, because it is the true OML, protection and protrusions included, in exact geometry.
+--- choice
+Files 1 and 2 together, because the tank gives exact geometry and the JT adds the insulation.
+--- why
+The air sees only the OML, which is the outside of the insulation plus everything sticking out. The tank model is the structure inside it, so its diameter is too small. The JT has the right parts but only as triangles, an approximation of every curved surface. Only file 3 is both the right surface and exact. Mixing structure and OML is a classic interface mistake, so the team should also be told which diameter sets the reference area.
+
++++ question | One wrong route
+--- ask
+Four jobs at a launch company, each with a tool and a way of sending it. Which one is wrong?
+--- choice
+The pad's propellant-loading P&ID is drawn in AutoCAD, with valve blocks carrying tag attributes, and sent to the pad contractor as DWG.
+--- choice
+A flight bracket modeled in NX goes to a machine shop that runs SolidWorks as a Parasolid `.x_t` file.
+--- choice correct
+A tolerance-critical fitting modeled in SolidWorks goes to a Boeing team in CATIA as a Parasolid `.x_t` file, so they can inspect from its semantic PMI.
+--- choice
+A test-stand gusset goes to the waterjet shop as a DXF of its flat outline, full size in millimeters, with only cut geometry.
+--- why
+CATIA is not built on Parasolid, and no Parasolid file carries PMI at all, so the Boeing team would get a dumb solid with no tolerances. The route for them is STEP AP242, which carries semantic PMI between different systems. The other three are right: a P&ID is 2D work for AutoCAD, NX and SolidWorks share the Parasolid kernel, and a cut shop wants a clean 1:1 DXF.
+
++++ question | The as-built count
+--- ask
+A build of 30 units, serials 001 to 030, uses bracket `40221`. Revision B is effective for serials 001 to 011, revision C from 012, and revision D from 024. The build records show three swaps, all of interchangeable revisions: serial 007 got a C bracket after its B bracket was scrapped, and serials 015 and 018 were fitted with D brackets because the shelf had no C. How many units were built with a C bracket?
+--- answer
+11
+--- why
+Planned C: serials 012 to 023, which is $23 - 12 + 1 = 12$ units. Serial 007 adds one C: 13. Serials 015 and 018 were planned as C but got D: $13 - 2 = 11$. Check the whole build: B is $11 - 1 = 10$, D is $7 + 2 = 9$, and $10 + 11 + 9 = 30$. The effectivity plan gives the as-designed split; only the build records give the as-built one.
+
++++ question | Bigger holes in a released bracket
+--- ask
+Bracket `40017` revision C is released and flying on several spacecraft. A new wheel needs its two mounting holes changed from M5 clearance to M6 clearance, so M5 bolts would no longer fill them properly. Which way of making the change is right?
+--- choice
+Open revision C, enlarge the holes and save; the change is small and the model is now right.
+--- choice
+Raise an ECO for revision D of `40017`, with the new holes, and write the ECR afterwards to record why.
+--- choice correct
+Raise an ECR. The change board uses a where-used search in the PLM system to see every assembly and serial that carries `40017`. The ECO it approves releases the new design under a new part number, with its effectivity and a disposition for the old brackets in stock.
+--- choice
+Raise an ECR; if approved, the ECO releases revision D of `40017` with the new holes, since the drawing number stays the same.
+--- why
+Holes sized for M6 break interchangeability with every assembly built around M5 bolts, so the new bracket is a different part and needs a new number, not revision D. The order is always request, review, order: the ECR asks, the board decides, the ECO authorizes. Where-used is the first question a board asks, and it is answered by PLM, such as Teamcenter, not by the CAD tool that made the geometry. Editing a released revision in place hides the change from everyone already building to it.
+
++++ question | The mass in the title block
+--- ask
+A bracket model has no material assigned, and the CAD tool quietly uses $1000\,\mathrm{kg/m^3}$. The drawing's title block reads the model's mass property and shows 18.2 g. The bracket is really titanium alloy, $4430\,\mathrm{kg/m^3}$. Once the material is assigned, what mass does the title block show, in grams, to one decimal?
+--- answer
+80.6
+80.6 g
+80.63
+--- why
+The volume is right; only the density was wrong. Mass is density times volume, so it scales by $4430 / 1000 = 4.43$: $18.2 \times 4.43 = 80.6$ g. The title block field is associative, so it updates by itself. The part's own CG does not move, but its moments of inertia also grow by 4.43, and so does its pull on the assembly's CG. A mass that looks precise is only as good as the material behind it.

@@ -57,6 +57,56 @@ export type LearnCheck =
    */
   | (CheckBase & { kind: 'type-error'; code: string })
 
+/**
+ * One graded problem that is not the lesson's main task: a practice problem
+ * after it, or a problem in a course's mastery gate. It runs and grades
+ * exactly like a lesson, in the lesson's language and on its database.
+ */
+export interface LearnExercise {
+  /** `<lesson id>.p1`, `<gate id>.g3`: progress and saved code are keyed by it. */
+  id: string
+  title: string
+  task: string
+  starter: string
+  solution: string
+  hints: string[]
+  checks: LearnCheck[]
+  stdin?: string
+  schema?: string
+}
+
+/**
+ * A course's mastery gate: problems she has not seen, no hints and no
+ * solutions, a time limit, and a pass mark. Passing it is what makes a course
+ * mastered rather than merely finished.
+ */
+export interface LearnGate {
+  /** Problems she must pass in one sitting. */
+  pass: number
+  /** Questions she must answer right in the same sitting. */
+  questionPass: number
+  /** The sitting's length. */
+  minutes: number
+  problems: LearnExercise[]
+  /** Understanding, not just code: what a line prints, what it costs, which line is the bug. */
+  questions: LearnQuestion[]
+}
+
+/**
+ * A question in a gate, answered once per sitting: either pick from choices
+ * (one or more correct) or type an answer (any of `answers`, compared without
+ * case or surrounding space). `why` is shown after the sitting ends.
+ */
+export interface LearnQuestion {
+  /** `<gate id>.q3`. */
+  id: string
+  title: string
+  ask: string
+  choices?: { text: string; correct: boolean }[]
+  answers?: string[]
+  why: string
+}
+
 export interface LearnLesson {
   /** Stable across releases: progress and saved code are keyed by it. */
   id: string
@@ -75,6 +125,21 @@ export interface LearnLesson {
   stdin?: string
   /** SQL: the tables the lesson starts with. */
   schema?: string
+  /** Graded problems after the main task, on the same idea with new data. */
+  practice: LearnExercise[]
+  /**
+   * Questions after the main task, where code cannot run here (Rust, MATLAB,
+   * CAD) or understanding matters as much as code. Mastery needs each right.
+   */
+  quiz?: LearnQuestion[]
+  /** Set on a course's mastery gate, which has no task of its own. */
+  gate?: LearnGate
+  /**
+   * A module's practice set (`--- for <lesson id>`): the practice problems and
+   * questions under one lesson of an ORBIT module. It has no task of its own;
+   * the lesson it belongs to is the explanation.
+   */
+  forLesson?: string
 }
 
 /** Where a course sits on the way from first line to expert. */
@@ -106,6 +171,75 @@ export interface LearnTrack {
    * context notes. The validator holds such a course to the notes rule.
    */
   plainVoice?: boolean
+  /**
+   * `@subject Computer Science`: a course of a subject rather than of a
+   * language (data structures and algorithms, operating systems…). It runs in
+   * its `@track` language but sits on its subject's shelf and ladder.
+   */
+  subject?: string
+  /**
+   * `@requires cs-dsa1 cs-disc`: the courses whose gates open this one. Without it, a course
+   * opens when every course before it on its ladder has been passed.
+   */
+  requires?: string[]
+  /**
+   * `@module cod_py_01_basics`: the practice sets and test of an ORBIT module,
+   * not a Learn to code course. Kept apart from the courses.
+   */
+  module?: string
+}
+
+/* ── The catalog ───────────────────────────────────────────────────────────
+   What the app needs of every course before any course is opened: ids,
+   titles and the shape of each lesson's practice and gate, never the text.
+   Progress, mastery, locks, credit, re-tests and roadmaps run on this alone;
+   a course's full text loads when it is opened (see load.ts). A full
+   LearnTrack / LearnLesson fits each of these shapes, so the functions that
+   take them work on either. */
+
+/** A lesson's gate, without its problems' and questions' text. */
+export interface GateMeta {
+  pass: number
+  questionPass: number
+  minutes: number
+  problems: { id: string }[]
+  questions: { id: string }[]
+}
+
+/** A lesson, without its text: what progress and mastery are counted over. */
+export interface LessonMeta {
+  id: string
+  title: string
+  practice: { id: string }[]
+  quiz?: { id: string }[]
+  gate?: GateMeta
+  forLesson?: string
+}
+
+/** A course, without its text. */
+export interface TrackMeta {
+  id: string
+  lang: LearnLang
+  level: LearnLevel
+  title: string
+  name: string
+  blurb: string
+  lessons: LessonMeta[]
+  plainVoice?: boolean
+  subject?: string
+  requires?: string[]
+  module?: string
+}
+
+/** A course (or module file) in the build-time catalog: its metadata, and the file its text is in. */
+export interface CatalogTrack extends TrackMeta {
+  file: string
+}
+
+/** Every course and every module practice file, as the catalog holds them. */
+export interface LearnCatalog {
+  tracks: CatalogTrack[]
+  modules: CatalogTrack[]
 }
 
 /** A goal, and the courses that reach it in the order a mentor would teach them. */

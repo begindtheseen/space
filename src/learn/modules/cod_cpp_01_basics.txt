@@ -1,0 +1,4472 @@
+@track cpp
+@course mod-cod_cpp_01_basics
+@module cod_cpp_01_basics
+@title C++ fundamentals and the build pipeline: practice and test
+
+=== cpp01-l01 | Practice: From source to executable
+--- for
+l01-the-build-pipeline
+
++++ practice | Time to stop
+--- task
+A lander descends at a speed `v` in m/s and brakes with a steady deceleration of `decel_g` times standard gravity. The time it takes to stop is
+
+t = v / (decel_g × g0), with g0 = 9.80665 m/s².
+
+Write the whole program:
+
+- a `constexpr double kG0 = 9.80665;` at file scope, outside any function;
+- a function `double stop_time(double v, double decel_g)` that returns t in seconds;
+- a `main` that calls `stop_time` twice and prints exactly these two lines, with `std::printf` and two decimals:
+
+```
+200 m/s at 3 g: 6.80 s
+90 m/s at 1.5 g: 6.12 s
+```
+
+Work both times out with `stop_time`. Do not type 6.80 or 6.12 into the program.
+--- starter
+#include <cstdio>
+
+// Define kG0 and stop_time here.
+
+int main() {
+    return 0;
+}
+--- solution
+#include <cstdio>
+
+constexpr double kG0 = 9.80665;  // standard gravity, m/s^2
+
+// Time to go from speed v to rest at a steady decel_g times g0.
+double stop_time(double v, double decel_g) {
+    return v / (decel_g * kG0);
+}
+
+int main() {
+    std::printf("200 m/s at 3 g: %.2f s\n", stop_time(200.0, 3.0));
+    std::printf("90 m/s at 1.5 g: %.2f s\n", stop_time(90.0, 1.5));
+    return 0;
+}
+--- hint
+A function must be declared before the line that calls it, so write `stop_time` above `main`.
+--- hint
+`%.2f` in a `printf` format prints a `double` with two decimals. The rest of the line is plain text.
+--- check output | Prints both stop times
+200 m/s at 3 g: 6.80 s
+90 m/s at 1.5 g: 6.12 s
+--- check source | Defines stop_time
+double\s+stop_time\s*\(
+--- check source absent | Works the times out instead of typing them
+6\.80|6\.12
+
++++ practice | Inputs that make no sense
+--- task
+Guidance calls `stop_distance` with values that come from sensors, so it must cope with nonsense instead of returning infinity or a negative distance.
+
+Write `double stop_distance(double v, double decel_g)` returning v² / (2 × decel_g × g0), with g0 = 9.80665, except:
+
+- if `decel_g` is zero or negative, the vehicle cannot stop: return `-1.0`;
+- if `v` is negative, the reading is bad: return `-1.0`;
+- if `v` is exactly 0 (and `decel_g` is positive), return `0.0`.
+
+For example, `stop_distance(200.0, 3.0)` is about 679.81 and `stop_distance(50.0, 0.0)` is `-1.0`.
+--- starter
+double stop_distance(double v, double decel_g) {
+    return 0.0;
+}
+--- solution
+constexpr double kG0 = 9.80665;  // standard gravity, m/s^2
+
+// Braking distance, or -1.0 when the inputs cannot describe a stop.
+double stop_distance(double v, double decel_g) {
+    if (decel_g <= 0.0 || v < 0.0) return -1.0;
+    return v * v / (2.0 * decel_g * kG0);
+}
+--- hint
+Check the bad cases first and return early. The formula comes last.
+--- hint
+When `v` is 0 the formula already gives 0.0, so it needs no case of its own once the bad inputs are handled.
+--- check test | stop_distance(200.0, 3.0) is about 679.81
+std::fabs(stop_distance(200.0, 3.0) - 679.8108) < 1e-3
+--- check case | Zero deceleration cannot stop
+stop_distance(50.0, 0.0)
+=> -1.0
+--- check case | Negative deceleration cannot stop
+stop_distance(50.0, -2.0)
+=> -1.0
+--- check case | A negative speed is a bad reading
+stop_distance(-5.0, 2.0)
+=> -1.0
+--- check case | Already stopped
+stop_distance(0.0, 2.0)
+=> 0.0
+
++++ practice | A macro that squares the wrong thing
+--- task
+This program works out the braking distance from the speed over the ground, which is the airspeed minus the wind speed. For 210 m/s into a 10 m/s wind at 3 g, and for 60 m/s with no wind at 1 g, it should print:
+
+```
+679.8 m
+183.5 m
+```
+
+Instead it prints `-32.3 m` and `3.1 m`. The fault is in the one line that begins with `#`. Remember what the preprocessor does with a macro before the compiler sees any of it. Fix the program so it prints the right two lines. You may fix the macro, or replace it with an ordinary function.
+--- starter
+#include <cstdio>
+
+#define SQ(x) x * x
+
+constexpr double kG0 = 9.80665;  // standard gravity, m/s^2
+
+// Braking distance at decel_g, using the speed over the ground.
+double stop_distance_wind(double v_air, double v_wind, double decel_g) {
+    return SQ(v_air - v_wind) / (2.0 * decel_g * kG0);
+}
+
+int main() {
+    std::printf("%.1f m\n", stop_distance_wind(210.0, 10.0, 3.0));
+    std::printf("%.1f m\n", stop_distance_wind(60.0, 0.0, 1.0));
+    return 0;
+}
+--- solution
+#include <cstdio>
+
+constexpr double kG0 = 9.80665;  // standard gravity, m/s^2
+
+// A function, not a macro: its argument is worked out once, before the multiply.
+constexpr double sq(double x) { return x * x; }
+
+// Braking distance at decel_g, using the speed over the ground.
+double stop_distance_wind(double v_air, double v_wind, double decel_g) {
+    return sq(v_air - v_wind) / (2.0 * decel_g * kG0);
+}
+
+int main() {
+    std::printf("%.1f m\n", stop_distance_wind(210.0, 10.0, 3.0));
+    std::printf("%.1f m\n", stop_distance_wind(60.0, 0.0, 1.0));
+    return 0;
+}
+--- hint
+The preprocessor pastes text. Write out by hand what `SQ(v_air - v_wind)` turns into, then apply the usual order of operations.
+--- hint
+`SQ(v_air - v_wind)` becomes `v_air - v_wind * v_air - v_wind`. Either put brackets around each `x` and around the whole body, `((x) * (x))`, or use a `constexpr` function.
+--- check output | Prints both braking distances
+679.8 m
+183.5 m
+
++++ practice | The gentlest deceleration that fits
+--- task
+Braking hardware can be set to 1, 2, 3, 4, 5 or 6 g. Write `int min_whole_g(double v, double alt)` that returns the smallest of those settings whose braking distance from speed `v` fits within `alt` metres, or `0` if even 6 g is not enough.
+
+- The braking distance at `g` is v² / (2 × g × g0), with g0 = 9.80665.
+- A distance equal to `alt` fits.
+- A lander already at rest (`v` is 0) fits at 1 g, whatever `alt` is, including 0.
+
+For example, from 200 m/s: with 700 m left, 2 g needs 1019.7 m and 3 g needs 679.8 m, so the answer is 3. With 300 m left even 6 g needs 339.9 m, so the answer is 0.
+--- starter
+int min_whole_g(double v, double alt) {
+    return -1;
+}
+--- solution
+constexpr double kG0 = 9.80665;  // standard gravity, m/s^2
+
+double stop_distance(double v, double decel_g) {
+    return v * v / (2.0 * decel_g * kG0);
+}
+
+// Smallest setting from 1 to 6 g that stops within alt, or 0 if none does.
+int min_whole_g(double v, double alt) {
+    for (int g = 1; g <= 6; ++g) {
+        if (stop_distance(v, g) <= alt) return g;
+    }
+    return 0;
+}
+--- hint
+Try the settings in order, from 1 up, and return the first one that fits. If the loop ends, none fitted.
+--- hint
+A helper function for the braking distance keeps the loop short. Compare with `<=`, because a distance equal to `alt` fits.
+--- check case | From 200 m/s with 700 m left
+min_whole_g(200.0, 700.0)
+=> 3
+--- check case | Plenty of altitude
+min_whole_g(200.0, 2100.0)
+=> 1
+--- check case | From 120 m/s with 400 m left
+min_whole_g(120.0, 400.0)
+=> 2
+--- check case | Even 6 g is not enough
+min_whole_g(200.0, 300.0)
+=> 0
+--- check case | Far too low to stop
+min_whole_g(50.0, 10.0)
+=> 0
+--- check case | Already at rest, no altitude left
+min_whole_g(0.0, 0.0)
+=> 1
+
++++ question | Warnings that stop the build
+--- ask
+A build of `nav.cpp` ends with this line, and no program is made:
+
+```text
+cc1plus: all warnings being treated as errors
+```
+
+Which is the right reading of it?
+--- choice
+The linker found a name defined twice, and `-Werror` made that fatal.
+--- choice correct
+The compiler found things that are legal C++ but look wrong, reported them as warnings, and `-Werror` turned them into a failed build.
+--- choice
+The preprocessor could not find a header, so the compiler never started.
+--- choice
+The source has a syntax error, and `-Werror` is what makes syntax errors stop the build.
+--- why
+The prefix names the stage: `cc1plus` is the compiler proper, and "warnings being treated as errors" is what `-Werror` prints. The file is legal C++, so without `-Werror` it would have built. A missing header or a syntax error is a plain error that stops the build with or without `-Werror`, and a problem with names defined twice comes from the linker, whose messages start with `/usr/bin/ld`.
+
++++ question | Which commands link
+--- ask
+Here are four commands, all run on the same file:
+
+```bash
+g++ -std=c++20 -E thrust.cpp -o thrust.ii
+g++ -std=c++20 -S thrust.cpp -o thrust.s
+g++ -std=c++20 -c thrust.cpp -o thrust.o
+g++ -std=c++20 thrust.cpp -o thrust
+```
+
+How many of them run the linker? Type the number.
+--- answer
+1
+one
+--- why
+`-E` stops after the preprocessor, `-S` after the compiler, and `-c` after the assembler. Only the last command, with none of those flags, runs all four stages, so only it runs the linker and makes a program. That is also why a missing definition shows up only in the last one: the first three never try to match names across files.
+
+=== cpp01-l02 | Practice: Translation units and the one-definition rule
+--- for
+l02-translation-units-and-the-odr
+
++++ practice | Declare first, define later
+--- task
+The starter's `main` comes first in the file and calls two functions that are defined after it. The compiler reads the file top to bottom, so right now it stops at the first call with "was not declared in this scope".
+
+Fix it by adding a **declaration** of each function above `main`. Keep `main` and both definitions where they are, below it, and do not change them. The program should then print:
+
+```
+300 K = 26.85 C
+-40 C = 233.15 K
+```
+--- starter
+#include <cstdio>
+
+int main() {
+    std::printf("300 K = %.2f C\n", kelvin_to_celsius(300.0));
+    std::printf("-40 C = %.2f K\n", celsius_to_kelvin(-40.0));
+    return 0;
+}
+
+double kelvin_to_celsius(double k) {
+    return k - 273.15;
+}
+
+double celsius_to_kelvin(double c) {
+    return c + 273.15;
+}
+--- solution
+#include <cstdio>
+
+// Declarations: enough for the compiler to check the calls in main.
+double kelvin_to_celsius(double k);
+double celsius_to_kelvin(double c);
+
+int main() {
+    std::printf("300 K = %.2f C\n", kelvin_to_celsius(300.0));
+    std::printf("-40 C = %.2f K\n", celsius_to_kelvin(-40.0));
+    return 0;
+}
+
+double kelvin_to_celsius(double k) {
+    return k - 273.15;
+}
+
+double celsius_to_kelvin(double c) {
+    return c + 273.15;
+}
+--- hint
+A declaration is the first line of a function with a semicolon in place of the body.
+--- hint
+The compiler needs the return type and the parameter types to check a call. It does not need the body until the linker looks for it.
+--- check output | Prints both conversions
+300 K = 26.85 C
+-40 C = 233.15 K
+--- check source | main still comes before the definitions
+int main\(\)[\s\S]*double kelvin_to_celsius\(double k\)\s*\{
+--- check source | Declares kelvin_to_celsius above main
+double kelvin_to_celsius\s*\(\s*double\s*\w*\s*\)\s*;[\s\S]*int main
+
++++ practice | One counter, declared early
+--- task
+Two functions share one packet counter. They are written near the top of the file, but the counter itself must be **defined** further down, below them, the way a variable in another source file would be.
+
+- Near the top, above both functions, write a declaration of an `int` called `g_packet_count` that says "this exists, its memory is elsewhere".
+- Write `int send_packet()`, which adds one to `g_packet_count` and returns the new value.
+- Write `int packets_sent()`, which returns `g_packet_count` without changing it.
+- Below both functions, define `g_packet_count` exactly once, starting at 0.
+
+The checks call `send_packet()` twice, then `packets_sent()`, and expect 1, 2 and 2.
+--- starter
+// Declare g_packet_count here.
+
+int send_packet() {
+    return 0;
+}
+
+int packets_sent() {
+    return 0;
+}
+
+// Define g_packet_count here.
+--- solution
+// A declaration: the variable exists, and its one definition is further down.
+extern int g_packet_count;
+
+int send_packet() {
+    return ++g_packet_count;
+}
+
+int packets_sent() {
+    return g_packet_count;
+}
+
+// The one definition: this is where the int's memory is.
+int g_packet_count = 0;
+--- hint
+The keyword that turns a variable into a declaration, with no memory of its own, is `extern`.
+--- hint
+`++g_packet_count` adds one and gives back the new value, so `return ++g_packet_count;` does both jobs.
+--- check test | The first send returns 1
+send_packet() == 1
+--- check test | The second send returns 2
+send_packet() == 2
+--- check test | packets_sent() then reads 2
+packets_sent() == 2
+--- check source | Declares the counter extern above the functions
+extern\s+int\s+g_packet_count\s*;[\s\S]*int send_packet
+
++++ practice | A header pasted twice
+--- task
+Here is a translation unit as the preprocessor hands it to the compiler. `main.cpp` included `sample.hpp` directly and also through `filter.hpp`, so the text of `sample.hpp` appears twice. Nobody put protection in the header, so the compiler stops with "redefinition of 'struct ImuSample'".
+
+Fix it the way the header should have been fixed: wrap **each** copy of the `sample.hpp` text in the same include guard, `#ifndef ORBIT_SAMPLE_HPP`, `#define ORBIT_SAMPLE_HPP` and `#endif`. Do not delete either copy: in a real build they come from two `#include` lines you cannot remove. The program should then print:
+
+```
+t=120 az=-9.81
+az in g = -1.000
+```
+--- starter
+#include <cstdio>
+
+// ---- sample.hpp, included directly by main.cpp ----
+struct ImuSample {
+    unsigned t_ms;
+    double az;
+};
+
+// ---- filter.hpp ----
+// ---- sample.hpp again, included by filter.hpp ----
+struct ImuSample {
+    unsigned t_ms;
+    double az;
+};
+
+inline double az_in_g(const ImuSample& s) { return s.az / 9.81; }
+// ---- end of filter.hpp ----
+
+int main() {
+    ImuSample s{120, -9.81};
+    std::printf("t=%u az=%.2f\n", s.t_ms, s.az);
+    std::printf("az in g = %.3f\n", az_in_g(s));
+    return 0;
+}
+--- solution
+#include <cstdio>
+
+// ---- sample.hpp, included directly by main.cpp ----
+#ifndef ORBIT_SAMPLE_HPP
+#define ORBIT_SAMPLE_HPP
+struct ImuSample {
+    unsigned t_ms;
+    double az;
+};
+#endif
+
+// ---- filter.hpp ----
+// ---- sample.hpp again, included by filter.hpp ----
+#ifndef ORBIT_SAMPLE_HPP
+#define ORBIT_SAMPLE_HPP
+struct ImuSample {
+    unsigned t_ms;
+    double az;
+};
+#endif
+
+inline double az_in_g(const ImuSample& s) { return s.az / 9.81; }
+// ---- end of filter.hpp ----
+
+int main() {
+    ImuSample s{120, -9.81};
+    std::printf("t=%u az=%.2f\n", s.t_ms, s.az);
+    std::printf("az in g = %.3f\n", az_in_g(s));
+    return 0;
+}
+--- hint
+The first time through, the guard's name is not yet defined, so the text passes and the name gets defined. The second time, the name is defined, so the preprocessor drops everything up to `#endif`.
+--- hint
+Both copies need all three lines: `#ifndef ORBIT_SAMPLE_HPP`, then `#define ORBIT_SAMPLE_HPP`, the struct, and `#endif`.
+--- check output | Compiles and prints the sample
+t=120 az=-9.81
+az in g = -1.000
+--- check source | Both copies of the struct are still there
+struct ImuSample[\s\S]*struct ImuSample
+--- check source | Both copies are guarded
+#ifndef ORBIT_SAMPLE_HPP[\s\S]*#endif[\s\S]*#ifndef ORBIT_SAMPLE_HPP[\s\S]*#endif
+
++++ practice | A header's inline helper and a file's private one
+--- task
+Write the code of one small source file, in the style lesson 02 recommends.
+
+- `inline double clamp_throttle(double cmd)`: returns `cmd` limited to the range 0.0 to 1.0. It is written `inline` because it would live in a header included by many files.
+- A helper `bool out_of_range(double cmd)` that is true when `cmd` is below 0.0 or above 1.0. It is private to this file, so put it in an **anonymous namespace**.
+- `int count_clamped(double a, double b, double c)`: returns how many of the three commands `clamp_throttle` would change. Use `out_of_range`.
+
+For example, `clamp_throttle(1.4)` is 1.0, `clamp_throttle(-0.2)` is 0.0, and `count_clamped(0.5, 1.2, -0.1)` is 2. The ends of the range are in it: `count_clamped(0.0, 1.0, 0.5)` is 0.
+--- starter
+inline double clamp_throttle(double cmd) {
+    return cmd;
+}
+
+int count_clamped(double a, double b, double c) {
+    return 0;
+}
+--- solution
+inline double clamp_throttle(double cmd) {
+    if (cmd < 0.0) return 0.0;
+    if (cmd > 1.0) return 1.0;
+    return cmd;
+}
+
+namespace {
+// Internal linkage: no other file can see this, so no other file can collide with it.
+bool out_of_range(double cmd) { return cmd < 0.0 || cmd > 1.0; }
+}  // namespace
+
+int count_clamped(double a, double b, double c) {
+    int n = 0;
+    if (out_of_range(a)) ++n;
+    if (out_of_range(b)) ++n;
+    if (out_of_range(c)) ++n;
+    return n;
+}
+--- hint
+An anonymous namespace is written `namespace { ... }`, with no name. Everything inside it is visible in this file only.
+--- hint
+`count_clamped` can start a count at 0 and add one for each command that `out_of_range` says is outside the limits.
+--- check case | clamp_throttle(1.4)
+clamp_throttle(1.4)
+=> 1.0
+--- check case | clamp_throttle(-0.2)
+clamp_throttle(-0.2)
+=> 0.0
+--- check case | clamp_throttle(0.35)
+clamp_throttle(0.35)
+=> 0.35
+--- check case | Two of three are out of range
+count_clamped(0.5, 1.2, -0.1)
+=> 2
+--- check case | The ends of the range are inside it
+count_clamped(0.0, 1.0, 0.5)
+=> 0
+--- check source | The helper is in an anonymous namespace
+namespace\s*\{[\s\S]*out_of_range
+
++++ question | Which lines break the link
+--- ask
+This header is included by both `engine.cpp` and `main.cpp`, and the two are linked into one program:
+
+```cpp
+// engine.hpp
+#pragma once
+
+struct Gains { double kp, ki, kd; };             // line A
+inline double clamp_u(double u) {                // line B
+    return u > 1.0 ? 1.0 : (u < -1.0 ? -1.0 : u);
+}
+constexpr double kDt = 0.01;                     // line C
+double gain_sum(const Gains& g) {                // line D
+    return g.kp + g.ki + g.kd;
+}
+int g_engine_mode = 0;                           // line E
+```
+
+Both files compile. Which lines make the link fail with "multiple definition"?
+--- choice
+A and D: a struct and a function may only be defined once in the whole program.
+--- choice correct
+D and E: a function without `inline` and a variable the linker can see, each now defined in two object files.
+--- choice
+None: `#pragma once` makes sure the header is only compiled once.
+--- choice
+B, D and E: every function or variable defined in a header breaks the link.
+--- why
+Each `.cpp` is its own translation unit and gets its own copy of the header's text. `#pragma once` only stops a second copy *inside one* translation unit. A struct is a type, not a symbol, and may be defined in every translation unit that needs it (A). `inline` lets the linker keep one of several identical definitions (B). A `constexpr` variable at file scope has internal linkage, so each file has a private copy (C). That leaves D, an ordinary function, and E, an ordinary variable: two strong definitions each, and the linker refuses.
+
++++ question | A static counter in a header
+--- ask
+`seq.hpp` contains exactly one line:
+
+```cpp
+static int g_seq = 0;
+```
+
+`radio.cpp` includes it and defines `int radio_next() { return ++g_seq; }`. `main.cpp` includes it too, and contains:
+
+```cpp
+int radio_next();
+
+int main() {
+    radio_next();
+    radio_next();
+    ++g_seq;
+    int last = radio_next();
+    std::printf("%d %d\n", last, g_seq);
+}
+```
+
+The two files are compiled and linked together. What does it print? Type the two numbers with a space between them.
+--- answer
+3 1
+3, 1
+--- why
+`static` at file scope gives the variable internal linkage: each translation unit that includes the header gets its own private `g_seq`. `radio_next` bumps the one in `radio.cpp` to 1, 2 and then 3. `++g_seq` in `main` bumps a different object, the one in `main.cpp`, from 0 to 1. Nothing collides and nothing warns. To share one counter, the header would declare `extern int g_seq;` and one `.cpp` would define it, or the header would say `inline int g_seq = 0;`.
+
+=== cpp01-l03 | Practice: Reading linker errors
+--- for
+l03-reading-linker-errors-and-make
+
++++ practice | The const that went missing
+--- task
+This file compiles, but the build stops at the link step with an undefined reference to `total_impulse(double const&, double)`. The declaration at the top is what `main` was compiled against. The definition below `main` was edited later, and the two no longer name the same function.
+
+Fix the **definition** so it matches the declaration exactly, and change nothing else. The program should then print:
+
+```
+impulse = 2250.0 N s
+```
+--- starter
+#include <cstdio>
+
+// Total impulse of a burn: thrust times time.
+double total_impulse(const double& thrust_n, double burn_s);
+
+int main() {
+    const double thrust = 450.0;
+    std::printf("impulse = %.1f N s\n", total_impulse(thrust, 5.0));
+    return 0;
+}
+
+double total_impulse(double& thrust_n, double burn_s) {
+    return thrust_n * burn_s;
+}
+--- solution
+#include <cstdio>
+
+// Total impulse of a burn: thrust times time.
+double total_impulse(const double& thrust_n, double burn_s);
+
+int main() {
+    const double thrust = 450.0;
+    std::printf("impulse = %.1f N s\n", total_impulse(thrust, 5.0));
+    return 0;
+}
+
+double total_impulse(const double& thrust_n, double burn_s) {
+    return thrust_n * burn_s;
+}
+--- hint
+Put the declaration and the definition side by side and compare them word by word. A parameter type that differs makes a different function, with a different mangled name.
+--- hint
+`double&` and `const double&` are different parameter types, so the definition was a second overload and the declared one was never defined.
+--- check output | Links and prints the impulse
+impulse = 2250.0 N s
+--- check source | The declaration is unchanged
+double total_impulse\(const double& thrust_n, double burn_s\);
+--- check source | The definition takes a const reference
+double total_impulse\(const double& thrust_n, double burn_s\)\s*\{
+
++++ practice | Defined in the wrong family
+--- task
+The header part of this file declares `burn_duration` inside namespace `prop`. The source part defines a function with the same name and parameters, but the link fails with an undefined reference to `prop::burn_duration(double, double)`.
+
+Fix the definition so it defines the function that was declared. Keep the declaration and `main` as they are. The program should then print:
+
+```
+burn = 12.5 s
+```
+--- starter
+#include <cstdio>
+
+// ---- header part ----
+namespace prop {
+// Seconds needed to use propellant_kg at flow_kgps.
+double burn_duration(double propellant_kg, double flow_kgps);
+}  // namespace prop
+
+// ---- source part ----
+double burn_duration(double propellant_kg, double flow_kgps) {
+    return propellant_kg / flow_kgps;
+}
+
+int main() {
+    std::printf("burn = %.1f s\n", prop::burn_duration(250.0, 20.0));
+    return 0;
+}
+--- solution
+#include <cstdio>
+
+// ---- header part ----
+namespace prop {
+// Seconds needed to use propellant_kg at flow_kgps.
+double burn_duration(double propellant_kg, double flow_kgps);
+}  // namespace prop
+
+// ---- source part ----
+namespace prop {
+double burn_duration(double propellant_kg, double flow_kgps) {
+    return propellant_kg / flow_kgps;
+}
+}  // namespace prop
+
+int main() {
+    std::printf("burn = %.1f s\n", prop::burn_duration(250.0, 20.0));
+    return 0;
+}
+--- hint
+The namespace is part of the function's full name, and part of its mangled symbol. A definition outside the namespace is a different, unrelated function.
+--- hint
+Either wrap the definition in `namespace prop { ... }`, or write its name in full as `prop::burn_duration`.
+--- check output | Links and prints the burn time
+burn = 12.5 s
+--- check source | Still calls the function in namespace prop
+prop::burn_duration\(250\.0, 20\.0\)
+--- check source | The definition belongs to namespace prop
+namespace prop\s*\{[^}]*double burn_duration\([^)]*\)\s*\{|double prop::burn_duration\(
+
++++ practice | A variable that was only promised
+--- task
+This file uses a global limit that other code is meant to share. It compiles, but the link fails with an undefined reference to `g_max_chamber_kpa`.
+
+Fix it by adding the variable's one **definition**, set to `6800`, below `main`. Keep the `extern` declaration at the top: it stands in for the header every file would include. The program should then print:
+
+```
+limit = 6800 kPa
+4500 kPa: ok
+7200 kPa: over
+```
+--- starter
+#include <cstdio>
+
+// ---- header part ----
+extern int g_max_chamber_kpa;
+
+bool over_limit(int chamber_kpa) {
+    return chamber_kpa > g_max_chamber_kpa;
+}
+
+int main() {
+    std::printf("limit = %d kPa\n", g_max_chamber_kpa);
+    std::printf("4500 kPa: %s\n", over_limit(4500) ? "over" : "ok");
+    std::printf("7200 kPa: %s\n", over_limit(7200) ? "over" : "ok");
+    return 0;
+}
+--- solution
+#include <cstdio>
+
+// ---- header part ----
+extern int g_max_chamber_kpa;
+
+bool over_limit(int chamber_kpa) {
+    return chamber_kpa > g_max_chamber_kpa;
+}
+
+int main() {
+    std::printf("limit = %d kPa\n", g_max_chamber_kpa);
+    std::printf("4500 kPa: %s\n", over_limit(4500) ? "over" : "ok");
+    std::printf("7200 kPa: %s\n", over_limit(7200) ? "over" : "ok");
+    return 0;
+}
+
+// The one definition. In a real project it lives in exactly one .cpp file.
+int g_max_chamber_kpa = 6800;
+--- hint
+`extern int g_max_chamber_kpa;` is only a declaration. It promises the variable exists, and every object file that uses it gets a `U` for it. Something must supply the `T`.
+--- hint
+A definition is the same line without `extern`, with a starting value.
+--- check output | Links and prints the three lines
+limit = 6800 kPa
+4500 kPa: ok
+7200 kPa: over
+--- check source | Keeps the extern declaration
+extern\s+int\s+g_max_chamber_kpa\s*;
+--- check source | Defines the variable once, without extern
+^int\s+g_max_chamber_kpa\s*=\s*6800\s*;
+
++++ practice | Two overloads, one body
+--- task
+A header declares two overloads of `to_radians`, one for `double` and one for `float`. Only the `double` one was ever defined. `main` calls both, so the link fails with an undefined reference to `to_radians(float)`.
+
+Define the missing `float` overload. It must return a `float`, and do its arithmetic in `float`: multiply by the `float` constant `kPiF` and divide by `180.0F`. The program should then print:
+
+```
+90 deg = 1.570796 rad (double)
+90 deg = 1.570796 rad (float)
+15 deg = 0.261799 rad (float)
+```
+--- starter
+#include <cstdio>
+
+constexpr double kPi = 3.14159265358979323846;
+constexpr float kPiF = 3.14159265F;
+
+// ---- header part ----
+double to_radians(double deg);
+float to_radians(float deg);
+
+// ---- source part ----
+double to_radians(double deg) {
+    return deg * kPi / 180.0;
+}
+
+int main() {
+    std::printf("90 deg = %.6f rad (double)\n", to_radians(90.0));
+    std::printf("90 deg = %.6f rad (float)\n", to_radians(90.0F));
+    std::printf("15 deg = %.6f rad (float)\n", to_radians(15.0F));
+    return 0;
+}
+--- solution
+#include <cstdio>
+
+constexpr double kPi = 3.14159265358979323846;
+constexpr float kPiF = 3.14159265F;
+
+// ---- header part ----
+double to_radians(double deg);
+float to_radians(float deg);
+
+// ---- source part ----
+double to_radians(double deg) {
+    return deg * kPi / 180.0;
+}
+
+float to_radians(float deg) {
+    return deg * kPiF / 180.0F;
+}
+
+int main() {
+    std::printf("90 deg = %.6f rad (double)\n", to_radians(90.0));
+    std::printf("90 deg = %.6f rad (float)\n", to_radians(90.0F));
+    std::printf("15 deg = %.6f rad (float)\n", to_radians(15.0F));
+    return 0;
+}
+--- hint
+The mangled name holds the parameter types, so `to_radians(double)` and `to_radians(float)` are two different symbols. Defining one does nothing for the other.
+--- hint
+The new definition has the same shape as the `double` one, with `float` everywhere and `F` on the literal.
+--- check output | Links and prints all three
+90 deg = 1.570796 rad (double)
+90 deg = 1.570796 rad (float)
+15 deg = 0.261799 rad (float)
+--- check source | Defines the float overload
+float\s+to_radians\s*\(\s*float\s+\w+\s*\)\s*\{
+--- check source | Keeps both declarations
+double to_radians\(double deg\);\s*\nfloat to_radians\(float deg\);
+
++++ question | Where the library goes
+--- ask
+`libnav.a` holds `nav.o`, which defines `predict(State const&, double)`. `main.o` calls `predict`. Which command links?
+--- choice
+`g++ -L. -lnav main.o -o app`, because libraries must be named before the files that use them.
+--- choice correct
+`g++ main.o -L. -lnav -o app`, because the linker reads left to right and takes from a library only what is already missing.
+--- choice
+Both, because the linker reads every file twice.
+--- choice
+Neither: a static library can only be used with `-c`.
+--- why
+The linker scans its arguments once, left to right, keeping a list of missing symbols. When it reaches a static library, it takes out only the members that supply something on that list. With `-lnav` first, nothing is missing yet, so nothing is taken, and `main.o`'s need for `predict` arrives too late. Object files are always included whole, so their order among themselves does not matter. The rule: object files first, then the libraries they need.
+
++++ question | What $< stands for
+--- ask
+A Makefile has this pattern rule. The recipe line starts with a tab.
+
+```make
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+```
+
+When `make` uses it to build `guidance.o`, what does `$<` expand to? Type the file name.
+--- answer
+guidance.cpp
+--- why
+`$<` is the first prerequisite and `$@` is the target. Here the target is `guidance.o`, and `%.o: %.cpp` makes its first prerequisite the `.cpp` file with the same stem, `guidance.cpp`. So the recipe runs `g++ ... -c guidance.cpp -o guidance.o`. With `-MMD -MP` in `CXXFLAGS`, the compiler also writes `guidance.d`, listing every header that file read, so editing a header rebuilds this object too.
+
+=== cpp01-l04 | Practice: Fundamental and fixed-width types
+--- for
+l04-fundamental-and-fixed-width-types
+
++++ practice | Types for a thruster status record
+--- task
+A thruster reports this status record to the ground. Define `struct ThrusterStatus` with these fields, in this order, giving each the **smallest exact-width type from `<cstdint>`** that holds its full range:
+
+| Field | Range |
+| --- | --- |
+| `id` | thruster number, 0 to 2047 |
+| `temp_dc` | temperature in tenths of a degree C, from -2000 to 12000 |
+| `pulses` | pulses fired since boot, up to 3,000,000,000 |
+| `burn_ms` | length of the last burn in ms, 0 to 60000 |
+| `valve_pct` | valve opening, 0 to 100 percent |
+| `flags` | eight on/off status bits |
+
+Use a signed type only where the range goes below zero. When you are right, the record is exactly 12 bytes with no padding, on every platform.
+--- starter
+#include <cstdint>
+
+struct ThrusterStatus {
+    int id;
+    int temp_dc;
+    int pulses;
+    int burn_ms;
+    int valve_pct;
+    int flags;
+};
+--- solution
+#include <cstdint>
+
+struct ThrusterStatus {
+    std::uint16_t id;         // 0..2047 needs 11 bits
+    std::int16_t  temp_dc;    // -2000..12000: signed, fits in 16 bits
+    std::uint32_t pulses;     // up to 3e9: above int32's 2.1e9, below uint32's 4.29e9
+    std::uint16_t burn_ms;    // 0..60000 fits under 65535
+    std::uint8_t  valve_pct;  // 0..100
+    std::uint8_t  flags;      // eight bits
+};
+--- hint
+For each field, ask the largest value it can reach and whether it can go negative. 8 bits hold 0 to 255 unsigned, 16 bits 0 to 65535, 32 bits about 4.29 billion.
+--- hint
+3,000,000,000 is more than a signed 32-bit type holds (about 2.15 billion) but less than an unsigned one. Only `temp_dc` needs a signed type.
+--- check test | The record is 12 bytes
+sizeof(ThrusterStatus) == 12
+--- check test | id is an unsigned 16-bit field
+sizeof(ThrusterStatus::id) == 2 && static_cast<decltype(ThrusterStatus::id)>(-1) > 0
+--- check test | temp_dc is a signed 16-bit field
+sizeof(ThrusterStatus::temp_dc) == 2 && static_cast<decltype(ThrusterStatus::temp_dc)>(-1) < 0
+--- check test | pulses is an unsigned 32-bit field
+sizeof(ThrusterStatus::pulses) == 4 && static_cast<decltype(ThrusterStatus::pulses)>(-1) > 0
+--- check test | burn_ms is an unsigned 16-bit field
+sizeof(ThrusterStatus::burn_ms) == 2 && static_cast<decltype(ThrusterStatus::burn_ms)>(-1) > 0
+--- check test | valve_pct and flags are unsigned bytes
+sizeof(ThrusterStatus::valve_pct) == 1 && sizeof(ThrusterStatus::flags) == 1 && static_cast<decltype(ThrusterStatus::valve_pct)>(-1) > 0 && static_cast<decltype(ThrusterStatus::flags)>(-1) > 0
+
++++ practice | Bytes that print as letters
+--- task
+A status line is printed with `std::cout`. The three values are small numbers held in one-byte types, and it should print:
+
+```
+mode=65
+temp=-12
+flags=7
+```
+
+Instead it prints `mode=A`, then a line with a strange character after `temp=`, and a `flags=` line with nothing visible after it. Fix the printing so each value prints as a number. Keep the three variables and their types exactly as they are, and keep using `std::cout`.
+--- starter
+#include <cstdint>
+#include <iostream>
+
+int main() {
+    std::uint8_t mode = 65;
+    std::int8_t temp_c = -12;
+    std::uint8_t flags = 7;
+    std::cout << "mode=" << mode << '\n';
+    std::cout << "temp=" << temp_c << '\n';
+    std::cout << "flags=" << flags << '\n';
+    return 0;
+}
+--- solution
+#include <cstdint>
+#include <iostream>
+
+int main() {
+    std::uint8_t mode = 65;
+    std::int8_t temp_c = -12;
+    std::uint8_t flags = 7;
+    // The one-byte types are character types: convert to int so cout prints a number.
+    std::cout << "mode=" << static_cast<int>(mode) << '\n';
+    std::cout << "temp=" << static_cast<int>(temp_c) << '\n';
+    std::cout << "flags=" << static_cast<int>(flags) << '\n';
+    return 0;
+}
+--- hint
+`std::uint8_t` is another name for `unsigned char`, and `std::int8_t` for `signed char`. `std::cout` prints every character type as a character.
+--- hint
+Convert each value to `int` on its way into the stream, with `static_cast<int>(...)`.
+--- check output | Prints the three numbers
+mode=65
+temp=-12
+flags=7
+--- check source | Keeps the one-byte types
+std::uint8_t mode = 65;[\s\S]*std::int8_t temp_c = -12;
+--- check source absent | Keeps using std::cout
+printf
+
++++ practice | A timestamp that travels
+--- task
+Print three 64-bit values with `std::printf`, in a way that is correct on every platform, not only on x86-64 Linux:
+
+```
+t = 1234567890123 ns
+dt = -250000 ns
+max frames = 18446744073709551615
+```
+
+- `t` and `dt` are `std::int64_t` variables holding 1234567890123 and -250000.
+- The last number is the largest value a `std::uint64_t` can hold. Get it from `std::numeric_limits<std::uint64_t>::max()` (header `<limits>`), and do not type it.
+- Do not write `%ld` or `%lld`. Which of them is right depends on the platform. Use the format macros from `<cinttypes>`.
+--- starter
+#include <cinttypes>
+#include <cstdint>
+#include <cstdio>
+#include <limits>
+
+int main() {
+    std::int64_t t_ns = 1234567890123;
+    std::int64_t dt_ns = -250000;
+    return 0;
+}
+--- solution
+#include <cinttypes>
+#include <cstdint>
+#include <cstdio>
+#include <limits>
+
+int main() {
+    std::int64_t t_ns = 1234567890123;
+    std::int64_t dt_ns = -250000;
+    const std::uint64_t max_frames = std::numeric_limits<std::uint64_t>::max();
+    // PRId64 and PRIu64 expand to the right letters for this platform.
+    std::printf("t = %" PRId64 " ns\n", t_ns);
+    std::printf("dt = %" PRId64 " ns\n", dt_ns);
+    std::printf("max frames = %" PRIu64 "\n", max_frames);
+    return 0;
+}
+--- hint
+`PRId64` is a string literal, such as `"ld"` or `"lld"`. Two string literals written next to each other are joined into one, so `"%" PRId64 " ns\n"` is a whole format string.
+--- hint
+The unsigned partner of `PRId64` is `PRIu64`.
+--- check output | Prints the three values
+t = 1234567890123 ns
+dt = -250000 ns
+max frames = 18446744073709551615
+--- check source | Uses the portable format macros
+PRId64[\s\S]*PRIu64|PRIu64[\s\S]*PRId64
+--- check source absent | Does not hard-code the width letters or the maximum
+%ll?[du]|18446744073709551615
+
++++ practice | What a byte means when it is signed
+--- task
+A temperature sensor sends one byte whose bits are a signed 8-bit number in two's complement. The byte arrives as a plain bit pattern, a number from 0 to 255.
+
+Write `int as_int8(int pattern)` that returns the signed value the pattern stands for: patterns 0 to 127 mean themselves, and patterns 128 to 255 mean the pattern minus 256. You may assume `pattern` is always between 0 and 255.
+
+For example, `as_int8(200)` is -56 and `as_int8(127)` is 127.
+--- starter
+int as_int8(int pattern) {
+    return pattern;
+}
+--- solution
+#include <cstdint>
+
+// Since C++20, converting to a signed type wraps modulo 2^8: exactly two's complement.
+int as_int8(int pattern) {
+    return static_cast<std::int8_t>(pattern);
+}
+--- hint
+You can do it with arithmetic: if the pattern is 128 or more, subtract 256.
+--- hint
+Or let the language do it: converting the pattern to `std::int8_t` keeps it modulo 256, which since C++20 is exactly the two's complement meaning.
+--- check case | 200 means -56
+as_int8(200)
+=> -56
+--- check case | 0 means 0
+as_int8(0)
+=> 0
+--- check case | 127 is the largest positive
+as_int8(127)
+=> 127
+--- check case | 128 is the most negative
+as_int8(128)
+=> -128
+--- check case | 255 means -1
+as_int8(255)
+=> -1
+
++++ practice | An abort byte that never matches
+--- task
+The mode byte 200 means ABORT. It arrives from a packet as a `std::uint8_t` and is passed to `is_abort`. On the x86 test bench `is_abort` never returns true, even when the byte really is 200. On the ARM flight computer it works.
+
+Find the reason in the function's parameter type and fix it, so that `is_abort` is true for the byte 200 and false for every other byte, on every platform.
+--- starter
+#include <cstdint>
+
+// True when the mode byte from the packet means ABORT.
+bool is_abort(char mode) {
+    return mode == 200;
+}
+--- solution
+#include <cstdint>
+
+// True when the mode byte from the packet means ABORT.
+// A byte of data is std::uint8_t: unsigned everywhere, unlike plain char.
+bool is_abort(std::uint8_t mode) {
+    return mode == 200;
+}
+--- hint
+Whether plain `char` is signed is up to the platform. On x86 it is signed, so the bit pattern for 200 means something else there.
+--- hint
+Take the byte as `std::uint8_t`, the type it arrives in, which is unsigned on every platform.
+--- check case | 200 is ABORT
+is_abort(std::uint8_t{200})
+=> true
+--- check case | 56 is not ABORT
+is_abort(std::uint8_t{56})
+=> false
+--- check case | 0 is not ABORT
+is_abort(std::uint8_t{0})
+=> false
+--- check case | 255 is not ABORT
+is_abort(std::uint8_t{255})
+=> false
+
++++ question | What the standard promises
+--- ask
+Your laptop reports `sizeof(int) == 4` and `sizeof(long) == 8`. Which statement does the C++ standard itself guarantee, on every platform?
+--- choice
+`int` is 32 bits.
+--- choice
+`long` is 64 bits on every 64-bit machine.
+--- choice correct
+`long` is at least 32 bits, and at least as wide as `int`.
+--- choice
+Plain `char` is signed.
+--- why
+The standard sets only minimum widths and an order: `int` at least 16 bits, `long` at least 32, and each type at least as wide as the one before. Everything else belongs to the platform. 64-bit Windows keeps `long` at 32 bits, some small embedded chips have a 16-bit `int`, and plain `char` is unsigned on most ARM Linux targets. That is why a field whose bytes leave the program uses `<cstdint>` types, which carry their width in their names.
+
+=== cpp01-l05 | Practice: Promotion, conversion and undefined behavior
+--- for
+l05-promotion-conversion-and-undefined-behaviour
+
++++ practice | Where the wrap happens
+--- task
+Three sensors each report one byte. Write two functions:
+
+- `int byte_total(std::uint8_t a, std::uint8_t b, std::uint8_t c)` returns the true sum of the three bytes. `byte_total(255, 255, 255)` is 765.
+- `std::uint8_t byte_total_stored(std::uint8_t a, std::uint8_t b, std::uint8_t c)` returns the sum as it would be after storing it back into one byte: the true sum modulo 256. `byte_total_stored(255, 255, 255)` is 253.
+--- starter
+#include <cstdint>
+
+int byte_total(std::uint8_t a, std::uint8_t b, std::uint8_t c) {
+    std::uint8_t sum = a + b + c;
+    return sum;
+}
+
+std::uint8_t byte_total_stored(std::uint8_t a, std::uint8_t b, std::uint8_t c) {
+    return 0;
+}
+--- solution
+#include <cstdint>
+
+// The bytes are promoted to int before adding, so the sum is exact.
+int byte_total(std::uint8_t a, std::uint8_t b, std::uint8_t c) {
+    return a + b + c;
+}
+
+// Converting the int sum back to one byte keeps it modulo 256.
+std::uint8_t byte_total_stored(std::uint8_t a, std::uint8_t b, std::uint8_t c) {
+    return static_cast<std::uint8_t>(a + b + c);
+}
+--- hint
+Before `+` runs, every operand narrower than `int` is promoted to `int`. So `a + b + c` is an `int`, and 765 fits.
+--- hint
+The cut to 8 bits happens only when the `int` is stored into a one-byte type. In `byte_total` that is the local variable, which is the bug.
+--- check case | byte_total(255, 255, 255)
+byte_total(255, 255, 255)
+=> 765
+--- check case | byte_total(10, 20, 30)
+byte_total(10, 20, 30)
+=> 60
+--- check case | byte_total(200, 100, 0)
+byte_total(200, 100, 0)
+=> 300
+--- check case | byte_total_stored(255, 255, 255)
+byte_total_stored(255, 255, 255)
+=> 253
+--- check case | byte_total_stored(200, 100, 0)
+byte_total_stored(200, 100, 0)
+=> 44
+--- check case | byte_total_stored(1, 2, 3)
+byte_total_stored(1, 2, 3)
+=> 6
+
++++ practice | A countdown that stops at zero
+--- task
+Write `void print_countdown(std::size_t n)` that prints the numbers from `n - 1` down to `0`, each with one space in front of it, then a newline. For `n` equal to 0 it prints only the newline.
+
+The starter's `main` calls it three times; keep `main` as it is. The program should print:
+
+```
+from 4: 3 2 1 0
+from 1: 0
+from 0:
+```
+
+Keep the parameter a `std::size_t`. The obvious loop, `for (std::size_t i = n - 1; i >= 0; --i)`, never ends: find one that is correct for every `n`, including 0.
+--- starter
+#include <cstddef>
+#include <cstdio>
+
+void print_countdown(std::size_t n) {
+    std::printf("\n");
+}
+
+int main() {
+    std::printf("from 4:");
+    print_countdown(4);
+    std::printf("from 1:");
+    print_countdown(1);
+    std::printf("from 0:");
+    print_countdown(0);
+    return 0;
+}
+--- solution
+#include <cstddef>
+#include <cstdio>
+
+void print_countdown(std::size_t n) {
+    // Test the old value, then decrement: the body sees n-1 down to 0,
+    // and for n == 0 the first test is 0 > 0, so the body never runs.
+    for (std::size_t i = n; i-- > 0;) std::printf(" %zu", i);
+    std::printf("\n");
+}
+
+int main() {
+    std::printf("from 4:");
+    print_countdown(4);
+    std::printf("from 1:");
+    print_countdown(1);
+    std::printf("from 0:");
+    print_countdown(0);
+    return 0;
+}
+--- hint
+A `std::size_t` can never be below zero, so `i >= 0` is always true. And `n - 1` for `n` equal to 0 is not -1 but the largest value the type holds.
+--- hint
+Move the decrement into the test: start at `n` and test `i-- > 0`. The test sees the old value, and the body sees the new one.
+--- check output | Counts down correctly, including from 0
+from 4: 3 2 1 0
+from 1: 0
+from 0:
+
++++ practice | The midpoint that overflows
+--- task
+Write two functions that return the midpoint of two readings, rounded down:
+
+- `std::uint16_t mid16(std::uint16_t a, std::uint16_t b)`
+- `std::uint32_t mid32(std::uint32_t a, std::uint32_t b)`
+
+Both must give the right answer for every pair of values, in either order. For example, `mid16(60000, 60000)` is 60000, `mid32(4000000000, 4000000000)` is 4000000000, and `mid32(7, 3)` is 5.
+
+One of the two is safe written the obvious way, `(a + b) / 2`, and the other is not. Work out which, and why.
+--- starter
+#include <cstdint>
+
+std::uint16_t mid16(std::uint16_t a, std::uint16_t b) {
+    return 0;
+}
+
+std::uint32_t mid32(std::uint32_t a, std::uint32_t b) {
+    return (a + b) / 2;
+}
+--- solution
+#include <cstdint>
+
+// uint16_t operands are promoted to int, where the sum (at most 131070) fits.
+std::uint16_t mid16(std::uint16_t a, std::uint16_t b) {
+    return static_cast<std::uint16_t>((a + b) / 2);
+}
+
+// uint32_t is not promoted: a + b would wrap modulo 2^32. Add in 64 bits instead.
+std::uint32_t mid32(std::uint32_t a, std::uint32_t b) {
+    return static_cast<std::uint32_t>((static_cast<std::uint64_t>(a) + b) / 2);
+}
+--- hint
+Promotion only widens types narrower than `int`. A `std::uint16_t` sum is done in `int`. A `std::uint32_t` sum is done in `std::uint32_t`, where it wraps.
+--- hint
+Convert one operand to `std::uint64_t` before adding, so the sum is done in 64 bits, then convert the result back.
+--- check case | mid16(60000, 60000)
+mid16(60000, 60000)
+=> 60000
+--- check case | mid16(65535, 65533)
+mid16(65535, 65533)
+=> 65534
+--- check case | mid32(4000000000, 4000000000)
+mid32(4000000000u, 4000000000u)
+=> 4000000000u
+--- check case | mid32(4294967295, 4294967293)
+mid32(4294967295u, 4294967293u)
+=> 4294967294u
+--- check case | mid32(7, 3), larger first
+mid32(7u, 3u)
+=> 5u
+--- check case | mid32(0, 1) rounds down
+mid32(0u, 1u)
+=> 0u
+
++++ practice | A drift check that rejects every early clock
+--- task
+`drift_ok` should be true when a clock's drift, in ms, lies within plus or minus the tolerance: `drift_ok(-3, 5)` and `drift_ok(3, 5)` are both true, and `drift_ok(-6, 5)` and `drift_ok(6, 5)` are false. The ends count as inside.
+
+It works for clocks that run late, but it returns false for **every** negative drift, even -1. Find the comparison that goes wrong and fix it. Keep the parameter types as they are.
+--- starter
+// True when drift_ms, which may be negative, lies within plus or minus tol_ms.
+bool drift_ok(int drift_ms, unsigned tol_ms) {
+    return drift_ms >= -static_cast<int>(tol_ms) && drift_ms <= tol_ms;
+}
+--- solution
+// True when drift_ms, which may be negative, lies within plus or minus tol_ms.
+bool drift_ok(int drift_ms, unsigned tol_ms) {
+    const int tol = static_cast<int>(tol_ms);  // compare int with int
+    return drift_ms >= -tol && drift_ms <= tol;
+}
+--- hint
+In `drift_ms <= tol_ms` one side is `int` and the other `unsigned`, with the same rank. Which way does the usual arithmetic conversion go?
+--- hint
+The signed side is converted to unsigned, so -3 becomes about 4.29 billion. Compare two `int`s instead.
+--- check case | -3 is inside plus or minus 5
+drift_ok(-3, 5)
+=> true
+--- check case | 3 is inside plus or minus 5
+drift_ok(3, 5)
+=> true
+--- check case | -5 is on the edge, so inside
+drift_ok(-5, 5)
+=> true
+--- check case | 5 is on the edge, so inside
+drift_ok(5, 5)
+=> true
+--- check case | -6 is outside
+drift_ok(-6, 5)
+=> false
+--- check case | 6 is outside
+drift_ok(6, 5)
+=> false
+
++++ practice | Packets lost across the rollover
+--- task
+Each telemetry packet carries a `std::uint16_t` sequence number that goes up by one per packet and wraps from 65535 to 0. Write `std::uint16_t packets_lost(std::uint16_t prev_seq, std::uint16_t seq)` that returns how many packets are missing between the previous packet and this one.
+
+- Consecutive packets lose nothing: `packets_lost(10, 11)` is 0, and so is `packets_lost(65535, 0)`.
+- `packets_lost(10, 14)` is 3, because 11, 12 and 13 are missing. Across the wrap, `packets_lost(65534, 2)` is 3 too (65535, 0 and 1).
+- A repeated packet, where `seq` equals `prev_seq`, loses nothing: return 0.
+--- starter
+#include <cstdint>
+
+std::uint16_t packets_lost(std::uint16_t prev_seq, std::uint16_t seq) {
+    return seq - prev_seq - 1;
+}
+--- solution
+#include <cstdint>
+
+std::uint16_t packets_lost(std::uint16_t prev_seq, std::uint16_t seq) {
+    if (seq == prev_seq) return 0;  // a repeat, not a loss
+    // The subtraction happens in int and can go negative; converting back to
+    // uint16_t wraps it modulo 65536, which is exactly the counter's wrap.
+    return static_cast<std::uint16_t>(seq - prev_seq - 1);
+}
+--- hint
+`seq - prev_seq - 1` is worked out in `int`, because both operands are promoted. Across the wrap it is negative, and converting it to `std::uint16_t` adds 65536.
+--- hint
+The only case that needs its own line is the repeated packet.
+--- check case | Consecutive packets
+packets_lost(10, 11)
+=> 0
+--- check case | Three missing
+packets_lost(10, 14)
+=> 3
+--- check case | Consecutive across the wrap
+packets_lost(65535, 0)
+=> 0
+--- check case | Three missing across the wrap
+packets_lost(65534, 2)
+=> 3
+--- check case | A repeated packet
+packets_lost(5, 5)
+=> 0
+--- check case | Almost a full lap missing
+packets_lost(0, 65535)
+=> 65534
+
++++ question | Braces around a value that does not fit
+--- ask
+What happens with this line?
+
+```cpp
+std::int8_t x{200};
+```
+--- choice
+It compiles, and `x` holds -56, because since C++20 the value wraps modulo 256.
+--- choice correct
+It does not compile: braces refuse a narrowing conversion of a constant that does not fit.
+--- choice
+It compiles, and `x` holds 200, because the braces widen the type to fit.
+--- choice
+It compiles, but reading `x` is undefined behavior.
+--- why
+With `=`, as in `std::int8_t x = 200;`, the value is converted and `x` holds 200 - 256 = -56, with at most a warning. With braces, a narrowing conversion of a constant whose value does not fit is a hard error in both g++ and clang++. That is the cheapest defense against losing data silently: write `{}` and the compiler refuses. Nothing here is undefined, and nothing ever widens a declared type.
+
+=== cpp01-l06 | Practice: Values and references
+--- for
+l06-values-references-and-python-names
+
++++ practice | Scale in place, or scale a copy
+--- task
+The starter defines `struct Gains`, the three gains of a PID controller. Write two functions:
+
+- `void scale_gains(Gains& g, double k)` multiplies all three gains of the caller's object by `k`.
+- `Gains scaled(Gains g, double k)` returns a new `Gains` with all three multiplied by `k`, and leaves the caller's object untouched.
+
+For example, after `scale_gains(g, 2.0)` a `g` of `{1.0, 0.5, 0.25}` holds `{2.0, 1.0, 0.5}`, while `scaled(g, 4.0)` returns `{4.0, 2.0, 1.0}` and `g` itself stays `{1.0, 0.5, 0.25}`.
+--- starter
+struct Gains {
+    double kp, ki, kd;
+};
+
+void scale_gains(Gains& g, double k) {
+}
+
+Gains scaled(Gains g, double k) {
+    return Gains{};
+}
+--- solution
+struct Gains {
+    double kp, ki, kd;
+};
+
+// A reference: changes the caller's object.
+void scale_gains(Gains& g, double k) {
+    g.kp *= k;
+    g.ki *= k;
+    g.kd *= k;
+}
+
+// By value: g is already a private copy, so change it and return it.
+Gains scaled(Gains g, double k) {
+    scale_gains(g, k);
+    return g;
+}
+--- hint
+`Gains&` makes the parameter another name for the caller's object. `Gains` by value makes it a copy.
+--- hint
+In `scaled`, the parameter is already your own copy: change it and return it. You can even reuse `scale_gains` on it.
+--- check test | scale_gains changes the caller's gains
+[] { Gains g{1.0, 0.5, 0.25}; scale_gains(g, 2.0); return g.kp == 2.0 && g.ki == 1.0 && g.kd == 0.5; }()
+--- check test | scaled returns the scaled gains
+[] { Gains g{1.0, 0.5, 0.25}; Gains h = scaled(g, 4.0); return h.kp == 4.0 && h.ki == 2.0 && h.kd == 1.0; }()
+--- check test | scaled leaves the caller's gains alone
+[] { Gains g{1.0, 0.5, 0.25}; Gains h = scaled(g, 4.0); return g.kp == 1.0 && g.ki == 0.5 && g.kd == 0.25 && h.kp == 4.0; }()
+
++++ practice | Burning propellant from a stage
+--- task
+The starter defines `struct Stage` with a dry mass and a propellant mass, both in kg. Write:
+
+- `double total_mass(const Stage& s)`, returning dry plus propellant mass. It only reads, so it takes a `const` reference.
+- `double burn(Stage& s, double kg)`, which removes up to `kg` of propellant from the caller's stage and returns how much it actually removed. The propellant never goes below zero: asking for more than is left removes what is left. Asking for zero or a negative amount removes nothing and returns 0.0.
+
+For example, a stage `{1200.0, 500.0}` has a total mass of 1700.0. `burn(s, 200.0)` returns 200.0 and leaves 300.0 of propellant. A following `burn(s, 1000.0)` returns 300.0 and leaves 0.0.
+--- starter
+struct Stage {
+    double dry_kg;
+    double prop_kg;
+};
+
+double total_mass(const Stage& s) {
+    return 0.0;
+}
+
+double burn(Stage s, double kg) {
+    return 0.0;
+}
+--- solution
+struct Stage {
+    double dry_kg;
+    double prop_kg;
+};
+
+double total_mass(const Stage& s) {
+    return s.dry_kg + s.prop_kg;
+}
+
+double burn(Stage& s, double kg) {
+    if (kg <= 0.0) return 0.0;
+    const double used = (kg < s.prop_kg) ? kg : s.prop_kg;
+    s.prop_kg -= used;
+    return used;
+}
+--- hint
+`burn` must change the caller's stage, so its parameter must be a non-const reference. Check the starter's parameter.
+--- hint
+Work out the amount actually used first, the smaller of `kg` and what is left, then subtract it and return it.
+--- check test | total_mass adds both masses
+[] { const Stage s{1200.0, 500.0}; return total_mass(s) == 1700.0; }()
+--- check test | A normal burn
+[] { Stage s{1200.0, 500.0}; double used = burn(s, 200.0); return used == 200.0 && s.prop_kg == 300.0; }()
+--- check test | Asking for more than is left
+[] { Stage s{1200.0, 300.0}; double used = burn(s, 1000.0); return used == 300.0 && s.prop_kg == 0.0; }()
+--- check test | Burning from an empty stage
+[] { Stage s{1200.0, 0.0}; return burn(s, 50.0) == 0.0 && s.prop_kg == 0.0; }()
+--- check test | A negative request removes nothing
+[] { Stage s{1200.0, 500.0}; return burn(s, -40.0) == 0.0 && s.prop_kg == 500.0; }()
+
++++ practice | The reference that would not move
+--- task
+`draw_from_fuller` should take `kg` of propellant from whichever of two tanks holds more (tank `a` when they are equal), and return what is left in that tank.
+
+When `a` is the fuller tank it works. When `b` is fuller, it wrecks tank `a` and leaves `b` untouched. For tanks holding 100 and 300 kg, drawing 50 should leave them at 100 and 250 and return 250. Instead it leaves them at 250 and 300.
+
+Find the line that does not do what its author thought, and fix it.
+--- starter
+struct Tank {
+    double kg;
+};
+
+// Draws kg from the fuller tank (a on a tie) and returns what is left in it.
+double draw_from_fuller(Tank& a, Tank& b, double kg) {
+    Tank& t = a;
+    if (b.kg > a.kg) t = b;  // use tank b instead
+    t.kg -= kg;
+    return t.kg;
+}
+--- solution
+struct Tank {
+    double kg;
+};
+
+// Draws kg from the fuller tank (a on a tie) and returns what is left in it.
+double draw_from_fuller(Tank& a, Tank& b, double kg) {
+    // A reference is bound once, when it is created: choose the tank there.
+    Tank& t = (b.kg > a.kg) ? b : a;
+    t.kg -= kg;
+    return t.kg;
+}
+--- hint
+A reference cannot be reseated. After `Tank& t = a;`, every use of `t`, even on the left of `=`, is a use of `a`.
+--- hint
+So `t = b;` copies `b` into `a`. Decide which tank to use at the moment the reference is created, for example with `? :`.
+--- check test | b is fuller: b loses 50, a is untouched
+[] { Tank a{100.0}, b{300.0}; double left = draw_from_fuller(a, b, 50.0); return left == 250.0 && a.kg == 100.0 && b.kg == 250.0; }()
+--- check test | a is fuller: a loses 50
+[] { Tank a{400.0}, b{300.0}; double left = draw_from_fuller(a, b, 50.0); return left == 350.0 && a.kg == 350.0 && b.kg == 300.0; }()
+--- check test | A tie draws from a
+[] { Tank a{200.0}, b{200.0}; draw_from_fuller(a, b, 20.0); return a.kg == 180.0 && b.kg == 200.0; }()
+
++++ practice | A transfer between tanks
+--- task
+Write `void transfer(Tank& from, Tank& to, double kg)` that moves propellant from one tank to another, and never creates or destroys any.
+
+- It moves `kg`, or everything in `from` if that is less.
+- A request of zero or less moves nothing.
+- If `from` and `to` are the **same tank**, it does nothing. (Check whether the two references name the same object.)
+
+For example, from tanks of 100 and 20 kg, `transfer(a, b, 30.0)` leaves 70 and 50, and `transfer(a, b, 500.0)` leaves 0 and 120.
+--- starter
+struct Tank {
+    double kg;
+};
+
+void transfer(Tank& from, Tank& to, double kg) {
+    from.kg -= kg;
+    to.kg += kg;
+}
+--- solution
+struct Tank {
+    double kg;
+};
+
+void transfer(Tank& from, Tank& to, double kg) {
+    if (&from == &to || kg <= 0.0) return;  // same object, or nothing to move
+    const double moved = (kg < from.kg) ? kg : from.kg;
+    from.kg -= moved;
+    to.kg += moved;
+}
+--- hint
+`&from == &to` compares the addresses of the two objects: C++'s version of Python's `is`.
+--- hint
+Work out the amount actually moved first, the smaller of `kg` and what `from` holds, and add exactly that to `to`.
+--- check test | A normal transfer
+[] { Tank a{100.0}, b{20.0}; transfer(a, b, 30.0); return a.kg == 70.0 && b.kg == 50.0; }()
+--- check test | Asking for more than there is
+[] { Tank a{100.0}, b{20.0}; transfer(a, b, 500.0); return a.kg == 0.0 && b.kg == 120.0; }()
+--- check test | A negative request moves nothing
+[] { Tank a{100.0}, b{20.0}; transfer(a, b, -10.0); return a.kg == 100.0 && b.kg == 20.0; }()
+--- check test | A tank transferring to itself is unchanged
+[] { Tank a{100.0}; transfer(a, a, 30.0); return a.kg == 100.0; }()
+
++++ practice | Cap the fastest of three
+--- task
+The starter defines `struct State` with a radius and a speed. Write:
+
+- `State& faster(State& a, State& b)`, which returns a **reference** to whichever of the two has the higher `v_mps`, or to `a` on a tie. Returning a reference to a parameter is safe: the caller's objects outlive the call.
+- `void cap_fastest(State& a, State& b, State& c, double v_max)`, which finds the fastest of the three (the earliest one on a tie) and, if its speed is above `v_max`, sets that one's speed to `v_max`. The other two are never changed.
+
+For example, with speeds 7600, 7700 and 7650 and `v_max` 7680, only the second changes, to 7680.
+--- starter
+struct State {
+    double r_m;
+    double v_mps;
+};
+
+State& faster(State& a, State& b) {
+    return a;
+}
+
+void cap_fastest(State& a, State& b, State& c, double v_max) {
+}
+--- solution
+struct State {
+    double r_m;
+    double v_mps;
+};
+
+State& faster(State& a, State& b) {
+    return (b.v_mps > a.v_mps) ? b : a;
+}
+
+void cap_fastest(State& a, State& b, State& c, double v_max) {
+    State& top = faster(faster(a, b), c);  // an alias for the fastest one
+    if (top.v_mps > v_max) top.v_mps = v_max;
+}
+--- hint
+`faster(faster(a, b), c)` is a reference to the fastest of the three, and earlier ones win ties.
+--- hint
+Keep the result in a `State&`, not a `State`, or you will change a copy.
+--- check test | faster returns a reference to the faster one
+[] { State a{1.0, 7600.0}, b{2.0, 7700.0}; return &faster(a, b) == &b; }()
+--- check test | faster prefers a on a tie
+[] { State a{1.0, 7600.0}, b{2.0, 7600.0}; return &faster(a, b) == &a; }()
+--- check test | Writing through faster changes the original
+[] { State a{1.0, 7600.0}, b{2.0, 7700.0}; faster(a, b).v_mps = 0.0; return b.v_mps == 0.0 && a.v_mps == 7600.0; }()
+--- check test | Only the fastest is capped
+[] { State a{1.0, 7600.0}, b{2.0, 7700.0}, c{3.0, 7650.0}; cap_fastest(a, b, c, 7680.0); return a.v_mps == 7600.0 && b.v_mps == 7680.0 && c.v_mps == 7650.0; }()
+--- check test | Nothing changes when all are under the cap
+[] { State a{1.0, 10.0}, b{2.0, 30.0}, c{3.0, 20.0}; cap_fastest(a, b, c, 100.0); return a.v_mps == 10.0 && b.v_mps == 30.0 && c.v_mps == 20.0; }()
+--- check test | A tie caps the earliest one
+[] { State a{1.0, 50.0}, b{2.0, 90.0}, c{3.0, 90.0}; cap_fastest(a, b, c, 60.0); return b.v_mps == 60.0 && c.v_mps == 90.0; }()
+
++++ question | Assigning through a reference
+--- ask
+What does this print?
+
+```cpp
+int a = 5, b = 9;
+int& r = a;
+r = b;
+r += 1;
+std::printf("%d %d\n", a, b);
+```
+
+Type the two numbers with a space between them.
+--- answer
+10 9
+10, 9
+--- why
+`r` is bound to `a` when it is created, and a reference can never be reseated. So `r = b;` does not make `r` name `b`: it copies 9 into `a`. Then `r += 1;` adds one to `a`, giving 10. `b` is never touched and stays 9. In Python, `r = b` would move a label; in C++ it writes into the object the reference names.
+
+=== cpp01-l07 | Practice: const, constexpr, consteval and auto
+--- for
+l07-const-constexpr-consteval-auto
+
++++ practice | A buffer length the compiler works out
+--- task
+Write `constexpr int samples_for(int rate_hz, double seconds)` that returns how many samples a sensor at `rate_hz` produces in `seconds`: the product, rounded down to a whole number.
+
+It must work in both worlds:
+
+- at compile time, as the size of a `std::array`: `std::array<float, samples_for(100, 2.5)>` must be an array of 250 floats;
+- at run time, with values the compiler cannot know.
+
+For example, `samples_for(50, 0.5)` is 25, and `samples_for(1000, 0.0)` is 0.
+--- starter
+#include <array>
+
+int samples_for(int rate_hz, double seconds) {
+    return 0;
+}
+--- solution
+#include <array>
+
+// constexpr: usable where a compile-time constant is required, and callable at run time too.
+constexpr int samples_for(int rate_hz, double seconds) {
+    return static_cast<int>(rate_hz * seconds);
+}
+--- hint
+Only a `constexpr` function may be called where the compiler needs the answer while it compiles, as a `std::array` size does.
+--- hint
+`rate_hz * seconds` is a `double`. Converting it to `int` with `static_cast<int>` drops the fraction, which rounds down for positive values.
+--- check test | Sizes a std::array at compile time
+std::array<float, samples_for(100, 2.5)>{}.size() == 250
+--- check test | samples_for(50, 0.5) is 25
+samples_for(50, 0.5) == 25
+--- check test | Zero seconds gives no samples
+samples_for(1000, 0.0) == 0
+--- check test | Rounds down: 30 Hz for 0.1 s
+samples_for(30, 0.1) == 3
+--- check test | Works with values only known at run time
+[] { int rate = 200; double secs = 1.5; return samples_for(rate, secs); }() == 300
+
++++ practice | A reader that refuses read-only states
+--- task
+`total_energy` takes two states by `const` reference, because it only reads them. It does not compile: the helper it calls asks for permission to change its argument.
+
+Fix `energy_per_kg` so that `total_energy` compiles, without taking `const` off `total_energy`'s parameters. Once it is fixed, `energy_per_kg` can also be called on a temporary, such as `energy_per_kg(State{0.0, 10.0})`, which is 50.0.
+--- starter
+struct State {
+    double r_m;
+    double v_mps;
+};
+
+// Kinetic energy per kilogram, J/kg.
+double energy_per_kg(State& s) {
+    return 0.5 * s.v_mps * s.v_mps;
+}
+
+double total_energy(const State& a, double mass_a, const State& b, double mass_b) {
+    return mass_a * energy_per_kg(a) + mass_b * energy_per_kg(b);
+}
+--- solution
+struct State {
+    double r_m;
+    double v_mps;
+};
+
+// Kinetic energy per kilogram, J/kg. Only reads s, so it promises not to change it.
+double energy_per_kg(const State& s) {
+    return 0.5 * s.v_mps * s.v_mps;
+}
+
+double total_energy(const State& a, double mass_a, const State& b, double mass_b) {
+    return mass_a * energy_per_kg(a) + mass_b * energy_per_kg(b);
+}
+--- hint
+Inside `total_energy`, `a` is a read-only view. Passing it to a function that takes `State&` would hand out permission to change it, so the compiler refuses.
+--- hint
+A function that only reads its argument should say so in its parameter type: `const State&`.
+--- check case | energy_per_kg on a temporary
+energy_per_kg(State{0.0, 10.0})
+=> 50.0
+--- check case | total_energy of two states
+total_energy(State{0.0, 10.0}, 2.0, State{0.0, 4.0}, 3.0)
+=> 124.0
+--- check test | Works on a const state
+[] { const State s{6771000.0, 2.0}; return energy_per_kg(s) == 2.0; }()
+
++++ practice | Detuning a copy
+--- task
+`detune` should scale all three gains of the caller's controller by `k`. It compiles without a warning, but the controller's gains never change.
+
+Find why and fix it, with the smallest change to the line that is wrong.
+--- starter
+struct Gains {
+    double kp, ki, kd;
+};
+
+struct Controller {
+    Gains g;
+    bool armed;
+};
+
+// Scales all three gains of the controller by k.
+void detune(Controller& c, double k) {
+    auto g = c.g;
+    g.kp *= k;
+    g.ki *= k;
+    g.kd *= k;
+}
+--- solution
+struct Gains {
+    double kp, ki, kd;
+};
+
+struct Controller {
+    Gains g;
+    bool armed;
+};
+
+// Scales all three gains of the controller by k.
+void detune(Controller& c, double k) {
+    auto& g = c.g;  // an alias for the controller's gains, not a copy
+    g.kp *= k;
+    g.ki *= k;
+    g.kd *= k;
+}
+--- hint
+Plain `auto` deduces a value type, so `g` is a copy of the controller's gains.
+--- hint
+`auto&` deduces the type and keeps it a reference.
+--- check test | All three gains are scaled
+[] { Controller c{{2.0, 1.0, 0.5}, true}; detune(c, 0.5); return c.g.kp == 1.0 && c.g.ki == 0.5 && c.g.kd == 0.25; }()
+--- check test | Scaling by 1 changes nothing
+[] { Controller c{{2.0, 1.0, 0.5}, false}; detune(c, 1.0); return c.g.kp == 2.0 && c.g.kd == 0.5; }()
+--- check test | The armed flag is untouched
+[] { Controller c{{2.0, 1.0, 0.5}, true}; detune(c, 3.0); return c.armed && c.g.kp == 6.0; }()
+
++++ practice | Bits for a field, at compile time
+--- task
+Write `constexpr int bits_needed(unsigned max_value)` that returns the fewest bits an unsigned field needs to hold every value from 0 to `max_value`.
+
+- One bit holds 0 and 1, two bits hold 0 to 3, eight bits hold 0 to 255.
+- A field that only ever holds 0 still needs 1 bit.
+
+It must work at compile time: `std::array<bool, bits_needed(2047)>` is an array of 11. For example, `bits_needed(255)` is 8 and `bits_needed(256)` is 9.
+--- starter
+#include <array>
+
+constexpr int bits_needed(unsigned max_value) {
+    return 0;
+}
+--- solution
+#include <array>
+
+constexpr int bits_needed(unsigned max_value) {
+    int bits = 1;
+    unsigned long long limit = 2;  // how many values `bits` bits can hold
+    while (limit <= max_value) {
+        limit *= 2;
+        ++bits;
+    }
+    return bits;
+}
+--- hint
+Since C++20 a `constexpr` function may use a loop and local variables. Count bits up from 1 while the number of values they can hold is not enough.
+--- hint
+`b` bits hold 2 to the power `b` values. Keep that count in an `unsigned long long`, so it cannot wrap when it reaches 2 to the 32.
+--- check test | Sizes an array at compile time
+std::array<bool, bits_needed(2047)>{}.size() == 11
+--- check case | 0 needs 1 bit
+bits_needed(0)
+=> 1
+--- check case | 1 needs 1 bit
+bits_needed(1)
+=> 1
+--- check case | 255 needs 8 bits
+bits_needed(255)
+=> 8
+--- check case | 256 needs 9 bits
+bits_needed(256)
+=> 9
+--- check case | The largest unsigned needs 32 bits
+bits_needed(4294967295u)
+=> 32
+
++++ practice | A grid side, worked out by the compiler
+--- task
+Write `constexpr unsigned isqrt(unsigned n)` that returns the whole-number square root of `n`, rounded down: the largest `r` with `r * r` not above `n`.
+
+It must work at compile time, where it sizes a square grid: `std::array<int, isqrt(1000)>` has 31 elements. It must be right for every `unsigned` value, the largest included: `isqrt(4294967295)` is 65535. For example, `isqrt(15)` is 3 and `isqrt(16)` is 4.
+--- starter
+#include <array>
+
+constexpr unsigned isqrt(unsigned n) {
+    return n;
+}
+--- solution
+#include <array>
+
+// Binary search on r, with the squares worked out in 64 bits so they cannot wrap.
+constexpr unsigned isqrt(unsigned n) {
+    unsigned long long lo = 0;
+    unsigned long long hi = 65536;  // 65536 * 65536 is above every unsigned value
+    while (hi - lo > 1) {
+        const unsigned long long mid = (lo + hi) / 2;
+        if (mid * mid <= n) lo = mid;
+        else hi = mid;
+    }
+    return static_cast<unsigned>(lo);
+}
+--- hint
+A loop that tries `r = 0, 1, 2, ...` works, but for the largest input it runs 65,536 times. A binary search between 0 and 65536 needs about 17 steps.
+--- hint
+Square in `unsigned long long`. 65535 × 65535 fits in 32 bits, but 65536 × 65536 does not, and a wrapped square gives a wrong answer.
+--- check test | Sizes an array at compile time
+std::array<int, isqrt(1000)>{}.size() == 31
+--- check case | isqrt(0)
+isqrt(0)
+=> 0u
+--- check case | isqrt(15)
+isqrt(15)
+=> 3u
+--- check case | isqrt(16)
+isqrt(16)
+=> 4u
+--- check case | The largest unsigned
+isqrt(4294967295u)
+=> 65535u
+--- check case | Just under a big square
+isqrt(4294836224u)
+=> 65534u
+
++++ question | When constexpr is not enough
+--- ask
+A function validates a telemetry identifier and rejects any value that does not fit in 11 bits. It is written `constexpr`. Why might a reviewer ask for `consteval` instead?
+--- choice
+`consteval` functions run faster than `constexpr` functions at run time.
+--- choice correct
+A `constexpr` function quietly runs at run time when its argument is not a constant, so the check could happen in flight. `consteval` makes any such call a compile error.
+--- choice
+`constexpr` functions cannot contain an `if`, so the range check needs `consteval`.
+--- choice
+`consteval` makes the result `const`, so nobody can change the identifier afterwards.
+--- why
+A `constexpr` function is *allowed* to run at compile time, and falls back to an ordinary call when its arguments are only known at run time. For a check whose whole point is to stop the build, that fall-back is a hole: a bad value arriving at run time would be caught, if at all, on the vehicle. A `consteval` function has no run-time form, so every call must be worked out by the compiler. Both kinds may use `if` and loops, and neither says anything about whether the result can be changed later.
+
+=== cpp01-l08 | Practice: Functions, overloading and default arguments
+--- for
+l08-functions-overloading-default-arguments
+
++++ practice | A deadband for one number and for two
+--- task
+A **deadband** ignores small inputs: a joystick reading close to zero is treated as exactly zero, so noise does not move the vehicle. The starter defines `struct Vec2`. Write an overload set:
+
+- `double deadband(double x, double band)` returns 0.0 when `x` is between `-band` and `band` (the ends included), and `x` unchanged otherwise.
+- `Vec2 deadband(const Vec2& v, double band)` applies the same rule to each part of `v` on its own. Write it using the first function, so the rule lives in one place.
+
+For example, `deadband(0.02, 0.05)` is 0.0, `deadband(-0.3, 0.05)` is -0.3, and `deadband(Vec2{0.01, -0.4}, 0.05)` is `{0.0, -0.4}`.
+--- starter
+struct Vec2 {
+    double x, y;
+};
+
+double deadband(double x, double band) {
+    return x;
+}
+--- solution
+struct Vec2 {
+    double x, y;
+};
+
+double deadband(double x, double band) {
+    if (x >= -band && x <= band) return 0.0;
+    return x;
+}
+
+// Same operation on a different type: an overload that reuses the scalar rule.
+Vec2 deadband(const Vec2& v, double band) {
+    return Vec2{deadband(v.x, band), deadband(v.y, band)};
+}
+--- hint
+Two functions may share a name when their parameter types differ. The compiler picks one from the type of the first argument.
+--- hint
+Inside the `Vec2` version, `deadband(v.x, band)` calls the `double` version, because `v.x` is a `double`.
+--- check case | A small reading becomes zero
+deadband(0.02, 0.05)
+=> 0.0
+--- check case | A large negative reading passes
+deadband(-0.3, 0.05)
+=> -0.3
+--- check case | The edge of the band counts as inside
+deadband(-0.05, 0.05)
+=> 0.0
+--- check test | The Vec2 version works part by part
+[] { Vec2 r = deadband(Vec2{0.01, -0.4}, 0.05); return r.x == 0.0 && r.y == -0.4; }()
+--- check test | The Vec2 version can zero both parts
+[] { Vec2 r = deadband(Vec2{-0.02, 0.05}, 0.05); return r.x == 0.0 && r.y == 0.0; }()
+
++++ practice | A throttle that moves in small steps
+--- task
+Write `double throttle_step(double current, double target, double max_step = 0.05)` that returns the next throttle setting: `current` moved toward `target` by at most `max_step`. If `target` is within `max_step` of `current`, it returns `target` itself.
+
+The default means a caller who says nothing gets steps of 0.05. For example:
+
+- `throttle_step(0.0, 1.0)` is 0.05;
+- `throttle_step(0.0, 1.0, 0.5)` is 0.5;
+- `throttle_step(0.9, 0.93)` is 0.93;
+- `throttle_step(0.5, 0.2)` is 0.45, because it moves down as well as up.
+--- starter
+double throttle_step(double current, double target, double max_step) {
+    return target;
+}
+--- solution
+double throttle_step(double current, double target, double max_step = 0.05) {
+    if (target > current + max_step) return current + max_step;
+    if (target < current - max_step) return current - max_step;
+    return target;
+}
+--- hint
+A default argument is written in the parameter list: `double max_step = 0.05`. It must come at the end, which it does here.
+--- hint
+There are three cases: the target is too far above, too far below, or close enough to reach this step.
+--- check test | throttle_step(0.0, 1.0) uses the default step
+std::fabs(throttle_step(0.0, 1.0) - 0.05) < 1e-12
+--- check test | throttle_step(0.0, 1.0, 0.5) uses the given step
+std::fabs(throttle_step(0.0, 1.0, 0.5) - 0.5) < 1e-12
+--- check test | A close target is reached exactly
+throttle_step(0.9, 0.93) == 0.93
+--- check test | It moves down too
+std::fabs(throttle_step(0.5, 0.2) - 0.45) < 1e-12
+--- check test | Already at the target
+throttle_step(0.7, 0.7) == 0.7
+
++++ practice | A call that fits two overloads equally
+--- task
+The starter has two overloads of `scale`, for `double` and for `float`. A caller writes `scale(2, 3)` with two whole numbers, and the build fails: "call of overloaded 'scale(int, int)' is ambiguous".
+
+Add a third overload, `int scale(int x, int k)`, that returns the whole-number product. Keep the other two as they are. Then:
+
+- `scale(2, 3)` is the `int` 6, and `scale(7, 2) / 4` is 3, because the division is between whole numbers;
+- `scale(2.5, 2.0)` is still 5.0, and `scale(1.5F, 2.0F)` is still `3.0F`.
+--- starter
+double scale(double x, double k) { return x * k; }
+float scale(float x, float k) { return x * k; }
+--- solution
+double scale(double x, double k) { return x * k; }
+float scale(float x, float k) { return x * k; }
+
+// An exact match for whole numbers, so scale(2, 3) no longer has to choose
+// between two conversions of the same rank.
+int scale(int x, int k) { return x * k; }
+--- hint
+An `int` converts to `double` and to `float` with standard conversions of the same rank, so neither overload is better and the compiler refuses to guess.
+--- hint
+An overload whose parameters are exactly `int` is an exact match, which beats any conversion.
+--- check case | scale(2, 3)
+scale(2, 3)
+=> 6
+--- check test | scale(7, 2) / 4 is whole-number division
+scale(7, 2) / 4 == 3
+--- check case | scale(2.5, 2.0) still uses double
+scale(2.5, 2.0)
+=> 5.0
+--- check case | scale(1.5F, 2.0F) still uses float
+scale(1.5F, 2.0F)
+=> 3.0F
+
++++ practice | A controller step with no kick
+--- task
+Write one step of a proportional-derivative controller:
+
+`double pd_step(double error, double& prev_error, bool& first, double kp = 2.0, double kd = 0.1, double dt = 0.01)`
+
+It returns `kp * error + kd * derivative`, where the derivative is `(error - prev_error) / dt`. It keeps its memory in the caller's variables, and must handle these cases:
+
+- On the **first** call (`first` is true) there is no previous error, so the derivative is 0. Then set `first` to false.
+- If `dt` is zero or negative, the derivative is 0 too, instead of a division by zero.
+- Every call ends by storing `error` into `prev_error`.
+
+For example, with the defaults, a first call with error 1.0 returns 2.0. A second call with error 0.8 has a derivative of (0.8 - 1.0) / 0.01 = -20, so it returns 1.6 - 2.0 = -0.4.
+--- starter
+double pd_step(double error, double& prev_error, bool& first, double kp = 2.0, double kd = 0.1, double dt = 0.01) {
+    const double derivative = (error - prev_error) / dt;
+    return kp * error + kd * derivative;
+}
+--- solution
+double pd_step(double error, double& prev_error, bool& first, double kp = 2.0, double kd = 0.1, double dt = 0.01) {
+    double derivative = 0.0;
+    if (!first && dt > 0.0) derivative = (error - prev_error) / dt;
+    first = false;
+    prev_error = error;
+    return kp * error + kd * derivative;
+}
+--- hint
+Start the derivative at 0.0 and only compute it when this is not the first call and `dt` is positive.
+--- hint
+`first` and `prev_error` are references, so assigning to them changes the caller's variables: that is how the next call remembers.
+--- check test | The first call has no derivative kick
+[] { double prev = 0.0; bool first = true; double u = pd_step(1.0, prev, first); return std::fabs(u - 2.0) < 1e-9 && !first && prev == 1.0; }()
+--- check test | The second call uses the derivative
+[] { double prev = 0.0; bool first = true; pd_step(1.0, prev, first); double u = pd_step(0.8, prev, first); return std::fabs(u + 0.4) < 1e-9 && prev == 0.8; }()
+--- check test | Given gains and time step replace the defaults
+[] { double prev = 0.0; bool first = false; double u = pd_step(1.0, prev, first, 2.0, 0.1, 0.1); return std::fabs(u - 3.0) < 1e-9; }()
+--- check test | A zero time step gives no derivative
+[] { double prev = 5.0; bool first = false; double u = pd_step(1.0, prev, first, 2.0, 0.1, 0.0); return std::fabs(u - 2.0) < 1e-9 && prev == 1.0; }()
+
++++ practice | Units the compiler can tell apart
+--- task
+Altitudes arrive in metres from one system and in feet from another. Mixing them up has crashed real spacecraft. Wrap each unit in its own struct, so the compiler can tell them apart. The starter defines both.
+
+Write:
+
+- `Meters to_meters(Feet f)` and `Feet to_feet(Meters m)`, where 1 foot is exactly 0.3048 m;
+- `double margin(Meters alt, Meters floor_alt = Meters{500.0})`, the height above the floor in metres;
+- `double margin(Feet alt, Feet floor_alt = Feet{1640.0})`, the height above the floor in feet.
+
+So `margin(Meters{800.0})` is 300.0 and `margin(Feet{2000.0})` is 360.0. A call can no longer mix a height in feet with a floor in metres: `margin(Feet{2000.0}, Meters{500.0})` does not compile.
+--- starter
+struct Meters {
+    double v;
+};
+
+struct Feet {
+    double v;
+};
+
+Meters to_meters(Feet f) {
+    return Meters{f.v};
+}
+--- solution
+struct Meters {
+    double v;
+};
+
+struct Feet {
+    double v;
+};
+
+constexpr double kMetersPerFoot = 0.3048;
+
+Meters to_meters(Feet f) { return Meters{f.v * kMetersPerFoot}; }
+Feet to_feet(Meters m) { return Feet{m.v / kMetersPerFoot}; }
+
+double margin(Meters alt, Meters floor_alt = Meters{500.0}) { return alt.v - floor_alt.v; }
+double margin(Feet alt, Feet floor_alt = Feet{1640.0}) { return alt.v - floor_alt.v; }
+--- hint
+Each overload takes both parameters in the same unit, so the argument types alone choose which one runs.
+--- hint
+A default argument can be any expression of the parameter's type, such as `Meters{500.0}`.
+--- check test | to_meters converts feet to metres
+std::fabs(to_meters(Feet{1000.0}).v - 304.8) < 1e-9
+--- check test | to_feet converts metres to feet
+std::fabs(to_feet(Meters{304.8}).v - 1000.0) < 1e-9
+--- check case | margin in metres, default floor
+margin(Meters{800.0})
+=> 300.0
+--- check case | margin in feet, default floor
+margin(Feet{2000.0})
+=> 360.0
+--- check case | margin below a given floor
+margin(Meters{800.0}, Meters{900.0})
+=> -100.0
+--- check test | A converted height works with the metre overload
+std::fabs(margin(to_meters(Feet{2000.0})) - 109.6) < 1e-9
+
++++ question | Which overload runs
+--- ask
+What does this program print?
+
+```cpp
+#include <cstdio>
+
+void show(int)    { std::printf("int "); }
+void show(double) { std::printf("double "); }
+
+int main() {
+    show(3.0F);
+    show('x');
+    show(true);
+    std::printf("\n");
+}
+```
+
+Type the three words, with one space between them.
+--- answer
+double int int
+--- why
+Each call picks the candidate that needs the smallest step up the ladder. `3.0F` is a `float`, and `float` to `double` is a promotion, better than the standard conversion `float` to `int`. A `char` and a `bool` are both narrower than `int`, so converting them to `int` is an integral promotion, better than converting them to `double`. So the answers are `double`, `int`, `int`, and none of the calls is ambiguous.
+
+=== cpp01-l09 | Practice: Arrays, std::array, std::vector and range-based for
+--- for
+l09-arrays-std-array-and-vector
+
++++ practice | Readings over a limit
+--- task
+Eight thermocouples on an engine report one temperature each, in °C, held in a `std::array<double, 8>`. Write `int count_over(const std::array<double, 8>& temps, double limit)` that returns how many readings are strictly above `limit`.
+
+Use a range-based `for` loop that neither copies the elements nor can change them. For example, for the readings 20, 31, 45, 12, 50, 50.5, -3 and 49.9 with a limit of 45, the answer is 3: a reading equal to the limit is not over it.
+--- starter
+#include <array>
+
+int count_over(const std::array<double, 8>& temps, double limit) {
+    return 0;
+}
+--- solution
+#include <array>
+
+int count_over(const std::array<double, 8>& temps, double limit) {
+    int n = 0;
+    for (const auto& t : temps) {
+        if (t > limit) ++n;
+    }
+    return n;
+}
+--- hint
+`for (const auto& t : temps)` visits each element through a read-only alias.
+--- hint
+Keep a count, starting at 0, and add one for each reading greater than `limit`.
+--- check case | Three readings over 45
+count_over(std::array<double, 8>{20, 31, 45, 12, 50, 50.5, -3, 49.9}, 45.0)
+=> 3
+--- check case | None over a high limit
+count_over(std::array<double, 8>{20, 31, 45, 12, 50, 50.5, -3, 49.9}, 100.0)
+=> 0
+--- check case | All over a low limit
+count_over(std::array<double, 8>{20, 31, 45, 12, 50, 50.5, -3, 49.9}, -10.0)
+=> 8
+--- check source | Uses a read-only range-based for
+for\s*\(\s*const\s+auto\s*&\s*\w+\s*:
+
++++ practice | The last reading over the limit
+--- task
+Write `std::size_t last_above(const std::vector<double>& v, double limit)` that returns the index of the **last** element strictly greater than `limit`. If there is none, including when `v` is empty, return `v.size()`, which can never be a valid index.
+
+Search from the back, and stop at the first match. The index is a `std::size_t`, so the loop must be correct for an empty vector: remember how the countdown loop from lesson 05 is written.
+
+For example, `last_above({3.0, 9.0, 4.0, 8.0, 1.0}, 5.0)` is 3.
+--- starter
+#include <cstddef>
+#include <vector>
+
+std::size_t last_above(const std::vector<double>& v, double limit) {
+    return 0;
+}
+--- solution
+#include <cstddef>
+#include <vector>
+
+std::size_t last_above(const std::vector<double>& v, double limit) {
+    for (std::size_t i = v.size(); i-- > 0;) {
+        if (v[i] > limit) return i;
+    }
+    return v.size();
+}
+--- hint
+Start at `v.size()` and test `i-- > 0`: the body then sees `size() - 1` down to 0, and an empty vector never enters it.
+--- hint
+Return the index as soon as you find a match. If the loop finishes, nothing matched.
+--- check case | The last one over 5 is at index 3
+last_above({3.0, 9.0, 4.0, 8.0, 1.0}, 5.0)
+=> 3
+--- check case | Only the first element is over
+last_above({9.0, 1.0, 2.0}, 5.0)
+=> 0
+--- check case | The last element is over
+last_above({1.0, 2.0, 6.0}, 5.0)
+=> 2
+--- check case | None over returns size()
+last_above({1.0, 2.0}, 5.0)
+=> 2
+--- check case | An empty vector returns 0
+last_above({}, 5.0)
+=> 0
+
++++ practice | Means over a sliding window
+--- task
+Write `std::vector<double> window_means(const std::vector<double>& v, std::size_t w)` that returns the mean of every run of `w` consecutive elements, in order: the mean of elements 0 to `w - 1`, then 1 to `w`, and so on.
+
+- For `{1, 2, 3, 4}` and `w` = 2 the answer is `{1.5, 2.5, 3.5}`.
+- If `w` is 0, or larger than the number of elements, there are no windows: return an empty vector.
+- If `w` equals the size, there is exactly one window.
+--- starter
+#include <cstddef>
+#include <vector>
+
+std::vector<double> window_means(const std::vector<double>& v, std::size_t w) {
+    return {};
+}
+--- solution
+#include <cstddef>
+#include <vector>
+
+std::vector<double> window_means(const std::vector<double>& v, std::size_t w) {
+    std::vector<double> out;
+    if (w == 0 || w > v.size()) return out;  // v.size() - w would wrap
+    out.reserve(v.size() - w + 1);
+    for (std::size_t start = 0; start + w <= v.size(); ++start) {
+        double sum = 0.0;
+        for (std::size_t i = start; i < start + w; ++i) sum += v[i];
+        out.push_back(sum / static_cast<double>(w));
+    }
+    return out;
+}
+--- hint
+`v.size() - w` is unsigned. When `w` is bigger than the size it does not go negative: it wraps to a huge number. Handle the two empty cases before any subtraction.
+--- hint
+There are `v.size() - w + 1` windows. For each start, add up `w` elements and divide by `w`.
+--- check case | Windows of 2
+window_means({1.0, 2.0, 3.0, 4.0}, 2)
+=> std::vector<double>{1.5, 2.5, 3.5}
+--- check case | One window of the whole vector
+window_means({1.0, 2.0, 3.0, 4.0}, 4)
+=> std::vector<double>{2.5}
+--- check case | A window of 1 is the vector itself
+window_means({-1.0, 0.5}, 1)
+=> std::vector<double>{-1.0, 0.5}
+--- check case | A window larger than the vector
+window_means({1.0, 2.0, 3.0, 4.0}, 5)
+=> std::vector<double>{}
+--- check case | A window of 0
+window_means({1.0, 2.0}, 0)
+=> std::vector<double>{}
+--- check case | An empty vector
+window_means({}, 3)
+=> std::vector<double>{}
+
++++ practice | Marking saturated samples
+--- task
+`mark_saturated` should set `valid` to false on every sample whose `az` is above 160 or below -160 m/s², and return how many it marked. The count it returns is right, but afterwards every sample still says it is valid.
+
+Find the bug and fix it.
+--- starter
+#include <cstdint>
+#include <vector>
+
+struct ImuSample {
+    std::uint32_t t_ms;
+    float az;
+    bool valid;
+};
+
+// Marks samples outside plus or minus 160 m/s^2 as not valid; returns how many.
+int mark_saturated(std::vector<ImuSample>& samples) {
+    int n = 0;
+    for (auto s : samples) {
+        if (s.az > 160.0F || s.az < -160.0F) {
+            s.valid = false;
+            ++n;
+        }
+    }
+    return n;
+}
+--- solution
+#include <cstdint>
+#include <vector>
+
+struct ImuSample {
+    std::uint32_t t_ms;
+    float az;
+    bool valid;
+};
+
+// Marks samples outside plus or minus 160 m/s^2 as not valid; returns how many.
+int mark_saturated(std::vector<ImuSample>& samples) {
+    int n = 0;
+    for (auto& s : samples) {  // an alias for each element, so the change sticks
+        if (s.az > 160.0F || s.az < -160.0F) {
+            s.valid = false;
+            ++n;
+        }
+    }
+    return n;
+}
+--- hint
+`for (auto s : samples)` makes a copy of each element. Setting the copy's field changes nothing in the vector.
+--- hint
+Write `auto&` to make `s` an alias for each element in turn.
+--- check test | Returns the number marked
+[] { std::vector<ImuSample> v{{0, -9.8F, true}, {10, 170.0F, true}, {20, -165.0F, true}}; return mark_saturated(v) == 2; }()
+--- check test | The saturated samples are marked
+[] { std::vector<ImuSample> v{{0, -9.8F, true}, {10, 170.0F, true}, {20, -165.0F, true}}; mark_saturated(v); return v[0].valid && !v[1].valid && !v[2].valid; }()
+--- check test | Exactly 160 is not saturated
+[] { std::vector<ImuSample> v{{0, 160.0F, true}, {10, -160.0F, true}}; return mark_saturated(v) == 0 && v[0].valid && v[1].valid; }()
+--- check test | An empty vector marks nothing
+[] { std::vector<ImuSample> v; return mark_saturated(v) == 0; }()
+
++++ practice | A buffer with a fixed capacity
+--- task
+Flight code keeps recent samples in a fixed buffer instead of a growing vector. The starter defines it: a `std::array<double, 4>` for the storage, and a count of how many slots hold real samples. Write three functions:
+
+- `bool push(SampleBuf& b, double x)` stores `x` in the next free slot and returns true. When the buffer is full, it changes nothing and returns false.
+- `double average(const SampleBuf& b)` returns the mean of the samples held, or 0.0 when there are none. Slots beyond `count` must not be counted.
+- `void drop_oldest(SampleBuf& b)` removes the sample in slot 0, moves the others down one slot, and reduces the count. On an empty buffer it does nothing.
+
+For example, after pushing 1, 2 and 3, the average is 2.0; after `drop_oldest`, the buffer holds 2 and 3 and the average is 2.5.
+--- starter
+#include <array>
+#include <cstddef>
+
+struct SampleBuf {
+    std::array<double, 4> data{};
+    std::size_t count = 0;
+};
+
+bool push(SampleBuf& b, double x) {
+    return false;
+}
+
+double average(const SampleBuf& b) {
+    return 0.0;
+}
+
+void drop_oldest(SampleBuf& b) {
+}
+--- solution
+#include <array>
+#include <cstddef>
+
+struct SampleBuf {
+    std::array<double, 4> data{};
+    std::size_t count = 0;
+};
+
+bool push(SampleBuf& b, double x) {
+    if (b.count == b.data.size()) return false;  // full: the capacity is in the type
+    b.data[b.count] = x;
+    ++b.count;
+    return true;
+}
+
+double average(const SampleBuf& b) {
+    if (b.count == 0) return 0.0;
+    double sum = 0.0;
+    for (std::size_t i = 0; i < b.count; ++i) sum += b.data[i];
+    return sum / static_cast<double>(b.count);
+}
+
+void drop_oldest(SampleBuf& b) {
+    if (b.count == 0) return;
+    for (std::size_t i = 1; i < b.count; ++i) b.data[i - 1] = b.data[i];
+    --b.count;
+}
+--- hint
+`b.data.size()` is the capacity, 4, and it never changes. `b.count` is how many slots are in use; the next free slot is `b.data[b.count]`.
+--- hint
+Only the first `count` slots hold samples, so loop with an index up to `count`, not over the whole array.
+--- check test | push fills the buffer, then refuses
+[] { SampleBuf b; bool ok = push(b, 1) && push(b, 2) && push(b, 3) && push(b, 4); return ok && !push(b, 5) && b.count == 4 && b.data[3] == 4.0; }()
+--- check test | average of three samples
+[] { SampleBuf b; push(b, 1); push(b, 2); push(b, 3); return average(b) == 2.0; }()
+--- check test | average of an empty buffer
+[] { SampleBuf b; return average(b) == 0.0; }()
+--- check test | drop_oldest moves the rest down
+[] { SampleBuf b; push(b, 1); push(b, 2); push(b, 3); drop_oldest(b); return b.count == 2 && b.data[0] == 2.0 && b.data[1] == 3.0 && average(b) == 2.5; }()
+--- check test | drop_oldest on an empty buffer does nothing
+[] { SampleBuf b; drop_oldest(b); return b.count == 0; }()
+--- check test | After a drop there is room again
+[] { SampleBuf b; push(b, 1); push(b, 2); push(b, 3); push(b, 4); drop_oldest(b); return push(b, 9) && b.data[3] == 9.0 && average(b) == 4.5; }()
+
++++ question | A reference into a growing vector
+--- ask
+What is true about this code?
+
+```cpp
+std::vector<int> v{1, 2, 3};
+int& first = v[0];
+v.push_back(4);
+first = 10;
+```
+--- choice
+`v[0]` is now 10, because `first` is a reference to it.
+--- choice correct
+The last line is undefined behavior if `push_back` moved the elements to a bigger block, which it may do, since the vector may be full.
+--- choice
+It does not compile: a reference to a vector element is not allowed.
+--- choice
+`push_back` updates every reference into the vector, so the code is safe.
+--- why
+A `std::vector` keeps its elements in one heap block. When `push_back` needs more room than the capacity, it gets a bigger block, moves the elements, and frees the old one. A vector built from three values often has a capacity of exactly three, so here the move is likely. After it, `first` names freed memory, and writing through it is undefined behavior. Nothing warns; AddressSanitizer reports it as a heap-use-after-free. Take references into a vector only after it has stopped growing, or `reserve` enough first.
+
+=== cpp01-l10 | Practice: enum class, struct and class, namespaces
+--- for
+l10-enums-structs-classes-namespaces
+
++++ practice | A valve state from a byte
+--- task
+A valve's state arrives in a packet as one byte: 0 closed, 1 opening, 2 open, 3 closing. Any other byte is corrupt.
+
+- Define `enum class Valve` with the enumerators `Closed`, `Opening`, `Open` and `Closing`, in that order, stored in one byte.
+- Write `bool decode_valve(std::uint8_t byte, Valve& out)`. For a byte from 0 to 3 it sets `out` to the matching state and returns true. For any other byte it returns false and leaves `out` unchanged.
+
+Check the byte **before** converting it: a cast to an `enum class` checks nothing.
+--- starter
+#include <cstdint>
+
+enum class Valve { Closed, Opening, Open, Closing };
+
+bool decode_valve(std::uint8_t byte, Valve& out) {
+    out = static_cast<Valve>(byte);
+    return true;
+}
+--- solution
+#include <cstdint>
+
+enum class Valve : std::uint8_t { Closed, Opening, Open, Closing };
+
+bool decode_valve(std::uint8_t byte, Valve& out) {
+    if (byte > static_cast<std::uint8_t>(Valve::Closing)) return false;  // validate first
+    out = static_cast<Valve>(byte);
+    return true;
+}
+--- hint
+Write the underlying type after a colon: `enum class Valve : std::uint8_t { ... }`. Without it, an `enum class` is stored as an `int`.
+--- hint
+Compare the byte with the number of the last enumerator (`Closing` is 3), and return false before casting when it is larger.
+--- check test | A Valve is one byte
+sizeof(Valve) == 1
+--- check test | Byte 2 is Open
+[] { Valve v = Valve::Closed; return decode_valve(2, v) && v == Valve::Open; }()
+--- check test | Byte 0 is Closed
+[] { Valve v = Valve::Open; return decode_valve(0, v) && v == Valve::Closed; }()
+--- check test | Byte 3 is Closing
+[] { Valve v = Valve::Closed; return decode_valve(3, v) && v == Valve::Closing; }()
+--- check test | Byte 4 is rejected and out is unchanged
+[] { Valve v = Valve::Opening; return !decode_valve(4, v) && v == Valve::Opening; }()
+--- check test | Byte 255 is rejected
+[] { Valve v = Valve::Open; return !decode_valve(255, v) && v == Valve::Open; }()
+
++++ practice | A fuel gauge that cannot lie
+--- task
+Write a class `FuelGauge` whose invariant is that the fuel remaining is never below 0 and never above the capacity.
+
+- `explicit FuelGauge(double capacity_kg)`: the tank starts full. A negative capacity is treated as 0.
+- `bool burn(double kg)`: takes `kg` out and returns true. If `kg` is negative, or more than remains, it changes nothing and returns false.
+- `bool refill(double kg)`: adds `kg` and returns true. If `kg` is negative, or would take the fuel above the capacity, it changes nothing and returns false.
+- `double remaining() const` and `double capacity() const` report the two numbers.
+
+Keep the data members private, so no code outside the class can break the invariant. Both reporting functions must work on a `const FuelGauge`.
+--- starter
+class FuelGauge {
+public:
+    double capacity_kg;
+    double remaining_kg;
+};
+--- solution
+class FuelGauge {
+public:
+    explicit FuelGauge(double capacity_kg)
+        : capacity_(capacity_kg < 0.0 ? 0.0 : capacity_kg), remaining_(capacity_) {}
+
+    bool burn(double kg) {
+        if (kg < 0.0 || kg > remaining_) return false;
+        remaining_ -= kg;
+        return true;
+    }
+
+    bool refill(double kg) {
+        if (kg < 0.0 || remaining_ + kg > capacity_) return false;
+        remaining_ += kg;
+        return true;
+    }
+
+    double remaining() const { return remaining_; }
+    double capacity() const { return capacity_; }
+
+private:
+    double capacity_;   // never changes after construction
+    double remaining_;  // invariant: 0 <= remaining_ <= capacity_
+};
+--- hint
+Members are initialized in the order they are declared in the class. Declare `capacity_` before `remaining_` if the initializer of one reads the other.
+--- hint
+A function that changes nothing and returns false on bad input is what keeps the invariant: check first, then change.
+--- check test | Starts full, readable through const
+[] { const FuelGauge g{100.0}; return g.remaining() == 100.0 && g.capacity() == 100.0; }()
+--- check test | A normal burn
+[] { FuelGauge g{100.0}; return g.burn(30.0) && g.remaining() == 70.0; }()
+--- check test | Burning more than remains is refused
+[] { FuelGauge g{100.0}; g.burn(30.0); return !g.burn(80.0) && g.remaining() == 70.0; }()
+--- check test | A negative burn is refused
+[] { FuelGauge g{100.0}; return !g.burn(-5.0) && g.remaining() == 100.0; }()
+--- check test | Refill up to the capacity, not beyond
+[] { FuelGauge g{100.0}; g.burn(40.0); bool over = g.refill(50.0); bool exact = g.refill(40.0); return !over && exact && g.remaining() == 100.0; }()
+--- check test | A negative capacity becomes an empty tank
+[] { FuelGauge g{-10.0}; return g.capacity() == 0.0 && g.remaining() == 0.0 && !g.burn(1.0); }()
+
++++ practice | Two teams, two classify functions
+--- task
+The thermal team and the power team each need a function called `classify`. Put each in its own namespace.
+
+In namespace `gnc::health`:
+
+- `enum class Level : std::uint8_t { Nominal, Caution, Warning };`
+- `Level classify(double temp_c)`: below 60 is `Nominal`, from 60 up to but not including 85 is `Caution`, 85 and above is `Warning`.
+- `const char* level_name(Level l)`: returns `"NOMINAL"`, `"CAUTION"` or `"WARNING"`, and `"UNKNOWN"` for any other value.
+
+In namespace `gnc::power`:
+
+- `gnc::health::Level classify(double bus_volts)`: 27 volts and above is `Nominal`, from 26 up to but not including 27 is `Caution`, below 26 is `Warning`.
+--- starter
+#include <cstdint>
+
+enum Level { Nominal, Caution, Warning };
+
+Level classify(double temp_c) {
+    return Nominal;
+}
+--- solution
+#include <cstdint>
+
+namespace gnc::health {
+
+enum class Level : std::uint8_t { Nominal, Caution, Warning };
+
+Level classify(double temp_c) {
+    if (temp_c >= 85.0) return Level::Warning;
+    if (temp_c >= 60.0) return Level::Caution;
+    return Level::Nominal;
+}
+
+const char* level_name(Level l) {
+    switch (l) {
+        case Level::Nominal: return "NOMINAL";
+        case Level::Caution: return "CAUTION";
+        case Level::Warning: return "WARNING";
+    }
+    return "UNKNOWN";  // after the switch, so -Wswitch still checks every case
+}
+
+}  // namespace gnc::health
+
+namespace gnc::power {
+
+gnc::health::Level classify(double bus_volts) {
+    using gnc::health::Level;
+    if (bus_volts >= 27.0) return Level::Nominal;
+    if (bus_volts >= 26.0) return Level::Caution;
+    return Level::Warning;
+}
+
+}  // namespace gnc::power
+--- hint
+`namespace gnc::health { ... }` is the short form of a namespace nested inside another. Names inside it are written `gnc::health::classify` from outside.
+--- hint
+Inside `gnc::power`, the enumeration's full name is `gnc::health::Level`. A using-declaration, `using gnc::health::Level;`, shortens it inside one function.
+--- check test | 59.9 C is nominal
+gnc::health::classify(59.9) == gnc::health::Level::Nominal
+--- check test | 60 C is caution
+gnc::health::classify(60.0) == gnc::health::Level::Caution
+--- check test | 85 C is warning
+gnc::health::classify(85.0) == gnc::health::Level::Warning
+--- check test | 28 V is nominal
+gnc::power::classify(28.0) == gnc::health::Level::Nominal
+--- check test | 26.5 V is caution
+gnc::power::classify(26.5) == gnc::health::Level::Caution
+--- check test | 25 V is warning
+gnc::power::classify(25.0) == gnc::health::Level::Warning
+--- check test | level_name names the level
+std::string(gnc::health::level_name(gnc::health::Level::Caution)) == "CAUTION"
+--- check test | level_name of a corrupt value
+std::string(gnc::health::level_name(static_cast<gnc::health::Level>(9))) == "UNKNOWN"
+
++++ practice | Health that equals a flight mode
+--- task
+`ready_to_deploy` should be true only when the vehicle is coasting **and** its health is `Ok`. It returns false for a healthy coasting vehicle, and true for one whose health has `Failed`. It compiles, with at most a warning, because both enumerations are plain `enum`s.
+
+Fix the comparison. Then turn both enumerations into `enum class`, keeping their names and the order of their enumerators, so that the compiler rejects this kind of mix-up from now on.
+--- starter
+enum Mode { Idle, Ascent, Coast, Entry };
+enum Health { Ok, Degraded, Failed };
+
+// True when the vehicle is coasting and healthy.
+bool ready_to_deploy(Mode m, Health h) {
+    return m == Coast && h == Coast;
+}
+--- solution
+enum class Mode { Idle, Ascent, Coast, Entry };
+enum class Health { Ok, Degraded, Failed };
+
+// True when the vehicle is coasting and healthy.
+bool ready_to_deploy(Mode m, Health h) {
+    return m == Mode::Coast && h == Health::Ok;
+}
+--- hint
+A plain `enum` converts to an integer on its own. `Coast` is 2, and so is `Failed`, so `h == Coast` is really `h == 2`.
+--- hint
+With `enum class`, every enumerator is written with its type's name, `Health::Ok`, and comparing a `Health` with a `Mode` no longer compiles.
+--- check case | Coasting and healthy
+ready_to_deploy(Mode::Coast, Health::Ok)
+=> true
+--- check case | Coasting but failed
+ready_to_deploy(Mode::Coast, Health::Failed)
+=> false
+--- check case | Coasting but degraded
+ready_to_deploy(Mode::Coast, Health::Degraded)
+=> false
+--- check case | Healthy but still ascending
+ready_to_deploy(Mode::Ascent, Health::Ok)
+=> false
+--- check source | Mode is an enum class
+enum\s+class\s+Mode
+--- check source | Health is an enum class
+enum\s+class\s+Health
+
++++ practice | An igniter that refuses bad orders
+--- task
+An engine igniter may only fire when it has been armed, and it has a limited number of starts. Write:
+
+- `enum class IgniterState : std::uint8_t { Safe, Armed, Firing };`
+- a class `Igniter` with:
+  - `explicit Igniter(int max_starts)`: starts in `Safe`, with `max_starts` starts available (a negative number counts as 0);
+  - `bool arm()`: from `Safe`, and only if at least one start is left, goes to `Armed` and returns true; otherwise changes nothing and returns false;
+  - `bool fire()`: from `Armed`, goes to `Firing`, uses up one start, and returns true; otherwise changes nothing and returns false;
+  - `void safe()`: from any state, goes to `Safe`;
+  - `IgniterState state() const` and `int starts_left() const`.
+
+For example, an igniter with 1 start can arm, fire, be made safe, and then refuses to arm again, because no starts are left.
+--- starter
+#include <cstdint>
+
+enum class IgniterState : std::uint8_t { Safe, Armed, Firing };
+
+class Igniter {
+public:
+    explicit Igniter(int max_starts) {}
+    bool arm() { return true; }
+    bool fire() { return true; }
+    void safe() {}
+    IgniterState state() const { return IgniterState::Safe; }
+    int starts_left() const { return 0; }
+};
+--- solution
+#include <cstdint>
+
+enum class IgniterState : std::uint8_t { Safe, Armed, Firing };
+
+class Igniter {
+public:
+    explicit Igniter(int max_starts) : starts_(max_starts < 0 ? 0 : max_starts) {}
+
+    bool arm() {
+        if (state_ != IgniterState::Safe || starts_ == 0) return false;
+        state_ = IgniterState::Armed;
+        return true;
+    }
+
+    bool fire() {
+        if (state_ != IgniterState::Armed) return false;
+        state_ = IgniterState::Firing;
+        --starts_;
+        return true;
+    }
+
+    void safe() { state_ = IgniterState::Safe; }
+
+    IgniterState state() const { return state_; }
+    int starts_left() const { return starts_; }
+
+private:
+    int starts_;
+    IgniterState state_{IgniterState::Safe};
+};
+--- hint
+Each order checks the current state first and returns false without changing anything when the order is not allowed from there.
+--- hint
+Only `fire` uses a start. `arm` checks that one is left, so an igniter with no starts can never reach `Armed`.
+--- check test | A new igniter is safe
+[] { const Igniter ig{2}; return ig.state() == IgniterState::Safe && ig.starts_left() == 2; }()
+--- check test | Arm, then fire
+[] { Igniter ig{2}; bool a = ig.arm(); bool f = ig.fire(); return a && f && ig.state() == IgniterState::Firing && ig.starts_left() == 1; }()
+--- check test | Firing while safe is refused
+[] { Igniter ig{2}; return !ig.fire() && ig.state() == IgniterState::Safe && ig.starts_left() == 2; }()
+--- check test | Arming twice is refused
+[] { Igniter ig{2}; ig.arm(); return !ig.arm() && ig.state() == IgniterState::Armed; }()
+--- check test | No starts left means no arming
+[] { Igniter ig{1}; ig.arm(); ig.fire(); ig.safe(); return !ig.arm() && ig.state() == IgniterState::Safe && ig.starts_left() == 0; }()
+--- check test | Safe from armed, then arm again
+[] { Igniter ig{1}; ig.arm(); ig.safe(); return ig.state() == IgniterState::Safe && ig.arm() && ig.starts_left() == 1; }()
+--- check test | A negative start count counts as zero
+[] { Igniter ig{-3}; return ig.starts_left() == 0 && !ig.arm(); }()
+
++++ question | A leaking enumerator and a one-byte enum
+--- ask
+What does this program print?
+
+```cpp
+#include <cstdint>
+#include <cstdio>
+
+enum Phase { Boost, Coast };
+enum class Gear : std::uint8_t { Up, Down };
+
+int main() {
+    std::printf("%d %zu\n", Coast + 1, sizeof(Gear));
+}
+```
+
+Type the two numbers with a space between them.
+--- answer
+2 1
+2, 1
+--- why
+`Phase` is a plain `enum`, so its enumerators leak into the surrounding scope (you can write `Coast` with no `Phase::`) and convert to `int` without being asked. `Coast` is the second enumerator, numbered 1, so `Coast + 1` is 2. `Gear` is an `enum class` with `std::uint8_t` as its underlying type, so each `Gear` takes exactly one byte. Written `Gear::Up + 1`, the scoped version would not compile at all.
+
+=== cpp01-l11 | Practice: Scope, lifetime and storage
+--- for
+l11-scope-lifetime-and-storage
+
++++ practice | Packet numbers that keep counting
+--- task
+Write `int next_packet_id()` that returns 100 the first time it is called, then 101, then 102, and so on: one more on every call.
+
+Keep the counter inside the function, where no other code can reach it, but make it live for the whole program. Do not use a global variable.
+--- starter
+int next_packet_id() {
+    int id = 100;
+    return id++;
+}
+--- solution
+int next_packet_id() {
+    static int id = 100;  // static storage: set up once, keeps its value between calls
+    return id++;
+}
+--- hint
+An ordinary local is created fresh on every call, so it always starts again at 100.
+--- hint
+A `static` local is initialized once, the first time control reaches it, and lives until the program ends. Its name is still only usable inside the function.
+--- check test | The first call returns 100
+next_packet_id() == 100
+--- check test | The second call returns 101
+next_packet_id() == 101
+--- check test | The third call returns 102
+next_packet_id() == 102
+--- check source absent | No global counter
+^int\s+\w+\s*=
+
++++ practice | Open in order, close in reverse
+--- task
+Write a `struct Guard` that announces its own lifetime:
+
+- a member `const char* name;`
+- a constructor `explicit Guard(const char* n)` that stores `n` and prints `open ` followed by the name and a newline;
+- a destructor `~Guard()` that prints `close ` followed by the name and a newline.
+
+Keep the starter's `main` exactly as it is. The program must then print:
+
+```
+open power
+open valves
+open igniter
+-- fire --
+close igniter
+close valves
+open telemetry
+-- done --
+close telemetry
+close power
+```
+--- starter
+#include <cstdio>
+
+struct Guard {
+    const char* name;
+    explicit Guard(const char* n) : name(n) {}
+};
+
+int main() {
+    Guard power{"power"};
+    {
+        Guard valves{"valves"};
+        Guard igniter{"igniter"};
+        std::printf("-- fire --\n");
+    }
+    Guard telemetry{"telemetry"};
+    std::printf("-- done --\n");
+    return 0;
+}
+--- solution
+#include <cstdio>
+
+struct Guard {
+    const char* name;
+    explicit Guard(const char* n) : name(n) { std::printf("open %s\n", name); }
+    ~Guard() { std::printf("close %s\n", name); }
+};
+
+int main() {
+    Guard power{"power"};
+    {
+        Guard valves{"valves"};
+        Guard igniter{"igniter"};
+        std::printf("-- fire --\n");
+    }
+    Guard telemetry{"telemetry"};
+    std::printf("-- done --\n");
+    return 0;
+}
+--- hint
+A destructor is written `~Guard() { ... }`. It runs by itself when the object's lifetime ends: at the closing brace of its block, for an automatic object.
+--- hint
+Objects in one block are destroyed in reverse order of construction, and the inner block's objects die at the inner closing brace.
+--- check output | Opens and closes in the right order
+open power
+open valves
+open igniter
+-- fire --
+close igniter
+close valves
+open telemetry
+-- done --
+close telemetry
+close power
+
++++ practice | A table built once, on first use
+--- task
+A drag table is expensive to build, so it should be built the first time someone asks for it, and never again. Write:
+
+- `const std::array<double, 6>& drag_table()`: on its first call, builds a table whose entry `i` is `0.2 + 0.05 * i * i`, for `i` from 0 to 5, and returns a reference to it. Every later call returns a reference to the **same** table.
+- `int table_builds()`: returns how many times the table has been built so far.
+
+The checks first ask `table_builds()` before anything has asked for the table, and expect 0. After any number of calls to `drag_table()`, `table_builds()` must be 1. Returning a reference is safe only because the table outlives every call: give it static storage.
+--- starter
+#include <array>
+
+std::array<double, 6> drag_table() {
+    std::array<double, 6> t{};
+    for (int i = 0; i < 6; ++i) t[i] = 0.2 + 0.05 * i * i;
+    return t;
+}
+
+int table_builds() {
+    return 0;
+}
+--- solution
+#include <array>
+#include <cstddef>
+
+namespace {
+int g_builds = 0;  // how many times build_table has run
+
+std::array<double, 6> build_table() {
+    ++g_builds;
+    std::array<double, 6> t{};
+    for (std::size_t i = 0; i < t.size(); ++i) {
+        const double x = static_cast<double>(i);
+        t[i] = 0.2 + 0.05 * x * x;
+    }
+    return t;
+}
+}  // namespace
+
+// Construct on first use: a static local is initialized the first time control reaches it.
+const std::array<double, 6>& drag_table() {
+    static const std::array<double, 6> table = build_table();
+    return table;
+}
+
+int table_builds() {
+    return g_builds;
+}
+--- hint
+A `static` local inside `drag_table` is initialized the first time control reaches its declaration, and only then. That gives both "on first use" and "only once".
+--- hint
+Count the builds in a helper that makes the table, and use that helper as the static local's initializer.
+--- check test | Nothing is built before the first call
+table_builds() == 0
+--- check test | Entry 0 is 0.2
+std::fabs(drag_table()[0] - 0.2) < 1e-12
+--- check test | Entry 3 is 0.65
+std::fabs(drag_table()[3] - 0.65) < 1e-12
+--- check test | Every call returns the same table
+&drag_table() == &drag_table()
+--- check test | Built exactly once
+table_builds() == 1
+
++++ practice | A rate that never takes effect
+--- task
+`set_rate` should set the control period to 1 divided by the rate in Hz, ignoring rates of zero or less, and `period` should report it. The period starts at 0.01 s.
+
+After `set_rate(50.0)`, `period()` still says 0.01 instead of 0.02. The build uses `-Wall -Wextra`, which says nothing about the cause. Find the bug and fix it.
+--- starter
+double g_dt_s = 0.01;  // control period, seconds
+
+// Sets the control period from a rate in Hz. Rates of zero or less are ignored.
+void set_rate(double hz) {
+    if (hz <= 0.0) return;
+    double g_dt_s = 1.0 / hz;
+}
+
+double period() {
+    return g_dt_s;
+}
+--- solution
+double g_dt_s = 0.01;  // control period, seconds
+
+// Sets the control period from a rate in Hz. Rates of zero or less are ignored.
+void set_rate(double hz) {
+    if (hz <= 0.0) return;
+    g_dt_s = 1.0 / hz;  // assign to the global; do not declare a new local
+}
+
+double period() {
+    return g_dt_s;
+}
+--- hint
+Read the last line of `set_rate` as a declaration. What does it create, and when does that die?
+--- hint
+It declares a new local with the same name, which shadows the global and dies at the closing brace. `-Wshadow`, which is not part of `-Wall` or `-Wextra`, warns about exactly this.
+--- check test | Starts at 0.01 s
+period() == 0.01
+--- check test | 50 Hz gives 0.02 s
+[] { set_rate(50.0); return period() == 0.02; }()
+--- check test | A rate of zero is ignored
+[] { set_rate(0.0); return period() == 0.02; }()
+--- check test | 200 Hz gives 0.005 s
+[] { set_rate(200.0); return period() == 0.005; }()
+
++++ practice | Counting what is alive
+--- task
+Write a `struct Busy` whose objects keep count of how many of them are alive. The starter declares two globals:
+
+- `g_active`: how many `Busy` objects exist right now;
+- `g_peak`: the largest value `g_active` has ever reached.
+
+The constructor `Busy()` adds one to `g_active` and raises `g_peak` if needed. The destructor `~Busy()` takes one off `g_active`. This must hold for every kind of lifetime: an object in a block, nested blocks, and an object made with `new` and destroyed with `delete`.
+
+For example, after `{ Busy a; { Busy b; Busy c; } Busy d; }` has finished, `g_active` is 0 and `g_peak` is 3.
+--- starter
+int g_active = 0;
+int g_peak = 0;
+
+struct Busy {
+};
+--- solution
+int g_active = 0;
+int g_peak = 0;
+
+struct Busy {
+    Busy() {
+        ++g_active;
+        if (g_active > g_peak) g_peak = g_active;
+    }
+    ~Busy() { --g_active; }
+};
+--- hint
+The constructor runs when an object's lifetime starts and the destructor when it ends, whatever kind of storage it has.
+--- hint
+After `++g_active`, compare it with `g_peak` and keep the larger.
+--- check test | One object in a block
+[] { Busy a; return g_active == 1; }()
+--- check test | It is gone after its block
+g_active == 0 && g_peak == 1
+--- check test | Nested blocks
+[] { { Busy a; { Busy b; Busy c; } Busy d; } return g_active == 0 && g_peak == 3; }()
+--- check test | An object on the heap lives until delete
+[] { Busy* p = new Busy; int during = g_active; delete p; return during == 1 && g_active == 0; }()
+
++++ question | What outlives the call
+--- ask
+After `make_count` returns, which of the objects marked A, B and C still exist?
+
+```cpp
+int* make_count() {
+    int a = 1;              // A
+    static int b = 2;       // B
+    int* c = new int{3};    // C: the int that c points at
+    ++b;
+    return c;
+}
+```
+--- choice
+Only A, because it was declared first.
+--- choice correct
+B and C: B has static storage and lives for the whole program, and C lives on the heap until someone deletes it.
+--- choice
+Only C, because it is the one that is returned.
+--- choice
+None: every object made inside a function dies when the function returns.
+--- why
+A is automatic: it dies at the closing brace. B is a `static` local: it was set up on the first call and lives until the program ends, even though its name can only be used inside `make_count`. C is dynamic: it lives from `new` until a `delete`, whatever happens to the pointer `c`. The pointer `c` itself is automatic and dies at the brace, but its value was copied out by `return`. If the caller never deletes the int, it leaks.
+
+=== cpp01-l12 | Practice: Strings and formatted output
+--- for
+l12-strings-and-formatted-output
+
++++ practice | A packet label with std::format
+--- task
+Write `std::string packet_label(std::string_view name, int seq)` that returns the source name, a `#`, and the sequence number padded with zeros to at least 4 digits. Use `std::format` from `<format>`.
+
+For example, `packet_label("GNC", 7)` is `"GNC#0007"`, and `packet_label("X", 12345)` is `"X#12345"`: a number with more digits is not cut.
+--- starter
+#include <format>
+#include <string>
+#include <string_view>
+
+std::string packet_label(std::string_view name, int seq) {
+    return std::string(name);
+}
+--- solution
+#include <format>
+#include <string>
+#include <string_view>
+
+std::string packet_label(std::string_view name, int seq) {
+    return std::format("{}#{:04}", name, seq);
+}
+--- hint
+In a format spec, a `0` before the width pads with zeros instead of spaces: `{:04}` gives at least 4 characters.
+--- hint
+`std::format` returns a `std::string`, so you can return it directly. A `std::string_view` argument formats with a plain `{}`.
+--- check case | GNC, 7
+packet_label("GNC", 7)
+=> "GNC#0007"
+--- check case | PROP, 1234
+packet_label("PROP", 1234)
+=> "PROP#1234"
+--- check case | THM, 0
+packet_label("THM", 0)
+=> "THM#0000"
+--- check case | More digits than the width
+packet_label("X", 12345)
+=> "X#12345"
+
++++ practice | A telemetry table
+--- task
+The starter holds three frames and a function that names a mode byte. Print them as a table with `std::format`:
+
+```
+    t_ms | mode     |      az
+     100 | ASCENT   |  -9.810
+    1100 | COAST    |  -0.052
+   12100 | ENTRY    | -31.400
+```
+
+- The time is right-aligned in 8 columns, the mode name left-aligned in 8, and `az` right-aligned in 7 with 3 decimals, separated by ` | `.
+- The header uses the same widths, with the words `t_ms`, `mode` and `az`.
+- Loop over the frames; do not write a line per frame by hand.
+--- starter
+#include <array>
+#include <cstdint>
+#include <format>
+#include <iostream>
+
+struct Frame {
+    std::uint32_t t_ms;
+    std::uint8_t mode;
+    float az;
+};
+
+const char* mode_name(std::uint8_t m) {
+    constexpr const char* kNames[] = {"IDLE", "ASCENT", "COAST", "ENTRY"};
+    return m < 4 ? kNames[m] : "UNKNOWN";
+}
+
+int main() {
+    const std::array<Frame, 3> frames{{{100, 1, -9.81F}, {1100, 2, -0.052F}, {12100, 3, -31.4F}}};
+    return 0;
+}
+--- solution
+#include <array>
+#include <cstdint>
+#include <format>
+#include <iostream>
+
+struct Frame {
+    std::uint32_t t_ms;
+    std::uint8_t mode;
+    float az;
+};
+
+const char* mode_name(std::uint8_t m) {
+    constexpr const char* kNames[] = {"IDLE", "ASCENT", "COAST", "ENTRY"};
+    return m < 4 ? kNames[m] : "UNKNOWN";
+}
+
+int main() {
+    const std::array<Frame, 3> frames{{{100, 1, -9.81F}, {1100, 2, -0.052F}, {12100, 3, -31.4F}}};
+    std::cout << std::format("{:>8} | {:<8} | {:>7}\n", "t_ms", "mode", "az");
+    for (const auto& f : frames) {
+        std::cout << std::format("{:>8} | {:<8} | {:>7.3f}\n", f.t_ms, mode_name(f.mode), f.az);
+    }
+    return 0;
+}
+--- hint
+`{:>8}` right-aligns in 8 columns, `{:<8}` left-aligns, and `{:>7.3f}` right-aligns a number in 7 columns with 3 decimals.
+--- hint
+Use a range-based `for` with `const auto&` over `frames`, and send each formatted line to `std::cout`.
+--- check output | Prints the table
+    t_ms | mode     |      az
+     100 | ASCENT   |  -9.810
+    1100 | COAST    |  -0.052
+   12100 | ENTRY    | -31.400
+--- check source | Uses std::format
+std::format\(
+--- check source | Loops over the frames
+for\s*\(
+
++++ practice | Parse a number field strictly
+--- task
+Write `bool parse_u16(std::string_view s, std::uint16_t& out)` that reads a whole decimal number from `s`.
+
+- If `s` is made only of the digits 0 to 9, holds at least one digit, and the number is at most 65535, it stores the number in `out` and returns true. Leading zeros are fine: `"007"` is 7.
+- Otherwise it returns false and leaves `out` unchanged. That includes an empty field, a sign, a space, any other character, and a number above 65535, however many digits it has.
+
+For example, `"65535"` gives 65535, but `"65536"` and `"99999999999999999999"` are both rejected.
+--- starter
+#include <cstdint>
+#include <string_view>
+
+bool parse_u16(std::string_view s, std::uint16_t& out) {
+    std::uint16_t value = 0;
+    for (char c : s) value = value * 10 + (c - '0');
+    out = value;
+    return true;
+}
+--- solution
+#include <cstdint>
+#include <string_view>
+
+bool parse_u16(std::string_view s, std::uint16_t& out) {
+    if (s.empty()) return false;
+    std::uint32_t value = 0;  // wider than the result, so the range check cannot wrap
+    for (char c : s) {
+        if (c < '0' || c > '9') return false;
+        value = value * 10 + static_cast<std::uint32_t>(c - '0');
+        if (value > 65535) return false;  // stop before it can grow further
+    }
+    out = static_cast<std::uint16_t>(value);
+    return true;
+}
+--- hint
+Build the number in a wider type, such as `std::uint32_t`, and check it against 65535 after every digit, so a long string cannot wrap it back into range.
+--- hint
+Only change `out` at the very end, after every check has passed.
+--- check test | 65535 is accepted
+[] { std::uint16_t v = 1; return parse_u16("65535", v) && v == 65535; }()
+--- check test | Leading zeros are fine
+[] { std::uint16_t v = 1; return parse_u16("007", v) && v == 7; }()
+--- check test | 0 is accepted
+[] { std::uint16_t v = 1; return parse_u16("0", v) && v == 0; }()
+--- check test | 65536 is rejected and out is unchanged
+[] { std::uint16_t v = 42; return !parse_u16("65536", v) && v == 42; }()
+--- check test | A very long number is rejected
+[] { std::uint16_t v = 42; return !parse_u16("99999999999999999999", v) && v == 42; }()
+--- check test | An empty field is rejected
+[] { std::uint16_t v = 42; return !parse_u16("", v) && v == 42; }()
+--- check test | Other characters are rejected
+[] { std::uint16_t v = 42; return !parse_u16("12a", v) && !parse_u16("-5", v) && !parse_u16(" 5", v) && v == 42; }()
+
++++ practice | Two names that never match
+--- task
+`is_mode` compares the mode name received from the radio with the one expected. In tests with two string literals it seemed to work. With names that arrive in a buffer at run time, it always says no, even when the letters are the same.
+
+Fix `is_mode` so it compares the text. Keep both parameters `const char*`.
+--- starter
+// True when the received mode name has the same text as the expected one.
+bool is_mode(const char* got, const char* want) {
+    return got == want;
+}
+--- solution
+#include <cstring>
+
+// True when the received mode name has the same text as the expected one.
+bool is_mode(const char* got, const char* want) {
+    return std::strcmp(got, want) == 0;  // compare the characters, not the addresses
+}
+--- hint
+`==` on two `const char*` compares two addresses: whether both point at the same place, not whether the letters are the same.
+--- hint
+`std::strcmp` from `<cstring>` compares the characters and returns 0 when they match. Converting both to `std::string_view` and comparing those also works.
+--- check test | A buffer holding COAST matches COAST
+[] { char buf[8] = "COAST"; return is_mode(buf, "COAST"); }()
+--- check test | Different names do not match
+[] { char buf[8] = "ENTRY"; return !is_mode(buf, "COAST"); }()
+--- check test | A prefix does not match
+[] { char buf[8] = "COA"; return !is_mode(buf, "COAST"); }()
+--- check test | Two buffers with the same text match
+[] { char a[8] = "IDLE"; char b[8] = "IDLE"; return is_mode(a, b); }()
+
++++ practice | A hex dump with a checksum
+--- task
+Write `std::string hexdump(const std::vector<std::uint8_t>& bytes)` for a ground tool. It returns every byte as two upper-case hexadecimal digits followed by one space, then `| sum=`, then the checksum as two upper-case hexadecimal digits. The checksum is the sum of all the bytes, modulo 256.
+
+For example, the bytes 0x01, 0xFF and 0x10 give `"01 FF 10 | sum=10"`, because 1 + 255 + 16 = 272, and 272 - 256 = 16, which is 0x10. An empty vector gives `"| sum=00"`.
+--- starter
+#include <cstdint>
+#include <format>
+#include <string>
+#include <vector>
+
+std::string hexdump(const std::vector<std::uint8_t>& bytes) {
+    std::string out;
+    for (auto b : bytes) out += b;
+    return out;
+}
+--- solution
+#include <cstdint>
+#include <format>
+#include <string>
+#include <vector>
+
+std::string hexdump(const std::vector<std::uint8_t>& bytes) {
+    std::string out;
+    std::uint8_t sum = 0;
+    for (const auto b : bytes) {
+        out += std::format("{:02X} ", b);  // std::format prints a uint8_t as a number
+        sum = static_cast<std::uint8_t>(sum + b);  // wraps modulo 256, as defined
+    }
+    out += std::format("| sum={:02X}", sum);
+    return out;
+}
+--- hint
+`{:02X}` formats a number in upper-case hexadecimal, padded with zeros to 2 digits. Unlike `std::cout`, `std::format` treats a `std::uint8_t` as a number.
+--- hint
+Keep the running sum in a `std::uint8_t` and store each new sum back into it with a cast: the conversion wraps modulo 256 for you.
+--- check case | Three bytes with a wrapping sum
+hexdump({0x01, 0xFF, 0x10})
+=> "01 FF 10 | sum=10"
+--- check case | One byte
+hexdump({0x0A})
+=> "0A | sum=0A"
+--- check case | A sum that wraps to zero
+hexdump({0x80, 0x80})
+=> "80 80 | sum=00"
+--- check case | An empty vector
+hexdump({})
+=> "| sum=00"
+
++++ question | Reading format specs
+--- ask
+What does this line print?
+
+```cpp
+std::cout << std::format("[{:>6}|{:<4}|{:03}]\n", "ab", "c", 7);
+```
+
+Type the output exactly, brackets included.
+--- answer
+[    ab|c   |007]
+--- why
+`{:>6}` right-aligns `ab` in 6 columns, so four spaces come first. `{:<4}` left-aligns `c` in 4 columns, so three spaces follow it. `{:03}` pads the number 7 with zeros to 3 characters: `007`. The widths are minimums: a longer value would not be cut, only printed wider.
+
+=== cpp01-l13 | Practice: assert and static_assert
+--- for
+l13-assert-and-static-assert
+
++++ practice | A navigation frame the compiler checks
+--- task
+Define `struct NavFrame`, a wire format, with these fields in this order:
+
+| Field | Type |
+| --- | --- |
+| `t_ms` | `std::uint32_t` |
+| `x_m` | `float` |
+| `y_m` | `float` |
+| `seq` | `std::uint16_t` |
+| `mode` | `std::uint8_t` |
+| `flags` | `std::uint8_t` |
+
+Then write `static_assert`s at file scope, so the build stops if anyone changes the layout:
+
+- the frame is exactly 16 bytes;
+- `seq` starts at byte 12 (use `offsetof` from `<cstddef>`);
+- the frame is trivially copyable (use `std::is_trivially_copyable_v` from `<type_traits>`).
+
+Give each one a message that says why it matters.
+--- starter
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
+
+struct NavFrame {
+};
+--- solution
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
+
+struct NavFrame {
+    std::uint32_t t_ms;
+    float x_m;
+    float y_m;
+    std::uint16_t seq;
+    std::uint8_t mode;
+    std::uint8_t flags;
+};
+
+static_assert(sizeof(NavFrame) == 16, "NavFrame size changed: the ground decoder will break");
+static_assert(offsetof(NavFrame, seq) == 12, "NavFrame::seq moved");
+static_assert(std::is_trivially_copyable_v<NavFrame>, "NavFrame must be copyable byte for byte into a packet");
+--- hint
+Add up the sizes: 4 + 4 + 4 + 2 + 1 + 1. Every field starts at a multiple of its own size, so there is no padding.
+--- hint
+`static_assert(condition, "message");` at file scope is checked every time the file is compiled. `offsetof(NavFrame, seq)` is the byte where `seq` starts.
+--- check test | The frame is 16 bytes
+sizeof(NavFrame) == 16
+--- check test | seq starts at byte 12
+offsetof(NavFrame, seq) == 12
+--- check test | flags is the last byte
+offsetof(NavFrame, flags) == 15
+--- check source | Checks the size with static_assert
+static_assert\s*\(\s*sizeof\s*\(\s*NavFrame\s*\)\s*==\s*16
+--- check source | Checks an offset with static_assert
+static_assert\s*\(\s*offsetof\s*\(\s*NavFrame
+--- check source | Checks trivial copyability with static_assert
+static_assert\s*\(\s*std::is_trivially_copyable_v\s*<\s*NavFrame\s*>
+
++++ practice | A sensor that is never armed
+--- task
+This file is built the way a release build is built: it defines `NDEBUG` before including `<cassert>`. It should arm the sensor once and print:
+
+```
+sensor armed 1 time(s)
+```
+
+Instead it prints `sensor armed 0 time(s)`. Fix it. Keep the `#define NDEBUG` line, and keep an `assert` that checks the result of `arm_sensor` for the debug build.
+--- starter
+#define NDEBUG  // this file is built as the release build
+#include <cassert>
+#include <cstdio>
+
+int g_armed = 0;
+
+// Arms the sensor. Returns 0 on success.
+int arm_sensor() {
+    ++g_armed;
+    return 0;
+}
+
+int main() {
+    assert(arm_sensor() == 0);
+    std::printf("sensor armed %d time(s)\n", g_armed);
+    return 0;
+}
+--- solution
+#define NDEBUG  // this file is built as the release build
+#include <cassert>
+#include <cstdio>
+
+int g_armed = 0;
+
+// Arms the sensor. Returns 0 on success.
+int arm_sensor() {
+    ++g_armed;
+    return 0;
+}
+
+int main() {
+    const int rc = arm_sensor();  // the call happens in every build
+    assert(rc == 0);              // only the check disappears under NDEBUG
+    (void)rc;                     // rc is otherwise unused when NDEBUG is defined
+    std::printf("sensor armed %d time(s)\n", g_armed);
+    return 0;
+}
+--- hint
+With `NDEBUG` defined, `assert(...)` becomes an expression that does nothing, and everything written inside the brackets goes with it.
+--- hint
+Call `arm_sensor()` on its own line and keep the result in a variable. Then assert on the variable.
+--- check output | Arms the sensor once
+sensor armed 1 time(s)
+--- check source | Still built as the release build
+#define NDEBUG
+--- check source | Still asserts on the result
+assert\s*\(
+
++++ practice | Samples the world can spoil
+--- task
+Write `bool mean_valid(const std::vector<double>& az, double& out)`. The samples come from a sensor, so they may be bad, and an empty buffer is possible too. These are inputs, not bugs, so handle them with ordinary code, not `assert`:
+
+- Ignore saturated samples: any value of 160 or more, or of -160 or less.
+- If no samples are left (the vector is empty, or every sample is saturated), return false and leave `out` unchanged.
+- Otherwise set `out` to the mean of the samples left, and return true.
+
+For example, for -9.8, 170.0 and -9.6, the mean of the two good samples is -9.7.
+--- starter
+#include <cassert>
+#include <vector>
+
+bool mean_valid(const std::vector<double>& az, double& out) {
+    assert(!az.empty());
+    double sum = 0.0;
+    for (const auto& x : az) sum += x;
+    out = sum / az.size();
+    return true;
+}
+--- solution
+#include <cstddef>
+#include <vector>
+
+bool mean_valid(const std::vector<double>& az, double& out) {
+    double sum = 0.0;
+    std::size_t n = 0;
+    for (const auto& x : az) {
+        if (x >= 160.0 || x <= -160.0) continue;  // saturated: not a measurement
+        sum += x;
+        ++n;
+    }
+    if (n == 0) return false;  // a correct program can meet this: handle it
+    out = sum / static_cast<double>(n);
+    return true;
+}
+--- hint
+Ask whether a correct program can meet the condition. An empty buffer can happen when the sensor sends nothing, so it needs a real check that stays in the release build.
+--- hint
+Count the good samples as you add them, and divide by that count, not by the vector's size.
+--- check test | Ignores a saturated sample
+[] { double m = 0.0; return mean_valid({-9.8, 170.0, -9.6}, m) && std::fabs(m + 9.7) < 1e-12; }()
+--- check test | An empty buffer is refused
+[] { double m = 42.0; return !mean_valid({}, m) && m == 42.0; }()
+--- check test | All saturated is refused
+[] { double m = 42.0; return !mean_valid({165.0, -200.0}, m) && m == 42.0; }()
+--- check test | 160 and -160 count as saturated
+[] { double m = 0.0; return mean_valid({160.0, -160.0, 10.0}, m) && m == 10.0; }()
+--- check test | Just inside the limits counts
+[] { double m = 0.0; return mean_valid({159.0, -159.0}, m) && m == 0.0; }()
+
++++ practice | A record that will not fit its size
+--- task
+An event record must be 8 bytes on the wire, and a `static_assert` says so. The build stops at that line: the record is really 12 bytes, because the compiler put padding between the fields.
+
+Fix it by changing only the **order** of the fields. Keep all four names and types, and keep the `static_assert` as it is.
+--- starter
+#include <cstdint>
+
+struct EventRecord {
+    std::uint8_t code;
+    std::uint32_t t_ms;
+    std::uint8_t severity;
+    std::uint16_t count;
+};
+
+static_assert(sizeof(EventRecord) == 8, "EventRecord must be 8 bytes on the wire");
+--- solution
+#include <cstdint>
+
+// Largest fields first: every field then starts at a multiple of its own size.
+struct EventRecord {
+    std::uint32_t t_ms;
+    std::uint16_t count;
+    std::uint8_t code;
+    std::uint8_t severity;
+};
+
+static_assert(sizeof(EventRecord) == 8, "EventRecord must be 8 bytes on the wire");
+--- hint
+A `std::uint32_t` must start at a byte number divisible by 4. After a single byte, the compiler inserts 3 bytes of padding to get there.
+--- hint
+Put the fields in order from largest to smallest.
+--- check test | The record is 8 bytes
+sizeof(EventRecord) == 8
+--- check test | The field types are unchanged
+sizeof(EventRecord::code) == 1 && sizeof(EventRecord::t_ms) == 4 && sizeof(EventRecord::severity) == 1 && sizeof(EventRecord::count) == 2
+--- check test | t_ms is still unsigned
+static_cast<decltype(EventRecord::t_ms)>(-1) > 0
+--- check source | The static_assert is still there
+static_assert\(sizeof\(EventRecord\) == 8, "EventRecord must be 8 bytes on the wire"\);
+
++++ practice | A check that survives the release build
+--- task
+Write a macro for flight functions that return `bool`:
+
+`REQUIRE(cond, code)`: if `cond` is false, it sets the global `g_last_fault` to `code`, adds one to `g_fault_count`, and makes the function it is used in return `false`. If `cond` is true, it does nothing.
+
+- It must still work in this file, which defines `NDEBUG`: do not build it on `assert`.
+- It must behave as **one statement**, so that `if (x) REQUIRE(ok, 1); else y = 2;` compiles and pairs the `else` correctly.
+
+Then write `bool set_throttle(double u)`, which requires `u >= 0.0` (fault code 11) and `u <= 1.0` (fault code 12), then stores `u` in `g_throttle` and returns true.
+--- starter
+#define NDEBUG
+#include <cassert>
+
+int g_last_fault = 0;
+int g_fault_count = 0;
+double g_throttle = 0.0;
+
+#define REQUIRE(cond, code) assert(cond)
+
+bool set_throttle(double u) {
+    return false;
+}
+--- solution
+#define NDEBUG
+
+int g_last_fault = 0;
+int g_fault_count = 0;
+double g_throttle = 0.0;
+
+// Always compiled in, records a fault code, and takes a defined action: return false.
+// do { ... } while (false) makes the whole macro one statement.
+#define REQUIRE(cond, code)          \
+    do {                             \
+        if (!(cond)) {               \
+            g_last_fault = (code);   \
+            ++g_fault_count;         \
+            return false;            \
+        }                            \
+    } while (false)
+
+bool set_throttle(double u) {
+    REQUIRE(u >= 0.0, 11);
+    REQUIRE(u <= 1.0, 12);
+    g_throttle = u;
+    return true;
+}
+--- hint
+A macro that spans several lines ends each line but the last with a backslash. Put brackets around `cond` inside it, so `!(cond)` negates the whole condition.
+--- hint
+Wrap the body in `do { ... } while (false)`. It runs once, and it turns the macro into a single statement that needs exactly one semicolon after it.
+--- check test | A good command is stored
+set_throttle(0.6) && g_throttle == 0.6 && g_fault_count == 0
+--- check test | Too high: fault 12, nothing stored
+!set_throttle(1.5) && g_last_fault == 12 && g_fault_count == 1 && g_throttle == 0.6
+--- check test | Too low: fault 11
+!set_throttle(-0.1) && g_last_fault == 11 && g_fault_count == 2
+--- check test | Works as one statement under if and else
+[] { bool ok = true; if (ok) REQUIRE(1 + 1 == 2, 99); else return false; return g_fault_count == 2; }()
+
++++ question | Assert, or real code
+--- ask
+Which of these conditions should flight software check with real code that stays in the release build, rather than with `assert`?
+--- choice
+A loop index reaching past the end of a fixed array the same function filled.
+--- choice
+A private helper receiving a null pointer from the one function in its file that calls it.
+--- choice correct
+An uplinked command whose checksum does not match its contents.
+--- choice
+A class invariant that every public member function is written to keep.
+--- why
+The test is whether a correct program can meet the condition. A corrupted uplink is something the radio link does to a correct program, so it needs handling that survives `-DNDEBUG`: reject the command, record a fault, carry on. The other three are true unless the program itself has a bug, which is exactly what an assertion writes down and checks while you develop, for free. A checksum checked only by `assert` would not be checked at all in the build that flies.
+
+=== cpp01-test | C++ fundamentals and the build pipeline: module test
+--- teach
+The test covers the whole module: the build pipeline and what each stage can report, translation units and the one-definition rule, linker errors and Makefiles, fixed-width types, promotion and conversion, values and references, `const` and `constexpr`, overloading and default arguments, the three kinds of array, classes and `enum class`, lifetimes, strings and `std::format`, and assertions. Its ten problems are new, most of them combine several lessons, and there are no hints. Twelve questions after them check that you know why the code and the tools behave as they do. To get ready, redo without hints the practice problems of the lessons that felt hardest, and reread the check-yourself answers of lessons 03, 05, 06 and 11.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | The mean of a long run of readings
+--- task
+Write `std::int32_t mean_i16(const std::vector<std::int16_t>& v)` that returns the mean of the readings, as a whole number rounded toward zero (the way whole-number division rounds). For an empty vector it returns 0.
+
+It must be exact for every input up to a million readings, each anywhere in the full range of `std::int16_t`, from -32768 to 32767. For example, `mean_i16({100, 200, 301})` is 200, and `mean_i16({-3, -4})` is -3.
+--- starter
+#include <cstdint>
+#include <vector>
+
+std::int32_t mean_i16(const std::vector<std::int16_t>& v) {
+    return 0;
+}
+--- solution
+#include <cstdint>
+#include <vector>
+
+std::int32_t mean_i16(const std::vector<std::int16_t>& v) {
+    if (v.empty()) return 0;
+    // A million readings of 32767 add up to about 3.3e10: too big for int32_t,
+    // and signed overflow is undefined. Add in 64 bits.
+    std::int64_t sum = 0;
+    for (const auto x : v) sum += x;
+    return static_cast<std::int32_t>(sum / static_cast<std::int64_t>(v.size()));
+}
+--- check case | Three readings
+mean_i16({100, 200, 301})
+=> 200
+--- check case | Rounds toward zero for a negative mean
+mean_i16({-3, -4})
+=> -3
+--- check case | An empty vector
+mean_i16({})
+=> 0
+--- check case | A hundred thousand maximum readings
+mean_i16(std::vector<std::int16_t>(100000, 32767))
+=> 32767
+--- check case | A million minimum readings
+mean_i16(std::vector<std::int16_t>(1000000, -32768))
+=> -32768
+--- check case | Extremes that cancel
+mean_i16({32767, -32768, 32767, -32768})
+=> 0
+
++++ problem | Which mode changes are allowed
+--- task
+An engine controller has four modes. Write:
+
+- `enum class Mode : std::uint8_t { Safe, Standby, Armed, Firing, Count };` where `Count` is not a mode but the number of modes;
+- a table of names, `constexpr const char* kModeNames[]`, holding `"SAFE"`, `"STANDBY"`, `"ARMED"` and `"FIRING"`, and a `static_assert` that the table has exactly as many entries as `Mode::Count` says;
+- `const char* mode_name(Mode m)`: the name from the table, or `"INVALID"` for `Count` or any other value that is not a mode;
+- `bool allowed(Mode from, Mode to)`, following these rules in order:
+  1. if either mode is not a real mode (`Count` or any other value), false;
+  2. staying in the same mode, true;
+  3. from `Safe`, only to `Standby`; from `Standby`, to `Safe` or `Armed`; from `Armed`, to any other mode; from `Firing`, only to `Safe`.
+--- starter
+#include <cstdint>
+
+enum class Mode : std::uint8_t { Safe, Standby, Armed, Firing, Count };
+
+const char* mode_name(Mode m) {
+    return "";
+}
+
+bool allowed(Mode from, Mode to) {
+    return true;
+}
+--- solution
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+
+enum class Mode : std::uint8_t { Safe, Standby, Armed, Firing, Count };
+
+constexpr const char* kModeNames[] = {"SAFE", "STANDBY", "ARMED", "FIRING"};
+static_assert(std::size(kModeNames) == static_cast<std::size_t>(Mode::Count),
+              "kModeNames is out of step with enum class Mode");
+
+// A byte cast to Mode may hold anything: check before trusting it.
+bool is_mode(Mode m) {
+    return static_cast<std::size_t>(m) < static_cast<std::size_t>(Mode::Count);
+}
+
+const char* mode_name(Mode m) {
+    return is_mode(m) ? kModeNames[static_cast<std::size_t>(m)] : "INVALID";
+}
+
+bool allowed(Mode from, Mode to) {
+    if (!is_mode(from) || !is_mode(to)) return false;
+    if (from == to) return true;
+    switch (from) {
+        case Mode::Safe:    return to == Mode::Standby;
+        case Mode::Standby: return to == Mode::Safe || to == Mode::Armed;
+        case Mode::Armed:   return true;  // Safe, Standby or Firing
+        case Mode::Firing:  return to == Mode::Safe;
+        case Mode::Count:   break;
+    }
+    return false;
+}
+--- check test | A Mode is one byte
+sizeof(Mode) == 1
+--- check case | Safe to Armed skips Standby
+allowed(Mode::Safe, Mode::Armed)
+=> false
+--- check case | Standby to Armed
+allowed(Mode::Standby, Mode::Armed)
+=> true
+--- check case | Armed to Safe
+allowed(Mode::Armed, Mode::Safe)
+=> true
+--- check case | Firing to Standby is refused
+allowed(Mode::Firing, Mode::Standby)
+=> false
+--- check case | Firing to Safe
+allowed(Mode::Firing, Mode::Safe)
+=> true
+--- check case | Staying armed
+allowed(Mode::Armed, Mode::Armed)
+=> true
+--- check test | Count is never a mode, even to itself
+!allowed(Mode::Count, Mode::Count) && !allowed(Mode::Safe, Mode::Count) && !allowed(Mode::Count, Mode::Safe)
+--- check test | A corrupt byte is never a mode
+!allowed(static_cast<Mode>(9), Mode::Safe) && !allowed(Mode::Armed, static_cast<Mode>(200))
+--- check test | mode_name names every mode
+std::string(mode_name(Mode::Safe)) == "SAFE" && std::string(mode_name(Mode::Firing)) == "FIRING"
+--- check test | mode_name of values that are not modes
+std::string(mode_name(Mode::Count)) == "INVALID" && std::string(mode_name(static_cast<Mode>(77))) == "INVALID"
+--- check source | The table's length is checked against Count
+static_assert\s*\([^;]*kModeNames[^;]*Count|static_assert\s*\([^;]*Count[^;]*kModeNames
+
++++ problem | A clamp that clamps nothing
+--- task
+`clamp_all` should limit every command in the vector to the range from `-limit` to `+limit`, in place. `limit` is never above 1000. For example, the commands 5, -7, 12, -20 and 0 with a limit of 10 should become 5, -7, 10, -10 and 0.
+
+It compiles, but the vector comes back unchanged. Fix `clamp_all` so it is correct for every command, negative ones included. Keep its signature as it is.
+--- starter
+#include <vector>
+
+// Limits every command to the range -limit to +limit, in place.
+void clamp_all(std::vector<int>& cmds, unsigned limit) {
+    for (auto c : cmds) {
+        if (c > limit) c = limit;
+        if (c < -limit) c = -limit;
+    }
+}
+--- solution
+#include <vector>
+
+// Limits every command to the range -limit to +limit, in place.
+void clamp_all(std::vector<int>& cmds, unsigned limit) {
+    const int lim = static_cast<int>(limit);  // compare int with int, never with unsigned
+    for (auto& c : cmds) {                    // an alias, so the change reaches the vector
+        if (c > lim) c = lim;
+        if (c < -lim) c = -lim;
+    }
+}
+--- check test | The example commands
+[] { std::vector<int> v{5, -7, 12, -20, 0}; clamp_all(v, 10); return v == std::vector<int>{5, -7, 10, -10, 0}; }()
+--- check test | Values exactly at the limits stay
+[] { std::vector<int> v{10, -10}; clamp_all(v, 10); return v == std::vector<int>{10, -10}; }()
+--- check test | Small negative values stay
+[] { std::vector<int> v{-1, -3}; clamp_all(v, 10); return v == std::vector<int>{-1, -3}; }()
+--- check test | A limit of zero zeroes everything
+[] { std::vector<int> v{4, -4, 0}; clamp_all(v, 0); return v == std::vector<int>{0, 0, 0}; }()
+--- check test | An empty vector
+[] { std::vector<int> v; clamp_all(v, 5); return v.empty(); }()
+
++++ problem | When to start braking
+--- task
+A landing sequencer moves through three phases. Write:
+
+- `enum class Phase { Coast, Braking, Landed };`
+- `constexpr double kG0 = 9.80665;`
+- `constexpr double stop_distance(double v, double decel_g)`, returning v² / (2 × decel_g × g0). It must be usable at compile time.
+- `Phase next_phase(Phase p, double alt_m, double v_mps, double decel_g, double margin = 1.2)`, the phase for the next cycle:
+  - if `decel_g` is zero or negative, the vehicle cannot brake, and the phase does not change;
+  - from `Coast`, go to `Braking` once `alt_m` is at or below `margin` times the stop distance for `v_mps` and `decel_g`; otherwise stay in `Coast`;
+  - from `Braking`, go to `Landed` once `alt_m` is at or below 0.5 **and** `v_mps` is at or below 1.0; otherwise stay in `Braking`;
+  - `Landed` stays `Landed`.
+
+For example, at 200 m/s and 3 g the stop distance is about 679.8 m, so with the default margin a coasting vehicle starts braking at about 815.8 m.
+--- starter
+enum class Phase { Coast, Braking, Landed };
+
+Phase next_phase(Phase p, double alt_m, double v_mps, double decel_g, double margin) {
+    return p;
+}
+--- solution
+enum class Phase { Coast, Braking, Landed };
+
+constexpr double kG0 = 9.80665;  // standard gravity, m/s^2
+
+constexpr double stop_distance(double v, double decel_g) {
+    return v * v / (2.0 * decel_g * kG0);
+}
+
+Phase next_phase(Phase p, double alt_m, double v_mps, double decel_g, double margin = 1.2) {
+    if (decel_g <= 0.0) return p;  // cannot brake: no stop distance exists
+    switch (p) {
+        case Phase::Coast:
+            return (alt_m <= margin * stop_distance(v_mps, decel_g)) ? Phase::Braking : Phase::Coast;
+        case Phase::Braking:
+            return (alt_m <= 0.5 && v_mps <= 1.0) ? Phase::Landed : Phase::Braking;
+        case Phase::Landed:
+            return Phase::Landed;
+    }
+    return p;
+}
+--- check test | stop_distance works at compile time
+[] { constexpr double d = stop_distance(100.0, 1.0); return d > 509.85 && d < 509.87; }()
+--- check test | Too high to start braking
+next_phase(Phase::Coast, 900.0, 200.0, 3.0) == Phase::Coast
+--- check test | Low enough, with the default margin
+next_phase(Phase::Coast, 800.0, 200.0, 3.0) == Phase::Braking
+--- check test | The same height with no margin is still too high
+next_phase(Phase::Coast, 800.0, 200.0, 3.0, 1.0) == Phase::Coast
+--- check test | Down and slow: landed
+next_phase(Phase::Braking, 0.4, 0.8, 3.0) == Phase::Landed
+--- check test | Down but still fast: keep braking
+next_phase(Phase::Braking, 0.4, 2.0, 3.0) == Phase::Braking
+--- check test | Slow but still high: keep braking
+next_phase(Phase::Braking, 3.0, 0.5, 3.0) == Phase::Braking
+--- check test | Landed stays landed
+next_phase(Phase::Landed, 500.0, 50.0, 3.0) == Phase::Landed
+--- check test | No deceleration means no change
+next_phase(Phase::Coast, 10.0, 50.0, 0.0) == Phase::Coast && next_phase(Phase::Braking, 0.1, 0.1, -1.0) == Phase::Braking
+
++++ problem | Split a telemetry line
+--- task
+Write `std::vector<std::string> split(std::string_view line, char sep)` that cuts a line into the fields between separators, the way Python's `str.split(sep)` does:
+
+- `split("a,b,c", ',')` is `{"a", "b", "c"}`;
+- an empty field between two separators is kept: `split("a,,b", ',')` is `{"a", "", "b"}`;
+- a separator at the end gives an empty last field: `split("a,", ',')` is `{"a", ""}`;
+- a line with no separator is one field, and an empty line is one empty field: `split("", ',')` is `{""}`.
+--- starter
+#include <string>
+#include <string_view>
+#include <vector>
+
+std::vector<std::string> split(std::string_view line, char sep) {
+    return {};
+}
+--- solution
+#include <cstddef>
+#include <string>
+#include <string_view>
+#include <vector>
+
+std::vector<std::string> split(std::string_view line, char sep) {
+    std::vector<std::string> out;
+    std::size_t start = 0;  // where the current field begins
+    for (std::size_t i = 0; i < line.size(); ++i) {
+        if (line[i] == sep) {
+            out.push_back(std::string(line.substr(start, i - start)));
+            start = i + 1;
+        }
+    }
+    out.push_back(std::string(line.substr(start)));  // the last field, possibly empty
+    return out;
+}
+--- check case | Three fields
+split("a,b,c", ',')
+=> std::vector<std::string>{"a", "b", "c"}
+--- check case | An empty field in the middle
+split("a,,b", ',')
+=> std::vector<std::string>{"a", "", "b"}
+--- check case | A separator at the end
+split("a,", ',')
+=> std::vector<std::string>{"a", ""}
+--- check case | Only a separator
+split(",", ',')
+=> std::vector<std::string>{"", ""}
+--- check case | No separator
+split("COAST", ',')
+=> std::vector<std::string>{"COAST"}
+--- check case | An empty line
+split("", ',')
+=> std::vector<std::string>{""}
+--- check case | Longer fields with another separator
+split("t=100;mode=2;az=-9.81", ';')
+=> std::vector<std::string>{"t=100", "mode=2", "az=-9.81"}
+
++++ problem | One report line per frame
+--- task
+The starter defines a frame. Write `std::string report(const Frame& f)` that turns it into one log line with `std::format`, in this exact layout:
+
+```
+T+000123.456 COAST   az=  -9.810 flags=0x05
+```
+
+- `T+`, then the time in seconds (`t_ms` divided by 1000.0) with 3 decimals, padded with zeros to at least 10 characters;
+- one space, then the mode name left-aligned in 7 characters: `IDLE`, `ASCENT`, `COAST` or `ENTRY`, or `?` for any other mode value;
+- one space, `az=`, then `az` right-aligned in 8 characters with 3 decimals;
+- one space, `flags=0x`, then `flags` as two upper-case hexadecimal digits.
+
+The line above is the frame `{123456, Mode::Coast, 5, -9.81F}`.
+--- starter
+#include <cstdint>
+#include <format>
+#include <string>
+
+enum class Mode : std::uint8_t { Idle, Ascent, Coast, Entry };
+
+struct Frame {
+    std::uint32_t t_ms;
+    Mode mode;
+    std::uint8_t flags;
+    float az;
+};
+
+std::string report(const Frame& f) {
+    return "";
+}
+--- solution
+#include <cstddef>
+#include <cstdint>
+#include <format>
+#include <string>
+
+enum class Mode : std::uint8_t { Idle, Ascent, Coast, Entry };
+
+struct Frame {
+    std::uint32_t t_ms;
+    Mode mode;
+    std::uint8_t flags;
+    float az;
+};
+
+const char* mode_name(Mode m) {
+    constexpr const char* kNames[] = {"IDLE", "ASCENT", "COAST", "ENTRY"};
+    const auto i = static_cast<std::size_t>(m);
+    return i < 4 ? kNames[i] : "?";
+}
+
+std::string report(const Frame& f) {
+    return std::format("T+{:010.3f} {:<7} az={:8.3f} flags=0x{:02X}",
+                       f.t_ms / 1000.0, mode_name(f.mode), f.az, f.flags);
+}
+--- check case | The example frame
+report(Frame{123456, Mode::Coast, 5, -9.81F})
+=> "T+000123.456 COAST   az=  -9.810 flags=0x05"
+--- check case | A short time and a positive az
+report(Frame{5, Mode::Ascent, 0xA0, 12.5F})
+=> "T+000000.005 ASCENT  az=  12.500 flags=0xA0"
+--- check case | The flags print as hex digits, not a character
+report(Frame{60000, Mode::Idle, 65, 0.0F})
+=> "T+000060.000 IDLE    az=   0.000 flags=0x41"
+--- check case | An unknown mode and the largest time
+report(Frame{4294967295u, static_cast<Mode>(7), 255, -123.4567F})
+=> "T+4294967.295 ?       az=-123.457 flags=0xFF"
+
++++ problem | A ring buffer sized by its budget
+--- task
+A sample ring and its 64-byte header must share a 4096-byte memory budget. Let the compiler do the sums and check them. Write, at file scope:
+
+- `struct Sample` holding a `std::uint32_t t_ms` and three `float`s, `ax`, `ay` and `az`, in that order;
+- `constexpr std::size_t frames_that_fit(std::size_t budget_bytes, std::size_t frame_bytes)`: how many whole frames fit in the budget, or 0 when `frame_bytes` is 0;
+- `constexpr std::size_t kBudget = 4096;` and `constexpr std::size_t kHeaderBytes = 64;`
+- a `static_assert` that the header fits within the budget, because the subtraction below would otherwise wrap;
+- `constexpr std::size_t kRingLen`, the number of samples that fit in what the header leaves, worked out with `frames_that_fit`;
+- `std::array<Sample, kRingLen> g_ring{};`
+- a `static_assert` that the ring plus the header fit within the budget.
+--- starter
+#include <array>
+#include <cstddef>
+#include <cstdint>
+
+struct Sample {
+    std::uint32_t t_ms;
+    float ax, ay, az;
+};
+--- solution
+#include <array>
+#include <cstddef>
+#include <cstdint>
+
+struct Sample {
+    std::uint32_t t_ms;
+    float ax, ay, az;
+};
+
+constexpr std::size_t frames_that_fit(std::size_t budget_bytes, std::size_t frame_bytes) {
+    return frame_bytes == 0 ? 0 : budget_bytes / frame_bytes;
+}
+
+constexpr std::size_t kBudget = 4096;
+constexpr std::size_t kHeaderBytes = 64;
+static_assert(kHeaderBytes <= kBudget, "the header alone exceeds the budget");
+
+constexpr std::size_t kRingLen = frames_that_fit(kBudget - kHeaderBytes, sizeof(Sample));
+std::array<Sample, kRingLen> g_ring{};
+
+static_assert(sizeof(g_ring) + kHeaderBytes <= kBudget, "sample ring and header exceed the budget");
+--- check test | kRingLen is 252
+kRingLen == 252
+--- check test | The ring holds kRingLen samples
+g_ring.size() == 252 && sizeof(g_ring) == 252 * sizeof(Sample)
+--- check test | Ring and header fit the budget
+sizeof(g_ring) + kHeaderBytes <= kBudget
+--- check case | 100 bytes of 16-byte frames
+frames_that_fit(100, 16)
+=> 6u
+--- check case | A frame bigger than the budget
+frames_that_fit(15, 16)
+=> 0u
+--- check case | A zero-byte frame
+frames_that_fit(100, 0)
+=> 0u
+--- check test | frames_that_fit works at compile time
+std::array<int, frames_that_fit(64, 8)>{}.size() == 8
+--- check source | A static_assert relates the header and the budget
+static_assert\s*\([^;]*kHeaderBytes[^;]*kBudget|static_assert\s*\([^;]*kBudget[^;]*kHeaderBytes
+
++++ problem | Make the telemetry module link
+--- task
+This file holds a small telemetry module: a header part, then a source part. The build stops at the link step with **three** undefined references. Once it links, one of the functions still gives wrong answers for some inputs.
+
+Fix the source part so the program links and every function does what its comment in the header says. Do not change the header part.
+
+`ring_distance(from, to, cap)` is the number of steps forward from slot `from` to slot `to` in a ring of `cap` slots, where both slots are below `cap`. For example, in a ring of 10, from 2 to 6 is 4 steps, and from 6 to 2 is 6 steps.
+--- starter
+#include <cstddef>
+#include <cstdint>
+
+// ---- tlm.hpp ----
+namespace tlm {
+struct Frame {
+    std::uint16_t len;
+    std::uint8_t sum;
+};
+extern int g_frames_sent;
+// Steps forward from slot `from` to slot `to` in a ring of `cap` slots (both below cap).
+std::size_t ring_distance(std::size_t from, std::size_t to, std::size_t cap);
+// A frame is acceptable when its length is 1 to 1024 bytes.
+bool frame_ok(const Frame& f);
+// Counts n more frames sent and returns the new total.
+int add_sent(int n);
+}  // namespace tlm
+
+// ---- tlm.cpp ----
+std::size_t ring_distance(std::size_t from, std::size_t to, std::size_t cap) {
+    return (to - from) % cap;
+}
+
+namespace tlm {
+bool frame_ok(Frame& f) {
+    return f.len >= 1 && f.len <= 1024;
+}
+
+int add_sent(int n) {
+    g_frames_sent += n;
+    return g_frames_sent;
+}
+}  // namespace tlm
+--- solution
+#include <cstddef>
+#include <cstdint>
+
+// ---- tlm.hpp ----
+namespace tlm {
+struct Frame {
+    std::uint16_t len;
+    std::uint8_t sum;
+};
+extern int g_frames_sent;
+// Steps forward from slot `from` to slot `to` in a ring of `cap` slots (both below cap).
+std::size_t ring_distance(std::size_t from, std::size_t to, std::size_t cap);
+// A frame is acceptable when its length is 1 to 1024 bytes.
+bool frame_ok(const Frame& f);
+// Counts n more frames sent and returns the new total.
+int add_sent(int n);
+}  // namespace tlm
+
+// ---- tlm.cpp ----
+namespace tlm {
+
+int g_frames_sent = 0;  // the one definition of the declared variable
+
+// Inside the namespace, so it defines tlm::ring_distance. Unsigned subtraction
+// must not go below zero: when to is behind from, go the long way round.
+std::size_t ring_distance(std::size_t from, std::size_t to, std::size_t cap) {
+    return (to >= from) ? to - from : cap - (from - to);
+}
+
+// const Frame&, exactly as declared: otherwise it is a different overload.
+bool frame_ok(const Frame& f) {
+    return f.len >= 1 && f.len <= 1024;
+}
+
+int add_sent(int n) {
+    g_frames_sent += n;
+    return g_frames_sent;
+}
+
+}  // namespace tlm
+--- check case | Forward from 2 to 6 in a ring of 10
+tlm::ring_distance(2, 6, 10)
+=> 4u
+--- check case | From 6 round to 2 in a ring of 10
+tlm::ring_distance(6, 2, 10)
+=> 6u
+--- check case | From the last slot to the first
+tlm::ring_distance(9, 0, 10)
+=> 1u
+--- check case | The same slot
+tlm::ring_distance(3, 3, 10)
+=> 0u
+--- check case | A frame of 1024 bytes is acceptable
+tlm::frame_ok(tlm::Frame{1024, 0})
+=> true
+--- check case | An empty frame is not
+tlm::frame_ok(tlm::Frame{0, 0})
+=> false
+--- check case | 1025 bytes is too long
+tlm::frame_ok(tlm::Frame{1025, 7})
+=> false
+--- check test | add_sent keeps a running total
+tlm::add_sent(3) == 3 && tlm::add_sent(2) == 5 && tlm::g_frames_sent == 5
+--- check source | The header part is unchanged
+extern int g_frames_sent;\s*\n// Steps forward[^\n]*\nstd::size_t ring_distance\(std::size_t from, std::size_t to, std::size_t cap\);\s*\n// A frame[^\n]*\nbool frame_ok\(const Frame& f\);
+
++++ problem | Quarantine the worst sensor
+--- task
+Four accelerometers each report a bias. The starter defines `struct Sensor`. Write:
+
+- `Sensor& worst(std::array<Sensor, 4>& s)`: a **reference** to the healthy sensor whose bias is largest in size (a bias of -0.5 is larger than one of 0.3), the earliest one on a tie. Unhealthy sensors are never chosen. If no sensor is healthy, return a reference to `s[0]`.
+- `int quarantine_worst(std::array<Sensor, 4>& s, double max_bias)`: find the worst healthy sensor. If its bias is larger in size than `max_bias`, mark it unhealthy in the caller's array and return its `id`. Otherwise, including when no sensor is healthy, change nothing and return -1.
+--- starter
+#include <array>
+
+struct Sensor {
+    int id;
+    double bias;
+    bool healthy;
+};
+
+Sensor& worst(std::array<Sensor, 4>& s) {
+    return s[0];
+}
+
+int quarantine_worst(std::array<Sensor, 4>& s, double max_bias) {
+    return -1;
+}
+--- solution
+#include <array>
+#include <cmath>
+#include <cstddef>
+
+struct Sensor {
+    int id;
+    double bias;
+    bool healthy;
+};
+
+Sensor& worst(std::array<Sensor, 4>& s) {
+    std::size_t pick = s.size();  // s.size() means none found yet
+    for (std::size_t i = 0; i < s.size(); ++i) {
+        if (!s[i].healthy) continue;
+        if (pick == s.size() || std::fabs(s[i].bias) > std::fabs(s[pick].bias)) pick = i;
+    }
+    return pick == s.size() ? s[0] : s[pick];
+}
+
+int quarantine_worst(std::array<Sensor, 4>& s, double max_bias) {
+    Sensor& w = worst(s);  // a reference: marking it marks the element in the array
+    if (!w.healthy || std::fabs(w.bias) <= max_bias) return -1;
+    w.healthy = false;
+    return w.id;
+}
+--- check test | worst skips an unhealthy sensor with a bigger bias
+[] { std::array<Sensor, 4> s{{{1, 0.1, true}, {2, -0.5, true}, {3, 0.9, false}, {4, 0.3, true}}}; return &worst(s) == &s[1]; }()
+--- check test | worst takes the earliest on a tie
+[] { std::array<Sensor, 4> s{{{1, 0.2, true}, {2, -0.4, true}, {3, 0.4, true}, {4, 0.1, true}}}; return &worst(s) == &s[1]; }()
+--- check test | worst with no healthy sensor is s[0]
+[] { std::array<Sensor, 4> s{{{1, 0.2, false}, {2, 0.4, false}, {3, 0.4, false}, {4, 0.1, false}}}; return &worst(s) == &s[0]; }()
+--- check test | Quarantines the worst and returns its id
+[] { std::array<Sensor, 4> s{{{1, 0.1, true}, {2, -0.5, true}, {3, 0.9, false}, {4, 0.3, true}}}; int id = quarantine_worst(s, 0.2); return id == 2 && !s[1].healthy && s[0].healthy && s[3].healthy; }()
+--- check test | A second call takes the next worst
+[] { std::array<Sensor, 4> s{{{1, 0.1, true}, {2, -0.5, true}, {3, 0.9, false}, {4, 0.3, true}}}; quarantine_worst(s, 0.2); int id = quarantine_worst(s, 0.2); return id == 4 && !s[3].healthy && s[0].healthy; }()
+--- check test | Within the limit, nothing changes
+[] { std::array<Sensor, 4> s{{{1, 0.1, true}, {2, -0.5, true}, {3, 0.9, false}, {4, 0.3, true}}}; int id = quarantine_worst(s, 0.5); return id == -1 && s[1].healthy; }()
+--- check test | No healthy sensor, nothing changes
+[] { std::array<Sensor, 4> s{{{1, 5.0, false}, {2, 5.0, false}, {3, 5.0, false}, {4, 5.0, false}}}; return quarantine_worst(s, 0.1) == -1 && !s[0].healthy; }()
+
++++ problem | One fault log for the whole program
+--- task
+Write a fault log that the whole program shares.
+
+- `enum class Fault : std::uint8_t { Overtemp, Undervolt, CommLoss, Count };`
+- a class `FaultLog` with:
+  - `void record(Fault f, std::uint32_t t_ms)`: counts one occurrence of `f` at time `t_ms`. A value that is not a real fault (`Count`, or anything beyond) is ignored.
+  - `int count(Fault f) const`: how many times `f` was recorded; 0 for a value that is not a real fault.
+  - `std::uint32_t first_time(Fault f) const`: the time of the first record of `f`; 0 if it was never recorded or is not a real fault.
+  - `int total() const`: how many records were counted, over all faults.
+- `FaultLog& fault_log()`: returns the one log every caller shares. Construct it on first use, inside the function, so it is ready whenever anyone asks for it.
+
+Size the log's storage from `Fault::Count`, so a new fault cannot be forgotten. A `FaultLog` made separately, as a local, is an independent log.
+--- starter
+#include <cstdint>
+
+enum class Fault : std::uint8_t { Overtemp, Undervolt, CommLoss, Count };
+
+class FaultLog {
+public:
+    void record(Fault f, std::uint32_t t_ms) {}
+    int count(Fault f) const { return 0; }
+    std::uint32_t first_time(Fault f) const { return 0; }
+    int total() const { return 0; }
+};
+
+FaultLog g_log;
+
+FaultLog& fault_log() {
+    return g_log;
+}
+--- solution
+#include <array>
+#include <cstddef>
+#include <cstdint>
+
+enum class Fault : std::uint8_t { Overtemp, Undervolt, CommLoss, Count };
+
+class FaultLog {
+public:
+    void record(Fault f, std::uint32_t t_ms) {
+        const auto i = static_cast<std::size_t>(f);
+        if (i >= counts_.size()) return;  // not a real fault
+        if (counts_[i] == 0) first_[i] = t_ms;
+        ++counts_[i];
+        ++total_;
+    }
+
+    int count(Fault f) const {
+        const auto i = static_cast<std::size_t>(f);
+        return i < counts_.size() ? counts_[i] : 0;
+    }
+
+    std::uint32_t first_time(Fault f) const {
+        const auto i = static_cast<std::size_t>(f);
+        return i < first_.size() ? first_[i] : 0;
+    }
+
+    int total() const { return total_; }
+
+private:
+    std::array<int, static_cast<std::size_t>(Fault::Count)> counts_{};
+    std::array<std::uint32_t, static_cast<std::size_t>(Fault::Count)> first_{};
+    int total_{0};
+};
+
+// Construct on first use: made the first time control reaches it, then shared.
+FaultLog& fault_log() {
+    static FaultLog log;
+    return log;
+}
+--- check test | Every caller gets the same log
+&fault_log() == &fault_log()
+--- check test | Counts through the shared log
+[] { fault_log().record(Fault::Overtemp, 1200); fault_log().record(Fault::Overtemp, 1500); return fault_log().count(Fault::Overtemp) == 2; }()
+--- check test | Keeps the first time
+fault_log().first_time(Fault::Overtemp) == 1200
+--- check test | Values that are not faults are ignored
+[] { fault_log().record(Fault::Count, 10); fault_log().record(static_cast<Fault>(200), 20); return fault_log().total() == 2; }()
+--- check test | A fault never recorded
+fault_log().count(Fault::CommLoss) == 0 && fault_log().first_time(Fault::CommLoss) == 0
+--- check test | Readable through a const reference
+[] { const FaultLog& log = fault_log(); return log.count(Fault::Count) == 0 && log.first_time(static_cast<Fault>(99)) == 0 && log.total() == 2; }()
+--- check test | A local log is independent
+[] { FaultLog local; local.record(Fault::Undervolt, 7); return local.total() == 1 && local.first_time(Fault::Undervolt) == 7 && fault_log().count(Fault::Undervolt) == 0; }()
+
++++ question | A header that cannot be found
+--- ask
+A build stops with this message:
+
+```text
+main.cpp:3:10: fatal error: telem.hpp: No such file or directory
+```
+
+Which stage stopped, and what does that tell you?
+--- choice
+The linker: the functions declared in `telem.hpp` were never compiled into an object file.
+--- choice correct
+Preprocessing: the `#include` on line 3 names a file the preprocessor cannot find, so none of `main.cpp`'s code has been compiled yet.
+--- choice
+The compiler proper: `telem.hpp` has a type error on line 3, column 10.
+--- choice
+The assembler: it could not write `main.o` into the folder.
+--- why
+`#include` is handled by the preprocessor, which pastes the named file's text in place of the line. If it cannot find the file, in the current folder or on the `-I` search path, it stops before any C++ is compiled, so this message says nothing about whether the rest of `main.cpp` is correct. The line and column point at the `#include` in `main.cpp`, not into the header. A linker error would begin with `/usr/bin/ld` and talk about undefined references.
+
++++ question | A copied include guard
+--- ask
+`valve.hpp` was made by copying `pump.hpp` and editing the contents, but both still start with the same two lines:
+
+```cpp
+#ifndef ORBIT_PUMP_HPP
+#define ORBIT_PUMP_HPP
+```
+
+`main.cpp` includes `pump.hpp`, then `valve.hpp`, and then uses `ValveCmd`, a struct that only `valve.hpp` defines. What happens?
+--- choice
+The compiler reports "redefinition of 'struct ValveCmd'", because the header was pasted twice.
+--- choice correct
+The compiler reports that `ValveCmd` was not declared: the guard name is already defined when `valve.hpp` is reached, so the preprocessor drops its whole text.
+--- choice
+The link fails with "multiple definition", because the two headers define the same guard.
+--- choice
+It works: include guards belong to the file they are written in, so the two cannot interfere.
+--- why
+An include guard is only a macro name, and macro names are shared by the whole translation unit. `pump.hpp` defines `ORBIT_PUMP_HPP`. When `valve.hpp` is pasted in, `#ifndef ORBIT_PUMP_HPP` is false, so everything up to its `#endif` vanishes, `ValveCmd` included. The error points at the use in `main.cpp`, far from the real cause. This is the bug `#pragma once` cannot have, and why guard names are built from the project, path and file name.
+
++++ question | Reading nm to settle a link error
+--- ask
+Both object files are on the link line, and the link fails with:
+
+```text
+undefined reference to `nav::predict(nav::State const&, double)'
+```
+
+You ask the object file that should supply it:
+
+```text
+$ nm -C --defined-only nav.o
+0000000000000000 T nav::predict(nav::State&, double)
+0000000000000090 T nav::norm(nav::State const&)
+```
+
+What is the fix?
+--- choice
+Add `nav.o` to the link line.
+--- choice correct
+In `nav.cpp`, add `const` to `predict`'s first parameter, so the definition matches the declaration the caller was compiled against.
+--- choice
+Mark `predict` as `inline`, so the linker can keep either version.
+--- choice
+Move `predict` out of namespace `nav`.
+--- why
+`nav.o` is in the link and does define a `predict`, but one taking `nav::State&`. The caller needs one taking `nav::State const&`. Those are different overloads with different mangled names, so the `U` in the caller is never matched. `nav.cpp` compiled without complaint because a definition that differs in its parameter types is simply a new overload. `-Wmissing-declarations` would have warned about it. Moving the function out of the namespace would make a third, unrelated symbol.
+
++++ question | A header edit that make does not see
+--- ask
+A Makefile builds each `.o` from its `.cpp` with the pattern rule `%.o: %.cpp`, and its flags do **not** include `-MMD -MP`. You add a field to `struct State` in `state.hpp`, which both `nav.cpp` and `main.cpp` include. Then you edit a comment in `nav.cpp` and run `make`. What happens?
+--- choice
+Both objects are rebuilt, because the compiler tells `make` which headers each file reads.
+--- choice correct
+Only `nav.o` is rebuilt. `main.o` keeps the old layout of `State`, the link succeeds, and the program can quietly read wrong values.
+--- choice
+The link fails with "multiple definition of 'State'".
+--- choice
+`make` refuses to run until `make clean`, because a header changed.
+--- why
+Without dependency files, `make` knows only that `nav.o` depends on `nav.cpp` and `main.o` on `main.cpp`. You touched `nav.cpp`, so only `nav.o` is rebuilt, with the new `State`. `main.o` was compiled against the old one. A type is not a symbol, so the linker has nothing to compare, and the program breaks the one-definition rule without a single message. `-MMD -MP` makes the compiler write the headers each file read into `.d` files, so editing `state.hpp` rebuilds both.
+
++++ question | Which line is undefined
+--- ask
+On a platform where `int` is 32 bits, exactly one of these lines has undefined behavior. Which one?
+--- choice
+`std::uint32_t a = 4294967295u; a += 1;`
+--- choice
+`std::int8_t b = static_cast<std::int8_t>(200);`
+--- choice correct
+`std::uint16_t c = 60000; std::uint32_t d = c * c;`
+--- choice
+`double e = 3.7; int f = static_cast<int>(e);`
+--- why
+`c * c` looks unsigned, but both `std::uint16_t` operands are promoted to `int` before the multiply, and 60000 × 60000 = 3,600,000,000 is more than a 32-bit `int` holds (2,147,483,647). That is signed overflow, so the program has no defined meaning, and the wide `std::uint32_t` on the left does not help: the conversion happens only after the overflow. Write `static_cast<std::uint32_t>(c) * c`. The others are all defined: unsigned arithmetic wraps modulo 2^32, so `a` becomes 0; since C++20 a conversion to a signed type that does not fit wraps too, so `b` is -56; and a `double` converted to `int` drops the fraction when the result fits, so `f` is 3.
+
++++ question | Two narrow operands
+--- ask
+What does this print?
+
+```cpp
+short s = -1;
+unsigned short us = 1;
+std::printf("%d %d\n", s < us, s < 1u);
+```
+
+Type the two numbers with a space between them.
+--- answer
+1 0
+1, 0
+--- why
+Promotion happens first. In `s < us` both operands are narrower than `int`, and `int` can hold every value of each, so both become `int`: -1 < 1 is true, printed as 1. In `s < 1u`, `s` is promoted to `int`, and then the usual arithmetic conversions meet an `int` and an `unsigned int` of the same rank, so the signed side converts to unsigned: -1 becomes 4294967295, which is not less than 1, printed as 0. The same comparison gives two answers depending on how wide the unsigned operand is.
+
++++ question | Copies, references and a returned value
+--- ask
+What does this print?
+
+```cpp
+struct P { int n; };
+
+void f(P p)  { p.n += 1; }
+void g(P& p) { p.n += 10; }
+P h(P p)     { p.n += 100; return p; }
+
+int main() {
+    P a{1};
+    f(a);
+    g(a);
+    P b = h(a);
+    b.n += 1000;
+    std::printf("%d %d\n", a.n, b.n);
+}
+```
+
+Type the two numbers with a space between them.
+--- answer
+11 1111
+11, 1111
+--- why
+`f` gets a copy and changes only the copy, so `a.n` stays 1. `g` gets a reference, so `a.n` becomes 11. `h` gets a copy of `a` (11), adds 100 to the copy and returns it, so `b` starts as 111 while `a` stays 11. `b` is its own object, so adding 1000 to it gives 1111 and leaves `a` alone.
+
++++ question | What auto kept
+--- ask
+What does this print?
+
+```cpp
+std::vector<int> v{1, 2, 3};
+auto x = v[0];
+auto& y = v[1];
+const auto& z = v[2];
+x = 10;
+y = 20;
+v[2] = 30;
+std::printf("%d %d %d %d\n", v[0], v[1], z, x);
+```
+
+Type the four numbers with one space between each.
+--- answer
+1 20 30 10
+--- why
+Plain `auto` drops the reference, so `x` is a copy: setting it to 10 leaves `v[0]` at 1. `auto&` keeps the reference, so `y = 20` changes `v[1]`. `const auto&` is a read-only alias of `v[2]`: it cannot change the element, but it sees the change made through `v[2]`, so it reads 30. `x` itself holds 10.
+
++++ question | Overloads and a default
+--- ask
+What does this program print?
+
+```cpp
+#include <cstdio>
+
+void put(int)                { std::printf("A"); }
+void put(double, int ch = 0) { std::printf("B%d", ch); }
+
+int main() {
+    put(1);
+    put(1.0);
+    put(1, 2);
+    put('c');
+    std::printf("\n");
+}
+```
+
+Type the output exactly, with no spaces.
+--- answer
+AB0B2A
+--- why
+`put(1)`: an exact match for `put(int)` beats converting `int` to `double`, so A. `put(1.0)`: an exact match for the `double` version, using the default, so B0. `put(1, 2)`: only the second function takes two arguments, so B2, with 1 converted to `double`. `put('c')`: `char` to `int` is a promotion, which beats the standard conversion `char` to `double`, so A.
+
++++ question | The size of an array parameter
+--- ask
+On x86-64 Linux, what does `check` print when it is called with an array of 16 `double`s?
+
+```cpp
+void check(const double buf[16]) {
+    std::printf("%zu\n", sizeof(buf) / sizeof(buf[0]));
+}
+```
+
+Type the number.
+--- answer
+1
+--- why
+An array parameter is not an array. `const double buf[16]` in a parameter list is rewritten as `const double* buf`, and the 16 is ignored. So `sizeof(buf)` is the size of a pointer, 8 bytes on x86-64, and `sizeof(buf[0])` is the size of a `double`, also 8. The division gives 1. g++ warns about it with `-Wsizeof-array-argument`. Passing a `std::array` by reference, or a `std::span`, keeps the length.
+
++++ question | Birth and death order
+--- ask
+What does this program print?
+
+```cpp
+#include <cstdio>
+
+struct T {
+    char c;
+    explicit T(char x) : c(x) { std::printf("%c", c); }
+    ~T() { std::printf("%c", c - 32); }   // the upper-case letter
+};
+
+T g{'g'};
+
+int main() {
+    T a{'a'};
+    { T b{'b'}; }
+    static T s{'s'};
+    T c{'c'};
+    std::printf("|");
+}
+```
+
+Type the output exactly, with no spaces.
+--- answer
+gabBsc|CASG
+--- why
+`g` has static storage and is constructed before `main` starts: `g`. Then `a`, and `b`, which dies at its own closing brace: `abB`. The static local `s` is constructed when control first reaches it: `s`. Then `c`, and the `|`. When `main` ends, its automatic objects die in reverse order, `c` then `a`: `CA`. After `main` returns, the static objects die in reverse order of construction: `s` was made after `g`, so `S` then `G`.
+
++++ question | An assert with a call inside
+--- ask
+This program is built twice: once as a debug build, and once with `-DNDEBUG`.
+
+```cpp
+#include <cassert>
+#include <cstdio>
+
+int g_tries = 0;
+
+bool try_link() {
+    ++g_tries;
+    return g_tries >= 2;
+}
+
+int main() {
+    assert(try_link() || try_link());
+    std::printf("%d\n", g_tries);
+}
+```
+
+What does each build print? Type the debug build's number, then the release build's, with a space between them.
+--- answer
+2 0
+2, 0
+--- why
+In the debug build the assertion runs. The first `try_link()` makes `g_tries` 1 and returns false, so `||` calls the second, which makes it 2 and returns true. The assertion passes and the program prints 2. With `NDEBUG` defined, `assert(...)` becomes an expression that does nothing, and both calls vanish with it, so the program prints 0. A call with a side effect never belongs inside `assert`: keep the result in a variable first, and assert on the variable.

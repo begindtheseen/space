@@ -247,7 +247,7 @@ The right tools are `std::atomic<T>`, which gives atomicity and a choice of orde
 Two places `volatile` is still right alongside threads. A variable shared with a **signal handler** is `volatile std::sig_atomic_t`, because that is what the standard specifies for that case. And a **memory-mapped register** stays `volatile` even when only one thread touches it: the qualifier is about the hardware, not about concurrency.
 
 ::: warning
-C++20 **deprecated** — marked for eventual removal — several uses of `volatile` that promised more than they delivered: `++`, `--`, compound assignments such as `v += 1`, and using the value of an assignment. Compound assignment was later taken off that list, but `++v` still gets flagged. g++ 13.3.0 at `-std=c++20 -Wall -Wextra`, for `volatile int v`:
+C++20 **deprecated** — marked for eventual removal — several uses of `volatile` that promised more than they delivered: `++`, `--`, compound assignments such as `v += 1`, and using the value of an assignment. C++23 took the bitwise compound assignments (`|=`, `&=`, `^=`) back off that list, because hardware register code relies on them; `v += 1` and `++v` are still deprecated and still get flagged. g++ 13.3.0 at `-std=c++20 -Wall -Wextra`, for `volatile int v`:
 
 ```text
 chk-vol.cpp:3:23: warning: '++' expression of 'volatile'-qualified type is deprecated [-Wvolatile]

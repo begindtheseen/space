@@ -135,7 +135,7 @@ tests/test_nav.py::test_nav_filter_long_soak
 
 Each of those lines is a **[[node id|node-ids]]**: the file, then `::`, then the test's name. You can pass a node id straight to pytest to run exactly one test, as in `pytest tests/test_nav.py::test_nav_filter_long_soak`.
 
-**`-k` picks by name.** It takes an expression too, but its words are matched as pieces of text against each test's name — and against the names of its file, its class, and its parametrize ids.
+**`-k` picks by name.** It takes an expression too, but its words are matched as pieces of text against each test's name — and against the names of its folder, its file, its class, its parametrize ids, and any markers on it. So `-k slow` also picks every test marked `slow`.
 
 ```text
 $ pytest -q -k "throttle"
@@ -148,7 +148,7 @@ That ran `test_throttle_limits` and `test_throttle_floor` and nothing else. Case
 This is where the readable ids from the parametrize lesson pay off. If each initial condition in a solver test has an id like `leo-circular` or `gto-high-ecc`, then `-k gto` reruns only the transfer-orbit cases while you debug them.
 
 ::: warning -k also matches file names
-The words in `-k` are matched against the whole chain of names — file, class, function, id — not only the function name. In a file called `test_nav.py`, every test contains "nav", even `test_imu_on_rig`:
+The words in `-k` are matched against the whole chain of names — folder, file, class, function, id — and against marker names, not only the function name. In a file called `test_nav.py`, every test contains "nav", even `test_imu_on_rig`:
 
 ```text
 $ pytest -k "nav and not soak" -v
@@ -163,7 +163,7 @@ If you meant only the navigation-filter tests, `-k "nav_filter and not soak"` is
 :::
 
 ::: key Selecting tests
-`-m "not slow"` selects by marker; `-k "expr"` selects by matching text in test names, including file names and parametrize ids. Both take `and`, `or`, `not`. Unselected tests are reported as deselected.
+`-m "not slow"` selects by marker; `-k "expr"` selects by matching text in test names, including file and class names, parametrize ids and marker names. Both take `and`, `or`, `not`. Unselected tests are reported as deselected.
 :::
 
 ## Stopping early and rerunning what failed

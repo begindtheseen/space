@@ -42,7 +42,7 @@ On x86 both compile to the same single instruction, `lock cmpxchg`.
 ::: example A frame counter and a peak detector
 Four worker threads each process a million fake accelerometer frames. They count frames with `fetch_add`, and track the largest reading seen, in milli-g, with a compare-and-exchange loop.
 
-```cpp
+```cpp laptop
 #include <atomic>
 #include <cstdio>
 #include <thread>
@@ -138,7 +138,7 @@ If an acquire load reads a value written by a release store, then everything the
 :::
 
 ::: example Publishing a navigation solution
-```cpp
+```cpp laptop
 #include <atomic>
 #include <cstdio>
 #include <thread>
@@ -225,7 +225,7 @@ Can both `r1` and `r2` end up 0? In one total order, whichever store comes first
 ::: example Store buffering, caught on x86
 Two threads run the pattern above 200,000 times for each choice of ordering, meeting at a `std::barrier` (a C++20 meeting point where threads wait until all have arrived) before and after each trial:
 
-```cpp
+```cpp laptop
 #include <atomic>
 #include <barrier>
 #include <cstdio>

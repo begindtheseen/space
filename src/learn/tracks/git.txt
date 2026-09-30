@@ -116,6 +116,173 @@ git . repo
 --- check shell | You found the .git folder
 printed .git
 
++++ practice | A repository for the satellite
+--- task
+The folder `satellite` is inside `project` and holds `orbit.txt`. Move into `satellite` and turn it into a git repository. Then list everything in it, hidden files included, to see the `.git` folder. `project` itself must not become a repository.
+--- starter
+mkdir satellite
+echo "altitude = 550" > satellite/orbit.txt
+--- solution
+cd satellite
+git init
+ls -a
+--- hint
+`git init` sets up the folder you are standing in, so move first.
+--- hint
+`cd satellite`, then `git init`. Then list with the flag that shows hidden names.
+--- check shell | satellite is a repository
+dir satellite/.git
+git satellite repo
+--- check shell | project is not a repository
+missing .git
+--- check shell | You are in satellite and saw .git
+cwd satellite
+printed .git
+
++++ practice | Set up a folder without moving
+--- task
+You are in `project`, and it has a folder called `rover`. Turn `rover` into a repository with one command, without moving into it. Stay in `project`, and make sure `project` itself does not become a repository.
+--- starter
+mkdir rover
+echo "wheels = 6" > rover/specs.txt
+--- solution
+git init rover
+--- hint
+`git init` can take the name of the folder to set up.
+--- hint
+Put the folder's name after `git init`, and do not use `cd`.
+--- check shell | rover is a repository
+dir rover/.git
+--- check shell | project is not one
+missing .git
+--- check shell | You stayed in project
+cwd .
+ran git init rover
+
++++ practice | Build it, then track it
+--- task
+Starting in `project`, do all of this:
+
+1. Make a folder called `probe`.
+2. Inside it, make a file `README.md` that holds the line `# Probe`.
+3. Move into `probe` and turn it into a repository.
+4. List everything in `probe`, hidden files included.
+--- starter
+--- solution
+mkdir probe
+echo "# Probe" > probe/README.md
+cd probe
+git init
+ls -a
+--- hint
+The first two steps are Terminal commands: `mkdir`, then `echo` with `>`.
+--- hint
+Once you are inside `probe`, `git init` needs no folder name. Finish with the listing that shows hidden names.
+--- check shell | probe holds README.md
+file probe/README.md == # Probe
+--- check shell | probe is a repository, and project is not
+dir probe/.git
+missing .git
+--- check shell | You listed it from inside
+cwd probe
+printed .git
+printed README.md
+
++++ practice | Check before you init
+--- task
+You are three folders deep, in `docs/drafts`. The repository should be the whole project: the folder `project`, not `drafts` and not `docs`.
+
+Go up to `project`. Run `pwd` there to check where you are, then turn `project` into a repository.
+--- starter
+mkdir -p docs/drafts
+echo "first draft" > docs/drafts/intro.txt
+cd docs/drafts
+--- solution
+cd ../..
+pwd
+git init
+--- hint
+`..` is the folder above. You need to climb two levels.
+--- hint
+`cd ../..` takes you from `drafts` to `project`. `pwd` should print a path ending in `/project`.
+--- check shell | project is the repository
+dir .git
+git . repo
+--- check shell | The folders inside are not repositories of their own
+missing docs/.git
+missing docs/drafts/.git
+--- check shell | You checked with pwd, and ended in project
+ran pwd
+printed-line /home/you/project
+cwd .
+
++++ practice | Fix the setup steps
+--- task
+A teammate wrote these steps to make the folder `lander` a repository:
+
+```
+mkdir lander
+git init
+cd lander
+```
+
+Run as written, they make the wrong folder a repository: `project`, not `lander`. Type a fixed version, so that `lander` is a repository, `project` is not, and you finish inside `lander`.
+--- starter
+--- solution
+mkdir lander
+cd lander
+git init
+--- hint
+`git init` with no folder name sets up whatever folder you are in at that moment.
+--- hint
+Where are you when the teammate's `git init` runs? Move before you init, not after.
+--- check shell | lander is a repository
+dir lander/.git
+--- check shell | project is not
+missing .git
+--- check shell | You finished inside lander
+cwd lander
+
++++ practice | Which folder was already tracked?
+--- task
+`project` holds three folders: `ground`, `flight` and `notes`. One of them is already a git repository.
+
+1. Look inside each folder with `ls -a` to find out which one already has a `.git` folder.
+2. Write that folder's name, and nothing else, into a new file `project/tracked.txt`.
+3. Turn `flight` into a repository.
+
+`notes` must not become a repository, and neither must `project`.
+--- starter
+mkdir ground
+mkdir flight
+mkdir notes
+git init ground
+echo "antenna = on" > ground/station.txt
+echo "stage = 1" > flight/rocket.txt
+echo "try a bigger fin" > notes/ideas.txt
+--- solution
+ls -a ground
+ls -a flight
+ls -a notes
+echo "ground" > tracked.txt
+git init flight
+--- hint
+A repository is a folder with a hidden `.git` folder inside it. Plain `ls` will not show it.
+--- hint
+`ls -a ground`, `ls -a flight` and `ls -a notes` list each folder from where you are. Then write the name with `echo` and `>`.
+--- hint
+`git init flight` sets up `flight` without moving into it.
+--- check shell | tracked.txt names the folder that was already a repository
+file tracked.txt == ground
+--- check shell | You looked inside the folders
+ran ls -a ground
+ran ls -a notes
+--- check shell | flight is now a repository
+dir flight/.git
+--- check shell | notes and project are not
+missing notes/.git
+missing .git
+
 === git-02 | Asking git what it sees
 --- teach
 Last lesson you turned a folder into a repository with `git init`. Now you learn to ask git what it notices about your files. This is the command you will run more than any other.
@@ -240,6 +407,178 @@ git . untracked notes.txt
 --- check shell | Git showed you notes.txt in its status
 ran git status
 printed notes.txt
+
++++ practice | Two new files
+--- task
+The repository already has `README.md`. Make two new empty files, `fuel.txt` and `crew.txt`, with `touch`. Then run `git status`, so that its list of untracked files shows both of them.
+--- starter
+git init
+echo "# Rocket" > README.md
+--- solution
+touch fuel.txt
+touch crew.txt
+git status
+--- hint
+Make the files first, then ask git what it sees.
+--- hint
+`touch` makes one empty file per name. Finish with `git status`.
+--- check shell | Both files exist and are empty
+file fuel.txt empty
+file crew.txt empty
+--- check shell | Git sees both as untracked
+git . untracked fuel.txt
+git . untracked crew.txt
+--- check shell | Your last command was git status, and it listed both
+ran git status
+last-printed fuel.txt
+last-printed crew.txt
+
++++ practice | Count what git sees
+--- task
+Run `git status` and count the files it lists under "Untracked files". Then write that number, and nothing else, into a new file called `count.txt`. Count first: `count.txt` itself does not belong in the number.
+--- starter
+git init
+echo "# Rover" > README.md
+echo "print('drive')" > main.py
+echo "KEY=abc123" > .env
+--- solution
+git status
+echo "3" > count.txt
+--- hint
+Plain `ls` and `git status` do not see the same things. Trust git's list.
+--- hint
+Git lists hidden files, the ones whose names start with a dot, like any other file.
+--- check shell | count.txt holds the right number
+file count.txt == 3
+--- check shell | You counted from git status
+ran git status
+printed .env
+--- check shell | The files you counted are all still there
+file .env == KEY=abc123
+file main.py
+file README.md
+
++++ practice | A file inside a folder
+--- task
+Make a folder called `logs` in the repository, and inside it a file `day1.txt` that holds the line `boot ok`. Then run `git status` and find the new file in the untracked list.
+--- starter
+git init
+echo "# Station" > README.md
+--- solution
+mkdir logs
+echo "boot ok" > logs/day1.txt
+git status
+--- hint
+`mkdir`, then `echo` with `>` and the path `logs/day1.txt`.
+--- hint
+Git watches every folder inside the repository too. Finish with `git status`.
+--- check shell | logs/day1.txt holds the line
+file logs/day1.txt == boot ok
+--- check shell | Git sees it as untracked
+git . untracked logs/day1.txt
+--- check shell | Your last command showed it
+ran git status
+last-printed logs/day1.txt
+
++++ practice | Status from anywhere in the repository
+--- task
+You are in `project`, which is not a repository, so `git status` fails here. The repository is the folder `station`.
+
+Make these three new files in `station`:
+
+- an empty file `station/log.txt`
+- a hidden file `station/.config` that holds `debug = off`
+- a file `station/data/readings.txt` that holds `21.5` (the folder `data` does not exist yet)
+
+Then move into `station/data` and run `git status` from there. It lists all three.
+--- starter
+git init station
+echo "# Station" > station/README.md
+--- solution
+touch station/log.txt
+echo "debug = off" > station/.config
+mkdir station/data
+echo "21.5" > station/data/readings.txt
+cd station/data
+git status
+--- hint
+`git status` works from any folder inside a repository, and always reports on the whole repository.
+--- hint
+Make `station/data` with `mkdir` before you write a file into it.
+--- hint
+Finish with `cd station/data`, then `git status`.
+--- check shell | The three files are there and untracked
+git station untracked log.txt
+git station untracked .config
+git station untracked data/readings.txt
+--- check shell | .config holds its line
+file station/.config == debug = off
+--- check shell | You ran git status from inside station/data, and it listed them
+cwd station/data
+ran git status
+last-printed .config
+last-printed readings.txt
+
++++ practice | The file git never lists
+--- task
+A teammate made `plan.txt` for the repository `mission`, but `git status` inside `mission` never lists it. The file was made in the wrong place.
+
+Find where `plan.txt` really is, move it into `mission` with `mv`, then move into `mission` and run `git status`, so that `plan.txt` shows up as untracked.
+--- starter
+git init mission
+echo "# Mission" > mission/README.md
+echo "launch at dawn" > plan.txt
+--- solution
+ls
+mv plan.txt mission/
+cd mission
+git status
+--- hint
+Git only sees files inside the repository's folder. Where is `plan.txt` compared to `mission`?
+--- hint
+`ls` in `project` shows it sitting next to `mission`, not inside. `mv` can move it into the folder.
+--- check shell | plan.txt is inside mission now
+file mission/plan.txt == launch at dawn
+missing plan.txt
+--- check shell | Git sees it
+git mission untracked plan.txt
+--- check shell | You checked from inside mission
+cwd mission
+last-printed plan.txt
+
++++ practice | Tidy up before the first save
+--- task
+Before the first save, `git status` should list exactly three untracked files: `CHANGELOG.md`, `README.md` and `main.py`.
+
+Right now the folder also holds scratch files whose names end in `.tmp`, and `CHANGELOG.md` does not exist yet. Delete every `.tmp` file, make `CHANGELOG.md` holding `# Changes`, and finish with `git status`. Use `git status` to find the scratch files: at least one of them hides from plain `ls`.
+--- starter
+git init
+echo "# Lander" > README.md
+echo "print('land')" > main.py
+touch a.tmp
+touch b.tmp
+touch .swap.tmp
+--- solution
+git status
+rm a.tmp
+rm b.tmp
+rm .swap.tmp
+echo "# Changes" > CHANGELOG.md
+git status
+--- hint
+Start with `git status`: it lists every untracked file, hidden ones too.
+--- hint
+Delete each `.tmp` file with `rm`, one name at a time, including the one whose name starts with a dot.
+--- hint
+Then `echo "# Changes" > CHANGELOG.md`, and `git status` once more.
+--- check shell | Every scratch file is gone
+missing a.tmp
+missing b.tmp
+missing .swap.tmp
+--- check shell | CHANGELOG.md is there
+file CHANGELOG.md == # Changes
+--- check shell | The last status lists exactly the three files
+last-printed-exactly On branch main\n\nNo commits yet\n\nUntracked files:\nCHANGELOG.md\nREADME.md\nmain.py
 
 === git-03 | Staging: choosing what to save
 --- teach
@@ -375,6 +714,177 @@ git . untracked main.py
 ran git status
 printed Changes to be committed
 
++++ practice | Two in, one out
+--- task
+The repository has three untracked files: `fuel.py`, `crew.txt` and `notes.txt`. Stage `fuel.py` and `crew.txt`. Leave `notes.txt` untracked. Then check with `git status`.
+--- starter
+git init
+echo "fuel = 80" > fuel.py
+echo "Ada" > crew.txt
+echo "ask about the fins" > notes.txt
+--- solution
+git add fuel.py
+git add crew.txt
+git status
+--- hint
+To stage one file, give `git add` its name. You can run it once per file.
+--- hint
+`notes.txt` stays out, so a dot is the wrong tool here.
+--- check shell | fuel.py and crew.txt are staged
+git . staged fuel.py
+git . staged crew.txt
+--- check shell | notes.txt is still untracked
+git . untracked notes.txt
+--- check shell | You checked with git status
+ran git status
+last-printed Changes to be committed
+
++++ practice | How many did the dot take?
+--- task
+Stage every file in the repository with one `git add .`. Then run `git status` and count the files listed under "Changes to be committed". Write that number, and nothing else, into a new file `staged.txt`. Make `staged.txt` after you have counted, and do not stage it.
+--- starter
+git init
+mkdir src
+echo "# Rocket" > README.md
+echo "print('go')" > src/main.py
+echo "thrust = 100" > src/engine.py
+echo "TOKEN=xyz" > .env
+--- solution
+git add .
+git status
+echo "4" > staged.txt
+--- hint
+`git add .` takes everything in this folder and every folder inside it.
+--- hint
+Hidden files and files inside folders count too. Read the list under "Changes to be committed".
+--- check shell | Every file is staged
+git . staged README.md
+git . staged src/main.py
+git . staged src/engine.py
+git . staged .env
+--- check shell | staged.txt holds the count
+file staged.txt == 4
+--- check shell | staged.txt itself was not staged
+git . untracked staged.txt
+ran git add .
+
++++ practice | Write it, then stage it
+--- task
+Make a file `fuel.txt` with two lines: first `fuel = 80`, then `oxygen = 95`. Stage only `fuel.txt`, leaving `draft.txt` untracked. Then check with `git status`.
+--- starter
+git init
+echo "half an idea" > draft.txt
+--- solution
+echo "fuel = 80" > fuel.txt
+echo "oxygen = 95" >> fuel.txt
+git add fuel.txt
+git status
+--- hint
+From the Terminal course: `>` starts a file, and `>>` adds a line to its end.
+--- hint
+Then stage the one file by its name, and check.
+--- check shell | fuel.txt holds both lines
+file fuel.txt ~= fuel = 80\noxygen = 95
+--- check shell | fuel.txt is staged and draft.txt is not
+git . staged fuel.txt
+git . untracked draft.txt
+--- check shell | You checked with git status
+ran git status
+last-printed fuel.txt
+
++++ practice | Exact names only
+--- task
+Stage exactly two files: `Launch-Plan.md` and `docs/notes.txt`. Leave the other two, `launch-plan.old` and `docs/draft.txt`, untracked. Watch the capital letters. Check with `git status`.
+--- starter
+git init
+mkdir docs
+echo "# Launch plan" > Launch-Plan.md
+echo "old plan" > launch-plan.old
+echo "check the valves" > docs/notes.txt
+echo "maybe later" > docs/draft.txt
+--- solution
+git add Launch-Plan.md
+git add docs/notes.txt
+git status
+--- hint
+Names are case-sensitive: `launch-plan.md` is not the same name as `Launch-Plan.md`.
+--- hint
+A file inside a folder is named with its path, `docs/` then the name. Adding the whole folder would take `draft.txt` too.
+--- check shell | The two files are staged
+git . staged Launch-Plan.md
+git . staged docs/notes.txt
+--- check shell | The other two are not
+git . untracked launch-plan.old
+git . untracked docs/draft.txt
+--- check shell | You checked with git status
+ran git status
+
++++ practice | The add that failed
+--- task
+A teammate wanted to stage `README.md` and `main.py`, and leave `todo.txt` out. They typed:
+
+```
+git add readme.md
+git add Main.py
+```
+
+Both lines fail with `fatal: pathspec ... did not match any files`. Type a fixed version, then check with `git status`. `todo.txt` must stay untracked.
+--- starter
+git init
+echo "# Rover" > README.md
+echo "print('drive')" > main.py
+echo "buy batteries" > todo.txt
+--- solution
+git add README.md
+git add main.py
+git status
+--- hint
+"Did not match any files" means no file has exactly that name. Run `ls` and compare letter by letter.
+--- hint
+Capitals matter: `README.md` is all capitals before the dot, and `main.py` has none.
+--- check shell | README.md and main.py are staged
+git . staged README.md
+git . staged main.py
+--- check shell | todo.txt is still untracked
+git . untracked todo.txt
+--- check shell | You checked with git status
+ran git status
+
++++ practice | Stage one folder's work
+--- task
+You finished the work in the folder `engine`, but not the rest. Stage every file inside `engine`, and nothing outside it. There are three files in `engine`, and one of them is hidden. `ui/menu.py` and `notes.txt` must stay untracked.
+
+Finish back in `project`, with `git status` as your last command.
+--- starter
+git init
+mkdir engine
+mkdir ui
+echo "fuel = 80" > engine/fuel.py
+echo "thrust = 100" > engine/thrust.py
+echo "mode = test" > engine/.settings
+echo "print('menu')" > ui/menu.py
+echo "rename the menu" > notes.txt
+--- solution
+cd engine
+git add .
+cd ..
+git status
+--- hint
+The dot in `git add .` means "the folder I am in", with everything inside it.
+--- hint
+So move into `engine` first, stage with the dot there, and come back up.
+--- check shell | All three engine files are staged, the hidden one too
+git . staged engine/fuel.py
+git . staged engine/thrust.py
+git . staged engine/.settings
+--- check shell | Nothing outside engine is staged
+git . untracked ui/menu.py
+git . untracked notes.txt
+--- check shell | You finished in project with git status
+cwd .
+ran git status
+last-printed engine/.settings
+
 === git-04 | Your first commit
 --- teach
 Last lesson you staged files: you put them in the box of changes the next save will include. This lesson is the second step. You close the box and save it for good, so you can always come back to this exact moment.
@@ -488,6 +998,193 @@ git . clean
 --- check shell | You looked at the history
 ran git log
 
++++ practice | Save the checklist, not the scratch
+--- task
+The repository has two untracked files, `checklist.txt` and `scratch.txt`. Commit `checklist.txt` only, with the message `Add the launch checklist`. `scratch.txt` must stay out of the commit. Then look at the history with `git log --oneline`.
+--- starter
+git init
+echo "fuel check" > checklist.txt
+echo "random thoughts" > scratch.txt
+--- solution
+git add checklist.txt
+git commit -m "Add the launch checklist"
+git log --oneline
+--- hint
+A commit saves only what is staged. Stage the one file by name.
+--- hint
+Then `git commit -m` with the message in double quotes, and `git log --oneline`.
+--- check shell | One commit, with the right message
+git . commits == 1
+git . at HEAD message == Add the launch checklist
+--- check shell | The commit has checklist.txt and not scratch.txt
+git . at HEAD file checklist.txt == fuel check
+git . at HEAD missing scratch.txt
+git . untracked scratch.txt
+--- check shell | You looked at the history
+ran git log
+
++++ practice | Two save points
+--- task
+Make two commits, one file each, in this order:
+
+1. `README.md`, with the message `Add README`
+2. `main.py`, with the message `Add the main program`
+
+Then show the history with `git log --oneline`. The first commit must not contain `main.py`.
+--- starter
+git init
+echo "# Probe" > README.md
+echo "print('ping')" > main.py
+--- solution
+git add README.md
+git commit -m "Add README"
+git add main.py
+git commit -m "Add the main program"
+git log --oneline
+--- hint
+Stage one file, commit it, then do the same with the other.
+--- hint
+If you stage both before the first commit, the first commit takes both.
+--- check shell | Two commits
+git . commits == 2
+--- check shell | The first commit holds only README.md
+git . at HEAD~1 message == Add README
+git . at HEAD~1 missing main.py
+--- check shell | The second commit adds main.py
+git . at HEAD message == Add the main program
+git . at HEAD file main.py
+--- check shell | You looked at the history
+ran git log
+
++++ practice | From an empty folder to a commit
+--- task
+`project` is not a repository yet. Do all of this, in order:
+
+1. Turn `project` into a repository.
+2. Make a file `crew.txt` with two lines: `Ada`, then `Lin`.
+3. Stage it and commit it with the message `Add the crew list`.
+4. Show the history with `git log --oneline`.
+--- starter
+--- solution
+git init
+echo "Ada" > crew.txt
+echo "Lin" >> crew.txt
+git add crew.txt
+git commit -m "Add the crew list"
+git log --oneline
+--- hint
+Four lessons in one: `git init`, then `echo` with `>` and `>>`, then stage and commit.
+--- hint
+`git commit -m "Add the crew list"`: the quotes keep the message in one piece.
+--- check shell | The commit saved both names
+git . commits == 1
+git . at HEAD file crew.txt contains Ada
+git . at HEAD file crew.txt contains Lin
+--- check shell | It has the right message
+git . at HEAD message == Add the crew list
+--- check shell | Nothing is left waiting, and you looked at the history
+git . clean
+ran git log
+
++++ practice | Half the box is packed
+--- task
+Someone already staged `README.md`. `main.py` is not staged yet. Make exactly one commit that saves both files, with the message `Add the first files`. When you finish, the history has one commit and nothing is left staged.
+--- starter
+git init
+echo "# Glider" > README.md
+echo "print('glide')" > main.py
+git add README.md
+--- solution
+git status
+git add main.py
+git commit -m "Add the first files"
+--- hint
+`git status` shows what is already in the box and what is not.
+--- hint
+A commit takes only what is staged. Stage the missing file before you commit.
+--- check shell | Exactly one commit
+git . commits == 1
+git . at HEAD message == Add the first files
+--- check shell | It holds both files
+git . at HEAD file README.md == # Glider
+git . at HEAD file main.py == print('glide')
+--- check shell | Nothing is left waiting
+git . clean
+git . tracked main.py
+
++++ practice | The message that broke
+--- task
+A teammate staged the files and typed:
+
+```
+git commit -m Add the parachute
+```
+
+Git refused, and the history is still empty. Make the commit, with the whole message `Add the parachute`.
+--- starter
+git init
+echo "deploy at 3000 m" > parachute.txt
+git add .
+git commit -m Add the parachute
+--- solution
+git commit -m "Add the parachute"
+--- hint
+Without quotes, the shell splits the message at every space, so `-m` gets only `Add`.
+--- hint
+Put double quotes around the whole message.
+--- check shell | There is one commit
+git . commits == 1
+--- check shell | Its message is the whole sentence
+git . at HEAD message == Add the parachute
+--- check shell | The file is in it, and nothing is left staged
+git . at HEAD file parachute.txt == deploy at 3000 m
+git . clean
+
++++ practice | Three save points, in order
+--- task
+Build a history of three commits, one file each, in this order:
+
+1. `plan.txt`, with the message `Add the mission plan`
+2. `crew.txt`, with the message `Add the crew list`
+3. `checklist.txt`, with the message `Add the launch checklist`
+
+`scratch.txt` must never be committed. Finish with `git log --oneline`: the newest commit is at the top.
+--- starter
+git init
+echo "orbit the moon" > plan.txt
+echo "Ada, Lin, Sam" > crew.txt
+echo "fuel, radio, suits" > checklist.txt
+echo "delete me" > scratch.txt
+--- solution
+git add plan.txt
+git commit -m "Add the mission plan"
+git add crew.txt
+git commit -m "Add the crew list"
+git add checklist.txt
+git commit -m "Add the launch checklist"
+git log --oneline
+--- hint
+Each commit takes what is staged at that moment, so stage one file at a time.
+--- hint
+`git add .` would pull in every file at once, `scratch.txt` too. Name each file.
+--- hint
+Stage `plan.txt` and commit it, then `crew.txt`, then `checklist.txt`, each with its own message.
+--- check shell | Three commits
+git . commits == 3
+--- check shell | The first commit holds only the plan
+git . at HEAD~2 message == Add the mission plan
+git . at HEAD~2 missing crew.txt
+--- check shell | The second adds the crew list, not the checklist
+git . at HEAD~1 message == Add the crew list
+git . at HEAD~1 file crew.txt
+git . at HEAD~1 missing checklist.txt
+--- check shell | The newest adds the checklist, and scratch.txt was never saved
+git . at HEAD message == Add the launch checklist
+git . at HEAD missing scratch.txt
+git . untracked scratch.txt
+--- check shell | You looked at the history
+ran git log
+
 === git-05 | Seeing what changed: diff
 --- teach
 Last lesson you made your first commit. Now you will change a file after that commit, and ask git to show you exactly what you changed, line by line, before you save it.
@@ -597,6 +1294,187 @@ git . modified main.py
 ran git diff
 printed +print('stage two')
 
++++ practice | Day two in the log
+--- task
+`log.txt` was committed holding one line, `day 1: launch`. Add a second line, `day 2: orbit`, to the end of it, keeping the first. Then run `git diff` to see the change. Do not stage it.
+--- starter
+git init
+echo "day 1: launch" > log.txt
+git add .
+git commit -m "Start the log"
+--- solution
+echo "day 2: orbit" >> log.txt
+git diff
+--- hint
+`>>` adds to the end of a file. `>` would wipe the first line.
+--- hint
+After adding the line, run `git diff`. The new line has a `+` in front.
+--- check shell | log.txt has both lines
+file log.txt ~= day 1: launch\nday 2: orbit
+--- check shell | The change is not staged
+git . modified log.txt
+git . clean
+--- check shell | Your last command showed the added line
+ran git diff
+last-printed +day 2: orbit
+
++++ practice | What the next commit will save
+--- task
+`sensors.py` was committed holding `temp = 21`. Add the line `pressure = 101` to its end, stage the change, and then show exactly what the next commit will save.
+--- starter
+git init
+echo "temp = 21" > sensors.py
+git add .
+git commit -m "Add the sensors"
+--- solution
+echo "pressure = 101" >> sensors.py
+git add sensors.py
+git diff --staged
+--- hint
+Once a change is staged, plain `git diff` goes quiet about it.
+--- hint
+Adding `--staged` to `git diff` shows what is in the box.
+--- check shell | The change is staged
+git . staged sensors.py
+file sensors.py ~= temp = 21\npressure = 101
+--- check shell | You showed the staged change
+ran git diff --staged
+--- check shell | It showed the new line as added
+last-printed +pressure = 101
+
++++ practice | Write down the old line
+--- task
+Someone changed `config.txt` since the last commit. Run `git diff` to find the line that was removed. Write that line, without its minus sign, into a new file `old.txt`. Do not change `config.txt`.
+--- starter
+git init
+echo "thrust = 100" > config.txt
+git add .
+git commit -m "Add config"
+echo "thrust = 120" > config.txt
+--- solution
+git diff
+echo "thrust = 100" > old.txt
+--- hint
+In a diff, the line with a `-` in front is the one taken away.
+--- hint
+Copy that line after `echo`, without the minus, and send it into `old.txt` with `>`.
+--- check shell | old.txt holds the removed line
+file old.txt == thrust = 100
+--- check shell | config.txt is unchanged
+file config.txt == thrust = 120
+git . modified config.txt
+--- check shell | You read the diff
+ran git diff
+
++++ practice | One staged, one not
+--- task
+Both `flight.txt` and `notes.txt` changed since the last commit. The `flight.txt` change is already staged. The `notes.txt` change is not.
+
+1. Show the `notes.txt` change with plain `git diff`.
+2. Show the `flight.txt` change with the command that shows staged changes.
+3. Add one more line, `crew: Sam`, to the end of `notes.txt`, keeping what it holds. Then stage `notes.txt`.
+4. As your last command, show both files' changes at once: everything the next commit will save.
+--- starter
+git init
+echo "launch 09:00" > flight.txt
+echo "crew: Ada" > notes.txt
+git add .
+git commit -m "Add flight and notes"
+echo "land 17:00" >> flight.txt
+echo "crew: Lin" >> notes.txt
+git add flight.txt
+--- solution
+git diff
+git diff --staged
+echo "crew: Sam" >> notes.txt
+git add notes.txt
+git diff --staged
+--- hint
+Plain `git diff` shows only changes that are not staged. `git diff --staged` shows only the staged ones.
+--- hint
+After you stage `notes.txt`, plain `git diff` has nothing left to show. The staged view has both.
+--- check shell | Both changes are staged
+git . staged flight.txt
+git . staged notes.txt
+--- check shell | You used both views
+ran git diff
+ran git diff --staged
+printed +crew: Lin
+--- check shell | notes.txt kept its lines and gained one
+file notes.txt ~= crew: Ada\ncrew: Lin\ncrew: Sam
+--- check shell | Your last command showed every added line
+last-printed +land 17:00
+last-printed +crew: Lin
+last-printed +crew: Sam
+
++++ practice | The arrow that wiped a line
+--- task
+`countdown.txt` was committed holding one line, `10`. A teammate wanted to add a second line, `9`, and typed:
+
+```
+echo "9" > countdown.txt
+```
+
+Now `git diff` shows `-10` as removed. Put `countdown.txt` right, so that it holds `10` and then `9`. Finish with `git diff`: it should show `9` as added and nothing removed.
+--- starter
+git init
+echo "10" > countdown.txt
+git add .
+git commit -m "Start the countdown"
+echo "9" > countdown.txt
+--- solution
+echo "10" > countdown.txt
+echo "9" >> countdown.txt
+git diff
+--- hint
+One `>` replaces everything in a file. `>>` adds to its end.
+--- hint
+Write the first line again with `>`, then add the second with `>>`.
+--- check shell | countdown.txt holds both lines, in order
+file countdown.txt ~= 10\n9
+--- check shell | The diff shows only the added line
+ran git diff
+last-printed +9
+last-not-printed -10
+--- check shell | The change is not committed or staged
+git . modified countdown.txt
+git . commits == 1
+
++++ practice | Which file lost a line?
+--- task
+Three files were committed. Since then, two of them changed: in one, a line was added, and in the other, a line was removed.
+
+1. Use `git diff` to find the file that lost a line. Write that file's name, and nothing else, into a new file `removed.txt`.
+2. Stage only the file whose change just adds a line.
+3. As your last command, show what the next commit will save.
+--- starter
+git init
+echo "temp = 21" > sensors.txt
+echo "pressure = 101" >> sensors.txt
+echo "Ada" > crew.txt
+echo "orbit" > plan.txt
+git add .
+git commit -m "Add sensors, crew and plan"
+echo "temp = 21" > sensors.txt
+echo "Lin" >> crew.txt
+--- solution
+git diff
+echo "sensors.txt" > removed.txt
+git add crew.txt
+git diff --staged
+--- hint
+Look for the line that starts with a `-` in `git diff`, and read the file name in the header above it.
+--- hint
+The other changed file only has a `+` line. Stage that one by name, then use the staged view.
+--- check shell | removed.txt names the right file
+file removed.txt == sensors.txt
+--- check shell | Only the file with the added line is staged
+git . staged crew.txt
+git . modified sensors.txt
+--- check shell | The last command showed only the staged change
+last-printed +Lin
+last-not-printed sensors.txt
+
 === git-06 | Committing a change
 --- teach
 Last lesson you changed a file and read the change with `git diff`. Now you will save that change as a second commit, so your project's history grows from one photo to two.
@@ -694,6 +1572,201 @@ Finish with `git log --oneline`. You should see two lines, with `Add stage two` 
 git . commits == 2
 git . clean
 --- check shell | You looked at the history
+ran git log
+
++++ practice | Add the landing step
+--- task
+`plan.txt` was committed holding one line, `1. launch`. Add a second line, `2. land`, to its end. Then save the change as a new commit with the message `Add the landing step`, and look at the history with `git log --oneline`.
+--- starter
+git init
+echo "1. launch" > plan.txt
+git add .
+git commit -m "Add the flight plan"
+--- solution
+echo "2. land" >> plan.txt
+git add plan.txt
+git commit -m "Add the landing step"
+git log --oneline
+--- hint
+Change the file with `>>`, then the same two steps as a first commit.
+--- hint
+`git add plan.txt`, then `git commit -m "Add the landing step"`.
+--- check shell | Two commits, the newest with your message
+git . commits == 2
+git . at HEAD message == Add the landing step
+--- check shell | The new commit has the landing step and the old one does not
+git . at HEAD file plan.txt contains 2. land
+git . at HEAD~1 file plan.txt == 1. launch
+--- check shell | Nothing left waiting, and you looked at the history
+git . clean
+ran git log
+
++++ practice | Two ideas, two commits
+--- task
+Two files changed since the last commit, for two different reasons. Save them as two commits, in this order:
+
+1. the change to `timer.txt`, with the message `Fix the timer`
+2. the change to `thrust.txt`, with the message `Raise the thrust`
+
+The first of these commits must not contain the thrust change.
+--- starter
+git init
+echo "countdown = 5" > timer.txt
+echo "thrust = 100" > thrust.txt
+git add .
+git commit -m "Add timer and thrust"
+echo "countdown = 10" > timer.txt
+echo "thrust = 120" > thrust.txt
+--- solution
+git add timer.txt
+git commit -m "Fix the timer"
+git add thrust.txt
+git commit -m "Raise the thrust"
+--- hint
+One commit per idea: stage one file, commit, then the other.
+--- hint
+`git add .` would put both changes in the first commit.
+--- check shell | Three commits in all
+git . commits == 3
+--- check shell | The first new commit holds only the timer fix
+git . at HEAD~1 message == Fix the timer
+git . at HEAD~1 file timer.txt == countdown = 10
+git . at HEAD~1 file thrust.txt == thrust = 100
+--- check shell | The newest holds the thrust change
+git . at HEAD message == Raise the thrust
+git . at HEAD file thrust.txt == thrust = 120
+git . clean
+
++++ practice | Check the box, then commit
+--- task
+Both `config.txt` and `notes.txt` changed. Only the `config.txt` change is ready.
+
+Stage `config.txt`, then show what the next commit will save, to check that only `config.txt` is in it. Then commit with the message `Set thrust to 120`. The `notes.txt` change stays in your folder, not committed and not staged.
+--- starter
+git init
+echo "thrust = 100" > config.txt
+echo "todo: fins" > notes.txt
+git add .
+git commit -m "Add config and notes"
+echo "thrust = 120" > config.txt
+echo "todo: paint" >> notes.txt
+--- solution
+git add config.txt
+git diff --staged
+git commit -m "Set thrust to 120"
+--- hint
+`git diff --staged` shows exactly what the next commit will save.
+--- hint
+Stage the one file by name, look, then commit.
+--- check shell | The new commit has the config change only
+git . commits == 2
+git . at HEAD message == Set thrust to 120
+git . at HEAD file config.txt == thrust = 120
+git . at HEAD file notes.txt == todo: fins
+--- check shell | The notes change is still in the folder, unstaged
+git . modified notes.txt
+file notes.txt ~= todo: fins\ntodo: paint
+--- check shell | You checked before committing
+ran git diff --staged
+
++++ practice | A change and a new file together
+--- task
+You changed `main.py` and wrote a new file, `test.py`, to test it. Save both in one commit, with the message `Add the first test`. `scratch.txt` is also new, and must stay untracked.
+--- starter
+git init
+echo "def add(a, b): return a + b" > main.py
+git add .
+git commit -m "Add main"
+echo "def sub(a, b): return a - b" >> main.py
+echo "assert add(2, 3) == 5" > test.py
+echo "notes to self" > scratch.txt
+--- solution
+git add main.py
+git add test.py
+git commit -m "Add the first test"
+--- hint
+A new file and a changed file are both staged with `git add`.
+--- hint
+Name both files. `scratch.txt` must not go in, so skip the dot.
+--- check shell | One new commit holding both
+git . commits == 2
+git . at HEAD message == Add the first test
+git . at HEAD file test.py
+git . at HEAD file main.py contains def sub
+--- check shell | scratch.txt stayed out
+git . at HEAD missing scratch.txt
+git . untracked scratch.txt
+--- check shell | Nothing is left waiting
+git . clean
+
++++ practice | The commit that did not happen
+--- task
+A teammate changed `timer.txt` and typed:
+
+```
+git commit -m "Fix the timer"
+```
+
+Git answered that nothing was added, so `git log --oneline` still shows one commit. Make the commit happen, with the same message.
+--- starter
+git init
+echo "countdown = 5" > timer.txt
+git add .
+git commit -m "Add the timer"
+echo "countdown = 10" > timer.txt
+git commit -m "Fix the timer"
+--- solution
+git add timer.txt
+git commit -m "Fix the timer"
+--- hint
+`git commit` saves only what is staged. Run `git status` to see where the change is sitting.
+--- hint
+The missing step comes before the commit.
+--- check shell | Two commits
+git . commits == 2
+--- check shell | The new one holds the fix
+git . at HEAD message == Fix the timer
+git . at HEAD file timer.txt == countdown = 10
+--- check shell | Nothing is left waiting
+git . clean
+
++++ practice | One day per commit
+--- task
+`log.txt` holds `day 1: launch`, and is committed. `notes.txt` has a change you are not ready to save.
+
+Add `day 2: orbit` to the end of `log.txt` and commit it with the message `Log day 2`. Then add `day 3: dock` to the end and commit that with the message `Log day 3`. `notes.txt` must stay out of both commits. Finish with `git log --oneline`.
+--- starter
+git init
+echo "day 1: launch" > log.txt
+echo "check the heater" > notes.txt
+git add .
+git commit -m "Start the log"
+echo "heater is fine" >> notes.txt
+--- solution
+echo "day 2: orbit" >> log.txt
+git add log.txt
+git commit -m "Log day 2"
+echo "day 3: dock" >> log.txt
+git add log.txt
+git commit -m "Log day 3"
+git log --oneline
+--- hint
+Each day is its own change and its own commit: edit, stage, commit, then again.
+--- hint
+`notes.txt` is changed too, so stage `log.txt` by name, not with a dot.
+--- check shell | Three commits
+git . commits == 3
+--- check shell | Day 2's commit has day 2 but not day 3
+git . at HEAD~1 message == Log day 2
+git . at HEAD~1 file log.txt contains day 2: orbit
+git . at HEAD~1 file log.txt excludes day 3
+--- check shell | Day 3's commit has all three days
+git . at HEAD message == Log day 3
+git . at HEAD file log.txt contains day 1: launch
+git . at HEAD file log.txt contains day 3: dock
+--- check shell | notes.txt was never committed
+git . at HEAD file notes.txt == check the heater
+git . modified notes.txt
 ran git log
 
 === git-07 | Undoing a change: restore
@@ -802,6 +1875,190 @@ Run `git restore config.txt`, then `cat config.txt`: it should print `thrust = 1
 file config.txt == thrust = 100
 --- check shell | Git did the undoing
 ran git restore
+
++++ practice | Put the crew list back
+--- task
+`crew.txt` was committed holding `Ada, Lin, Sam`. A slip replaced it with a single line, `Ada`. Put `crew.txt` back the way it was in the last commit, using git. You can check with `cat crew.txt` afterwards.
+--- starter
+git init
+echo "Ada, Lin, Sam" > crew.txt
+git add .
+git commit -m "Add the crew list"
+echo "Ada" > crew.txt
+--- solution
+git restore crew.txt
+--- hint
+Git keeps the committed copy. One command copies it back over the broken one.
+--- hint
+`git restore`, followed by the file's name.
+--- check shell | crew.txt is back
+file crew.txt == Ada, Lin, Sam
+--- check shell | Git did it
+ran git restore crew.txt
+--- check shell | Nothing was committed or staged on the way
+git . commits == 1
+git . clean
+
++++ practice | The older spelling
+--- task
+Old guides undo a change with `git checkout --` followed by the file name. Use that older spelling to put both `config.txt` and `sensors.txt` back to their last commit. Then run `git status`: it should say the working tree is clean.
+--- starter
+git init
+echo "thrust = 100" > config.txt
+echo "temp = 21" > sensors.txt
+git add .
+git commit -m "Add config and sensors"
+echo "oops" > config.txt
+echo "temp = -999" > sensors.txt
+--- solution
+git checkout -- config.txt
+git checkout -- sensors.txt
+git status
+--- hint
+`git checkout -- config.txt` does the same job as `git restore config.txt`.
+--- hint
+The two dashes mean "a file name comes next". Do each file, then `git status`.
+--- check shell | Both files are back
+file config.txt == thrust = 100
+file sensors.txt == temp = 21
+--- check shell | You used the older spelling
+ran git checkout -- config.txt
+ran git checkout -- sensors.txt
+--- check shell | The last command showed a clean working tree
+last-printed working tree clean
+
++++ practice | Keep the good, drop the bad
+--- task
+Two files changed since the last commit. The change to `thrust.txt` is good. `timer.txt` was overwritten by mistake.
+
+Put `timer.txt` back to its last commit. Then commit the `thrust.txt` change with the message `Raise the thrust`.
+--- starter
+git init
+echo "thrust = 100" > thrust.txt
+echo "countdown = 10" > timer.txt
+git add .
+git commit -m "Add thrust and timer"
+echo "thrust = 120" > thrust.txt
+echo "oops" > timer.txt
+--- solution
+git restore timer.txt
+git add thrust.txt
+git commit -m "Raise the thrust"
+--- hint
+Restore only the broken file. The good change must survive.
+--- hint
+Then stage `thrust.txt` by name and commit it.
+--- check shell | timer.txt is back
+file timer.txt == countdown = 10
+ran git restore timer.txt
+--- check shell | The thrust change is committed
+git . commits == 2
+git . at HEAD message == Raise the thrust
+git . at HEAD file thrust.txt == thrust = 120
+--- check shell | The broken timer never reached a commit
+git . at HEAD file timer.txt == countdown = 10
+git . clean
+
++++ practice | The file that vanished
+--- task
+`plan.txt` was committed, and then deleted by mistake with `rm`. Bring it back with git.
+
+`notes.txt` also changed since the last commit, and that change is good: it must stay exactly as it is now.
+--- starter
+git init
+echo "orbit twice, then land" > plan.txt
+echo "crew: Ada" > notes.txt
+git add .
+git commit -m "Add plan and notes"
+echo "crew: Lin" >> notes.txt
+rm plan.txt
+--- solution
+git restore plan.txt
+--- hint
+A deleted file is a change too, and `git status` lists it. Git still has the committed copy.
+--- hint
+`git restore` works on a deleted file the same way as on a broken one. Name only `plan.txt`.
+--- check shell | plan.txt is back
+file plan.txt == orbit twice, then land
+--- check shell | The notes change survived
+file notes.txt ~= crew: Ada\ncrew: Lin
+git . modified notes.txt
+--- check shell | Git brought it back
+ran git restore plan.txt
+
++++ practice | One arrow short
+--- task
+`config.txt` was committed with two lines, `thrust = 100` and `fuel = 80`. A teammate wanted to add a third line, `mode = safe`, and typed:
+
+```
+echo "mode = safe" > config.txt
+```
+
+That wiped the first two lines. Get them back with git, then add `mode = safe` the right way. `config.txt` should end up with all three lines, in order, and the change not yet committed.
+--- starter
+git init
+echo "thrust = 100" > config.txt
+echo "fuel = 80" >> config.txt
+git add .
+git commit -m "Add config"
+echo "mode = safe" > config.txt
+--- solution
+git restore config.txt
+echo "mode = safe" >> config.txt
+--- hint
+First undo the damage: put the file back to its last commit.
+--- hint
+Then add the line with `>>`, which adds to the end instead of replacing.
+--- check shell | config.txt holds all three lines, in order
+file config.txt ~= thrust = 100\nfuel = 80\nmode = safe
+--- check shell | You used git to undo the damage
+ran git restore config.txt
+--- check shell | The change is not committed yet
+git . modified config.txt
+git . commits == 1
+
++++ practice | The end of a messy day
+--- task
+Three files changed since the last commit:
+
+- one has a good change worth keeping
+- one was overwritten by mistake
+- one has a debugging line, `print('DEBUG')`, added at the end
+
+Read the changes with `git diff` to tell which is which. Commit the good change with the message `Add the pressure sensor`, and put the other two files back to their last commit. Finish with `git status`, which should say the working tree is clean.
+--- starter
+git init
+echo "temp = 21" > sensors.txt
+echo "thrust = 100" > thrust.txt
+echo "print('go')" > main.py
+git add .
+git commit -m "Start the station"
+echo "pressure = 101" >> sensors.txt
+echo "???" > thrust.txt
+echo "print('DEBUG')" >> main.py
+--- solution
+git diff
+git restore thrust.txt
+git restore main.py
+git add sensors.txt
+git commit -m "Add the pressure sensor"
+git status
+--- hint
+`git diff` shows every change, file by file. The good one only adds a sensible line.
+--- hint
+The other two go back with `git restore`. Stage and commit only the good file.
+--- check shell | The good change is committed
+git . commits == 2
+git . at HEAD message == Add the pressure sensor
+git . at HEAD file sensors.txt contains pressure = 101
+--- check shell | The other two are back
+file thrust.txt == thrust = 100
+file main.py == print('go')
+--- check shell | Nothing bad was committed
+git . at HEAD file main.py excludes DEBUG
+git . at HEAD file thrust.txt == thrust = 100
+--- check shell | The last command showed a clean working tree
+last-printed working tree clean
 
 === git-07b | Un-staging a file: restore --staged
 --- teach
@@ -918,6 +2175,197 @@ used --staged
 ran git status
 printed Changes not staged for commit
 
++++ practice | Take the scratch file out
+--- task
+`git add .` staged two things: a change to `main.py`, and a brand-new file, `scratch.txt`. Take `scratch.txt` back out of the staging area, so that it is untracked again and still in your folder. `main.py` stays staged. Check with `git status`.
+--- starter
+git init
+echo "print('liftoff')" > main.py
+git add .
+git commit -m "Add main"
+echo "print('orbit')" >> main.py
+echo "random ideas" > scratch.txt
+git add .
+--- solution
+git restore --staged scratch.txt
+git status
+--- hint
+Un-staging uses `git restore` with the flag that means "the staged copy".
+--- hint
+`--staged` goes before the file name. The file itself is not touched.
+--- check shell | scratch.txt is untracked again, and still there
+git . untracked scratch.txt
+file scratch.txt == random ideas
+--- check shell | main.py is still staged
+git . staged main.py
+--- check shell | You un-staged it and checked
+used --staged
+ran git status
+
++++ practice | Leave one out of the commit
+--- task
+`git add .` staged changes to both `main.py` and `config.txt`. Only the `main.py` change is ready.
+
+Un-stage `config.txt`, then commit what is left with the message `Add stage two`. The `config.txt` change must stay in the file, not committed.
+--- starter
+git init
+echo "print('liftoff')" > main.py
+echo "thrust = 100" > config.txt
+git add .
+git commit -m "Add main and config"
+echo "print('stage two')" >> main.py
+echo "thrust = 250" > config.txt
+git add .
+--- solution
+git restore --staged config.txt
+git commit -m "Add stage two"
+--- hint
+Take `config.txt` out of the box first. The commit then saves only what is left in it.
+--- hint
+`git restore --staged config.txt`, then `git commit -m` with the message.
+--- check shell | The commit has main.py's change only
+git . commits == 2
+git . at HEAD message == Add stage two
+git . at HEAD file main.py contains stage two
+git . at HEAD file config.txt == thrust = 100
+--- check shell | The config change is still in the folder
+file config.txt == thrust = 250
+git . modified config.txt
+--- check shell | You used --staged
+used --staged
+
++++ practice | Throw it away completely
+--- task
+The change to `thrust.txt` was staged, and now you know it is wrong. Get rid of it completely: `thrust.txt` must be back to its last commit, `thrust = 100`, and nothing may be left staged.
+--- starter
+git init
+echo "thrust = 100" > thrust.txt
+git add .
+git commit -m "Add thrust"
+echo "thrust = 999" > thrust.txt
+git add thrust.txt
+--- solution
+git restore --staged thrust.txt
+git restore thrust.txt
+--- hint
+Plain `git restore` copies the staged version into your folder. Here the staged version is the wrong one.
+--- hint
+Un-stage first, so the staging area holds the committed version again. Then plain restore brings that back.
+--- check shell | thrust.txt is back to the last commit
+file thrust.txt == thrust = 100
+--- check shell | Nothing is staged
+git . clean
+--- check shell | You un-staged, then restored
+used --staged
+ran git restore thrust.txt
+
++++ practice | Keep the staged version
+--- task
+`plan.txt` was committed holding `1. launch`. You added `2. orbit` and staged it. After that you added a junk line, `3. ???`, which is not staged.
+
+Throw away only the junk line. The staged change must stay staged, and `plan.txt` must end up holding exactly `1. launch` and `2. orbit`.
+--- starter
+git init
+echo "1. launch" > plan.txt
+git add .
+git commit -m "Add the plan"
+echo "2. orbit" >> plan.txt
+git add plan.txt
+echo "3. ???" >> plan.txt
+--- solution
+git restore plan.txt
+--- hint
+Plain `git restore` copies the file from the staging area, not always from the last commit.
+--- hint
+`--staged` would take `2. orbit` out of the box, which you do not want here.
+--- check shell | plan.txt holds the two good lines
+file plan.txt ~= 1. launch\n2. orbit
+--- check shell | The orbit line is still staged, not committed
+git . staged plan.txt
+git . commits == 1
+--- check shell | You used git to throw away the junk
+ran git restore plan.txt
+
++++ practice | The restore that did nothing
+--- task
+`git add .` staged changes to `main.py` and `config.txt`. A teammate wanted to take `config.txt` out of the next commit, keeping the edit, and typed:
+
+```
+git restore config.txt
+```
+
+Nothing seemed to change: `config.txt` is still staged. Fix it, so that `config.txt` is no longer staged, its edit is kept, and `main.py` stays staged. Check with `git status`.
+--- starter
+git init
+echo "print('liftoff')" > main.py
+echo "thrust = 100" > config.txt
+git add .
+git commit -m "Add main and config"
+echo "print('stage two')" >> main.py
+echo "thrust = 250" > config.txt
+git add .
+git restore config.txt
+--- solution
+git restore --staged config.txt
+git status
+--- hint
+Without a flag, `git restore` works on the file in your folder, copying the staged version over it. Here that is the same text, so nothing changed.
+--- hint
+The command is one word short: the flag that makes restore work on the box.
+--- check shell | config.txt is no longer staged, and its edit is kept
+git . modified config.txt
+file config.txt == thrust = 250
+--- check shell | main.py is still staged
+git . staged main.py
+--- check shell | You used --staged and checked
+used --staged
+ran git status
+
++++ practice | Split the pile into two commits
+--- task
+You worked on several things, then ran `git add .`, and now four files are staged. Turn them into two commits, in this order:
+
+1. `Fix the timer`: the changes to `timer.py` and the new file `timer_test.py`
+2. `Add the thrust setting`: the change to `thrust.txt`
+
+The change to `notes.txt` is not ready: leave it in your folder, not staged and not committed.
+--- starter
+git init
+echo "countdown = 5" > timer.py
+echo "thrust = 100" > thrust.txt
+echo "ideas" > notes.txt
+git add .
+git commit -m "Start the project"
+echo "countdown = 10" > timer.py
+echo "assert countdown == 10" > timer_test.py
+echo "thrust = 120" > thrust.txt
+echo "more ideas" >> notes.txt
+git add .
+--- solution
+git restore --staged thrust.txt
+git restore --staged notes.txt
+git commit -m "Fix the timer"
+git add thrust.txt
+git commit -m "Add the thrust setting"
+--- hint
+A commit takes everything in the box. Take out what does not belong in the first commit before you make it.
+--- hint
+After the first commit, stage `thrust.txt` again by name for the second. `notes.txt` stays out of both.
+--- check shell | Three commits in all
+git . commits == 3
+--- check shell | The timer commit has only the timer work
+git . at HEAD~1 message == Fix the timer
+git . at HEAD~1 file timer.py == countdown = 10
+git . at HEAD~1 file timer_test.py
+git . at HEAD~1 file thrust.txt == thrust = 100
+--- check shell | The thrust commit comes next
+git . at HEAD message == Add the thrust setting
+git . at HEAD file thrust.txt == thrust = 120
+--- check shell | notes.txt is still only in your folder
+git . at HEAD file notes.txt == ideas
+git . modified notes.txt
+git . clean
+
 === git-08 | Branches
 --- teach
 So far every commit you made went onto one line of history, one after another. This lesson lets you start a second line, so you can try something new without any risk to the version that works.
@@ -1029,6 +2477,186 @@ git . branch feature
 git . has-branch main
 --- check shell | The branch list shows you on it
 printed * feature
+
++++ practice | A branch for an experiment
+--- task
+The repository has two commits on `main`. Make a branch called `experiment` and move onto it, with one command. Then run `git log --oneline` and check that `HEAD` points at `experiment`.
+--- starter
+git init
+echo "thrust = 100" > engine.txt
+git add .
+git commit -m "Add the engine"
+echo "fuel = 80" > fuel.txt
+git add .
+git commit -m "Add the fuel"
+--- solution
+git switch -c experiment
+git log --oneline
+--- hint
+One command both makes a branch and moves you onto it: `git switch` with the "create" flag.
+--- hint
+Then `git log --oneline`. The top line shows `HEAD -> experiment`.
+--- check shell | You are on experiment, and main is still there
+git . branch experiment
+git . has-branch main
+--- check shell | experiment starts with both commits
+git . commits-on experiment == 2
+--- check shell | Your last command showed HEAD on experiment
+ran git log
+last-printed HEAD -> experiment
+
++++ practice | The older spelling
+--- task
+Older guides make a branch and move onto it with `git checkout -b`. Use that spelling to make a branch called `hotfix` and move onto it. Then list the branches with `git branch`.
+--- starter
+git init
+echo "# Rocket" > README.md
+git add .
+git commit -m "Start the project"
+--- solution
+git checkout -b hotfix
+git branch
+--- hint
+`git checkout -b name` does the same as `git switch -c name`.
+--- hint
+Then run `git branch`: the star should be next to `hotfix`.
+--- check shell | You are on hotfix
+git . branch hotfix
+git . has-branch main
+--- check shell | You used the older spelling
+used checkout -b hotfix
+--- check shell | The list shows you on hotfix
+last-printed * hotfix
+
++++ practice | Commit first, then branch
+--- task
+On `main`, a change to `README.md` is already staged. Commit it on `main` with the message `Update the README`. Then make a branch called `sound` and move onto it. `sound` should start with that new commit.
+--- starter
+git init
+echo "# Rocket" > README.md
+git add .
+git commit -m "Start the project"
+echo "Now with sound." >> README.md
+git add README.md
+--- solution
+git commit -m "Update the README"
+git switch -c sound
+--- hint
+The commit comes first, while you are still on `main`.
+--- hint
+A new branch starts from where you are, so after the commit, `git switch -c sound`.
+--- check shell | main has the new commit
+git . commits-on main == 2
+git . at main message == Update the README
+--- check shell | You are on sound, which starts from it
+git . branch sound
+git . same sound main
+--- check shell | Nothing was left staged
+git . clean
+git . commits-on sound == 2
+
++++ practice | One exists, one does not
+--- task
+The branch `radar` already exists, and has one commit that `main` does not. You are on `main`.
+
+Move onto `radar`. Then, from there, make a new branch called `camera` and move onto it. `camera` must start from the newest commit of `radar`.
+--- starter
+git init
+echo "# Rover" > README.md
+git add .
+git commit -m "Start the project"
+git switch -c radar
+echo "range = 40" > radar.txt
+git add .
+git commit -m "Add the radar"
+git switch main
+--- solution
+git switch radar
+git switch -c camera
+--- hint
+`-c` is only for a branch that does not exist yet. Check with `git branch` which ones do.
+--- hint
+Plain `git switch radar` first. A new branch starts from wherever you are standing.
+--- check shell | You are on camera
+git . branch camera
+--- check shell | camera starts from radar's newest commit
+git . same camera radar
+git . commits-on camera == 2
+--- check shell | You moved onto radar without making it again
+ran git switch radar
+
++++ practice | Two switches that failed
+--- task
+A teammate wanted to make a branch called `lights`, go back to `main`, and then make a second branch called `sound`, starting from `main`. They typed:
+
+```
+git switch lights
+git switch -c main
+git switch -c sound
+```
+
+The first two lines fail with errors. `sound` does get made, but `lights` never does. Type a fixed version. You should finish on `sound`, with `lights` also made, and both starting from `main`'s commit.
+--- starter
+git init
+echo "print('menu')" > menu.py
+git add .
+git commit -m "Add the menu"
+--- solution
+git switch -c lights
+git switch main
+git switch -c sound
+--- hint
+`-c` means "create". Use it for a branch that does not exist yet, and never for one that does.
+--- hint
+`lights` is new, so it needs `-c`. `main` already exists, so it must not have it.
+--- check shell | Both branches exist, and you are on sound
+git . has-branch lights
+git . branch sound
+--- check shell | Both start from main's commit
+git . same lights main
+git . same sound main
+--- check shell | You went back to main without making it again
+ran git switch main
+
++++ practice | Start from the right place
+--- task
+The repository has three branches: `main`, `alpha` and `beta`. `alpha` and `beta` each have commits that `main` does not.
+
+Make a branch called `release` that starts from the newest commit of `beta`, not from `main`. Then go back to `main`, and as your last command list the branches. The list should show four branches, with the star next to `main`.
+--- starter
+git init
+echo "# Probe" > README.md
+git add .
+git commit -m "Start the project"
+git switch -c alpha
+echo "try A" > idea.txt
+git add .
+git commit -m "Try idea A"
+git switch main
+git switch -c beta
+echo "antenna = long" > antenna.txt
+git add .
+git commit -m "Add the long antenna"
+echo "power = high" > power.txt
+git add .
+git commit -m "Add high power"
+git switch main
+--- solution
+git switch beta
+git switch -c release
+git switch main
+git branch
+--- hint
+A new branch starts from the commit you are on when you make it.
+--- hint
+Move onto `beta` first, make `release` from there, then go back with plain `git switch main`.
+--- check shell | release starts from beta
+git . same release beta
+git . not-ancestor release main
+--- check shell | You are back on main
+git . branch main
+--- check shell | The last listing shows all four branches, and you on main
+last-printed-exactly alpha\nbeta\n* main\nrelease
 
 === git-09 | Working on a branch
 --- teach
@@ -1147,6 +2775,211 @@ git . branch main
 missing engine.py
 ran ls
 
++++ practice | Commit on your own branch
+--- task
+You are on `main`. Make a branch called `sensors` and move onto it. There, create `sensors.txt` holding `temp = 21`, and commit it with the message `Add the sensors`. Stay on `sensors` when you finish. `main` must not get the new commit.
+--- starter
+git init
+echo "# Station" > README.md
+git add .
+git commit -m "Start the station"
+--- solution
+git switch -c sensors
+echo "temp = 21" > sensors.txt
+git add sensors.txt
+git commit -m "Add the sensors"
+--- hint
+Make and move onto the branch first. A commit goes onto whichever branch you are on.
+--- hint
+Then the usual steps: make the file with `echo` and `>`, `git add`, `git commit -m`.
+--- check shell | sensors has the new commit
+git . branch sensors
+git . commits-on sensors == 2
+git . at sensors file sensors.txt == temp = 21
+--- check shell | main does not
+git . commits-on main == 1
+git . at main missing sensors.txt
+--- check shell | The commit has the right message
+git . at sensors message == Add the sensors
+
++++ practice | Visit a branch, then come back
+--- task
+The branch `lights` has a file, `lights.txt`, that `main` does not have. You are on `main`.
+
+Switch to `lights` and show `lights.txt` with `cat`. Then switch back to `main` and list the folder with `ls`: `lights.txt` is gone again.
+--- starter
+git init
+echo "# Rover" > README.md
+git add .
+git commit -m "Start the rover"
+git switch -c lights
+echo "lamps = 4" > lights.txt
+git add .
+git commit -m "Add the lights"
+git switch main
+--- solution
+git switch lights
+cat lights.txt
+git switch main
+ls
+--- hint
+`lights` already exists, so no `-c`.
+--- hint
+Switching changes the files in your folder to match the branch. `cat` the file while you are on `lights`.
+--- check shell | You read lights.txt on its branch
+ran cat lights.txt
+printed-line lamps = 4
+--- check shell | You are back on main, without the file
+git . branch main
+missing lights.txt
+--- check shell | You listed the folder on main
+ran ls
+
++++ practice | Change a file on a branch
+--- task
+`thrust.txt` holds `thrust = 100` on `main`. Make a branch called `tuning` and move onto it. There, change `thrust.txt` to hold `thrust = 120`, and commit it with the message `Raise the thrust`.
+
+Then switch back to `main` and show `thrust.txt` with `cat`: on `main` it still says `thrust = 100`.
+--- starter
+git init
+echo "thrust = 100" > thrust.txt
+git add .
+git commit -m "Add the thrust"
+--- solution
+git switch -c tuning
+echo "thrust = 120" > thrust.txt
+git add thrust.txt
+git commit -m "Raise the thrust"
+git switch main
+cat thrust.txt
+--- hint
+A change committed on `tuning` belongs to `tuning` only.
+--- hint
+`>` replaces the line. After the commit, `git switch main` and `cat thrust.txt`.
+--- check shell | tuning has the new value
+git . at tuning file thrust.txt == thrust = 120
+git . at tuning message == Raise the thrust
+--- check shell | main still has the old one
+git . at main file thrust.txt == thrust = 100
+--- check shell | You are on main and showed the file there
+git . branch main
+file thrust.txt == thrust = 100
+last-printed thrust = 100
+
++++ practice | Commit before you switch
+--- task
+You are on `feature`. You changed `config.txt` to `thrust = 250` and made a new file, `notes.txt`. Neither is committed yet.
+
+Save both on `feature` in one commit, with the message `Tune the config`. Then switch back to `main`. On `main`, `config.txt` must still say `thrust = 100`, and there must be no `notes.txt` in the folder.
+--- starter
+git init
+echo "thrust = 100" > config.txt
+git add .
+git commit -m "Add config"
+git switch -c feature
+echo "thrust = 250" > config.txt
+echo "try a bigger nozzle" > notes.txt
+--- solution
+git add config.txt
+git add notes.txt
+git commit -m "Tune the config"
+git switch main
+--- hint
+A change you have not committed does not belong to any branch yet. It stays in your folder when you switch.
+--- hint
+Stage both files and commit on `feature` first. Then switch.
+--- check shell | feature has both changes
+git . at feature message == Tune the config
+git . at feature file config.txt == thrust = 250
+git . at feature file notes.txt
+--- check shell | main is untouched
+git . at main file config.txt == thrust = 100
+git . at main missing notes.txt
+--- check shell | You are on main, and the folder matches it
+git . branch main
+file config.txt == thrust = 100
+missing notes.txt
+
++++ practice | The commit that landed on main
+--- task
+A teammate wanted a commit on a new branch `wheels`, leaving `main` alone. They typed:
+
+```
+git switch -c wheels
+echo "wheels = 6" > wheels.txt
+git switch main
+git add wheels.txt
+git commit -m "Add the wheels"
+```
+
+Run as written, the commit lands on `main` instead of `wheels`. Type a fixed version. `wheels` must have the commit, `main` must not, and you should finish on `main`.
+--- starter
+git init
+echo "# Rover" > README.md
+git add .
+git commit -m "Start the rover"
+--- solution
+git switch -c wheels
+echo "wheels = 6" > wheels.txt
+git add wheels.txt
+git commit -m "Add the wheels"
+git switch main
+--- hint
+A commit goes onto the branch you are on at the moment you commit.
+--- hint
+The new file is not committed when they switch, so it follows them to `main`. Move one line.
+--- check shell | wheels has the commit
+git . commits-on wheels == 2
+git . at wheels file wheels.txt == wheels = 6
+--- check shell | main does not
+git . commits-on main == 1
+git . at main missing wheels.txt
+--- check shell | You finished on main
+git . branch main
+missing wheels.txt
+
++++ practice | Two ideas, two branches
+--- task
+You want to try two ideas, each on its own branch, and both starting from `main`:
+
+1. a branch `camera`, with one commit adding `camera.txt` holding `zoom = 4`, message `Add the camera`
+2. a branch `drill`, with one commit adding `drill.txt` holding `depth = 2`, message `Add the drill`
+
+`drill` must not contain the camera commit. Finish on `main`, which gets neither commit.
+--- starter
+git init
+echo "# Lander" > README.md
+git add .
+git commit -m "Start the lander"
+--- solution
+git switch -c camera
+echo "zoom = 4" > camera.txt
+git add camera.txt
+git commit -m "Add the camera"
+git switch main
+git switch -c drill
+echo "depth = 2" > drill.txt
+git add drill.txt
+git commit -m "Add the drill"
+git switch main
+--- hint
+A new branch starts from wherever you are standing when you make it.
+--- hint
+After committing on `camera`, go back to `main` before you make `drill`.
+--- check shell | camera has its commit, and only that
+git . commits-on camera == 2
+git . at camera file camera.txt == zoom = 4
+git . at camera missing drill.txt
+--- check shell | drill has its commit, and not the camera one
+git . commits-on drill == 2
+git . at drill file drill.txt == depth = 2
+git . at drill missing camera.txt
+--- check shell | You finished on main, which has neither
+git . branch main
+git . commits-on main == 1
+missing camera.txt
+missing drill.txt
+
 === git-10 | Merging a branch back
 --- teach
 Last lesson you built `engine.py` on the `feature` branch. Then you switched back to `main` and watched the file disappear, because `main` had never had it. This lesson brings that work home: you copy the branch's commits into `main`, so `main` has the engine too.
@@ -1229,7 +3062,7 @@ The name comes from the fast-forward button on a music or video player: you skip
   <circle cx="130" cy="40" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
   <circle cx="240" cy="40" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
   <text x="130" y="20" font-size="11" text-anchor="middle" fill="#1f2a44">Start the project</text>
-  <text x="240" y="20" font-size="11" text-anchor="middle" fill="#1f2a44">Add the engine</text>
+  <text x="240" y="20" font-size="11" text-anchor="middle" fill="#1f2a44">Add the new ending</text>
   <text x="130" y="68" font-size="12" text-anchor="middle" font-weight="bold" fill="#1d6fd1">main</text>
   <text x="240" y="68" font-size="12" text-anchor="middle" font-weight="bold" fill="#b4232c">new-ending</text>
   <text x="12" y="124" font-size="12" fill="#6c7a93">After</text>
@@ -1237,7 +3070,7 @@ The name comes from the fast-forward button on a music or video player: you skip
   <circle cx="130" cy="120" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
   <circle cx="240" cy="120" r="10" fill="#8fb8f0" stroke="#1f2a44" stroke-width="2"/>
   <text x="130" y="100" font-size="11" text-anchor="middle" fill="#1f2a44">Start the project</text>
-  <text x="240" y="100" font-size="11" text-anchor="middle" fill="#1f2a44">Add the engine</text>
+  <text x="240" y="100" font-size="11" text-anchor="middle" fill="#1f2a44">Add the new ending</text>
   <line x1="140" y1="146" x2="200" y2="146" stroke="#6c7a93" stroke-width="2" stroke-dasharray="4 3"/>
   <polygon points="200,141 210,146 200,151" fill="#6c7a93"/>
   <text x="240" y="150" font-size="12" text-anchor="middle" font-weight="bold" fill="#1d6fd1">main</text>
@@ -1273,6 +3106,221 @@ Type `git merge` followed by the name of the branch whose work you want.
 git . branch main
 file engine.py == thrust = 100
 git . commits == 2
+
++++ practice | Bring the docs home
+--- task
+The branch `docs` has two commits that `main` does not: one adds `GUIDE.md` and one adds `FAQ.md`. You are on `main`. Merge `docs` into `main`.
+--- starter
+git init
+echo "# Rocket" > README.md
+git add .
+git commit -m "Start the project"
+git switch -c docs
+echo "How to launch" > GUIDE.md
+git add .
+git commit -m "Add the guide"
+echo "Q: Is it safe?" > FAQ.md
+git add .
+git commit -m "Add the FAQ"
+git switch main
+--- solution
+git merge docs
+--- hint
+You merge into the branch you are on, and you are on `main` already.
+--- hint
+`git merge` and the name of the branch whose work you want.
+--- check shell | main has both new files
+git . branch main
+file GUIDE.md == How to launch
+file FAQ.md == Q: Is it safe?
+--- check shell | main now points at the same commit as docs
+git . same main docs
+git . commits == 3
+--- check shell | It was a fast-forward: no merge commit
+git . merges == 0
+
++++ practice | Merge from the right branch
+--- task
+You are on the branch `lights`, and its work is finished. Bring it into `main`, so that `main` has `lights.txt` too. Finish on `main`.
+--- starter
+git init
+echo "# Rover" > README.md
+git add .
+git commit -m "Start the rover"
+git switch -c lights
+echo "lamps = 4" > lights.txt
+git add .
+git commit -m "Add the lights"
+--- solution
+git switch main
+git merge lights
+--- hint
+A merge brings a branch into the one you are standing on.
+--- hint
+Stand on `main` first, then name `lights`.
+--- check shell | You are on main, and it has the lights
+git . branch main
+file lights.txt == lamps = 4
+--- check shell | main has caught up with lights
+git . same main lights
+--- check shell | You moved to main to do it
+ran git switch main
+
++++ practice | Branch, commit, merge
+--- task
+Do the whole round trip yourself:
+
+1. Make a branch called `fuel` and move onto it.
+2. Create `fuel.txt` holding `fuel = 80`, and commit it with the message `Add the fuel`.
+3. Go back to `main` and merge `fuel` into it.
+4. Show the history with `git log --oneline`.
+--- starter
+git init
+echo "# Glider" > README.md
+git add .
+git commit -m "Start the glider"
+--- solution
+git switch -c fuel
+echo "fuel = 80" > fuel.txt
+git add fuel.txt
+git commit -m "Add the fuel"
+git switch main
+git merge fuel
+git log --oneline
+--- hint
+Branch, commit, switch back, merge: each step is a command you already know.
+--- hint
+After `git switch main`, run `git merge fuel`. Git should say `Fast-forward`.
+--- check shell | main has the fuel commit
+git . branch main
+git . at main file fuel.txt == fuel = 80
+git . commits == 2
+--- check shell | main and fuel are on the same commit, with no merge commit
+git . same main fuel
+git . merges == 0
+--- check shell | You looked at the history
+ran git log
+
++++ practice | Nothing new to bring
+--- task
+`main` should get the work of two branches, `radar` and `camera`. You are on `main`. Merge `radar`, then merge `camera`.
+
+One of the two has no commits that `main` lacks, so git answers `Already up to date.` for it. Write that branch's name, and nothing else, into a new file `answer.txt`.
+--- starter
+git init
+echo "# Rover" > README.md
+git add .
+git commit -m "Start the rover"
+git switch -c camera
+git switch main
+git switch -c radar
+echo "range = 40" > radar.txt
+git add .
+git commit -m "Add the radar"
+git switch main
+--- solution
+git merge radar
+git merge camera
+echo "camera" > answer.txt
+--- hint
+Read what git answers after each merge.
+--- hint
+A branch that was made and never committed on has nothing new. Git still answers politely.
+--- check shell | main has the radar work
+git . branch main
+git . same main radar
+file radar.txt == range = 40
+--- check shell | You merged both, and one was already up to date
+ran git merge camera
+printed Already up to date.
+--- check shell | answer.txt names the branch with nothing new
+file answer.txt == camera
+
++++ practice | The merge that did nothing
+--- task
+The `feature` branch has a finished `engine.txt`. A teammate wanted it in `main`. They were still on `feature`, and typed:
+
+```
+git merge main
+```
+
+Git answered `Already up to date.`, and `main` still lacks `engine.txt`. Fix it: `main` must get the engine commit, and you should finish on `main`.
+--- starter
+git init
+echo "# Rocket" > README.md
+git add .
+git commit -m "Start the project"
+git switch -c feature
+echo "thrust = 100" > engine.txt
+git add .
+git commit -m "Add the engine"
+git merge main
+--- solution
+git switch main
+git merge feature
+--- hint
+`git merge main` brings `main` into the branch you are on, which is `feature`. `feature` already has everything `main` has.
+--- hint
+Swap the roles: stand on the branch that receives, and name the branch that gives.
+--- check shell | You are on main, and it has the engine
+git . branch main
+file engine.txt == thrust = 100
+--- check shell | main has the engine commit
+git . commits-on main == 2
+git . same main feature
+--- check shell | It was a fast-forward, with no merge commit
+git . merges == 0
+ran git merge feature
+
++++ practice | A release in two rounds
+--- task
+The branch `v2` has two finished commits. Do this, in order:
+
+1. Merge `v2` into `main`.
+2. From the updated `main`, make a branch called `v3` and move onto it.
+3. On `v3`, create `lights.txt` holding `lights = on`, and commit it with the message `Add the landing lights`.
+4. Merge `v3` into `main`, and finish on `main` with `git log --oneline`.
+
+Both merges should be fast-forwards, so the history ends with four commits and no merge commit.
+--- starter
+git init
+echo "# Lander" > README.md
+git add .
+git commit -m "Start the lander"
+git switch -c v2
+echo "legs = 4" > legs.txt
+git add .
+git commit -m "Add the legs"
+echo "radar = on" > radar.txt
+git add .
+git commit -m "Add the radar"
+git switch main
+--- solution
+git merge v2
+git switch -c v3
+echo "lights = on" > lights.txt
+git add lights.txt
+git commit -m "Add the landing lights"
+git switch main
+git merge v3
+git log --oneline
+--- hint
+A new branch starts from where you are, so merge `v2` before you make `v3`.
+--- hint
+If `v3` started from the old `main`, the second merge could not be a fast-forward.
+--- check shell | main has every commit, in a straight line
+git . branch main
+git . commits == 4
+git . merges == 0
+--- check shell | main ends at the landing lights commit
+git . same main v3
+git . at main message == Add the landing lights
+--- check shell | v3 was made after v2 was merged
+git . ancestor v2 v3
+file legs.txt == legs = 4
+file lights.txt == lights = on
+--- check shell | You looked at the history
+ran git log
 
 === git-11 | When both branches moved
 --- teach
@@ -1421,3 +3469,801 @@ git . merges == 1
 git . log contains Merge branch 'docs'
 --- check shell | You looked at the history
 ran git log
+
++++ practice | Join the two lines of work
+--- task
+Since they split, `main` added `engine.txt` and the branch `sensors` added `sensors.txt`. You are on `main`. Merge `sensors` into `main`, so that `main` has both files and a merge commit ties the two lines together.
+--- starter
+git init
+echo "# Station" > README.md
+git add .
+git commit -m "Start the station"
+git switch -c sensors
+echo "temp = 21" > sensors.txt
+git add .
+git commit -m "Add the sensors"
+git switch main
+echo "thrust = 100" > engine.txt
+git add .
+git commit -m "Add the engine"
+--- solution
+git merge sensors
+--- hint
+It is the same command as a fast-forward merge. Git works out that it needs a merge commit.
+--- hint
+Stand on `main`, which you are, and name the other branch.
+--- check shell | main has both sides' files
+git . branch main
+file engine.txt == thrust = 100
+file sensors.txt == temp = 21
+--- check shell | There is one merge commit, with two parents
+git . merges == 1
+git . at HEAD parents == 2
+--- check shell | Git wrote its own message for it
+git . at HEAD message == Merge branch 'sensors'
+
++++ practice | Make the fork yourself
+--- task
+Build a fork in the history, then join it:
+
+1. Make a branch `radio`, and on it commit a new file `radio.txt` holding `channel = 7`, with the message `Add the radio`.
+2. Go back to `main`, and commit a new file `crew.txt` holding `Ada`, with the message `Add the crew`.
+3. Merge `radio` into `main`, and show the history with `git log --oneline`.
+--- starter
+git init
+echo "# Capsule" > README.md
+git add .
+git commit -m "Start the capsule"
+--- solution
+git switch -c radio
+echo "channel = 7" > radio.txt
+git add radio.txt
+git commit -m "Add the radio"
+git switch main
+echo "Ada" > crew.txt
+git add crew.txt
+git commit -m "Add the crew"
+git merge radio
+git log --oneline
+--- hint
+Both branches need a commit of their own after the split, or the merge would be a fast-forward.
+--- hint
+Commit on `radio`, switch to `main`, commit there, then `git merge radio`.
+--- check shell | main has both files, joined by a merge commit
+git . branch main
+git . at main file radio.txt == channel = 7
+git . at main file crew.txt == Ada
+git . merges == 1
+git . at main parents == 2
+--- check shell | radio never got the crew commit
+git . at radio missing crew.txt
+git . commits-on radio == 2
+--- check shell | You looked at the history
+ran git log
+
++++ practice | Same file, different lines
+--- task
+`checklist.txt` has five lines. The branch `radio-check` changed its third line to `radio: done`. On `main`, the first line was changed to `fuel: done`.
+
+1. On `main`, change the last line to `suits: done` too, keeping the other four lines as they are now, and commit with the message `Check the suits`.
+2. Merge `radio-check` into `main`.
+3. Show the merged file with `cat`.
+
+Git joins changes to different lines of the same file by itself, so the merged file should read, top to bottom: `fuel: done`, `water: full`, `radio: done`, `food: packed`, `suits: done`.
+--- starter
+git init
+echo "fuel: todo" > checklist.txt
+echo "water: full" >> checklist.txt
+echo "radio: todo" >> checklist.txt
+echo "food: packed" >> checklist.txt
+echo "suits: todo" >> checklist.txt
+git add .
+git commit -m "Add the checklist"
+git switch -c radio-check
+echo "fuel: todo" > checklist.txt
+echo "water: full" >> checklist.txt
+echo "radio: done" >> checklist.txt
+echo "food: packed" >> checklist.txt
+echo "suits: todo" >> checklist.txt
+git add .
+git commit -m "Check the radio"
+git switch main
+echo "fuel: done" > checklist.txt
+echo "water: full" >> checklist.txt
+echo "radio: todo" >> checklist.txt
+echo "food: packed" >> checklist.txt
+echo "suits: todo" >> checklist.txt
+git add .
+git commit -m "Check the fuel"
+--- solution
+echo "fuel: done" > checklist.txt
+echo "water: full" >> checklist.txt
+echo "radio: todo" >> checklist.txt
+echo "food: packed" >> checklist.txt
+echo "suits: done" >> checklist.txt
+git add checklist.txt
+git commit -m "Check the suits"
+git merge radio-check
+cat checklist.txt
+--- hint
+To change one line with the Terminal tools you know, write the whole file again: `>` for the first line, `>>` for the rest.
+--- hint
+On `main`, the third line still says `radio: todo`. Leave it: the merge brings in the branch's change to it.
+--- check shell | The merged file has all three changes
+file checklist.txt ~= fuel: done\nwater: full\nradio: done\nfood: packed\nsuits: done
+--- check shell | Your commit came before the merge commit
+git . log contains Check the suits
+git . merges == 1
+git . at HEAD parents == 2
+--- check shell | You showed the merged file
+ran cat checklist.txt
+last-printed radio: done
+
++++ practice | Fast-forward or merge commit?
+--- task
+Two branches, `radio` and `camera`, each have one new commit, and both started from `main`'s newest commit. `main` has not moved since.
+
+Merge `radio` into `main` first, then `camera`. One of those merges is a fast-forward and the other makes a merge commit. Write the name of the branch whose merge was the fast-forward, and nothing else, into a new file `ff.txt`.
+--- starter
+git init
+echo "# Probe" > README.md
+git add .
+git commit -m "Start the probe"
+git switch -c radio
+echo "channel = 7" > radio.txt
+git add .
+git commit -m "Add the radio"
+git switch main
+git switch -c camera
+echo "zoom = 4" > camera.txt
+git add .
+git commit -m "Add the camera"
+git switch main
+--- solution
+git merge radio
+git merge camera
+echo "radio" > ff.txt
+--- hint
+Read git's answer after each merge: `Fast-forward`, or `Merge made by the 'ort' strategy.`
+--- hint
+After the first merge, `main` has moved. Has `camera` got that commit?
+--- check shell | main has both branches' work
+git . branch main
+git . ancestor radio main
+git . ancestor camera main
+--- check shell | Exactly one merge commit
+git . merges == 1
+git . at HEAD parents == 2
+--- check shell | ff.txt names the fast-forward
+file ff.txt == radio
+
++++ practice | Merged the wrong way round
+--- task
+`main` added `level.py`, and the branch `sound-fx` added `sounds.txt`. A teammate wanted the sounds in `main`, but was still on `sound-fx`, and typed:
+
+```
+git merge main
+```
+
+That made a merge commit on `sound-fx`, and `main` still lacks `sounds.txt`. Fix it: `main` must end up with both files, and you should finish on `main`. Do not make a second merge commit: the one on `sound-fx` already joins the two lines.
+--- starter
+git init
+echo "# Game" > README.md
+git add .
+git commit -m "Start the game"
+git switch -c sound-fx
+echo "beep" > sounds.txt
+git add .
+git commit -m "Add the sounds"
+git switch main
+echo "level = 1" > level.py
+git add .
+git commit -m "Add a level"
+git switch sound-fx
+git merge main
+--- solution
+git switch main
+git merge sound-fx
+--- hint
+The teammate's merge brought `main` into `sound-fx`. You need the other direction.
+--- hint
+Stand on `main` and merge `sound-fx`. Since `sound-fx` now contains everything `main` has, git can fast-forward.
+--- check shell | You are on main, with both files
+git . branch main
+file sounds.txt == beep
+file level.py == level = 1
+--- check shell | main caught up with sound-fx
+git . same main sound-fx
+--- check shell | Still only one merge commit
+git . merges == 1
+
++++ practice | Two teams, one main
+--- task
+Three lines of work moved on since they split from the first commit: `main` added `engine.txt`, the branch `docs` added `GUIDE.md`, and the branch `tests` added `test.txt`.
+
+You are on `main`. Merge `docs`, then merge `tests`. Finish with `git log --oneline`. `main` should end with every file, and two merge commits, the newest on top.
+--- starter
+git init
+echo "# Rocket" > README.md
+git add .
+git commit -m "Start the project"
+git switch -c docs
+echo "How to launch" > GUIDE.md
+git add .
+git commit -m "Add the guide"
+git switch main
+git switch -c tests
+echo "assert thrust > 0" > test.txt
+git add .
+git commit -m "Add a test"
+git switch main
+echo "thrust = 100" > engine.txt
+git add .
+git commit -m "Add the engine"
+--- solution
+git merge docs
+git merge tests
+git log --oneline
+--- hint
+Each branch moved since the split, and so did `main`, so each merge makes a merge commit.
+--- hint
+`git merge docs`, then `git merge tests`, both from `main`.
+--- check shell | main has every file
+git . branch main
+file engine.txt == thrust = 100
+file GUIDE.md == How to launch
+file test.txt == assert thrust > 0
+--- check shell | Two merge commits, the tests one on top
+git . merges == 2
+git . at HEAD message == Merge branch 'tests'
+git . at HEAD~1 message == Merge branch 'docs'
+--- check shell | Each merge commit has two parents
+git . at HEAD parents == 2
+git . at HEAD~1 parents == 2
+--- check shell | You looked at the history
+ran git log
+
+=== git-gate | Git and version control: mastery gate
+--- teach
+This gate covers the whole course: starting a repository, reading `git status`, staging and committing, reading a diff, undoing a change with `git restore` and `git restore --staged`, and making, switching and merging branches. Most problems mix several of these. There are 10 problems and 12 questions in 112 minutes. You pass with 7 problems and 10 questions right, and there are no hints. To get ready, redo the practice problems of the lessons that felt hard, without opening their hints.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | A telescope from scratch
+--- task
+`project` holds a folder `telescope` with two files, `lens.txt` and `mount.txt`, and a hidden file, `.cache`.
+
+Make `telescope` a git repository; `project` itself must not become one. Then make exactly two commits in it: first `lens.txt`, with the message `Add the lens`, then `mount.txt`, with the message `Add the mount`. `.cache` must never be committed. Finish inside `telescope`, with `git log --oneline` as your last command.
+--- starter
+mkdir telescope
+echo "focal = 1200" > telescope/lens.txt
+echo "type = equatorial" > telescope/mount.txt
+echo "tmp" > telescope/.cache
+--- solution
+cd telescope
+git init
+git add lens.txt
+git commit -m "Add the lens"
+git add mount.txt
+git commit -m "Add the mount"
+git log --oneline
+--- check shell | telescope is the repository, and project is not
+dir telescope/.git
+missing .git
+--- check shell | The first commit holds only the lens
+git telescope commits == 2
+git telescope at HEAD~1 message == Add the lens
+git telescope at HEAD~1 missing mount.txt
+--- check shell | The second commit adds the mount
+git telescope at HEAD message == Add the mount
+git telescope at HEAD file mount.txt == type = equatorial
+--- check shell | .cache was never committed
+git telescope untracked .cache
+git telescope at HEAD missing .cache
+--- check shell | You finished in telescope, looking at the history
+cwd telescope
+last-printed Add the lens
+
++++ problem | Review the box before you save
+--- task
+All three files changed since the last commit, and `git add .` staged every change. Only one change is good: it sets a new thrust value. Another only adds a debugging line, and the third wiped a file by mistake. Read the staged changes to tell which is which.
+
+Make one commit, with the message `Raise the thrust`, that holds only the good change. When you finish, the other two files must be exactly as they were in the last commit, and nothing may be left staged.
+--- starter
+git init
+echo "thrust = 100" > thrust.txt
+echo "print('go')" > main.py
+echo "Ada, Lin, Sam" > crew.txt
+git add .
+git commit -m "Start the flight"
+echo "thrust = 120" > thrust.txt
+echo "print('DEBUG')" >> main.py
+echo "???" > crew.txt
+git add .
+--- solution
+git diff --staged
+git restore --staged main.py
+git restore --staged crew.txt
+git restore main.py
+git restore crew.txt
+git commit -m "Raise the thrust"
+--- check shell | The new commit has the thrust change
+git . commits == 2
+git . at HEAD message == Raise the thrust
+git . at HEAD file thrust.txt == thrust = 120
+--- check shell | Neither bad change reached the commit
+git . at HEAD file main.py == print('go')
+git . at HEAD file crew.txt == Ada, Lin, Sam
+--- check shell | Both files are back in your folder
+file main.py == print('go')
+file crew.txt == Ada, Lin, Sam
+--- check shell | Nothing is left staged
+git . clean
+
++++ problem | Work that belongs on a branch
+--- task
+You are on `main`, and you started new work without making a branch first: `config.txt` is changed and `wings.txt` is new. Neither is committed.
+
+Put this work on a new branch called `wings`, in one commit with the message `Add the wings`. `main` must not get the commit. Finish on `main`, where `config.txt` says `span = 10` and there is no `wings.txt` in the folder.
+--- starter
+git init
+echo "span = 10" > config.txt
+git add .
+git commit -m "Start the glider"
+echo "span = 14" > config.txt
+echo "flaps = 2" > wings.txt
+--- solution
+git switch -c wings
+git add config.txt
+git add wings.txt
+git commit -m "Add the wings"
+git switch main
+--- check shell | wings has the work in one commit
+git . commits-on wings == 2
+git . at wings message == Add the wings
+git . at wings file config.txt == span = 14
+git . at wings file wings.txt == flaps = 2
+--- check shell | main did not get it
+git . commits-on main == 1
+git . at main missing wings.txt
+--- check shell | You are on main, and the folder matches it
+git . branch main
+file config.txt == span = 10
+missing wings.txt
+
++++ problem | A branch off a branch
+--- task
+The branch `ui` has one commit that `main` does not. You are on `main`.
+
+Make a branch `ui-dark` that starts from `ui`. On it, commit a new file `dark.txt` holding `theme = dark`, with the message `Add the dark theme`. Then merge `ui-dark` into `ui`, not into `main`. `main` must stay exactly as it is. Finish on `ui`.
+--- starter
+git init
+echo "# App" > README.md
+git add .
+git commit -m "Start the app"
+git switch -c ui
+echo "theme = light" > theme.txt
+git add .
+git commit -m "Add the theme"
+git switch main
+--- solution
+git switch ui
+git switch -c ui-dark
+echo "theme = dark" > dark.txt
+git add dark.txt
+git commit -m "Add the dark theme"
+git switch ui
+git merge ui-dark
+--- check shell | You are on ui, and it has the dark theme
+git . branch ui
+file dark.txt == theme = dark
+--- check shell | ui caught up with ui-dark, in a straight line
+git . same ui ui-dark
+git . commits-on ui == 3
+git . merges == 0
+--- check shell | main is untouched
+git . commits-on main == 1
+git . at main missing theme.txt
+git . at main missing dark.txt
+
++++ problem | Find the beacon
+--- task
+Besides `main`, the repository has three branches: `alpha`, `beta` and `gamma`. Exactly one of them has a file called `beacon.txt`.
+
+Find that branch, and merge it, and only it, into `main`. Finish on `main`.
+--- starter
+git init
+echo "# Probe" > README.md
+git add .
+git commit -m "Start the probe"
+git switch -c alpha
+echo "mode = a" > alpha.txt
+git add .
+git commit -m "Try mode A"
+git switch main
+git switch -c beta
+echo "freq = 406" > beacon.txt
+git add .
+git commit -m "Add the locator"
+git switch main
+git switch -c gamma
+echo "mode = g" > gamma.txt
+git add .
+git commit -m "Try mode G"
+git switch main
+--- solution
+git branch
+git switch alpha
+ls
+git switch beta
+ls
+git switch main
+git merge beta
+--- check shell | main has the beacon
+git . branch main
+file beacon.txt == freq = 406
+--- check shell | The right branch was merged
+git . ancestor beta main
+git . same main beta
+--- check shell | The other two were not
+git . not-ancestor alpha main
+git . not-ancestor gamma main
+
++++ problem | Three versions of one file
+--- task
+`plan.txt` exists in three versions: `v1` in the last commit, `v2` in the staging area, and `v3` in your folder. `notes.txt` also has a staged change.
+
+Make one commit, with the message `Use plan v3`, in which `plan.txt` holds `v3` and `notes.txt` is as it was in the last commit. The `notes.txt` change must be kept in your folder, not staged. When you finish, nothing is left staged.
+--- starter
+git init
+echo "v1" > plan.txt
+echo "crew: Ada" > notes.txt
+git add .
+git commit -m "Add plan and notes"
+echo "v2" > plan.txt
+echo "crew: Lin" >> notes.txt
+git add .
+echo "v3" > plan.txt
+--- solution
+git restore --staged notes.txt
+git add plan.txt
+git commit -m "Use plan v3"
+--- check shell | The commit has plan v3
+git . commits == 2
+git . at HEAD message == Use plan v3
+git . at HEAD file plan.txt == v3
+--- check shell | The commit has the old notes
+git . at HEAD file notes.txt == crew: Ada
+--- check shell | The notes change is kept, unstaged
+file notes.txt ~= crew: Ada\ncrew: Lin
+git . modified notes.txt
+--- check shell | Nothing is left staged
+git . clean
+file plan.txt == v3
+
++++ problem | Count the damage, then undo it
+--- task
+`telemetry.txt` changed since the last commit, and the change is wrong. Before you undo it, write a report.
+
+Make a new file `report.txt` with two lines: `removed N`, then `added M`. N is the number of lines that `git diff` marks with a minus, and M the number it marks with a plus (the header lines that start `---` and `+++` do not count). Then put `telemetry.txt` back to its last commit.
+--- starter
+git init
+echo "temp = 21" > telemetry.txt
+echo "pressure = 101" >> telemetry.txt
+echo "speed = 7.8" >> telemetry.txt
+echo "battery = 98" >> telemetry.txt
+git add .
+git commit -m "Add the telemetry"
+echo "temp = 21" > telemetry.txt
+echo "speed = 9.9" >> telemetry.txt
+echo "battery = 98" >> telemetry.txt
+--- solution
+git diff
+echo "removed 2" > report.txt
+echo "added 1" >> report.txt
+git restore telemetry.txt
+--- check shell | report.txt counts the diff's lines
+file report.txt ~= removed 2\nadded 1
+--- check shell | telemetry.txt is back to its last commit
+file telemetry.txt ~= temp = 21\npressure = 101\nspeed = 7.8\nbattery = 98
+--- check shell | You read the diff and undid it with git
+ran git diff
+ran git restore telemetry.txt
+git . commits == 1
+
++++ problem | Fix the teammate's script
+--- task
+A teammate's plan was:
+
+1. make `project` a repository
+2. commit `README.md` with the message `Add the readme`
+3. make a branch `feature`, and there commit a new file `tail.txt` holding `tail = long`, with the message `Add the tail`
+4. bring that work into `main`
+
+They typed:
+
+```
+git init
+git add readme.md
+git commit -m Add the readme
+git switch feature
+echo "tail = long" > tail.txt
+git commit -m "Add the tail"
+git merge feature
+```
+
+Several lines are wrong, and some steps are missing. Type a fixed version that carries out the plan, finishing on `main`.
+--- starter
+echo "# Kite" > README.md
+--- solution
+git init
+git add README.md
+git commit -m "Add the readme"
+git switch -c feature
+echo "tail = long" > tail.txt
+git add tail.txt
+git commit -m "Add the tail"
+git switch main
+git merge feature
+--- check shell | The first commit holds only the readme
+git . at HEAD~1 message == Add the readme
+git . at HEAD~1 file README.md == # Kite
+git . at HEAD~1 missing tail.txt
+--- check shell | The feature work is on main
+git . branch main
+git . at main message == Add the tail
+file tail.txt == tail = long
+--- check shell | main caught up with feature, in two commits
+git . same main feature
+git . commits == 2
+git . merges == 0
+
++++ problem | Rescue, commit, merge
+--- task
+You are on the branch `cleanup`. The change to `notes.txt` is good, but `config.txt` was deleted by mistake.
+
+Bring `config.txt` back. Commit the `notes.txt` change on `cleanup`, with the message `Tidy the notes`. Then merge `cleanup` into `main`, and finish on `main`.
+--- starter
+git init
+echo "port = 8080" > config.txt
+echo "todo: tidy" > notes.txt
+git add .
+git commit -m "Start the server"
+git switch -c cleanup
+echo "done: tidy" > notes.txt
+rm config.txt
+--- solution
+git restore config.txt
+git add notes.txt
+git commit -m "Tidy the notes"
+git switch main
+git merge cleanup
+--- check shell | You are on main, with both files right
+git . branch main
+file config.txt == port = 8080
+file notes.txt == done: tidy
+--- check shell | main has the notes commit, and it kept config.txt
+git . at main message == Tidy the notes
+git . at main file config.txt == port = 8080
+--- check shell | cleanup came in as a fast-forward
+git . same main cleanup
+git . merges == 0
+
++++ problem | Merge, then carry on
+--- task
+Since they split, the branch `hotfix` changed the first line of `config.txt` to `speed = 3`, and `main` changed its last line to `light = on`. You are on `main`.
+
+Merge `hotfix` into `main`. Then, on `main`, create `CHANGELOG.md` holding `hotfix merged`, and commit it with the message `Update the changelog`. At the end, `config.txt` must hold `speed = 3`, `wheels = 6` and `light = on`, in that order.
+--- starter
+git init
+echo "speed = 5" > config.txt
+echo "wheels = 6" >> config.txt
+echo "light = off" >> config.txt
+git add .
+git commit -m "Start the rover"
+git switch -c hotfix
+echo "speed = 3" > config.txt
+echo "wheels = 6" >> config.txt
+echo "light = off" >> config.txt
+git add .
+git commit -m "Slow down"
+git switch main
+echo "speed = 5" > config.txt
+echo "wheels = 6" >> config.txt
+echo "light = on" >> config.txt
+git add .
+git commit -m "Turn the light on"
+--- solution
+git merge hotfix
+echo "hotfix merged" > CHANGELOG.md
+git add CHANGELOG.md
+git commit -m "Update the changelog"
+--- check shell | config.txt has both branches' changes
+git . branch main
+file config.txt ~= speed = 3\nwheels = 6\nlight = on
+--- check shell | The merge commit comes just before your commit
+git . merges == 1
+git . at HEAD~1 parents == 2
+git . at HEAD parents == 1
+--- check shell | Your commit adds the changelog
+git . at HEAD message == Update the changelog
+git . at HEAD file CHANGELOG.md == hotfix merged
+git . clean
+
++++ question | How long the log is
+--- ask
+You type these lines in an empty folder. How many lines does the last command print?
+
+```
+git init
+echo "a" > a.txt
+echo "b" > b.txt
+git add a.txt
+git commit -m "Add a"
+git add b.txt
+git commit -m "Add b"
+echo "c" > c.txt
+git log --oneline
+```
+--- answer
+2
+two
+--- why
+`git log --oneline` prints one line per commit. There are two commits, *Add a* and *Add b*. `c.txt` was made but never staged or committed, so it is not in the history at all: it is only an untracked file in the folder.
+
++++ question | Staged and changed again
+--- ask
+`notes.txt` was committed. You change it, run `git add notes.txt`, and then change it once more. Where does `git status` list `notes.txt`?
+--- choice
+Only under "Changes to be committed", because you added it.
+--- choice
+Only under "Changes not staged for commit", because the newest edit replaces the staged one.
+--- choice correct
+Under both headings: the first edit is staged, and the second edit is not.
+--- choice
+Under "Untracked files", because it changed after it was added.
+--- why
+`git add` copies the file as it is at that moment into the staging area. The later edit exists only in your folder. So the staging area differs from the last commit (staged), and your folder differs from the staging area (not staged). Running `git add notes.txt` again would stage the newest version.
+
++++ question | Why two steps
+--- ask
+Why does git make you stage changes with `git add` before `git commit` saves them?
+--- choice correct
+So you choose exactly what goes into each commit, and can save related changes together while other work waits.
+--- choice
+Because git cannot read a file until `git add` has checked it for errors.
+--- choice
+Because `git add` sends the files to a server, and `git commit` confirms they arrived.
+--- choice
+Because a commit can only hold one file, and `git add` picks which one.
+--- why
+The staging area is a box you pack on purpose. You might have fixed a bug and started a new idea at the same time: staging only the fix lets you commit it on its own, with a message about the fix. A commit can hold any number of files, and nothing is sent anywhere.
+
++++ question | The untracked file you deleted
+--- ask
+`draft.txt` has never been added or committed. You delete it with `rm draft.txt`. Can git bring it back?
+--- choice
+Yes: `git restore draft.txt` copies it back from `.git`.
+--- choice
+Yes, but only with the older spelling, `git checkout -- draft.txt`.
+--- choice correct
+No: git never saved a copy of it, so there is nothing to bring back.
+--- choice
+Yes, as long as you run `git status` first, so git notices it is missing.
+--- why
+Git only keeps what you have committed, or staged. An untracked file is visible to git, but git has no copy of it. `git restore` would answer that the name did not match any file known to git. Only a commit, or at least a `git add`, keeps a copy.
+
++++ question | Spot the bug in the save
+--- ask
+These lines should save every change as one commit with the message *Fix the fuel math*. Which line is wrong?
+
+```
+1  git add .
+2  git commit -m Fix the fuel math
+3  git log --oneline
+```
+--- choice
+Line 1: `git add .` stages new files only, not changed ones.
+--- choice correct
+Line 2: without quotes, `-m` gets only `Fix`, and git trips over the other words.
+--- choice
+Line 3: `--oneline` only works once there are two commits.
+--- choice
+Line 2: `-m` must come after the message, not before it.
+--- why
+The shell splits a line into words at every space, so the message needs double quotes to arrive in one piece: `git commit -m "Fix the fuel math"`. `git add .` stages every new and changed file in the folder, and `git log --oneline` works from the first commit.
+
++++ question | What a new branch costs
+--- ask
+A project has 50,000 files and 2,000 commits. About how much work does `git switch -c experiment` do to make the new branch?
+--- choice
+It copies all 50,000 files, so the work grows with the size of the project: O(n).
+--- choice correct
+It writes one tiny file holding a commit's id, the same small amount of work however big the project is: O(1).
+--- choice
+It copies all 2,000 commits into the new branch: O(n) in the number of commits.
+--- choice
+It copies only the files changed since the last commit.
+--- why
+A branch is only a label that points at one commit. Making one writes a small file inside `.git` with that commit's id. Nothing is copied, which is why branches are instant even in huge projects, and why teams make them freely.
+
++++ question | Parents of a merge commit
+--- ask
+`main` and `sound-fx` both have new commits since they split. You merge `sound-fx` into `main`, and git makes the commit *Merge branch 'sound-fx'*. How many parents does that commit have?
+--- answer
+2
+two
+--- why
+An ordinary commit has one parent, the commit it was built on. A merge commit has two: the newest commit of `main` and the newest commit of `sound-fx`. Pointing back at both is how git records that both lines of work are now in `main`.
+
++++ question | Merging in the wrong direction
+--- ask
+`main` has not moved since you made `feature`, and `feature` has two new commits. You are still on `feature`, and you type `git merge main`. What happens?
+--- choice
+`main` gets the two commits, because git merges the newer branch into the older one.
+--- choice correct
+Git says `Already up to date.` and nothing changes: `feature` already has everything `main` has.
+--- choice
+Git makes a merge commit on `feature` with two parents.
+--- choice
+Git refuses, because you can only merge into `main`.
+--- why
+`git merge X` always brings `X` into the branch you are on. `feature` already contains every commit of `main`, so there is nothing to bring. To give `main` the work, `git switch main`, then `git merge feature`: that is a fast-forward, because `main` sits in a straight line behind `feature`.
+
++++ question | The diff that went quiet
+--- ask
+You change `main.py` and run `git add main.py`. Now `git diff` prints nothing. Why?
+--- choice
+`git add` saved the change for good, so there is nothing left to compare.
+--- choice correct
+Plain `git diff` compares your folder with the staging area, and they now match. `git diff --staged` shows the change.
+--- choice
+`git diff` only works once a file has been committed twice.
+--- choice
+The change was lost when you added it, and `git restore` would bring it back.
+--- why
+Plain `git diff` shows changes that are not staged yet. After `git add`, the change is in the staging area, so your folder and the staging area agree. `git diff --staged` compares the staging area with the last commit: exactly what the next commit will save.
+
++++ question | Out of the box, edit kept
+--- ask
+`config.txt` is staged, and you want it left out of the next commit while keeping your edit in the file. Which command does that?
+--- choice
+`git restore config.txt`
+--- choice
+`git checkout -- config.txt`
+--- choice correct
+`git restore --staged config.txt`
+--- choice
+`git diff --staged config.txt`
+--- why
+`--staged` makes `git restore` work on the staging area: it puts the last commit's version back there, so the change is no longer staged, and your folder is not touched. Plain `git restore`, and its older spelling `git checkout --`, work on the file in your folder instead. `git diff --staged` only shows the change.
+
++++ question | Deleting .git
+--- ask
+A project has 30 commits. Someone deletes its hidden `.git` folder. What happens?
+--- choice
+The files in the folder are deleted too, since they belong to git.
+--- choice correct
+The files in the folder stay as they are, but every saved version and the whole history are gone.
+--- choice
+Only the newest commit is lost; the other 29 are kept in the files.
+--- choice
+Git makes a new `.git` folder with the history the next time you run `git status`.
+--- why
+Your files and git's memory of them are separate. `.git` holds every commit, so deleting it loses the history for good, while the files you see stay exactly as they were. Afterwards, `git status` answers that the folder is not a git repository.
+
++++ question | Both branches changed the same line
+--- ask
+On `main`, the line `thrust = 90` in `config.txt` was changed to `thrust = 100`. On the branch `tune`, the same line was changed to `thrust = 120`. You are on `main` and run `git merge tune`. What does git do?
+--- choice
+It keeps `thrust = 100`, because you are on `main`.
+--- choice
+It keeps `thrust = 120`, because the branch being merged wins.
+--- choice correct
+It stops with a conflict, and writes both versions into the file between markers for you to choose.
+--- choice
+It keeps whichever change was committed most recently.
+--- why
+When both sides changed the same lines, git cannot know which one you want, so it refuses to guess. It stops the merge, marks the clashing lines inside the file, and waits for you to edit the file, then `git add` and `git commit`. Changes to different lines, or different files, it joins on its own.

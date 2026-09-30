@@ -272,7 +272,7 @@ If RK45's step count is huge — average step of a few milliseconds, tied to the
 Every run in this lesson leaned on `rtol` and `atol` without explaining them. The next lesson opens up the step controller's accept-or-reject test, shows how to choose both tolerances from the size of each state, and separates the tolerances from the output options `t_eval` and `dense_output`.
 
 ::: context embedded-pair-names Who the pairs are named after
-Carl Runge published the first methods of this kind in 1895, and Wilhelm Kutta extended them in 1901, which is where "Runge–Kutta" comes from. The pairs inside `solve_ivp` are much younger. John Dormand and Peter Prince published their order-5 pair with an order-4 estimate in 1980; it is the heart of `RK45` and of MATLAB's `ode45`. Przemysław Bogacki and Lawrence Shampine published the order-3 pair in 1989; it is `RK23`, and MATLAB's `ode23`. `DOP853` is the eighth-order Dormand–Prince method as coded by Ernst Hairer and Gerhard Wanner, the authors of the standard reference on these solvers.
+Carl Runge published the first methods of this kind in 1895, and Martin Wilhelm Kutta extended them in 1901, which is where "Runge–Kutta" comes from. The pairs inside `solve_ivp` are much younger. John Dormand and Peter Prince published their order-5 pair with an order-4 estimate in 1980; it is the heart of `RK45` and of MATLAB's `ode45`. Przemysław Bogacki and Lawrence Shampine published the order-3 pair in 1989; it is `RK23`, and MATLAB's `ode23`. `DOP853` is the eighth-order Dormand–Prince method as coded by Ernst Hairer and Gerhard Wanner, the authors of the standard reference on these solvers.
 :::
 
 ::: context fsal Reusing the last stage

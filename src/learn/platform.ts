@@ -15,7 +15,8 @@
 import type { Lang } from '@/curriculum/types'
 import { python as py, runCpp, runSql, type RunOutput, type StatusFn } from '@/lib/runtimes'
 import type { ShellState } from '@/lib/shell'
-import type { LearnLang, LearnLesson, LearnRun, Roadmap } from './types'
+import CATALOG from 'virtual:learn-catalog'
+import type { CatalogTrack, LearnLang, LearnLesson, LearnRun, Roadmap } from './types'
 
 /** The languages this app teaches, in the order a beginner should meet them. */
 const TAUGHT: LearnLang[] = ['bash', 'git', 'python', 'sql', 'cpp']
@@ -23,27 +24,37 @@ const TAUGHT: LearnLang[] = ['bash', 'git', 'python', 'sql', 'cpp']
 /*
  * Every course file in tracks/: `<lang>.txt` is a language's basics, and
  * `<lang>.<level>.txt` the courses after it. The files are the same ones
- * LAUNCHPAD carries; ORBIT takes the languages it teaches.
+ * LAUNCHPAD carries; ORBIT takes the languages it teaches. Only the catalog
+ * (catalogOf.ts, built from the files) loads at startup; a course's text
+ * loads when it is opened (load.ts).
  */
-const FILES = import.meta.glob('./tracks/*.txt', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
 const LEVEL_ORDER = ['basics', 'intermediate', 'advanced', 'expert', 'projects']
 
+/*
+ * `cs.<nn>-<name>.txt` is a course of the Computer Science degree: after every
+ * language, in the order its number gives.
+ */
 function sortKey(file: string): [number, number] {
   const [lang = '', level = 'basics'] = file.replace(/\.txt$/, '').split('.')
+  if (lang === 'cs') return [TAUGHT.length, Number.parseInt(level, 10)]
   return [TAUGHT.indexOf(lang as LearnLang), LEVEL_ORDER.indexOf(level)]
 }
 
-/** [file name, text] for every course this app teaches, language by language, basics first. */
-export const LEARN_SOURCES: [string, string][] = Object.entries(FILES)
-  .map(([path, text]): [string, string] => [path.split('/').pop()!, text])
-  .filter(([file]) => sortKey(file)[0] >= 0)
-  .sort((a, b) => {
-    const [la, va] = sortKey(a[0])
-    const [lb, vb] = sortKey(b[0])
-    return la - lb || va - vb
-  })
+/** The courses this app teaches, out of any list of course files, language by language, basics first. */
+export function taughtCourses<T>(all: T[], fileOf: (t: T) => string): T[] {
+  return all
+    .filter((t) => sortKey(fileOf(t))[0] >= 0)
+    .sort((a, b) => {
+      const [la, va] = sortKey(fileOf(a))
+      const [lb, vb] = sortKey(fileOf(b))
+      return la - lb || va - vb
+    })
+}
 
-export const LEARN_LANGS: LearnLang[] = TAUGHT.filter((l) => LEARN_SOURCES.some(([f]) => f.split('.')[0] === l))
+/** Every course this app teaches, from the catalog, language by language, basics first. */
+export const LEARN_COURSES: CatalogTrack[] = taughtCourses(CATALOG.tracks, (t) => t.file)
+
+export const LEARN_LANGS: LearnLang[] = TAUGHT.filter((l) => LEARN_COURSES.some((t) => t.file.split('.')[0] === l))
 
 /**
  * The goals Learn to code opens on, each an order ORBIT's own modules use:
@@ -68,6 +79,12 @@ export const ROADMAPS: Roadmap[] = [
     title: 'Test & Data',
     blurb: 'Every test campaign ends in data: Python to analyse it, SQL to pull telemetry out of where it is kept, and the command line and git to keep the analysis reproducible.',
     steps: ['python', 'sql', 'bash', 'git'],
+  },
+  {
+    id: 'cs-degree',
+    title: 'Computer Science degree',
+    blurb: 'What a computer science bachelor\u2019s teaches, taught to mastery: a first language learned properly, the command line and git, then data structures and algorithms with proofs and costs, systems, and the courses that follow. Every course ends in a gate you must pass to go on.',
+    steps: ['python', 'python-intermediate', 'bash', 'git', 'python-advanced', 'cs-disc', 'cs-dsa1', 'cs-dsa2', 'cpp', 'cpp-intermediate', 'cs-org', 'cs-dsacpp', 'cs-sys', 'cs-os', 'sql', 'sql-intermediate', 'cs-net', 'cs-theory', 'cs-plc', 'cs-sec', 'cs-par', 'cs-cap-interp', 'cs-cap-kv', 'cs-cap-flight', 'cs-cap-http', 'cs-cap-data'],
   },
   {
     id: 'software',

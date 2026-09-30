@@ -24,42 +24,57 @@ import { PlaygroundEmbed, type Graded } from '@/components/ide/Embed'
 import { useLessonCode } from '@/components/ide/lessonCode'
 import { ExplainPanel } from '@/components/ExplainPanel'
 import { SelectionAsk } from '@/components/SelectionAsk'
-import {
-  CertificateMark,
-  IdePanel,
-  IdeWindow,
-  LangMark,
-  RunButton,
-  TerminalView,
-  TestCases,
-} from '@/components/ide'
-import { IconArrowRight, IconCheck, IconChevronLeft, IconClock, IconFlame, IconRefresh } from '@/components/icons'
+import { CertificateMark, LangMark } from '@/components/ide'
+import { IconArrowRight, IconCheck, IconChevronLeft, IconClock, IconFlame } from '@/components/icons'
 import { Bar, Button } from '@/components/ui'
-import { markLearned } from '@/engine/apply'
+import { markPracticed } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
-import { buildProgram, gradeRun, lessonShell } from '@/learn/grade'
-import { LEARN_LANGS } from '@/learn/platform'
+import { buildProgram, gradeRun } from '@/learn/grade'
 import { stuckHelp } from '@/learn/stuck'
-import { MASTERY, ROADMAPS, currentTrack, findLesson, langName, nextLesson, passedCount, streak, trackFor, tracksFor } from '@/learn/index'
+import { MASTERY, ROADMAPS, SHELVES, currentTrack, findLesson, ladderOf, langName, nextLesson, passedCount, streak, trackFor } from '@/learn/index'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
-import { LEVEL_LABEL, type CheckResult, type LearnGrade, type LearnLesson, type LearnTrack, type Roadmap } from '@/learn/types'
+import { useTrack } from '@/learn/load'
+import { LEVEL_LABEL, type CatalogTrack, type CheckResult, type LearnLesson, type LearnTrack, type LessonMeta, type Roadmap, type TrackMeta } from '@/learn/types'
 import { onExplainRequested } from '@/lib/ctxBus'
 import type { ExplainSeed, LibraryLesson } from '@/lib/explain'
-import type { ShellState } from '@/lib/shell'
 import { Markdown } from '@/lib/markdown'
 import { navigate, useRoute } from '@/lib/router'
+import { TerminalChallenge } from './LearnTerminal'
+import { GateView, PracticeSection, RetestBanner, RetestView, TrackLoading } from './LearnMastery'
+import { courseMastered, gateOf, lessonMastered, practiceDone, practiceTotal } from '@/learn/practice'
+import { courseLock } from '@/learn/credit'
 import './learn.css'
 import './pages.css'
 
 export function Learn({ lessonId }: { lessonId?: string }) {
   if (!lessonId) return <LearnHome />
+  if (lessonId === 'retests') return <RetestView />
   const goal = lessonId.startsWith('roadmap-') ? ALL_ROADMAPS.find((r) => `roadmap-${r.id}` === lessonId) : undefined
   if (goal) return <RoadmapView roadmap={goal} />
   const track = trackFor(lessonId)
   if (track) return <CourseView track={track} />
   const found = findLesson(lessonId)
   if (!found) return <LearnHome missing={lessonId} />
-  return <LessonView key={found.lesson.id} track={found.track} lesson={found.lesson} index={found.index} />
+  return <Guarded key={found.lesson.id} found={found} />
+}
+
+/** A lesson or gate, unless its course is still locked behind an earlier course's gate. */
+function Guarded({ found }: { found: { track: CatalogTrack; lesson: LessonMeta; index: number } }) {
+  const { state } = useLearner()
+  const lock = courseLock(found.track, state.learn)
+  if (lock) return <LockedCourse track={found.track} lock={lock} />
+  return <Opened found={found} />
+}
+
+/** The lesson or gate itself, once its course's text has loaded (the catalog knows only its outline). */
+function Opened({ found }: { found: { track: CatalogTrack; lesson: LessonMeta; index: number } }) {
+  const { track, error } = useTrack(found.track.id)
+  const index = track ? track.lessons.findIndex((l) => l.id === found.lesson.id) : -1
+  const lesson = track?.lessons[index]
+  if (track && !lesson) return <LearnHome missing={found.lesson.id} />
+  if (!track || !lesson) return <TrackLoading back={{ href: `#/learn/${found.track.id}`, label: found.track.title }} title={found.lesson.title} error={error} />
+  if (lesson.gate) return <GateView key={lesson.id} track={track} lesson={lesson} />
+  return <LessonView key={lesson.id} track={track} lesson={lesson} index={index} />
 }
 
 function Streak() {
@@ -107,6 +122,8 @@ function LearnHome({ missing }: { missing?: string }) {
         <h1 className="rm-hero__title">Choose where you want to end up. Each roadmap lines up the courses that get you there, one step at a time.</h1>
       </header>
 
+      <RetestBanner />
+
       {!Object.keys(state.read).length ? (
         <a className="lm-brief" href="#/briefing">
           <strong>Where does this code go?</strong> See how it flies a rocket, and how to start the curriculum: the
@@ -139,17 +156,17 @@ function LearnHome({ missing }: { missing?: string }) {
       </section>
 
       <h2 className="lm-h2">Browse every course</h2>
-      {LEARN_LANGS.map((lang) => (
-        <section key={lang} className="lm-lang" aria-label={langName(lang)}>
+      {SHELVES.map((shelf) => (
+        <section key={shelf.key} className="lm-lang" aria-label={shelf.name}>
           <h3 className="lm-lang__name">
-            <LangMark lang={lang} size={20} />
-            {langName(lang)}
+            <LangMark lang={shelf.lang} size={20} />
+            {shelf.name}
             <span className="lm-lang__count">
-              {tracksFor(lang).length} course{tracksFor(lang).length === 1 ? '' : 's'} · {tracksFor(lang).reduce((n, t) => n + t.lessons.length, 0)} lessons
+              {shelf.tracks.length} course{shelf.tracks.length === 1 ? '' : 's'} · {shelf.tracks.reduce((n, t) => n + t.lessons.length, 0)} lessons
             </span>
           </h3>
           <div className="lm-courses">
-            {tracksFor(lang).map((t) => {
+            {shelf.tracks.map((t) => {
               const done = passedCount(t, state.learn)
               return (
                 <a key={t.id} className="lm-course" href={`#/learn/${t.id}`}>
@@ -158,7 +175,7 @@ function LearnHome({ missing }: { missing?: string }) {
                   </span>
                   <span className="lm-course__text">
                     <span className="lm-course__level" data-level={t.level}>
-                      {LEVEL_LABEL[t.level]}
+                      {t.subject ? t.title : LEVEL_LABEL[t.level]}
                     </span>
                     <span className="lm-course__title">{t.name}</span>
                     <span className="lm-course__meta">
@@ -201,7 +218,7 @@ function useColumns(ref: React.RefObject<HTMLElement | null>): number {
 
 /** Where she is on a roadmap: each course's progress, and the step she is on. */
 function progressOn(roadmap: Roadmap, passed: Record<string, string>) {
-  const tracks = roadmap.steps.map((l) => trackFor(l)).filter((t): t is LearnTrack => !!t)
+  const tracks = roadmap.steps.map((l) => trackFor(l)).filter((t): t is CatalogTrack => !!t)
   const done = tracks.map((t) => passedCount(t, passed) === t.lessons.length)
   const current = done.indexOf(false)
   return { tracks, done, current, allDone: current < 0 }
@@ -283,7 +300,7 @@ function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
   const { state } = useLearner()
   const { tracks, done, current, allDone } = progressOn(roadmap, state.learn)
   const finished = done.filter(Boolean).length
-  const go = (t: LearnTrack) => navigate(`/learn/${nextLesson(t, state.learn).id}`)
+  const go = (t: TrackMeta) => navigate(`/learn/${nextLesson(t, state.learn).id}`)
   return (
     <div className="page page--padtop ide-wrap">
       <a className="lm-back" href={`#/learn?goal=${roadmap.id}`}>
@@ -357,8 +374,40 @@ function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
 
 /* ── One course ──────────────────────────────────────────────────────────── */
 
-function CourseView({ track }: { track: LearnTrack }) {
+/** Shown instead of a locked course's lessons: which gate opens it, and the way there. */
+function LockedCourse({ track, lock }: { track: TrackMeta; lock: { track: TrackMeta; gate: LessonMeta } }) {
+  return (
+    <div className="page page--padtop ide-wrap">
+      <a className="lm-back" href={`#/learn/${track.id}`}>
+        <IconChevronLeft size={13} />
+        {track.title}
+      </a>
+      <div className="lm-locked" role="status">
+        <div className="lm-text__kicker">
+          <LangMark lang={track.lang} size={18} />
+          Locked
+        </div>
+        <h1>Pass the {lock.track.name} gate first</h1>
+        <p className="lm-practice__why">
+          {track.name} builds on everything in {lock.track.name}. Its mastery gate is where you show you have it: problems you have not seen and questions on how and why it works, in one sitting. Pass it and this course opens. You can sit it whenever you feel ready, even if you finished that course before gates existed: nothing you already did has to be redone.
+        </p>
+        <div className="lm-help__row">
+          <button type="button" className="ide-run" onClick={() => navigate(`/learn/${lock.gate.id}`)}>
+            Go to the gate
+            <IconArrowRight size={13} />
+          </button>
+          <a className="lm-link" href={`#/learn/${lock.track.id}`}>
+            Back to {lock.track.title}
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CourseView({ track }: { track: TrackMeta }) {
   const { state } = useLearner()
+  const lock = courseLock(track, state.learn)
   const done = passedCount(track, state.learn)
   const total = track.lessons.length
   const next = nextLesson(track, state.learn)
@@ -374,21 +423,40 @@ function CourseView({ track }: { track: LearnTrack }) {
         </span>
         <div style={{ minWidth: 0 }} className="grow">
           <div className="page-head__kicker">
-            {LEVEL_LABEL[track.level]} · {total} lessons <Streak />
+            {track.subject ? track.subject : LEVEL_LABEL[track.level]} · {total} lessons
+            {gateOf(track) ? (courseMastered(track, state.learn) ? ' · Mastered' : ' · ends in a mastery gate') : ''} <Streak />
           </div>
           <h1 className="h-page">{track.name}</h1>
           <p className="page-head__sub">{track.blurb}</p>
         </div>
       </div>
-      {tracksFor(track.lang).length > 1 ? (
-        <nav className="lm-ladder" aria-label={`${langName(track.lang)} courses`}>
-          {tracksFor(track.lang).map((t, i) => (
-            <a key={t.id} href={`#/learn/${t.id}`} className="lm-ladder__step" data-here={t.id === track.id} data-done={passedCount(t, state.learn) === t.lessons.length}>
+      {ladderOf(track).length > 1 ? (
+        <nav className="lm-ladder" aria-label={`${track.subject ?? langName(track.lang)} courses`}>
+          {ladderOf(track).map((t, i) => (
+            <a
+              key={t.id}
+              href={`#/learn/${t.id}`}
+              className="lm-ladder__step"
+              data-here={t.id === track.id}
+              data-done={passedCount(t, state.learn) === t.lessons.length}
+              data-locked={!!courseLock(t, state.learn)}
+            >
               <span className="lm-ladder__n">{i + 1}</span>
-              {LEVEL_LABEL[t.level]}
+              {t.subject ? t.title : LEVEL_LABEL[t.level]}
             </a>
           ))}
         </nav>
+      ) : null}
+      {lock ? (
+        <div className="lm-gate-result" role="status">
+          <span className="grow">
+            Locked until you pass the <strong>{lock.track.name}</strong> mastery gate.
+          </span>
+          <button type="button" className="ide-run" onClick={() => navigate(`/learn/${lock.gate.id}`)}>
+            Go to the gate
+            <IconArrowRight size={13} />
+          </button>
+        </div>
       ) : null}
       <div className="lm-course-go">
         <Bar value={done / total} height={6} />
@@ -411,8 +479,16 @@ function CourseView({ track }: { track: LearnTrack }) {
                 <span className="lm-outline__n" aria-hidden="true">
                   {ok ? <IconCheck size={13} /> : i + 1}
                 </span>
-                <span className="lm-outline__title">{l.title}</span>
-                {ok ? <span className="lm-outline__tag">Passed</span> : here ? <span className="lm-outline__tag lm-outline__tag--next">Next</span> : null}
+                <span className="lm-outline__title">{l.gate ? `Mastery gate: ${l.title}` : l.title}</span>
+                {l.gate ? (
+                  ok ? <span className="lm-outline__tag">Passed</span> : <span className="lm-outline__tag">{l.gate.problems.length} unseen problems · {l.gate.minutes} min</span>
+                ) : ok && practiceTotal(l) ? (
+                  <span className="lm-outline__tag">{lessonMastered(l, state.learn) ? 'Mastered' : `Practice ${practiceDone(l, state.learn)}/${practiceTotal(l)}`}</span>
+                ) : ok ? (
+                  <span className="lm-outline__tag">Passed</span>
+                ) : here ? (
+                  <span className="lm-outline__tag lm-outline__tag--next">Next</span>
+                ) : null}
               </a>
             </li>
           )
@@ -461,16 +537,16 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   const prev = track.lessons[index - 1]
   const next = track.lessons[index + 1]
   // At the end of a course, the way on is the next course in the language.
-  const ladder = tracksFor(track.lang)
+  const ladder = ladderOf(track)
   const nextCourse = next ? undefined : ladder[ladder.findIndex((t) => t.id === track.id) + 1]
 
   useEffect(() => warmUp(lesson.lang), [lesson.lang])
 
   const onPassed = useCallback(() => {
-    setState((s) => markLearned(s, lesson.id))
+    setState((s) => markPracticed(s, lesson, lesson.id))
     setPassedNow(true)
     requestAnimationFrame(() => winRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
-  }, [lesson.id, setState])
+  }, [lesson, setState])
 
   const onGraded = useCallback((passed: boolean, results: CheckResult[]) => {
     setLastResults(results)
@@ -519,7 +595,11 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
         <div className="lm-text__kicker">
           <LangMark lang={track.lang} size={18} />
           Lesson {index + 1} of {track.lessons.length}
-          {passedBefore ? <span className="lm-passed-tag">Passed</span> : null}
+          {lessonMastered(lesson, state.learn) && practiceTotal(lesson) ? (
+            <span className="lm-passed-tag">Mastered</span>
+          ) : passedBefore ? (
+            <span className="lm-passed-tag">Passed</span>
+          ) : null}
         </div>
         <h1 className="lm-text__title">{lesson.title}</h1>
 
@@ -567,7 +647,9 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
             <div className="lm-win">
               <IconCheck size={16} />
               <span className="grow">
-                {next
+                {practiceTotal(lesson) && !lessonMastered(lesson, state.learn)
+                  ? `Lesson passed. Now the practice below: ${practiceTotal(lesson)} more on the same idea, and the lesson is mastered.`
+                  : next
                   ? `Lesson passed. Next: ${next.title}`
                   : nextCourse
                     ? `That is the whole ${track.name} course. Next: ${nextCourse.name}.`
@@ -643,6 +725,8 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
           ) : null}
         </div>
 
+        {(passedBefore || passedNow) && practiceTotal(lesson) ? <PracticeSection lesson={lesson} /> : null}
+
         <div className="lm-nav">
           {prev ? (
             <Button variant="ghost" size="sm" onClick={() => navigate(`/learn/${prev.id}`)}>
@@ -666,70 +750,12 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   )
 }
 
-/** A Terminal or Git challenge: the practice shell, a Check button, and the checks as test cases. */
-function TerminalChallenge({
-  lesson,
-  onPass,
-  onGraded,
-}: {
-  lesson: LearnLesson
-  onPass: () => void
-  onGraded: (passed: boolean, results: CheckResult[]) => void
-}) {
-  const [shell, setShell] = useState<ShellState>(() => lessonShell(lesson))
-  const [key, setKey] = useState(0)
-  const [grade, setGrade] = useState<LearnGrade | null>(null)
-  const [running, setRunning] = useState(false)
-
-  const check = async () => {
-    setRunning(true)
-    setGrade(null)
-    try {
-      const result = await runLearn(lesson, '', { shell })
-      const g = gradeRun(lesson, '', result)
-      setGrade(g)
-      onGraded(g.passed, g.results)
-      if (g.passed) onPass()
-    } finally {
-      setRunning(false)
-    }
-  }
-  const reset = () => {
-    setShell(lessonShell(lesson))
-    setKey((k) => k + 1)
-    setGrade(null)
-  }
-
-  return (
-    <div className="embed">
-      <IdeWindow
-        lang="bash"
-        file="~/project"
-        right={
-          <button type="button" className="ide__tool" onClick={reset} title="Start this lesson over">
-            <IconRefresh size={13} />
-            Reset
-          </button>
-        }
-      >
-        <TerminalView key={key} shell={shell} onShell={setShell} height={300} banner="Practice terminal for this lesson. Type help to see the commands." />
-        <div className="lm-termbar">
-          <RunButton onClick={() => void check()} running={running} label="Check" />
-        </div>
-        <IdePanel tabs={[{ id: 'tests', label: 'Test cases', ...(grade ? { mark: grade.passed ? ('pass' as const) : ('fail' as const) } : {}) }]} active="tests" onTab={() => {}}>
-          <TestCases results={grade?.results ?? null} empty="Do the challenge in the terminal, then press Check." />
-        </IdePanel>
-      </IdeWindow>
-    </div>
-  )
-}
-
 function fence(lang: LearnLesson['lang']): string {
   return lang === 'javascript' ? 'js' : lang === 'typescript' ? 'ts' : lang
 }
 
 /** The first unpassed lesson for a language, for links from elsewhere. */
-export function useNextLesson(lang: string): { lesson: LearnLesson; done: number; total: number } | null {
+export function useNextLesson(lang: string): { lesson: LessonMeta; done: number; total: number } | null {
   const { state } = useLearner()
   return useMemo(() => {
     const track = currentTrack(lang, state.learn)

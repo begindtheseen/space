@@ -145,7 +145,7 @@ A connector that fails two samples out of every three never produces five bad sa
 
 ### The watchdog and the supervisor
 
-A **[[watchdog|watchdog]]** checks that something is still alive. The guidance computer increments a heartbeat counter `hb` every wake-up. The watchdog, a second parallel state inside FDIR, compares it with last wake-up's value: if unchanged, it adds one to `hb_stale`, otherwise it resets it. The transition `[hb_stale >= 5]` from WD_OK to WD_FAULT fires after five stale beats, and WD_FAULT's entry action sets the latched flag `wd_fault`.
+A **[[watchdog|watchdog]]** checks that something is still alive. The guidance computer increments a heartbeat counter `hb` every wake-up. The watchdog, a second parallel state inside FDIR, compares it with last wake-up's value in the watchdog state's own during action: if unchanged, it adds one to `hb_stale`, otherwise it resets it. The transition `[hb_stale >= 5]` from its substate WD_OK to WD_FAULT fires on the fifth stale beat, and WD_FAULT's entry action sets the latched flag `wd_fault`. The counting has to sit in the parent's during action, which runs before the active substate's transitions are tested. Put it in WD_OK's during action instead and, because a state's outgoing transitions are tested before its during action runs, the guard would see the fifth count one wake-up late.
 
 ABORT_SUPERVISOR has two states, MONITORING and ABORT_LATCHED, and one transition between them:
 

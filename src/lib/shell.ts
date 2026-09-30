@@ -8,24 +8,30 @@
    for (M1) still belongs in a real terminal. What it is for is learning what
    the commands mean somewhere nothing can break.
 
-   The shell language, one line (or one script) at a time:
-     - quoting ('…' literal, "…" expands), \ escapes, # comments
-     - $VAR, ${VAR}, ${VAR:-default}, ${#VAR}, $?, $#, $1…$9, "$@", $(…),
-       `…`, $((arithmetic)), ~, and wildcards * ? [abc] (sorted, like bash)
-     - word splitting of unquoted expansions (the classic quoting bugs are real)
+   The shell language, one line (or one script) at a time, as bash 5 runs it:
+     - quoting ('…' literal, "…" expands, $'…' escapes), \ escapes, # comments
+     - $VAR, ${VAR}, $?, $#, $1…$N, "$@", "$*", $(…), `…`, $((arithmetic)), ~,
+       {a,b} and {1..5}, <(command), and wildcards * ? [abc] (sorted)
+     - ${x:-d} ${x:=d} ${x:?msg} ${x:+alt} ${#x} ${x#p} ${x%p} ${x/p/r}
+       ${x:1:2} ${x^^} ${!ref}, indexed and associative arrays
+     - word splitting of unquoted expansions by IFS (the quoting bugs are real)
      - pipes |, lists ; && ||, ! negation, redirection > >> < 2> 2>> 2>&1 >&2
-       &>, /dev/null — and > empties its file before the command runs, as in
-       bash, so `sort f > f` really loses f
-     - NAME=value, export, unset, set -x / -e / -u / -o pipefail
-     - for … in …; do …; done, while/until, if/elif/else/fi, test / [ ]
-     - scripts: bash [-x] [-n] file args, ./file (after chmod +x), source
-       file; a script runs in a child shell that sees only exported
-       variables, and its cd does not move you
-     - exit codes everywhere: 0 is success, 1 failure, 2 misuse, 127 not found
+       &> <<EOF <<-EOF <<'EOF' <<<, /dev/null — and > empties its file before
+       the command runs, as in bash, so `sort f > f` really loses f
+     - NAME=value, export, local, declare, readonly, unset, set -x -e -u -E
+       -o pipefail, set --, shift, shopt, trap (EXIT and ERR), getopts
+     - for … in, for ((…)), while/until, if/elif/else, case, [[ ]], (( )),
+       break/continue, functions with return, { …; } groups, ( … ) subshells
+     - scripts: bash [-x] [-n] file args, bash -c, ./file (after chmod +x,
+       through its #! line), source file; a script runs in a child shell
+       that sees only exported variables, and its cd does not move you
+     - exit codes everywhere: 0 is success, 1 failure, 2 misuse, 126 cannot
+       execute, 127 not found
 
    Tools: pwd ls cd mkdir touch echo printf cat head tail wc grep sort uniq
-   cut tr tee find sed xargs basename dirname seq rm rmdir cp mv chmod env
-   read type which history clear, and git.
+   cut tr tee find sed awk jq paste join column xargs basename dirname seq
+   rm rmdir cp mv chmod env mktemp read mapfile type which history clear,
+   and git (awk, jq, sed and the table tools live in shell*.ts beside this).
 
    git: init (--bare), clone, status (-s), add, rm, commit (-a, --amend),
    log (--oneline --graph --all, ranges, -n), show (rev, rev:path), diff
@@ -42,6 +48,13 @@
    Pure: `run(state, line)` returns the output and a new state, and never
    throws. The UI and the Learn-mode checks read the same state.
    ========================================================================== */
+
+import { runAwk } from './shellAwk'
+import { runJq } from './shellJq'
+import { fmtFloat, fmtInt, fmtStr, fmtUnsigned, parseCNumber, parseFormat, shellQuote, unescapeC } from './shellPrintf'
+import { compileSed, runSedScript, SedError, type SedIO } from './shellSed'
+import { runTable } from './shellTable'
+import type { ToolIO, ToolResult } from './shellTools'
 
 export const HOME = '/home/you'
 export const START = '/home/you/project'
@@ -84,6 +97,10 @@ interface Pending {
   /** rebase: the branch being rebased, and where it was. */
   branch?: string
   origHead?: string | null
+  /** cherry-pick -m N: replay a merge against its Nth parent. */
+  mainline?: number
+  /** cherry-pick -x: note where each copy came from. */
+  recordOrigin?: boolean
 }
 
 interface Bisect {
@@ -124,6 +141,8 @@ interface Repo {
   origHead: string | null
   prevBranch: string | null
   config: Record<string, string>
+  /** Where each branch has pointed, oldest first (branch@{n}). */
+  branchLog: Record<string, { id: string; msg: string }[]>
 }
 
 export interface ShellState {
@@ -139,9 +158,17 @@ export interface ShellState {
   exported: string[]
   /** The exit status of the last command line ($?). */
   status: number
-  opts: { x?: boolean; e?: boolean; u?: boolean; pipefail?: boolean }
+  opts: { x?: boolean; e?: boolean; u?: boolean; pipefail?: boolean; E?: boolean; f?: boolean; nullglob?: boolean; failglob?: boolean; inherit_errexit?: boolean; extglob?: boolean; nocasematch?: boolean }
   /** git config --global */
   gitConfig: Record<string, string>
+  /** The prompt's positional parameters ($0 $1 …, set with set --), arrays, functions, traps and readonly names. */
+  args?: string[]
+  arrays?: Record<string, { assoc?: true; v: Record<string, string> }>
+  funcs?: Record<string, unknown>
+  traps?: Record<string, string>
+  ro?: string[]
+  /** declare -i: assignments to these are arithmetic. */
+  ints?: string[]
 }
 
 const DEFAULT_VARS: Record<string, string> = { HOME, USER: 'you', SHELL: '/bin/bash', PATH: '/usr/local/bin:/usr/bin:/bin' }
@@ -155,7 +182,7 @@ export function newShell(): ShellState {
     history: [],
     transcript: [],
     repos: {},
-    vars: { ...DEFAULT_VARS },
+    vars: { ...DEFAULT_VARS, IFS: ' \t\n' },
     exported: Object.keys(DEFAULT_VARS),
     status: 0,
     opts: {},
@@ -185,6 +212,7 @@ function newRepo(bare = false): Repo {
     origHead: null,
     prevBranch: null,
     config: {},
+    branchLog: {},
   }
 }
 
@@ -199,6 +227,12 @@ function ensure(s: ShellState): void {
   s.status ??= 0
   s.opts ??= {}
   s.gitConfig ??= {}
+  s.args ??= ['bash']
+  s.arrays ??= {}
+  s.funcs ??= {}
+  s.traps ??= {}
+  s.ro ??= []
+  s.ints ??= []
   for (const k of Object.keys(s.repos)) s.repos[k] = normalizeRepo(s.repos[k]!)
 }
 
@@ -288,11 +322,16 @@ function fromLines(lines: string[]): string {
 
 type Part =
   | { t: 'lit'; s: string; q: boolean }
-  | { t: 'var'; name: string; q: boolean; def?: string; len?: boolean; op?: string; arg?: string }
+  /** $name, ${name[index]…}: `op`/`arg` for ${x:-y} ${x#y} ${x:1:2} and friends. */
+  | { t: 'var'; name: string; q: boolean; index?: string; op?: string; arg?: string; len?: boolean; bang?: boolean }
   | { t: 'sub'; cmd: string; q: boolean }
   | { t: 'arith'; expr: string; q: boolean }
+  /** <(command): process substitution, a file holding the command's output. */
+  | { t: 'proc'; cmd: string; q: boolean }
 
-type Op = '&&' | '||' | '|' | ';' | '\n' | '&' | '>' | '>>' | '2>' | '2>>' | '2>&1' | '>&2' | '&>' | '<'
+type Op =
+  | '&&' | '||' | '|' | ';' | '\n' | '&' | '(' | ')' | ';;' | ';&' | ';;&'
+  | '>' | '>>' | '2>' | '2>>' | '2>&1' | '>&2' | '&>' | '&>>' | '<' | '<<' | '<<-' | '<<<'
 
 /** A word (with its quoted and expandable parts) or an operator. */
 export interface Token {
@@ -300,15 +339,114 @@ export interface Token {
   op?: Op
   parts?: Part[]
   line?: number
+  /** The word as it was written, quotes and all. */
+  raw?: string
+  /** On a here-document's delimiter word: the document's text. */
+  heredoc?: { parts: Part[] }
+  /** ((…)): the arithmetic inside. */
+  arith?: string
+  /** name=(…): the words between the parentheses. */
+  array?: Token[]
 }
 
-const REDIR_OPS: Op[] = ['>', '>>', '2>', '2>>', '2>&1', '>&2', '&>', '<']
+const REDIR_OPS: Op[] = ['>', '>>', '2>', '2>>', '2>&1', '>&2', '&>', '&>>', '<', '<<', '<<-', '<<<']
+
+/** Where the `)` closing a `(` is (`from` is just after the `(`), skipping quotes; -1 if none. */
+function matchParen(src: string, from: number): number {
+  let depth = 1
+  for (let j = from; j < src.length; j++) {
+    const d = src[j]
+    if (d === '\\') {
+      j++
+      continue
+    }
+    if (d === "'") {
+      const c = src.indexOf("'", j + 1)
+      if (c < 0) return -1
+      j = c
+      continue
+    }
+    if (d === '"') {
+      let k = j + 1
+      while (k < src.length && src[k] !== '"') k += src[k] === '\\' ? 2 : 1
+      j = k
+      continue
+    }
+    if (d === '(') depth++
+    else if (d === ')' && --depth === 0) return j
+  }
+  return -1
+}
+
+/** Where the `}` closing `${` is (`from` is just after the `{`); -1 if none. */
+function matchBrace(src: string, from: number): number {
+  let depth = 1
+  for (let j = from; j < src.length; j++) {
+    const d = src[j]
+    if (d === '\\') {
+      j++
+      continue
+    }
+    if (d === "'" && depth > 1) {
+      const c = src.indexOf("'", j + 1)
+      if (c < 0) return -1
+      j = c
+      continue
+    }
+    if (d === '{') depth++
+    else if (d === '}' && --depth === 0) return j
+  }
+  return -1
+}
+
+/** The inside of ${…}: ${#x} ${!x} ${x[i]} ${x:-y} ${x#y} ${x/a/b} ${x^^} ${x:1:2}… */
+function braceVar(inner: string, raw: string, q: boolean): Part {
+  const badSub = () => new Error(`${raw}: bad substitution`)
+  if (/^[#!$?@*-]$/.test(inner)) return { t: 'var', name: inner, q }
+  let k = 0
+  let len = false
+  let bang = false
+  if (inner[0] === '#') {
+    len = true
+    k = 1
+  } else if (inner[0] === '!') {
+    bang = true
+    k = 1
+  }
+  const m = /^(?:[A-Za-z_]\w*|\d+|[@*#?$!-])/.exec(inner.slice(k))
+  if (!m) throw badSub()
+  const name = m[0]
+  k += name.length
+  let index: string | undefined
+  if (inner[k] === '[' && /^[A-Za-z_]/.test(name)) {
+    let depth = 0
+    let close = -1
+    for (let j = k; j < inner.length; j++) {
+      if (inner[j] === '[') depth++
+      else if (inner[j] === ']' && --depth === 0) {
+        close = j
+        break
+      }
+    }
+    if (close < 0) throw badSub()
+    index = inner.slice(k + 1, close)
+    k = close + 1
+  }
+  const rest = inner.slice(k)
+  const base = { t: 'var' as const, name, q, ...(index !== undefined ? { index } : {}), ...(len ? { len } : {}), ...(bang ? { bang } : {}) }
+  if (!rest) return base
+  if (bang && (rest === '*' || rest === '@') && index === undefined) return { ...base, op: `!${rest}` }
+  if (len) throw badSub()
+  const om = /^(?::[-=?+]|[-=?+]|##?|%%?|\/[/#%]?|\^\^?|,,?|:)/.exec(rest)
+  if (!om) throw badSub()
+  return { ...base, op: om[0], arg: rest.slice(om[0].length) }
+}
 
 function dollar(src: string, i: number, q: boolean): { part: Part; raw: string; end: number } | null {
   if (src[i] === '`') {
     const close = src.indexOf('`', i + 1)
     if (close < 0) throw new Error('unterminated `')
-    return { part: { t: 'sub', cmd: src.slice(i + 1, close), q }, raw: src.slice(i, close + 1), end: close + 1 }
+    return { part: { t: 'sub', cmd: src.slice(i + 1, close).replace(/\\([`$\\])/g, '$1'), q }, raw: src.slice(i, close + 1), end: close + 1 }
   }
   const n = src[i + 1]
   if (src.startsWith('$((', i)) {
@@ -323,53 +461,104 @@ function dollar(src: string, i: number, q: boolean): { part: Part; raw: string; 
         depth--
       }
     }
-    throw new Error('unterminated $((')
+    // $( (…) ): a command substitution that starts with a subshell.
+    const close = matchParen(src, i + 2)
+    if (close < 0) throw new Error('unterminated $((')
+    return { part: { t: 'sub', cmd: src.slice(i + 2, close), q }, raw: src.slice(i, close + 1), end: close + 1 }
   }
   if (n === '(') {
-    let depth = 1
-    for (let j = i + 2; j < src.length; j++) {
-      const d = src[j]
-      if (d === '\\') {
-        j++
-        continue
-      }
-      if (d === "'") {
-        const c = src.indexOf("'", j + 1)
-        if (c < 0) break
-        j = c
-        continue
-      }
-      if (d === '"') {
-        let k = j + 1
-        while (k < src.length && src[k] !== '"') k += src[k] === '\\' ? 2 : 1
-        j = k
-        continue
-      }
-      if (d === '(') depth++
-      else if (d === ')' && --depth === 0) return { part: { t: 'sub', cmd: src.slice(i + 2, j), q }, raw: src.slice(i, j + 1), end: j + 1 }
-    }
-    throw new Error('unterminated $(')
+    const close = matchParen(src, i + 2)
+    if (close < 0) throw new Error('unterminated $(')
+    return { part: { t: 'sub', cmd: src.slice(i + 2, close), q }, raw: src.slice(i, close + 1), end: close + 1 }
   }
   if (n === '{') {
-    const close = src.indexOf('}', i + 2)
+    const close = matchBrace(src, i + 2)
     if (close < 0) throw new Error('unterminated ${')
-    const inner = src.slice(i + 2, close)
     const raw = src.slice(i, close + 1)
-    let m = /^#([A-Za-z_]\w*)$/.exec(inner)
-    if (m) return { part: { t: 'var', name: m[1]!, q, len: true }, raw, end: close + 1 }
-    m = /^([A-Za-z_]\w*|[0-9?#@*])(?:(:-|##|#|%%|%|\/\/|\/)(.*))?$/.exec(inner)
-    if (!m) throw new Error(`${raw}: bad substitution`)
-    const [, name = '', op, arg = ''] = m
-    if (op === ':-') return { part: { t: 'var', name, q, def: arg }, raw, end: close + 1 }
-    return { part: { t: 'var', name, q, ...(op ? { op, arg } : {}) }, raw, end: close + 1 }
+    return { part: braceVar(src.slice(i + 2, close), raw, q), raw, end: close + 1 }
   }
   if (n && /[A-Za-z_]/.test(n)) {
     let j = i + 1
     while (j < src.length && /\w/.test(src[j]!)) j++
     return { part: { t: 'var', name: src.slice(i + 1, j), q }, raw: src.slice(i, j), end: j }
   }
-  if (n && /[0-9?#@*$!]/.test(n)) return { part: { t: 'var', name: n, q }, raw: `$${n}`, end: i + 2 }
+  if (n && /[0-9?#@*$!-]/.test(n)) return { part: { t: 'var', name: n, q }, raw: `$${n}`, end: i + 2 }
   return null
+}
+
+/** Text in double quotes (or a here-document): only $, ` and \ are special; every part is quoted. */
+function quotedParts(src: string, heredoc: boolean): Part[] {
+  const parts: Part[] = []
+  const lit = (s: string) => {
+    const last = parts[parts.length - 1]
+    if (last?.t === 'lit') last.s += s
+    else parts.push({ t: 'lit', s, q: true })
+  }
+  for (let j = 0; j < src.length; j++) {
+    const d = src[j]!
+    if (d === '\\' && j + 1 < src.length && (heredoc ? '$`\\\n' : '$`"\\\n').includes(src[j + 1]!)) {
+      if (src[j + 1] !== '\n') lit(src[j + 1]!)
+      j++
+      continue
+    }
+    if (d === '$' || d === '`') {
+      const x = dollar(src, j, true)
+      if (x) {
+        parts.push(x.part)
+        j = x.end - 1
+        continue
+      }
+    }
+    lit(d)
+  }
+  return parts
+}
+
+/** A word's text (not split on spaces): quotes removed, expansions found. `dq`: it sits inside double quotes. */
+function wordParts(src: string, dq: boolean): Part[] {
+  if (dq) return quotedParts(src, false)
+  const parts: Part[] = []
+  const lit = (s: string, q: boolean) => {
+    const last = parts[parts.length - 1]
+    if (last?.t === 'lit' && last.q === q) last.s += s
+    else parts.push({ t: 'lit', s, q })
+  }
+  for (let j = 0; j < src.length; j++) {
+    const d = src[j]!
+    if (d === '\\' && j + 1 < src.length) {
+      lit(src[++j]!, true)
+      continue
+    }
+    if (d === "'") {
+      const c = src.indexOf("'", j + 1)
+      if (c < 0) {
+        lit(src.slice(j), false)
+        break
+      }
+      lit(src.slice(j + 1, c), true)
+      j = c
+      continue
+    }
+    if (d === '"') {
+      let k = j + 1
+      while (k < src.length && src[k] !== '"') k += src[k] === '\\' ? 2 : 1
+      const inner = quotedParts(src.slice(j + 1, k), false)
+      if (!inner.length) lit('', true)
+      parts.push(...inner)
+      j = k
+      continue
+    }
+    if (d === '$' || d === '`') {
+      const x = dollar(src, j, false)
+      if (x) {
+        parts.push(x.part)
+        j = x.end - 1
+        continue
+      }
+    }
+    lit(d, false)
+  }
+  return parts
 }
 
 /** Splits a command line into words and operators, keeping quoted text together. */
@@ -379,6 +568,14 @@ export function tokenize(src: string): Token[] {
   let text = ''
   let has = false
   let line = 1
+  let start = 0
+  let array: Token[] | null = null
+  // Here-documents wait for the end of the line; [[ … =~ regex ]] reads its regex specially.
+  let wantDelim: '<<' | '<<-' | null = null
+  const pending: { tok: Token; strip: boolean }[] = []
+  let inCond = false
+  let reMode = false
+  let reDepth = 0
   const lit = (str: string, q: boolean) => {
     const last = parts[parts.length - 1]
     if (last && last.t === 'lit' && last.q === q) last.s += str
@@ -386,25 +583,69 @@ export function tokenize(src: string): Token[] {
     text += str
     has = true
   }
-  const end = () => {
-    if (has) out.push({ text, parts, line })
+  const end = (at: number) => {
+    if (has) {
+      const tok: Token = { text, parts, line, raw: src.slice(start, at), ...(array ? { array } : {}) }
+      out.push(tok)
+      if (wantDelim) {
+        pending.push({ tok, strip: wantDelim === '<<-' })
+        wantDelim = null
+      }
+      const plain = parts.length === 1 && parts[0]!.t === 'lit' && !parts[0]!.q
+      if (reMode) reMode = false
+      else if (plain && text === '[[') inCond = true
+      else if (plain && text === ']]') inCond = false
+      else if (inCond && plain && text === '=~') {
+        reMode = true
+        reDepth = 0
+      }
+    }
     parts = []
     text = ''
     has = false
+    array = null
   }
-  const op = (o: Op) => {
-    end()
+  const op = (o: Op, at: number) => {
+    end(at)
     out.push({ text: o, op: o, line })
+    if (o === '<<' || o === '<<-') wantDelim = o
+  }
+  /** Reads the bodies of the here-documents started on the line that just ended. */
+  const bodies = (from: number): number => {
+    let pos = from
+    for (const { tok, strip } of pending) {
+      const delim = (tok.parts ?? []).map((p) => (p.t === 'lit' ? p.s : '')).join('')
+      const quoted = (tok.parts ?? []).some((p) => p.t === 'lit' && p.q)
+      let body = ''
+      while (pos < src.length) {
+        const nl = src.indexOf('\n', pos)
+        const rawLine = nl < 0 ? src.slice(pos) : src.slice(pos, nl)
+        pos = nl < 0 ? src.length : nl + 1
+        line++
+        const l = strip ? rawLine.replace(/^\t+/, '') : rawLine
+        if (l === delim) break
+        body += `${l}\n`
+      }
+      tok.heredoc = { parts: quoted ? [{ t: 'lit', s: body, q: true }] : quotedParts(body, true) }
+    }
+    pending.length = 0
+    return pos
   }
   for (let i = 0; i < src.length; i++) {
     const c = src[i]!
+    if (!has) start = i
     if (c === '\n') {
-      op('\n')
+      op('\n', i)
       line++
+      if (pending.length) i = bodies(i + 1) - 1
+      continue
+    }
+    if (reMode && has && reDepth > 0 && (c === ' ' || c === '\t')) {
+      lit(c, false)
       continue
     }
     if (c === ' ' || c === '\t' || c === '\r') {
-      end()
+      end(i)
       continue
     }
     if (c === '#' && !has) {
@@ -428,7 +669,17 @@ export function tokenize(src: string): Token[] {
       i = close
       continue
     }
-    if (c === '"') {
+    if (c === '$' && src[i + 1] === "'") {
+      // $'…': ANSI-C quoting, \n and \t as the characters.
+      let j = i + 2
+      while (j < src.length && src[j] !== "'") j += src[j] === '\\' ? 2 : 1
+      if (j >= src.length) throw new Error('unterminated quote')
+      lit(unescapeC(src.slice(i + 2, j), true).text, true)
+      i = j
+      continue
+    }
+    if (c === '"' || (c === '$' && src[i + 1] === '"')) {
+      if (c === '$') i++
       lit('', true)
       let j = i + 1
       let closed = false
@@ -465,61 +716,138 @@ export function tokenize(src: string): Token[] {
         parts.push(x.part)
         text += x.raw
         has = true
+        line += x.raw.split('\n').length - 1
         i = x.end - 1
         continue
       }
     }
+    if (reMode && '()|<>&'.includes(c)) {
+      if (c === '(') reDepth++
+      if (c === ')') reDepth--
+      lit(c, false)
+      continue
+    }
+    if (c === '(') {
+      // name=(a b c): an array.
+      if (has && parts.length === 1 && parts[0]!.t === 'lit' && !parts[0]!.q && /^[A-Za-z_]\w*(\[[^\]]*\])?\+?=$/.test(parts[0]!.s)) {
+        const close = matchParen(src, i + 1)
+        if (close < 0) throw new Error('unterminated (')
+        const inner = src.slice(i + 1, close)
+        array = tokenize(inner).filter((t) => !t.op)
+        text += src.slice(i, close + 1)
+        line += inner.split('\n').length - 1
+        i = close
+        continue
+      }
+      // ((…)): arithmetic, when it closes with )).
+      if (!has && src[i + 1] === '(') {
+        let depth = 0
+        let close = -1
+        for (let j = i + 2; j < src.length; j++) {
+          if (src[j] === '(') depth++
+          else if (src[j] === ')') {
+            if (depth > 0) depth--
+            else {
+              if (src[j + 1] === ')') close = j
+              break
+            }
+          }
+        }
+        if (close > 0) {
+          end(i)
+          out.push({ text: src.slice(i, close + 2), arith: src.slice(i + 2, close), line, raw: src.slice(i, close + 2) })
+          i = close + 1
+          continue
+        }
+      }
+      op('(', i)
+      continue
+    }
+    if (c === ')') {
+      op(')', i)
+      continue
+    }
+    if (c === '<' && src[i + 1] === '(' && !has) {
+      const close = matchParen(src, i + 2)
+      if (close < 0) throw new Error('unterminated <(')
+      parts.push({ t: 'proc', cmd: src.slice(i + 2, close), q: false })
+      text += src.slice(i, close + 1)
+      has = true
+      i = close
+      continue
+    }
     const ahead = src.slice(i, i + 4)
     if (!has) {
       if (ahead.startsWith('2>&1')) {
-        op('2>&1')
+        op('2>&1', i)
         i += 3
         continue
       }
       if (ahead.startsWith('2>>')) {
-        op('2>>')
+        op('2>>', i)
         i += 2
         continue
       }
       if (ahead.startsWith('2>')) {
-        op('2>')
+        op('2>', i)
         i += 1
         continue
       }
       if (ahead.startsWith('1>&2')) {
-        op('>&2')
+        op('>&2', i)
         i += 3
         continue
       }
       if (ahead.startsWith('1>>')) {
-        op('>>')
+        op('>>', i)
         i += 2
         continue
       }
       if (ahead.startsWith('1>')) {
-        op('>')
+        op('>', i)
         i += 1
         continue
       }
     }
     const two = src.slice(i, i + 2)
     if (ahead.startsWith('>&2')) {
-      op('>&2')
+      op('>&2', i)
       i += 2
       continue
     }
-    if (two === '&>' || two === '&&' || two === '||' || two === '>>') {
-      op(two)
+    if (ahead.startsWith('&>>')) {
+      op('&>>', i)
+      i += 2
+      continue
+    }
+    if (ahead.startsWith('<<<')) {
+      op('<<<', i)
+      i += 2
+      continue
+    }
+    if (ahead.startsWith('<<-')) {
+      op('<<-', i)
+      i += 2
+      continue
+    }
+    if (ahead.startsWith(';;&')) {
+      op(';;&', i)
+      i += 2
+      continue
+    }
+    if (two === '&>' || two === '&&' || two === '||' || two === '>>' || two === '<<' || two === ';;' || two === ';&') {
+      op(two, i)
       i += 1
       continue
     }
     if (c === '>' || c === '<' || c === '|' || c === ';' || c === '&') {
-      op(c)
+      op(c, i)
       continue
     }
     lit(c, false)
   }
-  end()
+  end(src.length)
+  if (pending.length) for (const p of pending) p.tok.heredoc = { parts: [] }
   return out
 }
 
@@ -543,6 +871,16 @@ interface ForCmd {
   redirs: Redir[]
   line: number
 }
+/** for ((init; test; step)) */
+interface CForCmd {
+  type: 'cfor'
+  init: string
+  test: string
+  step: string
+  body: List
+  redirs: Redir[]
+  line: number
+}
 interface IfCmd {
   type: 'if'
   arms: { cond: List; body: List }[]
@@ -558,7 +896,43 @@ interface WhileCmd {
   redirs: Redir[]
   line: number
 }
-type Cmd = SimpleCmd | ForCmd | IfCmd | WhileCmd
+interface CaseCmd {
+  type: 'case'
+  word: Token
+  arms: { patterns: Token[]; body: List; end: ';;' | ';&' | ';;&' }[]
+  redirs: Redir[]
+  line: number
+}
+/** { …; } runs here; ( … ) in a subshell. */
+interface GroupCmd {
+  type: 'group' | 'subshell'
+  body: List
+  redirs: Redir[]
+  line: number
+}
+/** [[ … ]]: the words and operators between the brackets. */
+interface CondCmd {
+  type: 'cond'
+  words: Token[]
+  redirs: Redir[]
+  line: number
+}
+/** (( … )) */
+interface ArithCmd {
+  type: 'arith'
+  expr: string
+  redirs: Redir[]
+  line: number
+}
+/** name() { …; }: defining a function. */
+interface FuncCmd {
+  type: 'func'
+  name: string
+  body: Cmd
+  redirs: Redir[]
+  line: number
+}
+type Cmd = SimpleCmd | ForCmd | CForCmd | IfCmd | WhileCmd | CaseCmd | GroupCmd | CondCmd | ArithCmd | FuncCmd
 interface Pipeline {
   cmds: Cmd[]
   negate: boolean
@@ -577,6 +951,8 @@ class ParseError extends Error {
   }
 }
 
+const CASE_ENDS: Op[] = [';;', ';&', ';;&']
+
 function parse(tokens: Token[]): List {
   let i = 0
   const peek = (): Token | undefined => tokens[i]
@@ -584,9 +960,9 @@ function parse(tokens: Token[]): List {
   const fail = (msg: string): never => {
     throw new ParseError(msg, lineAt())
   }
-  const near = (t: Token | undefined) => fail(`syntax error near unexpected token \`${t ? (t.op === '\n' ? 'newline' : t.text) : 'newline'}'`)
+  const near = (t: Token | undefined) => fail(t ? `syntax error near unexpected token \`${t.op === '\n' ? 'newline' : t.text}'` : 'syntax error: unexpected end of file')
   const kw = (t: Token | undefined, ...words: string[]): boolean =>
-    !!t && !t.op && t.parts?.length === 1 && t.parts[0]!.t === 'lit' && !t.parts[0]!.q && words.includes(t.parts[0]!.s)
+    !!t && !t.op && !t.arith && !t.array && t.parts?.length === 1 && t.parts[0]!.t === 'lit' && !t.parts[0]!.q && words.includes(t.parts[0]!.s)
   const isSep = (t: Token | undefined) => t?.op === ';' || t?.op === '\n'
   const skipSeps = () => {
     while (isSep(peek())) i++
@@ -601,14 +977,15 @@ function parse(tokens: Token[]): List {
     }
     i++
   }
+  const startsCommand = (t: Token | undefined) => !!t && (!t.op || REDIR_OPS.includes(t.op) || t.op === '(')
 
-  function list(stops: string[]): List {
+  function list(stops: string[], opStops: Op[] = []): List {
     const items: AndOr[] = []
     for (;;) {
       skipSeps()
       const t = peek()
-      if (!t || kw(t, ...stops)) break
-      if (t.op && !REDIR_OPS.includes(t.op)) near(t)
+      if (!t || kw(t, ...stops) || (t.op && opStops.includes(t.op))) break
+      if (!startsCommand(t)) near(t)
       items.push(andOr())
       const n = peek()
       if (!n) break
@@ -616,7 +993,7 @@ function parse(tokens: Token[]): List {
         i++
         continue
       }
-      if (kw(n, ...stops)) break
+      if (kw(n, ...stops) || (n.op && opStops.includes(n.op))) break
       near(n)
     }
     return items
@@ -628,8 +1005,7 @@ function parse(tokens: Token[]): List {
     while (peek()?.op === '&&' || peek()?.op === '||') {
       const op = tokens[i++]!.op as '&&' | '||'
       skipNewlines()
-      const t = peek()
-      if (!t || (t.op && !REDIR_OPS.includes(t.op))) near(t)
+      if (!startsCommand(peek())) near(peek())
       rest.push({ op, pipe: pipeline() })
     }
     return { first, rest }
@@ -645,8 +1021,7 @@ function parse(tokens: Token[]): List {
     while (peek()?.op === '|') {
       i++
       skipNewlines()
-      const t = peek()
-      if (!t || (t.op && !REDIR_OPS.includes(t.op))) near(t)
+      if (!startsCommand(peek())) near(peek())
       cmds.push(command())
     }
     return { cmds, negate }
@@ -673,25 +1048,80 @@ function parse(tokens: Token[]): List {
     return r
   }
 
+  /** The body of a loop: do … done. */
+  function doDone(what: string): List {
+    skipSeps()
+    expect('do', `write it as: ${what}; do …; done`)
+    const body = list(['done'])
+    expect('done', 'every loop ends with done')
+    return body
+  }
+
   function command(): Cmd {
     const t = peek()
     const line = lineAt()
-    if (kw(t, 'for')) {
+    if (t?.op === '(') {
+      i++
+      const body = list([], [')'])
+      if (peek()?.op !== ')') near(peek())
+      i++
+      return { type: 'subshell', body, redirs: trailingRedirs(), line }
+    }
+    if (t?.arith !== undefined) {
+      i++
+      return { type: 'arith', expr: t.arith, redirs: trailingRedirs(), line }
+    }
+    if (kw(t, '{')) {
+      i++
+      const body = list(['}'])
+      expect('}', 'a { group } ends with } (after a ; or a new line)')
+      return { type: 'group', body, redirs: trailingRedirs(), line }
+    }
+    if (kw(t, '[[')) {
+      i++
+      const words: Token[] = []
+      while (peek() && !kw(peek(), ']]')) {
+        if (peek()!.op === '\n' || peek()!.op === ';') near(peek())
+        words.push(tokens[i++]!)
+      }
+      expect(']]', '[[ needs a closing ]]')
+      return { type: 'cond', words, redirs: trailingRedirs(), line }
+    }
+    if (kw(t, 'function')) {
       i++
       const name = peek()
+      if (!name || name.op) near(name)
+      i++
+      if (peek()?.op === '(' && tokens[i + 1]?.op === ')') i += 2
+      skipNewlines()
+      return { type: 'func', name: name!.text, body: command(), redirs: [], line }
+    }
+    if (t && !t.op && tokens[i + 1]?.op === '(' && tokens[i + 2]?.op === ')' && /^[A-Za-z_][\w.:-]*$/.test(t.text) && t.parts?.every((p) => p.t === 'lit' && !p.q)) {
+      i += 3
+      skipNewlines()
+      const body = command()
+      return { type: 'func', name: t.text, body, redirs: [], line }
+    }
+    if (kw(t, 'for')) {
+      i++
+      const head = peek()
+      if (head?.arith !== undefined) {
+        i++
+        const parts = head.arith.split(';')
+        if (parts.length !== 3) fail('syntax error: for (( … )) needs three parts, as in: for ((i=0; i<3; i++))')
+        return { type: 'cfor', init: parts[0]!, test: parts[1]!, step: parts[2]!, body: doDone('for ((…))'), redirs: trailingRedirs(), line }
+      }
+      const name = head
       if (!name || name.op || !/^[A-Za-z_]\w*$/.test(name.text)) fail('syntax error: for needs a variable name, as in: for f in *.txt; do …; done')
       i++
       let items: Token[] | null = null
+      skipNewlines()
       if (kw(peek(), 'in')) {
         i++
         items = []
         while (peek() && !peek()!.op) items.push(tokens[i++]!)
       }
-      skipSeps()
-      expect('do', 'write it as: for x in a b c; do …; done')
-      const body = list(['done'])
-      expect('done', 'every for loop ends with done')
-      return { type: 'for', name: name!.text, items, body, redirs: trailingRedirs(), line }
+      return { type: 'for', name: name!.text, items, body: doDone('for x in a b c'), redirs: trailingRedirs(), line }
     }
     if (kw(t, 'while', 'until')) {
       const until = kw(t, 'until')
@@ -726,7 +1156,45 @@ function parse(tokens: Token[]): List {
       expect('fi', 'every if ends with fi')
       return { type: 'if', arms, otherwise, redirs: trailingRedirs(), line }
     }
-    if (kw(t, 'do', 'done', 'then', 'elif', 'else', 'fi')) near(t)
+    if (kw(t, 'case')) {
+      i++
+      const word = peek()
+      if (!word || word.op) near(word)
+      i++
+      skipNewlines()
+      expect('in', 'write it as: case "$x" in pattern) …;; esac')
+      const arms: CaseCmd['arms'] = []
+      for (;;) {
+        skipSeps()
+        if (kw(peek(), 'esac')) break
+        if (peek()?.op === '(') i++
+        const patterns: Token[] = []
+        for (;;) {
+          const p = peek()
+          if (!p || p.op) near(p)
+          patterns.push(p!)
+          i++
+          if (peek()?.op === '|') {
+            i++
+            continue
+          }
+          break
+        }
+        if (peek()?.op !== ')') near(peek())
+        i++
+        const body = list(['esac'], CASE_ENDS)
+        const e = peek()
+        let endOp: CaseCmd['arms'][number]['end'] = ';;'
+        if (e?.op && CASE_ENDS.includes(e.op)) {
+          endOp = e.op as typeof endOp
+          i++
+        } else if (!kw(e, 'esac')) near(e)
+        arms.push({ patterns, body, end: endOp })
+      }
+      expect('esac', 'every case ends with esac')
+      return { type: 'case', word: word!, arms, redirs: trailingRedirs(), line }
+    }
+    if (kw(t, 'do', 'done', 'then', 'elif', 'else', 'fi', 'esac', '}', 'in')) near(t)
     const words: Token[] = []
     const redirs: Redir[] = []
     for (;;) {
@@ -760,8 +1228,20 @@ type Chunk = [0 | 1 | 2, string]
 interface Res {
   code: number
   chunks: Chunk[]
-  /** `exit` was run: stop the script (or subshell) here. */
+  /** `exit` was run (or set -e fired): stop the script (or subshell) here. */
   exit?: boolean
+  /** The exit came from an error the shell cannot go on after (set -u, ${x:?}). */
+  fatal?: boolean
+  /** break / continue N loops, or return from a function. */
+  flow?: { k: 'break' | 'continue'; n: number } | { k: 'return' }
+  /** An expansion went wrong (bad arithmetic, say): bash drops the rest of that line. */
+  abort?: boolean
+}
+
+/** An indexed array (keys 0, 1, …) or, with `assoc`, an associative one. */
+interface Arr {
+  assoc?: true
+  v: Record<string, string>
 }
 
 interface Scope {
@@ -773,6 +1253,25 @@ interface Scope {
   /** The script's name, for error messages; null at the prompt. */
   name: string | null
   top: boolean
+  arrays: Record<string, Arr>
+  funcs: Record<string, Cmd>
+  traps: Record<string, string>
+  /** readonly names */
+  ro: string[]
+  /** declare -i names */
+  ints: string[]
+  /** bash -c: set -u and friends end it with 127, as bash does. */
+  dashc?: boolean
+  /** getopts: the letter it is at inside a group like -vc, and the OPTIND it saw last. */
+  optpos?: number
+  optind?: number
+}
+
+/** A variable as it was before `local` hid it. */
+interface Saved {
+  v?: string
+  a?: Arr
+  exp: boolean
 }
 
 interface Ctx {
@@ -781,6 +1280,21 @@ interface Ctx {
   depth: number
   budget: { left: number; blown: boolean }
   status: number
+  /** Inside an if/while test, before && or ||, or after !: set -e does not apply. */
+  cond: boolean
+  /** What each function call hid with `local`, restored when it returns. */
+  frames: Map<string, Saved>[]
+  loops: number
+  /** $LINENO and $BASH_COMMAND */
+  line: number
+  command: string
+  /** FUNCNAME, innermost first. */
+  funcs: string[]
+  /** How many `source`d files deep: return works there too. */
+  sourced: number
+  inTrap: boolean
+  /** Is standard output the screen (ls prints columns) rather than a pipe or file? */
+  tty: boolean
 }
 
 /** Text piped into a command; commands that read it take what they need. */
@@ -788,12 +1302,26 @@ type Stdin = { buf: string } | null
 
 const MAX_COMMANDS = 5000
 const MAX_LOOP = 1000
+const MAX_FUNC_DEPTH = 200
 
 const out = (text: string, code = 0): Res => ({ code, chunks: text ? [[1, text]] : [] })
 /** One line (or several) of output, without the final newline. */
 const ok = (text = ''): Res => out(text ? `${text}\n` : '')
 const bad = (msg: string, code = 1): Res => ({ code, chunks: msg ? [[2, `${msg}\n`]] : [] })
 const stdoutOf = (r: Res) => r.chunks.filter((c) => c[0] === 1).map((c) => c[1]).join('')
+
+/** set -u, ${x:?}: an error that ends a script. */
+class Fatal extends Error {}
+/** Bad arithmetic, a bad substitution: the command does not run and the rest of the line is dropped. */
+class Abort extends Error {}
+
+function topScope(s: ShellState): Scope {
+  return { vars: s.vars, exported: s.exported, args: s.args!, opts: s.opts, name: null, top: true, arrays: s.arrays!, funcs: s.funcs as Record<string, Cmd>, traps: s.traps!, ro: s.ro!, ints: s.ints! }
+}
+
+function newCtx(s: ShellState, scope: Scope, status: number): Ctx {
+  return { s, scope, depth: 0, budget: { left: MAX_COMMANDS, blown: false }, status, cond: false, frames: [], loops: 0, line: 0, command: '', funcs: [], sourced: 0, inTrap: false, tty: true }
+}
 
 /** Runs one line. Never throws: mistakes come back as output, like a shell. */
 export function run(prev: ShellState, line: string): RunResult {
@@ -806,15 +1334,13 @@ export function run(prev: ShellState, line: string): RunResult {
   let res: Res
   try {
     const ast = parse(tokenize(trimmed))
-    const ctx: Ctx = {
-      s,
-      scope: { vars: s.vars, exported: s.exported, args: ['bash'], opts: s.opts, name: null, top: true },
-      depth: 0,
-      budget: { left: MAX_COMMANDS, blown: false },
-      status: s.status,
+    const ctx = newCtx(s, topScope(s), s.status)
+    res = execList(ctx, ast, null, false, true)
+    if (res.exit && !res.fatal) {
+      // A real shell would run its EXIT trap now, then close.
+      res = finish(ctx, res)
+      res.chunks.push([2, 'exit: this practice terminal stays open (a real one would close now).\n'])
     }
-    res = execList(ctx, ast, null, true)
-    if (res.exit) res.chunks.push([2, 'exit: this practice terminal stays open (a real one would close now).\n'])
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     res = err instanceof ParseError || /^unterminated|bad substitution/.test(msg) ? bad(`bash: ${msg}`, 2) : bad(`practice terminal: something went wrong running that (${msg}).`, 1)
@@ -822,6 +1348,7 @@ export function run(prev: ShellState, line: string): RunResult {
 
   let text = ''
   let clear = false
+  let lastFd = 0
   for (const [fd, t] of res.chunks) {
     if (fd === 0) {
       clear = true
@@ -829,7 +1356,9 @@ export function run(prev: ShellState, line: string): RunResult {
       continue
     }
     if (!t) continue
-    text += (text && !text.endsWith('\n') ? '\n' : '') + t
+    // Output runs on as it would in a terminal; an error after unfinished output starts its own line.
+    text += (text && !text.endsWith('\n') && fd !== lastFd ? '\n' : '') + t
+    lastFd = fd
   }
   const shown = text.replace(/\n$/, '')
   s.status = res.code
@@ -837,59 +1366,126 @@ export function run(prev: ShellState, line: string): RunResult {
   return { state: s, out: shown, ...(clear ? { clear } : {}) }
 }
 
-function execList(ctx: Ctx, list: List, stdin: Stdin, quiet = false): Res {
+const lineOfAndOr = (ao: AndOr) => ao.first.cmds[0]?.line ?? 0
+
+/**
+ * Runs a list of commands. `quiet`: it is a test (if, while), so set -e does
+ * not apply. `top`: the script's (or the line's) own list, where an
+ * expansion error drops only the rest of its line.
+ */
+function execList(ctx: Ctx, list: List, stdin: Stdin, quiet = false, top = false): Res {
   const chunks: Chunk[] = []
   let code = ctx.status
-  for (const ao of list) {
-    if (ctx.budget.blown) break
-    const r = execAndOr(ctx, ao, stdin, quiet)
-    chunks.push(...r.chunks)
-    code = r.code
-    ctx.status = code
-    if (r.exit) return { code, chunks, exit: true }
-    if (r.errexit) return { code, chunks, exit: true }
+  let dropLine = -1
+  const wasCond = ctx.cond
+  if (quiet) ctx.cond = true
+  try {
+    for (const ao of list) {
+      if (ctx.budget.blown) break
+      if (dropLine >= 0 && lineOfAndOr(ao) === dropLine) continue
+      const r = execAndOr(ctx, ao, stdin)
+      chunks.push(...r.chunks)
+      code = r.code
+      ctx.status = code
+      if (r.abort && top) {
+        dropLine = lineOfAndOr(ao)
+        continue
+      }
+      if (r.exit || r.errexit) return { code, chunks, exit: true, ...(r.fatal ? { fatal: true } : {}) }
+      if (r.flow) return { code, chunks, flow: r.flow }
+      if (r.abort) return { code, chunks, abort: true }
+    }
+  } finally {
+    ctx.cond = wasCond
   }
   return { code, chunks }
 }
 
 /** `a && b || c`. With set -e, a failure that is not being tested stops a script. */
-function execAndOr(ctx: Ctx, ao: AndOr, stdin: Stdin, quiet: boolean): Res & { errexit?: boolean } {
-  let r = execPipeline(ctx, ao.first, stdin)
+function execAndOr(ctx: Ctx, ao: AndOr, stdin: Stdin): Res & { errexit?: boolean } {
+  const wasCond = ctx.cond
+  const n = ao.rest.length
+  const runPipe = (p: Pipeline, isLast: boolean): Res => {
+    ctx.cond = wasCond || !isLast || p.negate
+    try {
+      return execPipeline(ctx, p, stdin)
+    } finally {
+      ctx.cond = wasCond
+    }
+  }
+  let r = runPipe(ao.first, n === 0)
   const chunks = [...r.chunks]
-  let last = ao.rest.length === 0 && !ao.first.negate
+  let last = n === 0 && !ao.first.negate
   ctx.status = r.code
-  for (let k = 0; k < ao.rest.length && !r.exit; k++) {
+  for (let k = 0; k < n && !r.exit && !r.flow && !r.abort; k++) {
     const { op, pipe } = ao.rest[k]!
     if ((op === '&&') === (r.code === 0)) {
-      r = execPipeline(ctx, pipe, stdin)
+      r = runPipe(pipe, k === n - 1)
       chunks.push(...r.chunks)
       ctx.status = r.code
-      last = k === ao.rest.length - 1 && !pipe.negate
+      last = k === n - 1 && !pipe.negate
     } else last = false
   }
-  const errexit = !quiet && !!ctx.scope.opts.e && !ctx.scope.top && last && r.code !== 0
-  return { code: r.code, chunks, ...(r.exit ? { exit: true } : {}), ...(errexit ? { errexit } : {}) }
+  const failed = !ctx.cond && last && r.code !== 0 && !r.exit && !r.flow && !r.abort
+  if (failed && !ctx.inTrap && ctx.scope.traps.ERR && (!ctx.funcs.length || ctx.scope.opts.E)) chunks.push(...runTrap(ctx, 'ERR', r.code).chunks)
+  const errexit = failed && !!ctx.scope.opts.e && !ctx.scope.top
+  return { code: r.code, chunks, ...(r.exit ? { exit: true } : {}), ...(r.fatal ? { fatal: true } : {}), ...(r.flow ? { flow: r.flow } : {}), ...(r.abort ? { abort: true } : {}), ...(errexit ? { errexit } : {}) }
+}
+
+/** A trap's commands, run with $? set to `status`. */
+function runTrap(ctx: Ctx, sig: string, status: number): Res {
+  const text = ctx.scope.traps[sig]
+  if (!text) return { code: status, chunks: [] }
+  const was = { status: ctx.status, cond: ctx.cond, inTrap: ctx.inTrap }
+  ctx.status = status
+  ctx.cond = false
+  ctx.inTrap = true
+  let r: Res
+  try {
+    r = execList(ctx, parse(tokenize(text)), null, false, true)
+  } catch (e) {
+    r = bad(`${where(ctx, ctx.line)}${(e as Error).message}`, 2)
+  }
+  ctx.cond = was.cond
+  ctx.inTrap = was.inTrap
+  if (!r.exit) ctx.status = was.status
+  return r
+}
+
+/** The shell is ending (a script, bash -c, a subshell): run its EXIT trap, if it has one. */
+function finish(ctx: Ctx, r: Res): Res {
+  if (!ctx.scope.traps.EXIT) return r
+  const tr = runTrap(ctx, 'EXIT', r.code)
+  delete ctx.scope.traps.EXIT
+  return { code: tr.exit ? tr.code : r.code, chunks: [...r.chunks, ...tr.chunks] }
 }
 
 function subshell(ctx: Ctx): Ctx {
   const sc = ctx.scope
-  return { ...ctx, scope: { ...sc, vars: { ...sc.vars }, exported: [...sc.exported], args: [...sc.args], opts: { ...sc.opts }, top: false } }
+  return {
+    ...ctx,
+    scope: { ...sc, vars: { ...sc.vars }, exported: [...sc.exported], args: [...sc.args], opts: { ...sc.opts }, top: false, arrays: clone(sc.arrays), funcs: { ...sc.funcs }, traps: {}, ro: [...sc.ro], ints: [...sc.ints] },
+    frames: [],
+  }
 }
 
 function execPipeline(ctx: Ctx, p: Pipeline, stdin: Stdin): Res {
   let r: Res
-  if (p.cmds.length === 1) r = execCmd(ctx, p.cmds[0]!, stdin, true)
-  else {
+  let codes: number[]
+  if (p.cmds.length === 1) {
+    r = execCmd(ctx, p.cmds[0]!, stdin, ctx.tty)
+    codes = [r.code]
+  } else {
     // Every part of a pipeline runs in a subshell: variables set there (and
     // cd) do not come back, exactly as in bash.
     const chunks: Chunk[] = []
-    const codes: number[] = []
+    codes = []
     let input: Stdin = stdin
     for (let k = 0; k < p.cmds.length; k++) {
       const lastOne = k === p.cmds.length - 1
       const sub = subshell(ctx)
       const [cwd, prev] = [ctx.s.cwd, ctx.s.prev]
-      const part = execCmd(sub, p.cmds[k]!, input, lastOne)
+      const part = execCmd(sub, p.cmds[k]!, input, lastOne && ctx.tty)
       ctx.s.cwd = cwd
       ctx.s.prev = prev
       codes.push(part.code)
@@ -898,10 +1494,12 @@ function execPipeline(ctx: Ctx, p: Pipeline, stdin: Stdin): Res {
         chunks.push(...part.chunks.filter((c) => c[0] !== 1))
         input = { buf: stdoutOf(part) }
       }
+      if (ctx.budget.blown) break
     }
     const failed = [...codes].reverse().find((c) => c !== 0)
     r = { code: ctx.scope.opts.pipefail && failed !== undefined ? failed : codes[codes.length - 1]!, chunks }
   }
+  ctx.scope.arrays.PIPESTATUS = { v: Object.fromEntries(codes.map((c, i) => [String(i), String(c)])) }
   return p.negate ? { ...r, code: r.code === 0 ? 1 : 0 } : r
 }
 
@@ -912,6 +1510,11 @@ function execCmd(ctx: Ctx, cmd: Cmd, stdin: Stdin, tty: boolean): Res {
   const table: Record<1 | 2, Dest> = { 1: { k: 'pass', fd: 1 }, 2: { k: 'pass', fd: 2 } }
   let input = stdin
   const pre: Chunk[] = []
+  const rx = expander(ctx, pre)
+  const fail = (msg: string): Res => {
+    rx.cleanup()
+    return { code: 1, chunks: [...pre, [2, `${where(ctx, cmd.line)}${msg}\n`]] }
+  }
   for (const r of cmd.redirs) {
     if (r.op === '2>&1') {
       table[2] = table[1]
@@ -921,13 +1524,26 @@ function execCmd(ctx: Ctx, cmd: Cmd, stdin: Stdin, tty: boolean): Res {
       table[1] = table[2]
       continue
     }
+    if (r.op === '<<' || r.op === '<<-') {
+      try {
+        input = { buf: rx.expandParts(r.target!.heredoc?.parts ?? [], { split: false, glob: false }).join('') }
+      } catch (e) {
+        return { ...fail((e as Error).message), ...(e instanceof Abort ? { abort: true } : {}) }
+      }
+      continue
+    }
     let target: string
     try {
-      const words = expander(ctx, pre).expand(r.target!, { glob: false })
-      if (words.length !== 1) return { code: 1, chunks: [...pre, [2, `${where(ctx, cmd.line)}${r.target!.text}: ambiguous redirect\n`]] }
+      if (r.op === '<<<') {
+        input = { buf: `${rx.word(r.target!)}\n` }
+        continue
+      }
+      const words = rx.expand(r.target!, { glob: false })
+      if (words.length !== 1) return fail(`${r.target!.text}: ambiguous redirect`)
       target = words[0]!
     } catch (e) {
-      return { code: 1, chunks: [...pre, [2, `${where(ctx, cmd.line)}${(e as Error).message}\n`]] }
+      if (e instanceof Fatal) return { ...fail(e.message), exit: true, fatal: true, code: ctx.scope.dashc ? 127 : 1 }
+      return { ...fail((e as Error).message), ...(e instanceof Abort ? { abort: true } : {}) }
     }
     const abs = resolve(s.cwd, target)
     if (r.op === '<') {
@@ -936,41 +1552,80 @@ function execCmd(ctx: Ctx, cmd: Cmd, stdin: Stdin, tty: boolean): Res {
         continue
       }
       const node = lookup(s, abs)
-      if (!node) return { code: 1, chunks: [...pre, [2, `${where(ctx, cmd.line)}${target}: No such file or directory\n`]] }
-      if (node.kind === 'dir') return { code: 1, chunks: [...pre, [2, `${where(ctx, cmd.line)}${target}: Is a directory\n`]] }
+      if (!node) return fail(`${target}: No such file or directory`)
+      if (node.kind === 'dir') return fail(`${target}: Is a directory`)
       input = { buf: node.content }
       continue
     }
     let dest: Dest = { k: 'null' }
     if (abs !== '/dev/null') {
-      const append = r.op === '>>' || r.op === '2>>'
+      if (abs === '/dev/stderr' || abs === '/dev/stdout') {
+        const d = table[abs === '/dev/stderr' ? 2 : 1]
+        if (r.op === '>' || r.op === '>>') table[1] = d
+        else if (r.op === '&>' || r.op === '&>>') table[1] = table[2] = d
+        else table[2] = d
+        continue
+      }
+      const append = r.op === '>>' || r.op === '2>>' || r.op === '&>>'
       // > empties the file before the command even starts.
       const node = lookup(s, abs)
       const err = append && node?.kind === 'file' ? null : writeFile(s, abs, '', false)
-      if (err) return { code: 1, chunks: [...pre, [2, `${err.replace(/^bash: /, where(ctx, cmd.line))}\n`]] }
+      if (err) return fail(err.replace(/^bash: /, ''))
       dest = { k: 'file', path: abs }
     }
     if (r.op === '>' || r.op === '>>') table[1] = dest
-    else if (r.op === '&>') table[1] = table[2] = dest
+    else if (r.op === '&>' || r.op === '&>>') table[1] = table[2] = dest
     else table[2] = dest
   }
 
   const innerTty = tty && table[1].k === 'pass' && table[1].fd === 1
   let r: Res
+  const wasTty = ctx.tty
+  ctx.tty = innerTty
   switch (cmd.type) {
     case 'simple':
       r = execSimple(ctx, cmd, input, innerTty)
       break
     case 'for':
-      r = execFor(ctx, cmd, input, innerTty)
+      r = execFor(ctx, cmd, input)
+      break
+    case 'cfor':
+      r = execCFor(ctx, cmd, input)
       break
     case 'while':
-      r = execWhile(ctx, cmd, input, innerTty)
+      r = execWhile(ctx, cmd, input)
       break
     case 'if':
-      r = execIf(ctx, cmd, input, innerTty)
+      r = execIf(ctx, cmd, input)
+      break
+    case 'case':
+      r = execCase(ctx, cmd, input)
+      break
+    case 'group':
+      r = execList(ctx, cmd.body, input)
+      break
+    case 'subshell': {
+      const sub = subshell(ctx)
+      const [cwd, prev] = [s.cwd, s.prev]
+      const got = finish(sub, execList(sub, cmd.body, input))
+      s.cwd = cwd
+      s.prev = prev
+      r = { code: got.code, chunks: got.chunks }
+      break
+    }
+    case 'cond':
+      r = execCond(ctx, cmd)
+      break
+    case 'arith':
+      r = execArith(ctx, cmd.expr, cmd.line)
+      break
+    case 'func':
+      ctx.scope.funcs[cmd.name] = cmd.body
+      r = { code: 0, chunks: [] }
       break
   }
+  ctx.tty = wasTty
+  rx.cleanup()
 
   const routed: Chunk[] = [...pre]
   for (const [fd, text] of r.chunks) {
@@ -989,29 +1644,80 @@ function where(ctx: Ctx, line: number): string {
   return ctx.scope.name ? `${ctx.scope.name}: line ${line}: ` : 'bash: '
 }
 
-function execFor(ctx: Ctx, cmd: ForCmd, stdin: Stdin, _tty: boolean): Res {
+/** What a loop does after one pass of its body: go on, stop, or hand a break/return/exit up. */
+function loopStep(r: Res, code: number, chunks: Chunk[]): 'next' | 'stop' | Res {
+  if (r.flow?.k === 'break') return r.flow.n > 1 ? { code, chunks, flow: { k: 'break', n: r.flow.n - 1 } } : 'stop'
+  if (r.flow?.k === 'continue') return r.flow.n > 1 ? { code, chunks, flow: { k: 'continue', n: r.flow.n - 1 } } : 'next'
+  if (r.flow) return { code, chunks, flow: r.flow }
+  if (r.exit) return { code, chunks, exit: true, ...(r.fatal ? { fatal: true } : {}) }
+  if (r.abort) return { code, chunks, abort: true }
+  return 'next'
+}
+
+function body(ctx: Ctx, list: List, stdin: Stdin): Res {
+  ctx.loops++
+  try {
+    return execList(ctx, list, stdin)
+  } finally {
+    ctx.loops--
+  }
+}
+
+function execFor(ctx: Ctx, cmd: ForCmd, stdin: Stdin): Res {
   const pre: Chunk[] = []
   let items: string[]
   try {
     const x = expander(ctx, pre)
-    items = cmd.items ? cmd.items.flatMap((t) => x.expand(t)) : ctx.scope.args.slice(1)
+    items = cmd.items ? cmd.items.flatMap((t) => x.expand(t, { brace: true })) : ctx.scope.args.slice(1)
   } catch (e) {
-    return { code: 1, chunks: [...pre, [2, `${where(ctx, cmd.line)}${(e as Error).message}\n`]] }
+    return expansionFailed(ctx, e, pre, cmd.line)
   }
   const chunks: Chunk[] = [...pre]
   let code = 0
   for (const item of items) {
     if (ctx.budget.blown) break
-    ctx.scope.vars[cmd.name] = item
-    const r = execList(ctx, cmd.body, stdin)
+    const err = setVar(ctx, cmd.name, item)
+    if (err) return { code: 1, chunks: [...chunks, [2, `${where(ctx, cmd.line)}${err}\n`]] }
+    const r = body(ctx, cmd.body, stdin)
     chunks.push(...r.chunks)
     code = r.code
-    if (r.exit) return { code, chunks, exit: true }
+    const step = loopStep(r, code, chunks)
+    if (step === 'stop') break
+    if (step !== 'next') return step
   }
   return { code, chunks }
 }
 
-function execWhile(ctx: Ctx, cmd: WhileCmd, stdin: Stdin, _tty: boolean): Res {
+function execCFor(ctx: Ctx, cmd: CForCmd, stdin: Stdin): Res {
+  const chunks: Chunk[] = []
+  let code = 0
+  const pre: Chunk[] = []
+  const x = expander(ctx, pre)
+  try {
+    if (cmd.init.trim()) x.arith(cmd.init)
+    for (let n = 0; ; n++) {
+      if (ctx.budget.blown) break
+      if (n >= MAX_LOOP) {
+        chunks.push([2, `${where(ctx, cmd.line)}stopped the loop after ${MAX_LOOP} rounds — the practice terminal guards against loops that never end\n`])
+        return { code: 1, chunks }
+      }
+      if (cmd.test.trim() && x.arith(cmd.test) === 0) break
+      const r = body(ctx, cmd.body, stdin)
+      chunks.push(...r.chunks)
+      code = r.code
+      const step = loopStep(r, code, chunks)
+      if (step === 'stop') break
+      if (step !== 'next') return step
+      if (cmd.step.trim()) x.arith(cmd.step)
+    }
+  } catch (e) {
+    const r = expansionFailed(ctx, e, pre, cmd.line)
+    return { ...r, chunks: [...chunks, ...r.chunks] }
+  }
+  return { code, chunks: [...pre, ...chunks] }
+}
+
+function execWhile(ctx: Ctx, cmd: WhileCmd, stdin: Stdin): Res {
   const chunks: Chunk[] = []
   let code = 0
   for (let n = 0; ; n++) {
@@ -1022,22 +1728,29 @@ function execWhile(ctx: Ctx, cmd: WhileCmd, stdin: Stdin, _tty: boolean): Res {
     }
     const c = execList(ctx, cmd.cond, stdin, true)
     chunks.push(...c.chunks)
-    if (c.exit) return { code: c.code, chunks, exit: true }
+    if (c.exit || c.flow || c.abort) {
+      const step = loopStep(c, c.code, chunks)
+      if (step === 'stop') break
+      if (step !== 'next') return step
+      continue
+    }
     if ((c.code === 0) === cmd.until) break
-    const r = execList(ctx, cmd.body, stdin)
+    const r = body(ctx, cmd.body, stdin)
     chunks.push(...r.chunks)
     code = r.code
-    if (r.exit) return { code, chunks, exit: true }
+    const step = loopStep(r, code, chunks)
+    if (step === 'stop') break
+    if (step !== 'next') return step
   }
   return { code, chunks }
 }
 
-function execIf(ctx: Ctx, cmd: IfCmd, stdin: Stdin, _tty: boolean): Res {
+function execIf(ctx: Ctx, cmd: IfCmd, stdin: Stdin): Res {
   const chunks: Chunk[] = []
   for (const arm of cmd.arms) {
     const c = execList(ctx, arm.cond, stdin, true)
     chunks.push(...c.chunks)
-    if (c.exit) return { code: c.code, chunks, exit: true }
+    if (c.exit || c.flow || c.abort) return { ...c, chunks }
     if (c.code === 0) {
       const r = execList(ctx, arm.body, stdin)
       return { ...r, chunks: [...chunks, ...r.chunks] }
@@ -1050,18 +1763,277 @@ function execIf(ctx: Ctx, cmd: IfCmd, stdin: Stdin, _tty: boolean): Res {
   return { code: 0, chunks }
 }
 
-const ASSIGN = /^[A-Za-z_][A-Za-z0-9_]*=/
-
-function isAssignment(t: Token): boolean {
-  const p = t.parts?.[0]
-  return !!p && p.t === 'lit' && !p.q && ASSIGN.test(p.s)
+function execCase(ctx: Ctx, cmd: CaseCmd, stdin: Stdin): Res {
+  const pre: Chunk[] = []
+  const x = expander(ctx, pre)
+  let word: string
+  try {
+    word = x.word(cmd.word)
+  } catch (e) {
+    return expansionFailed(ctx, e, pre, cmd.line)
+  }
+  const chunks: Chunk[] = [...pre]
+  let code = 0
+  let falling = false
+  for (let k = 0; k < cmd.arms.length; k++) {
+    const arm = cmd.arms[k]!
+    let hit = falling
+    if (!hit) {
+      try {
+        hit = arm.patterns.some((p) => patternRegex(x.pattern(p)).test(word))
+      } catch (e) {
+        return expansionFailed(ctx, e, chunks, cmd.line)
+      }
+    }
+    if (!hit) continue
+    const r = execList(ctx, arm.body, stdin)
+    chunks.push(...r.chunks)
+    code = r.code
+    if (r.exit || r.flow || r.abort) return { ...r, chunks }
+    if (arm.end === ';;') break
+    falling = arm.end === ';&'
+  }
+  return { code, chunks }
 }
 
-/** NAME=value: the name, and the value's parts. */
-function splitAssignment(t: Token): [string, Part[]] {
-  const first = t.parts![0] as { t: 'lit'; s: string; q: boolean }
-  const eq = first.s.indexOf('=')
-  return [first.s.slice(0, eq), [{ t: 'lit', s: first.s.slice(eq + 1), q: false }, ...t.parts!.slice(1)]]
+/** An expansion error, as the command's result: set -u ends the script, bad arithmetic drops the line. */
+function expansionFailed(ctx: Ctx, e: unknown, pre: Chunk[], line: number): Res {
+  const msg = (e as Error).message
+  const chunks: Chunk[] = [...pre, [2, `${where(ctx, line)}${msg}\n`]]
+  if (e instanceof Fatal) return { code: ctx.scope.dashc ? 127 : 1, chunks, exit: true, fatal: true }
+  if (e instanceof Abort) return { code: 1, chunks, abort: true }
+  return { code: 1, chunks }
+}
+
+/* ── [[ … ]] ─────────────────────────────────────────────────────────────── */
+
+const COND_UNARY = ['-e', '-a', '-f', '-d', '-s', '-r', '-w', '-x', '-z', '-n', '-L', '-h', '-v', '-o', '-p', '-b', '-c', '-S', '-t', '-g', '-u', '-k', '-O', '-G', '-N']
+const COND_BINARY = ['==', '=', '!=', '=~', '<', '>', '-eq', '-ne', '-lt', '-le', '-gt', '-ge', '-nt', '-ot', '-ef']
+
+function execCond(ctx: Ctx, cmd: CondCmd): Res {
+  const pre: Chunk[] = []
+  const x = expander(ctx, pre)
+  const w = cmd.words
+  let k = 0
+  const opText = (t: Token | undefined): string | null => {
+    if (!t) return null
+    if (t.op) return t.op
+    const p = t.parts
+    return p?.length === 1 && p[0]!.t === 'lit' && !p[0]!.q ? p[0]!.s : null
+  }
+  type Ev = () => boolean
+  const primary = (): Ev => {
+    const t = w[k]
+    if (!t) throw new Error("syntax error in conditional expression: unexpected token `]]'")
+    if (t.op === '(') {
+      k++
+      const e = orExpr()
+      if (w[k]?.op !== ')') throw new Error("syntax error in conditional expression: expected `)'")
+      k++
+      return e
+    }
+    const u = opText(t)
+    if (u && COND_UNARY.includes(u) && w[k + 1] && !COND_BINARY.includes(opText(w[k + 1]) ?? '')) {
+      const arg = w[k + 1]!
+      k += 2
+      return () => {
+        const v = x.word(arg)
+        if (u === '-v') return isSet(ctx, v)
+        if (u === '-o') return !!(ctx.scope.opts as Record<string, boolean | undefined>)[v]
+        return fileTest(ctx, u, v)
+      }
+    }
+    if (t.op) throw new Error(`syntax error in conditional expression: unexpected token \`${t.op}'`)
+    const left = t
+    k++
+    const b = opText(w[k])
+    if (b && COND_BINARY.includes(b) && w[k + 1] && !w[k + 1]!.op) {
+      const right = w[k + 1]!
+      k += 2
+      return () => condBinary(ctx, x, x.word(left), b, right)
+    }
+    return () => x.word(left) !== ''
+  }
+  const notExpr = (): Ev => {
+    if (opText(w[k]) === '!' && !w[k]!.op) {
+      k++
+      const e = notExpr()
+      return () => !e()
+    }
+    return primary()
+  }
+  const andExpr = (): Ev => {
+    let e = notExpr()
+    while (w[k]?.op === '&&') {
+      k++
+      const l = e
+      const r = notExpr()
+      e = () => l() && r()
+    }
+    return e
+  }
+  const orExpr = (): Ev => {
+    let e = andExpr()
+    while (w[k]?.op === '||') {
+      k++
+      const l = e
+      const r = andExpr()
+      e = () => l() || r()
+    }
+    return e
+  }
+  if (ctx.scope.opts.x) pre.push([2, `+ [[ ${w.map((t) => t.raw ?? t.text).join(' ')} ]]\n`])
+  try {
+    const e = orExpr()
+    if (k < w.length) throw new Error(`syntax error in conditional expression: unexpected token \`${w[k]!.text}'`)
+    return { code: e() ? 0 : 1, chunks: pre }
+  } catch (e) {
+    if (e instanceof CondRegexError) return { code: 2, chunks: pre }
+    const r = expansionFailed(ctx, e, pre, cmd.line)
+    return e instanceof Fatal || e instanceof Abort ? r : { ...r, code: 2 }
+  }
+}
+
+class CondRegexError extends Error {}
+
+function condBinary(ctx: Ctx, x: Expander, a: string, op: string, right: Token): boolean {
+  switch (op) {
+    case '==':
+    case '=':
+      return patternRegex(x.pattern(right)).test(a)
+    case '!=':
+      return !patternRegex(x.pattern(right)).test(a)
+    case '=~': {
+      const f = x.pattern(right)
+      let src = ''
+      for (let i = 0; i < f.s.length; i++) src += f.g[i] ? f.s[i] : f.s[i]!.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
+      let re: RegExp
+      try {
+        re = new RegExp(posixClasses(src))
+      } catch {
+        throw new CondRegexError('bad regex')
+      }
+      const m = re.exec(a)
+      ctx.scope.arrays.BASH_REMATCH = { v: m ? Object.fromEntries([...m].map((g, i) => [String(i), g ?? ''])) : {} }
+      return !!m
+    }
+    case '<':
+      return a < x.word(right)
+    case '>':
+      return a > x.word(right)
+    case '-nt':
+    case '-ot':
+    case '-ef': {
+      const b = x.word(right)
+      const na = lookup(ctx.s, resolve(ctx.s.cwd, a))
+      const nb = lookup(ctx.s, resolve(ctx.s.cwd, b))
+      if (op === '-ef') return !!na && na === nb
+      return op === '-nt' ? !!na && !nb : !na && !!nb
+    }
+    default: {
+      const l = evalArith(a, ctx)
+      const r = evalArith(x.word(right), ctx)
+      return op === '-eq' ? l === r : op === '-ne' ? l !== r : op === '-lt' ? l < r : op === '-le' ? l <= r : op === '-gt' ? l > r : l >= r
+    }
+  }
+}
+
+/** Is a variable (or array element, `a[k]`) set? For [[ -v … ]]. */
+function isSet(ctx: Ctx, ref: string): boolean {
+  const m = /^([A-Za-z_]\w*)(?:\[(.*)\])?$/.exec(ref)
+  if (!m) return /^\d+$/.test(ref) ? ctx.scope.args[Number(ref)] !== undefined : false
+  const a = ctx.scope.arrays[m[1]!]
+  if (m[2] === undefined) return a ? a.v['0'] !== undefined : ctx.scope.vars[m[1]!] !== undefined
+  if (!a) return false
+  if (m[2] === '@' || m[2] === '*') return Object.keys(a.v).length > 0
+  return a.v[a.assoc ? m[2] : String(evalArith(m[2], ctx))] !== undefined
+}
+
+/** (( expr )): true (0) when the value is not zero. */
+function execArith(ctx: Ctx, expr: string, line: number): Res {
+  const pre: Chunk[] = []
+  ctx.line = line
+  try {
+    const x = expander(ctx, pre)
+    if (ctx.scope.opts.x) pre.push([2, `+ (( ${expr.trim()} ))\n`])
+    return { code: x.arith(expr) !== 0 ? 0 : 1, chunks: pre }
+  } catch (e) {
+    const r = expansionFailed(ctx, e, pre, line)
+    return { ...r, abort: false }
+  }
+}
+
+/* ── Simple commands, assignments, functions ─────────────────────────────── */
+
+/** NAME=value, NAME+=value, NAME[i]=value, NAME=(…). */
+interface Assign {
+  name: string
+  index?: Part[]
+  append: boolean
+  value: Part[]
+  array?: Token[]
+}
+
+type Atom = { c: string; q: boolean } | { part: Part }
+
+function atomsOf(parts: Part[]): Atom[] {
+  return parts.flatMap((p): Atom[] => (p.t === 'lit' ? [...p.s].map((c) => ({ c, q: p.q })) : [{ part: p }]))
+}
+
+function partsOfAtoms(atoms: Atom[]): Part[] {
+  const out: Part[] = []
+  for (const a of atoms) {
+    if ('part' in a) {
+      out.push(a.part)
+      continue
+    }
+    const last = out[out.length - 1]
+    if (last?.t === 'lit' && last.q === a.q) last.s += a.c
+    else out.push({ t: 'lit', s: a.c, q: a.q })
+  }
+  return out
+}
+
+const isChar = (a: Atom | undefined, c: string) => !!a && 'c' in a && !a.q && a.c === c
+
+/** The word as an assignment, or null when it is not one. `keyed`: [key]=value inside ( ). */
+function asAssignment(t: Token, keyed = false): Assign | null {
+  const parts = t.parts
+  if (!parts?.length) return null
+  const first = parts[0]!
+  if (first.t !== 'lit' || first.q) return null
+  if (!keyed && !/^[A-Za-z_]/.test(first.s)) return null
+  if (keyed && !first.s.startsWith('[')) return null
+  const atoms = atomsOf(parts)
+  let k = 0
+  if (!keyed) while (k < atoms.length && 'c' in atoms[k]! && !(atoms[k] as { q: boolean }).q && /\w/.test((atoms[k] as { c: string }).c)) k++
+  const name = atoms
+    .slice(0, k)
+    .map((a) => (a as { c: string }).c)
+    .join('')
+  let index: Part[] | undefined
+  if (isChar(atoms[k], '[')) {
+    let depth = 1
+    let j = k + 1
+    for (; j < atoms.length; j++) {
+      if (isChar(atoms[j], '[')) depth++
+      else if (isChar(atoms[j], ']') && --depth === 0) break
+    }
+    if (j >= atoms.length) return null
+    index = partsOfAtoms(atoms.slice(k + 1, j))
+    k = j + 1
+  } else if (keyed) return null
+  let append = false
+  if (isChar(atoms[k], '+') && isChar(atoms[k + 1], '=')) {
+    append = true
+    k++
+  }
+  if (!isChar(atoms[k], '=')) return null
+  return { name, ...(index ? { index } : {}), append, value: partsOfAtoms(atoms.slice(k + 1)), ...(t.array ? { array: t.array } : {}) }
+}
+
+function isAssignment(t: Token): boolean {
+  return asAssignment(t) !== null
 }
 
 /** A word as bash would show it in a trace: quoted when it has spaces. */
@@ -1069,111 +2041,624 @@ function shq(w: string): string {
   return w === '' ? "''" : /[^\w@%+=:,./~-]/.test(w) ? `'${w.replace(/'/g, `'\\''`)}'` : w
 }
 
+const readonlyMsg = (name: string) => `${name}: readonly variable`
+
+/** Sets a plain variable (element 0, if it is an array). An error message when it cannot. */
+function setVar(ctx: Ctx, name: string, value: string): string | null {
+  const sc = ctx.scope
+  if (sc.ro.includes(name)) return readonlyMsg(name)
+  const a = sc.arrays[name]
+  if (a) a.v['0'] = value
+  else sc.vars[name] = value
+  return null
+}
+
+function arrayKeys(a: Arr): string[] {
+  return a.assoc ? Object.keys(a.v) : Object.keys(a.v).sort((p, q) => Number(p) - Number(q))
+}
+
+/** The key an index names: its text for an associative array, its arithmetic value for an indexed one. */
+function keyOf(ctx: Ctx, a: Arr | undefined, index: string): string {
+  if (a?.assoc) return index
+  let n = evalArith(index, ctx)
+  if (n < 0 && a) {
+    const keys = arrayKeys(a)
+    n += keys.length ? Number(keys[keys.length - 1]) + 1 : 0
+    if (n < 0) throw new Abort(`${index}: bad array subscript`)
+  }
+  return String(n)
+}
+
+/** Carries out one assignment (the value is expanded here). */
+function assign(ctx: Ctx, x: Expander, a: Assign): string | null {
+  const sc = ctx.scope
+  if (sc.ro.includes(a.name)) return readonlyMsg(a.name)
+  if (a.array) {
+    const existing = sc.arrays[a.name]
+    const assoc = !!existing?.assoc
+    const target: Arr = a.append && existing ? existing : { ...(assoc ? { assoc: true as const } : {}), v: {} }
+    if (!existing && a.append && sc.vars[a.name] !== undefined) target.v['0'] = sc.vars[a.name]!
+    const keys = arrayKeys(target)
+    let next = assoc ? 0 : keys.length ? Number(keys[keys.length - 1]) + 1 : 0
+    for (const t of a.array) {
+      const kv = asAssignment(t, true)
+      if (kv?.index) {
+        const key = assoc ? x.expandParts(kv.index, { split: false, glob: false }).join('') : keyOf(ctx, target, x.expandParts(kv.index, { split: false, glob: false }).join(''))
+        const value = x.expandParts(kv.value, { split: false, glob: false }).join('')
+        target.v[key] = kv.append ? (target.v[key] ?? '') + value : value
+        if (!assoc) next = Number(key) + 1
+        continue
+      }
+      if (assoc) return `${a.name}: ${t.text}: must use subscript when assigning associative array`
+      for (const v of x.expand(t, { brace: true })) target.v[String(next++)] = v
+    }
+    sc.arrays[a.name] = target
+    delete sc.vars[a.name]
+    return null
+  }
+  let value = x.expandParts(a.value, { split: false, glob: false }).join('')
+  if (sc.ints.includes(a.name)) value = String(evalArith(a.append ? `${readVar(ctx, a.name) || 0}+(${value || 0})` : value || '0', ctx))
+  if (a.index) {
+    let arr = sc.arrays[a.name]
+    const idx = x.expandParts(a.index, { split: false, glob: false }).join('')
+    if (!arr) {
+      arr = { v: {} }
+      if (sc.vars[a.name] !== undefined) arr.v['0'] = sc.vars[a.name]!
+      sc.arrays[a.name] = arr
+      delete sc.vars[a.name]
+    }
+    const key = keyOf(ctx, arr, idx)
+    arr.v[key] = a.append ? (arr.v[key] ?? '') + value : value
+    return null
+  }
+  const arr = sc.arrays[a.name]
+  if (arr) arr.v['0'] = a.append ? (arr.v['0'] ?? '') + value : value
+  else sc.vars[a.name] = a.append ? (sc.vars[a.name] ?? '') + value : value
+  return null
+}
+
+/** `local x`: remember x as it is, to put it back when the function returns. */
+function makeLocal(ctx: Ctx, name: string): void {
+  const frame = ctx.frames[ctx.frames.length - 1]
+  if (!frame || frame.has(name)) return
+  const sc = ctx.scope
+  frame.set(name, { ...(sc.vars[name] !== undefined ? { v: sc.vars[name] } : {}), ...(sc.arrays[name] ? { a: clone(sc.arrays[name]!) } : {}), exp: sc.exported.includes(name) })
+}
+
+function restoreFrame(sc: Scope, frame: Map<string, Saved>): void {
+  for (const [name, saved] of frame) {
+    if (saved.v === undefined) delete sc.vars[name]
+    else sc.vars[name] = saved.v
+    if (saved.a) sc.arrays[name] = saved.a
+    else delete sc.arrays[name]
+    const i = sc.exported.indexOf(name)
+    if (saved.exp && i < 0) sc.exported.push(name)
+    if (!saved.exp && i >= 0) sc.exported.splice(i, 1)
+  }
+}
+
+const DECLARERS = ['declare', 'typeset', 'local', 'export', 'readonly']
+
 function execSimple(ctx: Ctx, cmd: SimpleCmd, stdin: Stdin, tty: boolean): Res {
   if (--ctx.budget.left < 0) {
     ctx.budget.blown = true
     return bad(`bash: stopped after ${MAX_COMMANDS} commands in one go — the practice terminal guards against runaway loops`, 1)
   }
+  if (!ctx.inTrap) {
+    ctx.line = cmd.line
+    ctx.command = cmd.words.map((w) => w.raw ?? w.text).join(' ')
+  }
   const pre: Chunk[] = []
   const x = expander(ctx, pre)
-  const assigns: [string, string][] = []
+  const assigns: Assign[] = []
   let argv: string[]
+  let decl: { name: string; flags: string[]; items: DeclItem[] } | null = null
   try {
     let k = 0
-    while (k < cmd.words.length && isAssignment(cmd.words[k]!)) {
-      const [name, parts] = splitAssignment(cmd.words[k]!)
-      assigns.push([name, x.expandParts(parts, { split: false, glob: false }).join('')])
-      k++
+    for (; k < cmd.words.length; k++) {
+      const a = asAssignment(cmd.words[k]!)
+      if (!a) break
+      assigns.push(a)
     }
     const rest = cmd.words.slice(k)
-    const declares = rest[0] && ['export', 'local', 'readonly', 'declare'].includes(rest[0].text)
-    argv = rest.flatMap((w, j) => (declares && j > 0 && isAssignment(w) ? x.expand(w, { split: false, glob: false }) : x.expand(w)))
+    const head = rest[0]
+    if (head && DECLARERS.includes(head.text) && head.parts?.length === 1 && head.parts[0]!.t === 'lit' && !head.parts[0]!.q) {
+      decl = { name: head.text, flags: [], items: [] }
+      for (const w of rest.slice(1)) {
+        const a = asAssignment(w)
+        if (a) {
+          decl.items.push({ name: a.name, assign: a, raw: w.text })
+          continue
+        }
+        for (const word of x.expand(w, { brace: true })) {
+          if (/^[-+][a-zA-Z]+$/.test(word) && !decl.items.length) decl.flags.push(word)
+          else decl.items.push({ name: word, assign: null, raw: word })
+        }
+      }
+      argv = [head.text]
+    } else argv = rest.flatMap((w) => x.expand(w, { brace: true }))
   } catch (e) {
-    return { code: 1, chunks: [...pre, [2, `${where(ctx, cmd.line)}${(e as Error).message}\n`]] }
+    x.cleanup()
+    return expansionFailed(ctx, e, pre, cmd.line)
   }
-  if (ctx.scope.opts.x) {
-    const shown = [...assigns.map(([n, v]) => `${n}=${shq(v)}`), ...argv.map(shq)].join(' ')
+  const trace = (shownArgv: string[], values: string[]) => {
+    if (!ctx.scope.opts.x) return
+    const shown = [...values, ...shownArgv.map(shq)].join(' ')
     if (shown) pre.push([2, `+ ${shown}\n`])
   }
   if (!argv.length) {
-    for (const [n, v] of assigns) ctx.scope.vars[n] = v
+    const shown: string[] = []
+    for (const a of assigns) {
+      let err: string | null
+      try {
+        err = assign(ctx, x, a)
+      } catch (e) {
+        x.cleanup()
+        return expansionFailed(ctx, e, pre, cmd.line)
+      }
+      if (err) {
+        x.cleanup()
+        return { code: 1, chunks: [...pre, [2, `${where(ctx, cmd.line)}${err}\n`]], abort: true }
+      }
+      if (ctx.scope.opts.x) shown.push(a.array ? `${a.name}=(${a.array.map((t) => t.raw ?? t.text).join(' ')})` : `${a.name}${a.index ? '[…]' : ''}=${shq(a.index ? '' : ctx.scope.vars[a.name] ?? readVar(ctx, a.name) ?? '')}`)
+    }
+    trace([], shown)
+    x.cleanup()
     return { code: x.subStatus ?? 0, chunks: pre }
   }
   // NAME=value cmd: the variable exists (exported) for that one command.
-  const saved = assigns.map(([n]) => [n, ctx.scope.vars[n], ctx.scope.exported.includes(n)] as const)
-  for (const [n, v] of assigns) {
-    ctx.scope.vars[n] = v
-    if (!ctx.scope.exported.includes(n)) ctx.scope.exported.push(n)
+  const sc = ctx.scope
+  const saved = assigns.map((a) => [a.name, sc.vars[a.name], sc.exported.includes(a.name)] as const)
+  const shownAssigns: string[] = []
+  for (const a of assigns) {
+    try {
+      sc.vars[a.name] = x.expandParts(a.value, { split: false, glob: false }).join('')
+    } catch (e) {
+      x.cleanup()
+      return expansionFailed(ctx, e, pre, cmd.line)
+    }
+    shownAssigns.push(`${a.name}=${shq(sc.vars[a.name]!)}`)
+    if (!sc.exported.includes(a.name)) sc.exported.push(a.name)
   }
-  const r = dispatch(ctx, argv, stdin, tty, cmd.line)
+  let r: Res
+  if (decl) {
+    trace([decl.name, ...decl.flags, ...decl.items.map((d) => d.raw)], shownAssigns)
+    r = declareCmd(ctx, x, decl.name, decl.flags, decl.items, cmd.line)
+  } else {
+    trace(argv, shownAssigns)
+    const fn = sc.funcs[argv[0]!]
+    r = fn ? callFunction(ctx, argv[0]!, fn, argv, stdin, tty) : dispatch(ctx, argv, stdin, tty, cmd.line)
+  }
   for (const [n, v, was] of saved) {
-    if (v === undefined) delete ctx.scope.vars[n]
-    else ctx.scope.vars[n] = v
-    if (!was) ctx.scope.exported.splice(ctx.scope.exported.indexOf(n), 1)
+    if (v === undefined) delete sc.vars[n]
+    else sc.vars[n] = v
+    if (!was && sc.exported.includes(n)) sc.exported.splice(sc.exported.indexOf(n), 1)
   }
+  x.cleanup()
   return { ...r, chunks: [...pre, ...r.chunks] }
 }
 
-/* ── Expansion: variables, $(…), $((…)), ~, splitting, wildcards ─────────── */
+function callFunction(ctx: Ctx, name: string, fn: Cmd, argv: string[], stdin: Stdin, tty: boolean): Res {
+  if (ctx.funcs.length >= MAX_FUNC_DEPTH) return { ...bad(`${where(ctx, ctx.line)}${name}: maximum function nesting level exceeded (${MAX_FUNC_DEPTH})`), exit: true, fatal: true }
+  const sc = ctx.scope
+  const savedArgs = sc.args
+  sc.args = [savedArgs[0]!, ...argv.slice(1)]
+  const frame = new Map<string, Saved>()
+  ctx.frames.push(frame)
+  ctx.funcs.unshift(name)
+  let r: Res
+  try {
+    r = execCmd(ctx, fn, stdin, tty)
+  } finally {
+    ctx.funcs.shift()
+    ctx.frames.pop()
+    restoreFrame(sc, frame)
+    sc.args = savedArgs
+  }
+  if (r.flow?.k === 'return') return { code: r.code, chunks: r.chunks }
+  return r
+}
+
+/* ── Expansion: variables, $(…), $((…)), ~, {a,b}, splitting, wildcards ──── */
 
 interface Field {
   s: string
   /** Per character: may it act as a wildcard? (Quoted characters may not.) */
   g: boolean[]
   quoted: boolean
+  /** A field that stays even when empty ("", or an empty field between two IFS separators like :). */
+  keep?: boolean
+  /** "$@" with nothing in it: the word disappears. */
+  atEmpty?: boolean
+}
+
+type VarPart = Extract<Part, { t: 'var' }>
+type Expander = ReturnType<typeof expander>
+
+/** A variable's value, arrays and the shell's own variables included (not $1, $? and such). */
+function readVar(ctx: Ctx, name: string): string | undefined {
+  switch (name) {
+    case 'PWD':
+      return ctx.s.cwd
+    case 'OLDPWD':
+      return ctx.s.prev
+    case 'LINENO':
+      return String(ctx.line)
+    case 'BASH_COMMAND':
+      return ctx.command
+    case 'RANDOM':
+      return String(Math.floor(Math.random() * 32768))
+    case 'SECONDS':
+      return '0'
+    case 'BASHPID':
+      return '4242'
+  }
+  const a = arrayOf(ctx, name)
+  if (a) return a.v['0']
+  return ctx.scope.vars[name]
+}
+
+/** The array a name holds, including FUNCNAME and BASH_SOURCE, which the shell keeps itself. */
+function arrayOf(ctx: Ctx, name: string): Arr | undefined {
+  if (name === 'FUNCNAME') return ctx.funcs.length ? { v: Object.fromEntries([...ctx.funcs, ...(ctx.scope.name ? ['main'] : [])].map((f, i) => [String(i), f])) } : undefined
+  if (name === 'BASH_SOURCE') return ctx.scope.name && ctx.scope.name !== 'bash' ? { v: { 0: ctx.scope.name } } : undefined
+  return ctx.scope.arrays[name]
+}
+
+/** Splits text at IFS characters: whitespace in IFS runs together, other IFS characters each end a field. */
+function ifsPieces(v: string, ifs: string): { lead: boolean; pieces: string[]; trail: boolean } {
+  const isWs = (c: string) => (c === ' ' || c === '\t' || c === '\n') && ifs.includes(c)
+  const isN = (c: string) => ifs.includes(c) && !isWs(c)
+  let i = 0
+  let lead = false
+  while (i < v.length && isWs(v[i]!)) {
+    i++
+    lead = true
+  }
+  const pieces: string[] = []
+  let cur = ''
+  let trail = false
+  while (i < v.length) {
+    const c = v[i]!
+    if (isWs(c) || isN(c)) {
+      let j = i
+      while (j < v.length && isWs(v[j]!)) j++
+      if (j < v.length && isN(v[j]!)) {
+        j++
+        while (j < v.length && isWs(v[j]!)) j++
+      }
+      pieces.push(cur)
+      cur = ''
+      i = j
+      if (i >= v.length) trail = true
+      continue
+    }
+    cur += c
+    i++
+  }
+  if (!trail) pieces.push(cur)
+  return { lead, pieces, trail }
+}
+
+/** {a,b,c} and {1..5}: the alternatives, or null when the braces are not an expansion. */
+function braceAlternatives(s: string): { start: number; end: number; alts: string[] } | null {
+  for (let st = s.indexOf('{'); st >= 0; st = s.indexOf('{', st + 1)) {
+    let depth = 0
+    const commas: number[] = []
+    let end = -1
+    for (let j = st; j < s.length; j++) {
+      const c = s[j]
+      if (c === '{') depth++
+      else if (c === '}' && --depth === 0) {
+        end = j
+        break
+      } else if (c === ',' && depth === 1) commas.push(j)
+    }
+    if (end < 0) return null
+    const inner = s.slice(st + 1, end)
+    if (commas.length) {
+      const alts: string[] = []
+      let from = st + 1
+      for (const c of [...commas, end]) {
+        alts.push(s.slice(from, c))
+        from = c + 1
+      }
+      return { start: st, end, alts }
+    }
+    let m = /^(-?\d+)\.\.(-?\d+)(?:\.\.(-?\d+))?$/.exec(inner)
+    if (m) {
+      const a = Number(m[1])
+      const b = Number(m[2])
+      let step = Math.abs(Number(m[3] ?? 1)) || 1
+      const width = /^-?0\d/.test(m[1]!) || /^-?0\d/.test(m[2]!) ? Math.max(m[1]!.length, m[2]!.length) : 0
+      const alts: string[] = []
+      if (a > b) step = -step
+      for (let v = a; step > 0 ? v <= b : v >= b; v += step) {
+        alts.push(width ? (v < 0 ? `-${String(-v).padStart(width - 1, '0')}` : String(v).padStart(width, '0')) : String(v))
+        if (alts.length > 10000) break
+      }
+      return { start: st, end, alts }
+    }
+    m = /^([A-Za-z])\.\.([A-Za-z])(?:\.\.(-?\d+))?$/.exec(inner)
+    if (m) {
+      const a = m[1]!.charCodeAt(0)
+      const b = m[2]!.charCodeAt(0)
+      let step = Math.abs(Number(m[3] ?? 1)) || 1
+      if (a > b) step = -step
+      const alts: string[] = []
+      for (let v = a; step > 0 ? v <= b : v >= b; v += step) alts.push(String.fromCharCode(v))
+      return { start: st, end, alts }
+    }
+  }
+  return null
+}
+
+/** Brace expansion over a word's parts: only unquoted text takes part. */
+function braceExpand(parts: Part[], depth = 0): Part[][] {
+  if (depth > 20) return [parts]
+  for (let pi = 0; pi < parts.length; pi++) {
+    const p = parts[pi]!
+    if (p.t !== 'lit' || p.q || !p.s.includes('{')) continue
+    const hit = braceAlternatives(p.s)
+    if (!hit) continue
+    const before = p.s.slice(0, hit.start)
+    const after = p.s.slice(hit.end + 1)
+    return hit.alts.flatMap((alt) => braceExpand([...parts.slice(0, pi), { t: 'lit', s: before + alt + after, q: false }, ...parts.slice(pi + 1)], depth + 1))
+  }
+  return [parts]
 }
 
 function expander(ctx: Ctx, pre: Chunk[]) {
+  const sc = () => ctx.scope
   const self = {
     subStatus: undefined as number | undefined,
-    value(p: Extract<Part, { t: 'var' }>): string {
-      const sc = ctx.scope
-      let v: string | undefined
-      if (p.name === '?') v = String(ctx.status)
-      else if (p.name === '#') v = String(sc.args.length - 1)
-      else if (p.name === '@' || p.name === '*') v = sc.args.slice(1).join(' ')
-      else if (/^\d$/.test(p.name)) v = sc.args[Number(p.name)]
-      else if (p.name === '$') v = '4242'
-      else if (p.name === '!') v = ''
-      else if (p.name === 'PWD') v = ctx.s.cwd
-      else if (p.name === 'OLDPWD') v = ctx.s.prev
-      else v = sc.vars[p.name]
-      if (p.def !== undefined && !v) return p.def
-      if (v === undefined) {
-        if (sc.opts.u && !/^[@*#?$!]$/.test(p.name)) throw new Error(`${p.name}: unbound variable`)
-        v = ''
+    /** Files made for <(…), removed once the command is done. */
+    temps: [] as string[],
+    ifs(): string {
+      const v = sc().vars.IFS
+      return v === undefined ? ' \t\n' : v
+    },
+    /** $1, $?, $x, ${a[2]}: one value, or undefined when it is not set. */
+    scalar(name: string, index?: string): string | undefined {
+      const s = sc()
+      if (index !== undefined) {
+        const a = arrayOf(ctx, name)
+        if (!a) return keyOf(ctx, undefined, self.indexText(index, false)) === '0' ? self.scalar(name) : undefined
+        return a.v[keyOf(ctx, a, self.indexText(index, !!a.assoc))]
       }
-      if (p.len) return String(v.length)
-      return p.op ? trimValue(v, p.op, p.arg ?? '') : v
+      switch (name) {
+        case '?':
+          return String(ctx.status)
+        case '#':
+          return String(s.args.length - 1)
+        case '@':
+        case '*':
+          return s.args.slice(1).join(' ')
+        case '$':
+          return '4242'
+        case '!':
+          return s.vars['!'] ?? ''
+        case '-':
+          return `${s.opts.e ? 'e' : ''}h${s.opts.u ? 'u' : ''}${s.opts.x ? 'x' : ''}B`
+      }
+      if (/^\d+$/.test(name)) return s.args[Number(name)]
+      return readVar(ctx, name)
+    },
+    /** The text inside [ ]: a key (associative arrays) or arithmetic (indexed ones). */
+    indexText(index: string, assoc: boolean): string {
+      return assoc ? self.expandParts(wordParts(index, false), { split: false, glob: false }).join('') : self.expandParts(quotedParts(index, false), { split: false, glob: false }).join('')
+    },
+    /** "$@", ${a[@]}, ${!a[@]}: the list, or null when the part is a single value. */
+    list(p: VarPart): string[] | null {
+      const s = sc()
+      if (p.index === undefined && (p.name === '@' || p.name === '*')) return s.args.slice(1)
+      if (p.index !== '@' && p.index !== '*') return null
+      const a = arrayOf(ctx, p.name)
+      if (p.bang) return a ? arrayKeys(a) : s.vars[p.name] !== undefined ? ['0'] : []
+      if (a) return arrayKeys(a).map((k) => a.v[k]!)
+      const v = s.vars[p.name]
+      return v === undefined ? [] : [v]
+    },
+    /** A ${…} argument (the default in ${x:-default}), expanded. */
+    argText(p: VarPart): string {
+      return self.expandParts(wordParts(p.arg ?? '', p.q), { split: false, glob: false }).join('')
+    },
+    /** A variable part's value: a string, or a list for "$@" and "${a[@]}". */
+    value(p: VarPart): string | string[] {
+      const s = sc()
+      if (p.op === '!*' || p.op === '!@') {
+        return [...new Set([...Object.keys(s.vars), ...Object.keys(s.arrays)])].filter((n) => n.startsWith(p.name)).sort()
+      }
+      if (p.bang && p.index !== '@' && p.index !== '*') {
+        const target = self.scalar(p.name) ?? ''
+        const m = /^([A-Za-z_]\w*|\d+|[@*#?])(?:\[(.*)\])?$/.exec(target)
+        if (!m) throw new Abort(`${target || p.name}: invalid indirect expansion`)
+        return self.value({ ...p, bang: false, name: m[1]!, ...(m[2] !== undefined ? { index: m[2] } : {}) } as VarPart)
+      }
+      const lst = self.list(p)
+      const ref = p.index !== undefined ? `${p.name}[${p.index}]` : /^\d+$/.test(p.name) ? `$${p.name}` : p.name
+      const unbound = () => {
+        if (s.opts.u && !lst) throw new Fatal(`${ref}: unbound variable`)
+      }
+      const v = lst ? undefined : self.scalar(p.name, p.index)
+      if (p.len) {
+        if (lst) return String(lst.length)
+        if (v === undefined) unbound()
+        return String([...(v ?? '')].length)
+      }
+      const isSetV = lst ? lst.length > 0 : v !== undefined
+      const nonNull = lst ? lst.length > 0 : !!v
+      const op = p.op
+      if (!op) {
+        if (!isSetV) unbound()
+        return lst ?? v ?? ''
+      }
+      const cur = lst ?? v ?? ''
+      switch (op) {
+        case ':-':
+          return nonNull ? cur : self.argText(p)
+        case '-':
+          return isSetV ? cur : self.argText(p)
+        case ':=':
+        case '=': {
+          if (op === ':=' ? nonNull : isSetV) return cur
+          const val = self.argText(p)
+          if (/^\d|^[@*#?$!-]$/.test(p.name)) throw new Abort(`$${p.name}: cannot assign in this way`)
+          const err = p.index !== undefined ? assign(ctx, self, { name: p.name, index: [{ t: 'lit', s: p.index, q: true }], append: false, value: [{ t: 'lit', s: val, q: true }] }) : setVar(ctx, p.name, val)
+          if (err) throw new Abort(err)
+          return val
+        }
+        case ':?':
+        case '?':
+          if (op === ':?' ? nonNull : isSetV) return cur
+          throw new Fatal(`${p.name}: ${p.arg ? self.argText(p) : op === ':?' ? 'parameter null or not set' : 'parameter not set'}`)
+        case ':+':
+          return nonNull ? self.argText(p) : ''
+        case '+':
+          return isSetV ? self.argText(p) : ''
+      }
+      if (!isSetV) unbound()
+      if (op === ':') {
+        const arg = p.arg ?? ''
+        const colon = arg.search(/:(?![^(]*\))/)
+        const offText = colon < 0 ? arg : arg.slice(0, colon)
+        const lenText = colon < 0 ? undefined : arg.slice(colon + 1)
+        const off = offText.trim() ? self.arith(offText) : 0
+        const len = lenText === undefined ? undefined : lenText.trim() ? self.arith(lenText) : 0
+        const slice = <T>(items: T[]): T[] => {
+          let start = off < 0 ? items.length + off : off
+          if (start < 0) return []
+          start = Math.min(start, items.length)
+          if (len === undefined) return items.slice(start)
+          if (len < 0) {
+            if (lst) throw new Abort(`${len}: substring expression < 0`)
+            return items.slice(start, Math.max(start, items.length + len))
+          }
+          return items.slice(start, start + len)
+        }
+        if (lst) return slice(p.index === undefined ? s.args : lst)
+        return slice([...(v ?? '')]).join('')
+      }
+      const each = (f: (x: string) => string) => (lst ? lst.map(f) : f(v ?? ''))
+      if (op === '^^' || op === '^' || op === ',,' || op === ',') {
+        const up = op[0] === '^'
+        const all = op.length === 2
+        const conv = (c: string) => (up ? c.toUpperCase() : c.toLowerCase())
+        return each((x) => (all ? conv(x) : conv(x.slice(0, 1)) + x.slice(1)))
+      }
+      if (op[0] === '/') {
+        const arg = p.arg ?? ''
+        let slash = -1
+        for (let i = 0; i < arg.length; i++) {
+          if (arg[i] === '\\') i++
+          else if (arg[i] === '/') {
+            slash = i
+            break
+          }
+        }
+        const pat = self.patternText(slash < 0 ? arg : arg.slice(0, slash))
+        const rep = slash < 0 ? '' : self.expandParts(wordParts(arg.slice(slash + 1), p.q), { split: false, glob: false }).join('')
+        return each((x) => replacePattern(x, op, pat, rep))
+      }
+      const pat = self.patternText(p.arg ?? '')
+      return each((x) => trimValue(x, op, pat))
+    },
+    /** A pattern written inside ${…}: quoted parts match literally. */
+    patternText(text: string): Field {
+      return joinFields(self.fieldsOf(wordParts(text, false), { split: false }))
+    },
+    /** A word used as a pattern (case, [[ == ]]): quoted parts match literally. */
+    pattern(t: Token): Field {
+      return joinFields(self.fieldsOf(t.parts ?? [{ t: 'lit', s: t.text, q: true }], { split: false }))
     },
     sub(cmdText: string): string {
+      const m = /^\s*<\s*(\S+)\s*$/.exec(cmdText)
+      if (m) {
+        // $(< file): the file's contents, without starting a command.
+        const f = self.expandParts(wordParts(m[1]!, false), { split: false, glob: false }).join('')
+        const node = lookup(ctx.s, resolve(ctx.s.cwd, f))
+        if (node?.kind !== 'file') {
+          pre.push([2, `${where(ctx, ctx.line)}${f}: No such file or directory\n`])
+          self.subStatus = 1
+          return ''
+        }
+        self.subStatus = 0
+        return node.content.replace(/\n+$/, '')
+      }
+      return self.capture(cmdText).replace(/\n+$/, '')
+    },
+    /** Runs a command in a subshell and returns everything it printed. */
+    capture(cmdText: string): string {
       const sub = subshell(ctx)
+      // Command substitution does not inherit set -e (unless shopt -s inherit_errexit).
+      if (!sub.scope.opts.inherit_errexit) delete sub.scope.opts.e
+      sub.cond = false
       const [cwd, prev] = [ctx.s.cwd, ctx.s.prev]
       let r: Res
       try {
-        r = execList(sub, parse(tokenize(cmdText)), null, true)
+        r = finish(sub, execList(sub, parse(tokenize(cmdText)), null, false, true))
       } catch (e) {
-        throw new Error(`command substitution: ${(e as Error).message}`)
+        throw new Abort(`command substitution: ${(e as Error).message}`)
+      } finally {
+        ctx.s.cwd = cwd
+        ctx.s.prev = prev
       }
-      ctx.s.cwd = cwd
-      ctx.s.prev = prev
       pre.push(...r.chunks.filter((c) => c[0] === 2))
       self.subStatus = r.code
       ctx.status = r.code
-      return stdoutOf(r).replace(/\n+$/, '')
+      return stdoutOf(r)
     },
-    expandParts(parts: Part[], opt: { split?: boolean; glob?: boolean } = {}): string[] {
+    /** <(command): its output, in a file under /dev/fd. */
+    proc(cmdText: string): string {
+      const text = self.capture(cmdText)
+      let n = 63
+      while (lookup(ctx.s, `/dev/fd/${n}`)) n--
+      const path = `/dev/fd/${n}`
+      mkdirp(ctx.s, '/dev/fd')
+      writeFile(ctx.s, path, text, false)
+      self.temps.push(path)
+      return path
+    },
+    cleanup(): void {
+      for (const p of self.temps) removePath(ctx.s, p)
+      if (self.temps.length) {
+        self.temps = []
+        const fd = lookup(ctx.s, '/dev/fd')
+        if (fd?.kind === 'dir' && !Object.keys(fd.children).length) removePath(ctx.s, '/dev/fd')
+        const dev = lookup(ctx.s, '/dev')
+        if (dev?.kind === 'dir' && !Object.keys(dev.children).length) removePath(ctx.s, '/dev')
+      }
+    },
+    /** $((…)): expands $ inside, then works it out. */
+    arith(expr: string): number {
+      return evalArith(self.expandParts(quotedParts(expr, false), { split: false, glob: false }).join(''), ctx)
+    },
+    /** A word's parts as fields (split at IFS unless told not to), before wildcards. */
+    fieldsOf(parts: Part[], opt: { split?: boolean } = {}): Field[] {
       const split = opt.split ?? true
-      const glob = opt.glob ?? true
       const fields: Field[] = []
       let cur: Field = { s: '', g: [], quoted: false }
       const add = (text: string, wild: boolean) => {
         cur.s += text
         for (let k = 0; k < text.length; k++) cur.g.push(wild)
       }
-      const flush = () => {
-        if (cur.s || cur.quoted) fields.push(cur)
+      const flush = (keep = false) => {
+        if (cur.s || keep || cur.keep || (cur.quoted && !cur.atEmpty)) fields.push(cur)
         cur = { s: '', g: [], quoted: false }
+      }
+      const ifs = self.ifs()
+      const splitAdd = (v: string) => {
+        if (ifs === '') {
+          add(v, true)
+          return
+        }
+        const { lead, pieces, trail } = ifsPieces(v, ifs)
+        if (lead) flush()
+        pieces.forEach((pc, k) => {
+          if (k > 0) flush(true)
+          add(pc, true)
+        })
+        if (trail) flush(true)
       }
       parts.forEach((p, idx) => {
         if (p.t === 'lit') {
@@ -1186,70 +2671,121 @@ function expander(ctx: Ctx, pre: Chunk[]) {
           add(text, !p.q)
           return
         }
-        if (p.t === 'var' && p.q && p.name === '@' && !p.len) {
-          // "$@": every argument stays its own word.
-          const args = ctx.scope.args.slice(1)
-          cur.quoted = true
-          args.forEach((a, k) => {
-            if (k > 0) {
-              flush()
-              cur.quoted = true
+        let v: string | string[]
+        if (p.t === 'var') v = self.value(p)
+        else if (p.t === 'sub') v = self.sub(p.cmd)
+        else if (p.t === 'proc') v = self.proc(p.cmd)
+        else v = String(self.arith(p.expr))
+        if (Array.isArray(v)) {
+          const star = p.t === 'var' && (p.index === '*' || (p.index === undefined && p.name === '*')) && !p.bang
+          if (p.q && star) v = v.join(ifs.slice(0, 1))
+          else if (p.q) {
+            cur.quoted = true
+            if (!v.length) {
+              cur.atEmpty = true
+              return
             }
-            add(a, false)
-          })
-          if (!args.length && parts.length === 1) cur.quoted = false
-          return
+            v.forEach((a, k) => {
+              if (k > 0) {
+                flush(true)
+                cur.quoted = true
+              }
+              add(a, false)
+            })
+            return
+          } else if (!split) v = v.join(' ')
+          else {
+            v.forEach((a, k) => {
+              if (k > 0) flush()
+              splitAdd(a)
+            })
+            return
+          }
         }
-        const v = p.t === 'var' ? self.value(p) : p.t === 'sub' ? self.sub(p.cmd) : String(arith(p.expr, ctx))
         if (p.q || !split) {
           if (p.q) cur.quoted = true
-          add(v, false)
+          add(v, !p.q)
           return
         }
-        const segs = v.split(/[ \t\n]+/)
-        segs.forEach((seg, k) => {
-          if (k > 0) flush()
-          add(seg, true)
-        })
+        splitAdd(v)
       })
       flush()
-      if (!glob) return fields.map((f) => f.s)
+      return fields
+    },
+    expandParts(parts: Part[], opt: { split?: boolean; glob?: boolean } = {}): string[] {
+      const fields = self.fieldsOf(parts, opt)
+      if (opt.glob === false || sc().opts.f) return fields.map((f) => f.s)
       return fields.flatMap((f) => {
         const wild = [...f.s].some((c, k) => f.g[k] && (c === '*' || c === '?' || c === '['))
         if (!wild) return [f.s]
         const hits = globPaths(ctx.s, f)
-        return hits.length ? hits : [f.s]
+        if (hits.length) return hits
+        if (sc().opts.nullglob) return []
+        if (sc().opts.failglob) throw new Abort(`no match: ${f.s}`)
+        return [f.s]
       })
     },
-    expand(t: Token, opt: { split?: boolean; glob?: boolean } = {}): string[] {
-      return self.expandParts(t.parts ?? [{ t: 'lit', s: t.text, q: true }], opt)
+    expand(t: Token, opt: { split?: boolean; glob?: boolean; brace?: boolean } = {}): string[] {
+      const parts = t.parts ?? [{ t: 'lit', s: t.text, q: true }]
+      if (opt.brace) return braceExpand(parts).flatMap((ps) => self.expandParts(ps, opt))
+      return self.expandParts(parts, opt)
+    },
+    /** A word as one string: no splitting, no wildcards ([[ ]], case, here-strings). */
+    word(t: Token): string {
+      return self.expandParts(t.parts ?? [{ t: 'lit', s: t.text, q: true }], { split: false, glob: false }).join(' ')
     },
   }
   return self
 }
 
-/** ${v#pat} ${v##pat} ${v%pat} ${v%%pat} ${v/pat/rep} ${v//pat/rep}: trim or replace by wildcard. */
-function trimValue(v: string, op: string, arg: string): string {
-  const m = (p: string, t: string) => wildMatch(p, t)
+function joinFields(fields: Field[]): Field {
+  const f: Field = { s: '', g: [], quoted: false }
+  fields.forEach((x, i) => {
+    if (i > 0) {
+      f.s += ' '
+      f.g.push(false)
+    }
+    f.s += x.s
+    f.g.push(...x.g)
+  })
+  return f
+}
+
+/** ${v#pat} ${v##pat} ${v%pat} ${v%%pat}: trim by wildcard. */
+function trimValue(v: string, op: string, pat: Field): string {
+  const re = patternRegex(pat)
+  const m = (t: string) => re.test(t)
   if (op === '#' || op === '##') {
     const lens = [...Array(v.length + 1).keys()]
-    for (const i of op === '#' ? lens : lens.reverse()) if (m(arg, v.slice(0, i))) return v.slice(i)
+    for (const i of op === '#' ? lens : lens.reverse()) if (m(v.slice(0, i))) return v.slice(i)
     return v
   }
   if (op === '%' || op === '%%') {
     const starts = [...Array(v.length + 1).keys()]
-    for (const i of op === '%' ? starts.reverse() : starts) if (m(arg, v.slice(i))) return v.slice(0, i)
+    for (const i of op === '%' ? starts.reverse() : starts) if (m(v.slice(i))) return v.slice(0, i)
     return v
   }
-  const slash = arg.indexOf('/')
-  const pat = slash < 0 ? arg : arg.slice(0, slash)
-  const rep = slash < 0 ? '' : arg.slice(slash + 1)
-  if (!pat) return v
+  return v
+}
+
+/** ${v/pat/rep} ${v//pat/rep} ${v/#pat/rep} ${v/%pat/rep}: replace by wildcard, longest match. */
+function replacePattern(v: string, op: string, pat: Field, rep: string): string {
+  if (!pat.s) return v
+  const re = patternRegex(pat)
+  const m = (t: string) => re.test(t)
+  if (op === '/#') {
+    for (let j = v.length; j >= 0; j--) if (m(v.slice(0, j))) return rep + v.slice(j)
+    return v
+  }
+  if (op === '/%') {
+    for (let i = 0; i <= v.length; i++) if (m(v.slice(i))) return v.slice(0, i) + rep
+    return v
+  }
   let res = ''
   for (let i = 0; i < v.length; ) {
     let hit = -1
     for (let j = v.length; j > i; j--)
-      if (m(pat, v.slice(i, j))) {
+      if (m(v.slice(i, j))) {
         hit = j
         break
       }
@@ -1264,26 +2800,55 @@ function trimValue(v: string, op: string, arg: string): string {
   return res
 }
 
-/** A wildcard pattern (one path segment) as a regular expression. */
-function segmentRegex(s: string, g: boolean[]): RegExp {
+/** A wildcard pattern as the body of a regular expression; `g` says which characters are wild. */
+function globBody(s: string, g: boolean[]): string {
   let re = ''
   for (let k = 0; k < s.length; k++) {
     const c = s[k]!
     if (g[k] && c === '*') re += '.*'
     else if (g[k] && c === '?') re += '.'
     else if (g[k] && c === '[') {
-      const close = s.indexOf(']', k + 2)
-      if (close < 0) {
+      let j = k + 1
+      if (s[j] === '!' || s[j] === '^') j++
+      if (s[j] === ']') j++
+      while (j < s.length && s[j] !== ']') j += s[j] === '[' && s[j + 1] === ':' ? Math.max(s.indexOf(':]', j + 2) + 2 - j, 1) : 1
+      if (j >= s.length) {
         re += '\\['
         continue
       }
-      let body = s.slice(k + 1, close)
-      if (body.startsWith('!')) body = `^${body.slice(1)}`
-      re += `[${body.replace(/\\/g, '\\\\')}]`
-      k = close
+      let inner = s.slice(k + 1, j)
+      let neg = ''
+      if (inner[0] === '!' || inner[0] === '^') {
+        neg = '^'
+        inner = inner.slice(1)
+      }
+      const classes: Record<string, string> = { digit: '0-9', alpha: 'a-zA-Z', alnum: 'a-zA-Z0-9', upper: 'A-Z', lower: 'a-z', space: ' \\t\\n\\r\\f\\v', blank: ' \\t', punct: '!-\\/:-@\\[-`{-~', xdigit: '0-9A-Fa-f', word: '\\w' }
+      let body = ''
+      for (let i = 0; i < inner.length; i++) {
+        const cls = /^\[:(\w+):\]/.exec(inner.slice(i))
+        if (cls) {
+          body += classes[cls[1]!] ?? ''
+          i += cls[0].length - 1
+          continue
+        }
+        const ch = inner[i]!
+        body += ch === '\\' || ch === ']' || ch === '[' || (ch === '^' && i === 0) ? `\\${ch}` : ch
+      }
+      re += `[${neg}${body}]`
+      k = j
     } else re += c.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
   }
-  return new RegExp(`^${re}$`)
+  return re
+}
+
+/** A whole-string pattern (case, [[ == ]], ${v#pat}). */
+function patternRegex(f: Field): RegExp {
+  return new RegExp(`^${globBody(f.s, f.g)}$`, 's')
+}
+
+/** A wildcard pattern (one path segment) as a regular expression. */
+function segmentRegex(s: string, g: boolean[]): RegExp {
+  return new RegExp(`^${globBody(s, g)}$`, 's')
 }
 
 /** Every path matching a wildcard word, sorted; relative words give relative paths. */
@@ -1332,98 +2897,307 @@ function wildMatch(pattern: string, name: string, fold = false): boolean {
   return re.test(fold ? name.toLowerCase() : name)
 }
 
-/* ── $((arithmetic)) ─────────────────────────────────────────────────────── */
+/* ── Arithmetic: $(( )), (( )), let, array indices ───────────────────────── */
 
-function arith(expr: string, ctx: Ctx): number {
-  const toks = expr.replace(/\$\{?(\w+)\}?/g, '$1').match(/\d+|[A-Za-z_]\w*|\*\*|<=|>=|==|!=|&&|\|\||[-+*/%()<>!]/g) ?? []
-  let i = 0
-  const num = (name: string) => {
-    const v = ctx.scope.vars[name] ?? ''
-    const n = Number(v.trim() || 0)
-    if (!Number.isFinite(n)) throw new Error(`${v}: syntax error in expression`)
-    return Math.trunc(n)
+/**
+ * Works out an arithmetic expression whose $ expansions are already done:
+ * C's operators with bash's precedence, assignment (= += ++ …), a ? b : c,
+ * variables by name (their values are themselves arithmetic), a[i], and
+ * 0x1f, 010 (octal), 2#101 numbers.
+ */
+function evalArith(src: string, ctx: Ctx, depth = 0): number {
+  const re = /\s+|0[xX][0-9a-fA-F]*|\d+#[0-9a-zA-Z@_]+|\d+|[A-Za-z_]\w*|\*\*=|<<=|>>=|\*\*|\+\+|--|<=|>=|==|!=|&&|\|\||<<|>>|[-+*/%&|^]=|[-+*/%<>=!~&|^?:,()[\]]/y
+  const toks: { t: string; at: number }[] = []
+  for (let i = 0; i < src.length; ) {
+    re.lastIndex = i
+    const m = re.exec(src)
+    if (!m) throw new Abort(`${src.trim()}: syntax error: invalid arithmetic operator (error token is "${src.slice(i)}")`)
+    if (!/^\s/.test(m[0])) toks.push({ t: m[0], at: i })
+    i = re.lastIndex
   }
-  const primary = (): number => {
-    const t = toks[i++]
-    if (t === undefined) throw new Error(`${expr}: syntax error: operand expected`)
-    if (t === '(') {
-      const v = or()
-      if (toks[i++] !== ')') throw new Error(`${expr}: missing )`)
+  let k = 0
+  const peek = () => toks[k]?.t
+  const rest = () => src.slice(toks[k]?.at ?? src.length)
+  const fail = (msg: string): never => {
+    throw new Abort(`${src.trim()}: ${msg} (error token is "${rest()}")`)
+  }
+  const I = (n: number) => (Number.isFinite(n) ? Math.trunc(n) : 0)
+  const big = (f: (a: bigint, b: bigint) => bigint) => (a: number, b: number) => Number(BigInt.asIntN(64, f(BigInt(I(a)), BigInt(I(b)))))
+  const literal = (t: string): number => {
+    if (/^0[xX]/.test(t)) {
+      if (t.length === 2) fail('invalid number')
+      return parseInt(t.slice(2), 16)
+    }
+    const b = /^(\d+)#(.+)$/.exec(t)
+    if (b) {
+      const base = Number(b[1])
+      if (base < 2 || base > 64) fail('invalid arithmetic base')
+      let v = 0
+      for (const c of b[2]!) {
+        const d = /\d/.test(c) ? Number(c) : /[a-z]/.test(c) ? c.charCodeAt(0) - 87 : /[A-Z]/.test(c) ? c.charCodeAt(0) - (base <= 36 ? 55 : 29) : c === '@' ? 62 : 63
+        if (d >= base) fail('value too great for base')
+        v = v * base + d
+      }
       return v
     }
-    if (t === '-') return -primary()
-    if (t === '+') return primary()
-    if (t === '!') return primary() ? 0 : 1
-    if (/^\d+$/.test(t)) return Number(t)
-    if (/^[A-Za-z_]/.test(t)) return num(t)
-    throw new Error(`${expr}: syntax error`)
+    if (t.length > 1 && t.startsWith('0')) {
+      if (/[89]/.test(t)) {
+        k--
+        fail('value too great for base')
+      }
+      return parseInt(t, 8)
+    }
+    return Number(t)
   }
-  const pow = (): number => {
-    const b = primary()
-    if (toks[i] === '**') {
-      i++
-      return b ** pow()
+  type LV = { get: () => number; set: (v: number) => void }
+  const valueOf = (name: string, index: string | undefined): number => {
+    let raw: string | undefined
+    if (index !== undefined) {
+      const a = ctx.scope.arrays[name]
+      raw = a ? a.v[keyOf(ctx, a, index)] : keyOf(ctx, undefined, index) === '0' ? readVar(ctx, name) : undefined
+    } else raw = readVar(ctx, name)
+    if (raw === undefined && ctx.scope.opts.u) throw new Fatal(`${name}: unbound variable`)
+    const t = (raw ?? '').trim()
+    if (!t) return 0
+    if (/^[-+]?\d+$/.test(t)) return Number(t)
+    if (depth > 10) throw new Abort(`${t}: expression recursion level exceeded`)
+    return evalArith(t, ctx, depth + 1)
+  }
+  const lvalue = (): LV | null => {
+    const t = peek()
+    if (!t || !/^[A-Za-z_]/.test(t)) return null
+    k++
+    let index: string | undefined
+    if (peek() === '[') {
+      const open = toks[k]!.at
+      let d = 0
+      for (; k < toks.length; k++) {
+        if (toks[k]!.t === '[') d++
+        else if (toks[k]!.t === ']' && --d === 0) break
+      }
+      if (k >= toks.length) fail("missing `]'")
+      index = src.slice(open + 1, toks[k]!.at)
+      k++
+    }
+    return {
+      get: () => valueOf(t, index),
+      set: (v: number) => {
+        const err = index !== undefined ? assignElem(ctx, t, index, String(v)) : setVar(ctx, t, String(v))
+        if (err) throw new Abort(err)
+      },
+    }
+  }
+  type Ev = () => number
+  const primary = (): Ev => {
+    const t = peek()
+    if (t === undefined) fail('syntax error: operand expected')
+    if (t === '(') {
+      k++
+      const e = comma()
+      if (peek() !== ')') fail("missing `)'")
+      k++
+      return e
+    }
+    if (/^\d/.test(t!)) {
+      k++
+      const v = literal(t!)
+      return () => v
+    }
+    const lv = lvalue()
+    if (!lv) return fail('syntax error: operand expected')
+    const post = peek()
+    if (post === '++' || post === '--') {
+      k++
+      return () => {
+        const v = lv.get()
+        lv.set(v + (post === '++' ? 1 : -1))
+        return v
+      }
+    }
+    return lv.get
+  }
+  const unary = (): Ev => {
+    const t = peek()
+    if (t === '++' || t === '--') {
+      k++
+      const lv = lvalue()
+      if (!lv) fail('syntax error: operand expected')
+      return () => {
+        const v = lv!.get() + (t === '++' ? 1 : -1)
+        lv!.set(v)
+        return v
+      }
+    }
+    if (t === '-' || t === '+' || t === '!' || t === '~') {
+      k++
+      const e = unary()
+      return t === '-' ? () => -e() : t === '+' ? e : t === '!' ? () => (e() ? 0 : 1) : () => ~I(e())
+    }
+    return primary()
+  }
+  const power = (): Ev => {
+    const b = unary()
+    if (peek() === '**') {
+      k++
+      const e = power()
+      return () => {
+        const x = e()
+        if (x < 0) throw new Abort(`${src.trim()}: exponent less than 0`)
+        return I(b() ** x)
+      }
     }
     return b
   }
-  const mul = (): number => {
-    let v = pow()
-    while (toks[i] === '*' || toks[i] === '/' || toks[i] === '%') {
-      const op = toks[i++]
-      const r = pow()
-      if ((op === '/' || op === '%') && r === 0) throw new Error(`${expr}: division by 0`)
-      v = op === '*' ? v * r : op === '/' ? Math.trunc(v / r) : v % r
-    }
-    return v
+  const binops: Record<string, (a: number, b: number) => number> = {
+    '*': (a, b) => I(a * b),
+    '/': (a, b) => {
+      if (b === 0) throw new Abort(`${src.trim()}: division by 0 (error token is "${src.slice(src.lastIndexOf('/') + 1)}")`)
+      return I(a / b)
+    },
+    '%': (a, b) => {
+      if (b === 0) throw new Abort(`${src.trim()}: division by 0 (error token is "${src.slice(src.lastIndexOf('%') + 1)}")`)
+      return I(a % b)
+    },
+    '+': (a, b) => a + b,
+    '-': (a, b) => a - b,
+    '<<': big((a, b) => a << b),
+    '>>': big((a, b) => a >> b),
+    '<': (a, b) => Number(a < b),
+    '>': (a, b) => Number(a > b),
+    '<=': (a, b) => Number(a <= b),
+    '>=': (a, b) => Number(a >= b),
+    '==': (a, b) => Number(a === b),
+    '!=': (a, b) => Number(a !== b),
+    '&': big((a, b) => a & b),
+    '^': big((a, b) => a ^ b),
+    '|': big((a, b) => a | b),
   }
-  const add = (): number => {
-    let v = mul()
-    while (toks[i] === '+' || toks[i] === '-') v = toks[i++] === '+' ? v + mul() : v - mul()
-    return v
-  }
-  const cmp = (): number => {
-    let v = add()
-    while (['<', '>', '<=', '>=', '==', '!='].includes(toks[i] ?? '')) {
-      const op = toks[i++]
-      const r = add()
-      v = Number(op === '<' ? v < r : op === '>' ? v > r : op === '<=' ? v <= r : op === '>=' ? v >= r : op === '==' ? v === r : v !== r)
+  const levels = [['*', '/', '%'], ['+', '-'], ['<<', '>>'], ['<', '>', '<=', '>='], ['==', '!='], ['&'], ['^'], ['|']]
+  const level = (n: number): Ev => {
+    if (n < 0) return power()
+    let e = level(n - 1)
+    while (levels[n]!.includes(peek() ?? '')) {
+      const f = binops[toks[k++]!.t]!
+      const l = e
+      const r = level(n - 1)
+      e = () => f(l(), r())
     }
-    return v
+    return e
   }
-  const and = (): number => {
-    let v = cmp()
-    while (toks[i] === '&&') {
-      i++
-      const r = cmp()
-      v = Number(!!v && !!r)
+  const logic = (op: '&&' | '||', next: () => Ev): Ev => {
+    let e = next()
+    while (peek() === op) {
+      k++
+      const l = e
+      const r = next()
+      e = op === '&&' ? () => Number(!!l() && !!r()) : () => Number(!!l() || !!r())
     }
-    return v
+    return e
   }
-  const or = (): number => {
-    let v = and()
-    while (toks[i] === '||') {
-      i++
-      const r = and()
-      v = Number(!!v || !!r)
+  const andE = (): Ev => logic('&&', () => level(levels.length - 1))
+  const orE = (): Ev => logic('||', andE)
+  const ternary = (): Ev => {
+    const c = orE()
+    if (peek() !== '?') return c
+    k++
+    const a = assignE()
+    if (peek() !== ':') fail("expected `:'")
+    k++
+    const b = ternary()
+    return () => (c() ? a() : b())
+  }
+  const ASSIGN_OPS = ['=', '+=', '-=', '*=', '/=', '%=', '<<=', '>>=', '&=', '^=', '|=', '**=']
+  const assignE = (): Ev => {
+    const save = k
+    const lv = lvalue()
+    if (lv && ASSIGN_OPS.includes(peek() ?? '')) {
+      const op = toks[k++]!.t
+      const r = assignE()
+      return () => {
+        const rv = r()
+        const v = op === '=' ? rv : op === '**=' ? I(lv.get() ** rv) : binops[op.slice(0, -1)]!(lv.get(), rv)
+        lv.set(v)
+        return v
+      }
     }
-    return v
+    k = save
+    return ternary()
+  }
+  const comma = (): Ev => {
+    let e = assignE()
+    while (peek() === ',') {
+      k++
+      const l = e
+      const r = assignE()
+      e = () => {
+        l()
+        return r()
+      }
+    }
+    return e
   }
   if (!toks.length) return 0
-  const v = or()
-  if (i < toks.length) throw new Error(`${expr}: syntax error in expression`)
-  return v
+  const e = comma()
+  if (k < toks.length) fail('syntax error in expression')
+  return I(e())
+}
+
+/** a[i]=value, from arithmetic or read -a. */
+function assignElem(ctx: Ctx, name: string, index: string, value: string): string | null {
+  const sc = ctx.scope
+  if (sc.ro.includes(name)) return readonlyMsg(name)
+  let a = sc.arrays[name]
+  if (!a) {
+    a = { v: {} }
+    if (sc.vars[name] !== undefined) a.v['0'] = sc.vars[name]!
+    sc.arrays[name] = a
+    delete sc.vars[name]
+  }
+  a.v[keyOf(ctx, a, index)] = value
+  return null
 }
 
 /* ── test / [ ] ──────────────────────────────────────────────────────────── */
 
-const UNARY = ['-e', '-f', '-d', '-s', '-r', '-w', '-x', '-z', '-n', '-L', '-h']
-const BINARY = ['=', '==', '!=', '<', '>', '-eq', '-ne', '-lt', '-le', '-gt', '-ge']
+const UNARY = ['-e', '-a', '-f', '-d', '-s', '-r', '-w', '-x', '-z', '-n', '-L', '-h', '-v', '-p', '-b', '-c', '-S']
+const BINARY = ['=', '==', '!=', '<', '>', '-eq', '-ne', '-lt', '-le', '-gt', '-ge', '-nt', '-ot', '-ef']
+
+/** The file tests -e -f -d … (and -z / -n), shared by test, [ ] and [[ ]]. */
+function fileTest(ctx: Ctx, op: string, v: string): boolean {
+  const s = ctx.s
+  const node = v === '' ? undefined : lookup(s, resolve(s.cwd, v))
+  switch (op) {
+    case '-e':
+    case '-a':
+      return !!node
+    case '-f':
+      return node?.kind === 'file'
+    case '-d':
+      return node?.kind === 'dir'
+    case '-s':
+      return node?.kind === 'file' ? node.content.length > 0 : !!node
+    case '-r':
+    case '-w':
+    case '-O':
+    case '-G':
+      return !!node
+    case '-x':
+      return node?.kind === 'dir' || (node?.kind === 'file' && !!node.exec)
+    case '-z':
+      return v === ''
+    case '-n':
+      return v !== ''
+    case '-v':
+      return isSet(ctx, v)
+    default:
+      return false
+  }
+}
 
 function testCmd(ctx: Ctx, name: string, argv: string[], line: number): Res {
   let args = argv
-  if (name === '[' || name === '[[') {
-    const close = name === '[' ? ']' : ']]'
-    if (args[args.length - 1] !== close) return bad(`${where(ctx, line)}${name}: missing \`${close}'`, 2)
+  if (name === '[') {
+    if (args[args.length - 1] !== ']') return bad(`${where(ctx, line)}[: missing \`]'`, 2)
     args = args.slice(0, -1)
   }
   const s = ctx.s
@@ -1431,38 +3205,13 @@ function testCmd(ctx: Ctx, name: string, argv: string[], line: number): Res {
     if (!/^\s*-?\d+\s*$/.test(v)) throw new Error(`${name}: ${v}: integer expression expected`)
     return Number(v)
   }
-  const unary = (op: string, v: string): boolean => {
-    const node = v === '' ? undefined : lookup(s, resolve(s.cwd, v))
-    switch (op) {
-      case '-e':
-        return !!node
-      case '-f':
-        return node?.kind === 'file'
-      case '-d':
-        return node?.kind === 'dir'
-      case '-s':
-        return node?.kind === 'file' ? node.content.length > 0 : !!node
-      case '-r':
-      case '-w':
-        return !!node
-      case '-x':
-        return node?.kind === 'dir' || (node?.kind === 'file' && !!node.exec)
-      case '-L':
-      case '-h':
-        return false
-      case '-z':
-        return v === ''
-      default:
-        return v !== ''
-    }
-  }
   const binary = (a: string, op: string, b: string): boolean => {
     switch (op) {
       case '=':
       case '==':
-        return name === '[[' ? wildMatch(b, a) : a === b
+        return a === b
       case '!=':
-        return name === '[[' ? !wildMatch(b, a) : a !== b
+        return a !== b
       case '<':
         return a < b
       case '>':
@@ -1477,6 +3226,14 @@ function testCmd(ctx: Ctx, name: string, argv: string[], line: number): Res {
         return int(a) <= int(b)
       case '-gt':
         return int(a) > int(b)
+      case '-nt':
+      case '-ot':
+      case '-ef': {
+        const na = lookup(s, resolve(s.cwd, a))
+        const nb = lookup(s, resolve(s.cwd, b))
+        if (op === '-ef') return !!na && na === nb
+        return op === '-nt' ? !!na && !nb : !na && !!nb
+      }
       default:
         return int(a) >= int(b)
     }
@@ -1489,14 +3246,14 @@ function testCmd(ctx: Ctx, name: string, argv: string[], line: number): Res {
         return a[0] !== ''
       case 2:
         if (a[0] === '!') return !evalN(a.slice(1))
-        if (UNARY.includes(a[0]!)) return unary(a[0]!, a[1]!)
+        if (UNARY.includes(a[0]!)) return fileTest(ctx, a[0]!, a[1]!)
         throw new Error(`${name}: ${a[0]}: unary operator expected`)
       case 3:
         if (BINARY.includes(a[1]!)) return binary(a[0]!, a[1]!, a[2]!)
         if (a[0] === '!') return !evalN(a.slice(1))
         if (a[0] === '(' && a[2] === ')') return evalN([a[1]!])
-        if (a[1] === '-a' || a[1] === '&&') return evalN([a[0]!]) && evalN([a[2]!])
-        if (a[1] === '-o' || a[1] === '||') return evalN([a[0]!]) || evalN([a[2]!])
+        if (a[1] === '-a') return evalN([a[0]!]) && evalN([a[2]!])
+        if (a[1] === '-o') return evalN([a[0]!]) || evalN([a[2]!])
         throw new Error(`${name}: ${a[1]}: binary operator expected`)
       default: {
         const o = a.indexOf('-o')
@@ -1518,8 +3275,28 @@ function testCmd(ctx: Ctx, name: string, argv: string[], line: number): Res {
 
 /* ── Scripts ─────────────────────────────────────────────────────────────── */
 
+/** A child shell's scope: only exported variables come along; no functions, arrays or traps. */
+function childScope(ctx: Ctx, name: string, args: string[], opts: ShellState['opts']): Scope {
+  const sc = ctx.scope
+  const vars: Record<string, string> = {}
+  for (const n of sc.exported) if (sc.vars[n] !== undefined) vars[n] = sc.vars[n]!
+  vars.IFS = ' \t\n'
+  return { vars, exported: [...sc.exported], args, opts, name, top: false, arrays: {}, funcs: {}, traps: {}, ro: [], ints: [] }
+}
+
+/** Runs a list as a separate shell (a script, bash -c): cwd comes back, the EXIT trap runs. */
+function runChild(ctx: Ctx, scope: Scope, ast: List, stdin: Stdin): Res {
+  const s = ctx.s
+  const child: Ctx = { ...ctx, scope, depth: ctx.depth + 1, status: 0, cond: false, frames: [], loops: 0, funcs: [], sourced: 0, inTrap: false }
+  const [cwd, prev] = [s.cwd, s.prev]
+  const r = finish(child, execList(child, ast, stdin, false, true))
+  s.cwd = cwd
+  s.prev = prev
+  return { code: r.code, chunks: r.chunks }
+}
+
 /** Runs a file of commands: in a child shell (bash, ./file) or this one (source). */
-function runScript(ctx: Ctx, file: string, args: string[], how: { child: boolean; trace?: boolean; check?: boolean }, stdin: Stdin, line = 0): Res {
+function runScript(ctx: Ctx, file: string, args: string[], how: { child: boolean; opts?: ShellState['opts']; check?: boolean }, stdin: Stdin, line = 0): Res {
   const s = ctx.s
   const path = resolve(s.cwd, file)
   const node = lookup(s, path)
@@ -1533,28 +3310,564 @@ function runScript(ctx: Ctx, file: string, args: string[], how: { child: boolean
     return bad(`${file}: line ${e instanceof ParseError ? e.line : 1}: ${(e as Error).message}`, 2)
   }
   if (how.check) return { code: 0, chunks: [] }
-  if (how.child) {
-    const sc = ctx.scope
-    const vars: Record<string, string> = {}
-    for (const n of sc.exported) if (sc.vars[n] !== undefined) vars[n] = sc.vars[n]!
-    const scope: Scope = { vars, exported: [...sc.exported], args: [file, ...args], opts: how.trace ? { x: true } : {}, name: file, top: false }
-    const [cwd, prev] = [s.cwd, s.prev]
-    const r = execList({ ...ctx, scope, depth: ctx.depth + 1, status: 0 }, ast, stdin)
-    s.cwd = cwd
-    s.prev = prev
-    return { code: r.code, chunks: r.chunks }
+  if (how.child) return runChild(ctx, childScope(ctx, file, [file, ...args], how.opts ?? {}), ast, stdin)
+  const sc = ctx.scope
+  const saved = sc.args
+  const savedName = sc.name
+  if (args.length) sc.args = [saved[0]!, ...args]
+  sc.name = file
+  const wasTop = sc.top
+  sc.top = false
+  ctx.sourced++
+  ctx.depth++
+  let r: Res
+  try {
+    r = execList(ctx, ast, stdin, false, true)
+  } finally {
+    ctx.sourced--
+    ctx.depth--
+    if (args.length) sc.args = saved
+    sc.name = savedName
+    sc.top = wasTop
   }
-  const saved = ctx.scope.args
-  const savedName = ctx.scope.name
-  if (args.length) ctx.scope.args = [saved[0]!, ...args]
-  ctx.scope.name = file
-  const wasTop = ctx.scope.top
-  ctx.scope.top = false
-  const r = execList({ ...ctx, depth: ctx.depth + 1 }, ast, stdin)
-  ctx.scope.args = saved
-  ctx.scope.name = savedName
-  ctx.scope.top = wasTop
-  return { code: r.code, chunks: r.chunks }
+  if (r.flow?.k === 'return') return { code: r.code, chunks: r.chunks }
+  return r
+}
+
+/** Interpreters a #! line may name here. */
+const INTERPRETERS = ['/bin/bash', '/usr/bin/bash', '/bin/sh', '/usr/bin/sh', '/usr/bin/env', '/bin/env', '/usr/bin/awk', '/bin/awk', '/usr/bin/python3', '/usr/bin/python']
+
+/** ./script: the kernel reads the #! line to find the program that runs it. */
+function execFile(ctx: Ctx, cmd: string, node: Node & { kind: 'file' }, args: string[], stdin: Stdin, tty: boolean, line: number): Res {
+  const first = node.content.startsWith('#!') ? node.content.slice(2, node.content.indexOf('\n') < 0 ? undefined : node.content.indexOf('\n')) : null
+  if (first === null) return runScript(ctx, cmd, args, { child: true }, stdin, line)
+  const m = /^[ \t]*([^ \t]*)(?:[ \t]+(.*?))?[ \t]*$/s.exec(first)!
+  const interp = m[1]!
+  const optArg = m[2]
+  const known = INTERPRETERS.includes(interp) || lookup(ctx.s, interp)?.kind === 'file'
+  if (!known) return bad(`${where(ctx, line)}${cmd}: cannot execute: required file not found`, 127)
+  let prog = interp
+  let progArgs: string[] = optArg !== undefined ? [optArg] : []
+  if (/\/env$/.test(interp)) {
+    if (optArg === undefined) return bad(`${where(ctx, line)}${cmd}: /usr/bin/env: no program named`, 127)
+    if (optArg.startsWith('-S')) {
+      const words = optArg.slice(2).trim().split(/\s+/).filter(Boolean)
+      prog = words[0] ?? ''
+      progArgs = words.slice(1)
+    } else {
+      prog = optArg
+      progArgs = []
+    }
+    if (!['bash', 'sh', 'awk', 'python3', 'python'].includes(prog)) {
+      const tip = /\s/.test(prog) ? '\n/usr/bin/env: use -[v]S to pass options in shebang lines' : ''
+      return bad(`/usr/bin/env: '${prog}': No such file or directory${tip}`, 127)
+    }
+  }
+  const base = prog.slice(prog.lastIndexOf('/') + 1)
+  if (base === 'bash' || base === 'sh') {
+    const opts: ShellState['opts'] = {}
+    for (const a of progArgs)
+      for (const c of a.replace(/^-/, '')) {
+        if (c === 'x') opts.x = true
+        else if (c === 'e') opts.e = true
+        else if (c === 'u') opts.u = true
+      }
+    return runScript(ctx, cmd, args, { child: true, opts }, stdin, line)
+  }
+  if (base === 'awk') return dispatch(ctx, ['awk', ...progArgs, cmd, ...args], stdin, tty, line)
+  return bad(`${cmd}: ${base} programs do not run in the practice terminal — run them in Code mode`, 126)
+}
+
+/* ── Builtins that manage the shell itself ───────────────────────────────── */
+
+/** One name given to declare/local/export/readonly, with its assignment if it had one. */
+interface DeclItem {
+  name: string
+  assign: Assign | null
+  raw: string
+}
+
+/** A value inside declare -p's double quotes. */
+const dq = (v: string) => (/[\x00-\x1f\x7f]/.test(v) ? shellQuote(v) : `"${v.replace(/(["\\$`])/g, '\\$1')}"`)
+
+function declareLine(ctx: Ctx, name: string): string | null {
+  const sc = ctx.scope
+  const a = sc.arrays[name]
+  const v = sc.vars[name]
+  if (!a && v === undefined) return null
+  let flags = a ? (a.assoc ? 'A' : 'a') : ''
+  if (sc.ints.includes(name)) flags += 'i'
+  if (sc.ro.includes(name)) flags += 'r'
+  if (sc.exported.includes(name)) flags += 'x'
+  const f = flags ? `-${flags}` : '--'
+  if (a) {
+    const items = arrayKeys(a).map((k) => `[${k}]=${dq(a.v[k]!)}`)
+    return `declare ${f} ${name}=(${items.join(' ')}${a.assoc && items.length ? ' ' : ''})`
+  }
+  return `declare ${f} ${name}=${dq(v!)}`
+}
+
+function declareCmd(ctx: Ctx, x: Expander, cmd: string, flagWords: string[], items: DeclItem[], line: number): Res {
+  const sc = ctx.scope
+  const inFunc = ctx.frames.length > 0
+  if (cmd === 'local' && !inFunc) return bad(`${where(ctx, line)}local: can only be used in a function`, 1)
+  const on = new Set<string>()
+  const off = new Set<string>()
+  for (const w of flagWords) for (const c of w.slice(1)) (w[0] === '-' ? on : off).add(c)
+  if (cmd === 'export') on.add('x')
+  if (cmd === 'readonly') on.add('r')
+  if (cmd === 'export' && on.has('n')) {
+    on.delete('x')
+    off.add('x')
+  }
+  const lines: string[] = []
+  const errs: string[] = []
+  if (on.has('f') || on.has('F')) {
+    const names = items.length ? items.map((i) => i.name) : Object.keys(sc.funcs).sort()
+    let code = 0
+    for (const n of names) {
+      const fn = sc.funcs[n]
+      if (!fn) {
+        code = 1
+        continue
+      }
+      lines.push(on.has('F') ? `declare -f ${n}` : functionText(n, fn))
+    }
+    return { code, chunks: lines.length ? [[1, fromLines(lines)]] : [] }
+  }
+  if (on.has('p') || (!items.length && cmd !== 'local')) {
+    let names = items.map((i) => i.name)
+    if (!names.length) {
+      const all = [...new Set([...Object.keys(sc.vars), ...Object.keys(sc.arrays)])].sort()
+      names = cmd === 'export' || on.has('x') ? all.filter((n) => sc.exported.includes(n)) : cmd === 'readonly' || on.has('r') ? all.filter((n) => sc.ro.includes(n)) : all
+      if (cmd === 'declare' && !on.has('p') && !flagWords.length) return ok(names.map((n) => (sc.arrays[n] ? declareLine(ctx, n)!.replace(/^declare -\S+ /, '') : `${n}=${shq(sc.vars[n]!)}`)).join('\n'))
+    }
+    let code = 0
+    for (const n of names) {
+      const l = declareLine(ctx, n)
+      if (l === null) {
+        errs.push(`${where(ctx, line)}${cmd}: ${n}: not found`)
+        code = 1
+      } else lines.push(l)
+    }
+    return result(fromLines(lines), errs, code)
+  }
+  let code = 0
+  for (const item of items) {
+    const name = item.name
+    if (!/^[A-Za-z_]\w*$/.test(name)) {
+      errs.push(`${where(ctx, line)}${cmd}: \`${item.raw}': not a valid identifier`)
+      code = 1
+      continue
+    }
+    const makesLocal = cmd === 'local' || ((cmd === 'declare' || cmd === 'typeset') && inFunc && !on.has('g'))
+    if (makesLocal) {
+      const fresh = !ctx.frames[ctx.frames.length - 1]!.has(name)
+      makeLocal(ctx, name)
+      if (fresh && !item.assign) {
+        delete sc.vars[name]
+        delete sc.arrays[name]
+      }
+    }
+    if (on.has('i') && !sc.ints.includes(name)) sc.ints.push(name)
+    if (off.has('i') && sc.ints.includes(name)) sc.ints.splice(sc.ints.indexOf(name), 1)
+    if (on.has('A') && !sc.arrays[name]?.assoc) {
+      sc.arrays[name] = { assoc: true, v: {} }
+      delete sc.vars[name]
+    } else if (on.has('a') && !sc.arrays[name]) {
+      sc.arrays[name] = { v: sc.vars[name] !== undefined ? { 0: sc.vars[name]! } : {} }
+      delete sc.vars[name]
+    }
+    if (item.assign) {
+      if (sc.ro.includes(name)) {
+        errs.push(`${where(ctx, line)}${readonlyMsg(name)}`)
+        code = 1
+        continue
+      }
+      let err: string | null
+      try {
+        err = assign(ctx, x, item.assign)
+      } catch (e) {
+        return expansionFailed(ctx, e, errs.map((m): Chunk => [2, `${m}\n`]), line)
+      }
+      if (err) {
+        errs.push(`${where(ctx, line)}${err}`)
+        code = 1
+        continue
+      }
+    }
+    if (on.has('x') && !sc.exported.includes(name)) sc.exported.push(name)
+    if (off.has('x') && sc.exported.includes(name)) sc.exported.splice(sc.exported.indexOf(name), 1)
+    if (on.has('r') && !sc.ro.includes(name)) sc.ro.push(name)
+  }
+  return result('', errs, code)
+}
+
+/** read [-r] [-a arr] [-d delim] [-p prompt] [-n N] name…: one line (or up to delim) from standard input. */
+function readCmd(ctx: Ctx, args: string[], stdin: Stdin, line: number): Res {
+  let raw = false
+  let arr: string | null = null
+  let delim = '\n'
+  let nchars: number | null = null
+  const names: string[] = []
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]!
+    if (!a.startsWith('-') || a === '-' || names.length) {
+      names.push(a)
+      continue
+    }
+    for (let j = 1; j < a.length; j++) {
+      const c = a[j]!
+      if (c === 'r') raw = true
+      else if (c === 's' || c === 'e') continue
+      else if ('adpntNu'.includes(c)) {
+        const v = a.slice(j + 1) || args[++i] || ''
+        if (c === 'a') arr = v
+        else if (c === 'd') delim = v.slice(0, 1)
+        else if (c === 'n' || c === 'N') nchars = Number(v)
+        break
+      } else return bad(`${where(ctx, line)}read: -${c}: invalid option\nread: usage: read [-ers] [-a array] [-d delim] [-i text] [-n nchars] [-N nchars] [-p prompt] [-t timeout] [-u fd] [name ...]`, 2)
+    }
+  }
+  if (!stdin) return bad(`${where(ctx, line)}read: the practice terminal cannot wait for typing — pipe text in: … | while read line; do …; done`)
+  const buf = stdin.buf
+  const end = delim === '' ? '\0' : delim
+  let text = ''
+  let i = 0
+  let found = false
+  for (; i < buf.length; i++) {
+    if (nchars !== null && text.length >= nchars) break
+    const c = buf[i]!
+    if (c === end) {
+      found = true
+      i++
+      break
+    }
+    if (c === '\\' && !raw) {
+      const n = buf[i + 1]
+      if (n === undefined) break
+      i++
+      if (n === '\n') continue
+      text += `\\${n}`
+      continue
+    }
+    text += c
+  }
+  if (nchars !== null && text.length >= nchars) found = true
+  stdin.buf = buf.slice(i)
+  if (!buf.length) found = false
+  const ifs = ctx.scope.vars.IFS ?? ' \t\n'
+  const unescape = (t: string) => (raw ? t : t.replace(/\\(.)/gs, '$1'))
+  const setErr = (n: string, v: string) => {
+    const err = setVar(ctx, n, v)
+    if (err) throw new Error(err)
+  }
+  try {
+    if (arr !== null) {
+      const fields = ifs === '' ? [text] : ifsPieces(text, ifs).pieces.filter((p, k, all) => p !== '' || k < all.length - 1 || !/[ \t\n]/.test(ifs))
+      const target: Arr = { v: {} }
+      fields.forEach((f, k) => (target.v[String(k)] = unescape(f)))
+      if (!text) target.v = {}
+      ctx.scope.arrays[arr] = target
+      delete ctx.scope.vars[arr]
+    } else if (!names.length) setErr('REPLY', unescape(text))
+    else {
+      const isWs = (c: string) => (c === ' ' || c === '\t' || c === '\n') && ifs.includes(c)
+      const isN = (c: string) => ifs.includes(c) && !isWs(c)
+      let rest = text
+      names.forEach((n, k) => {
+        let p = 0
+        while (p < rest.length && isWs(rest[p]!)) p++
+        rest = rest.slice(p)
+        if (k === names.length - 1) {
+          let v = rest
+          let e = v.length
+          while (e > 0 && isWs(v[e - 1]!) && (raw || v[e - 2] !== '\\')) e--
+          v = v.slice(0, e)
+          if (v.length && isN(v[v.length - 1]!) && ![...v.slice(0, -1)].some((c) => ifs.includes(c))) v = v.slice(0, -1)
+          setErr(n, unescape(v))
+          return
+        }
+        let q = 0
+        while (q < rest.length && !(ifs.includes(rest[q]!) && (raw || rest[q - 1] !== '\\'))) q++
+        setErr(n, unescape(rest.slice(0, q)))
+        let r = q
+        while (r < rest.length && isWs(rest[r]!)) r++
+        if (r < rest.length && isN(rest[r]!)) {
+          r++
+          while (r < rest.length && isWs(rest[r]!)) r++
+        }
+        rest = rest.slice(r)
+      })
+    }
+  } catch (e) {
+    return bad(`${where(ctx, line)}${(e as Error).message}`, 1)
+  }
+  return { code: found ? 0 : 1, chunks: [] }
+}
+
+/** mapfile [-t] [-n N] [-s N] [-d delim] [array]: every line of standard input into an array. */
+function mapfileCmd(ctx: Ctx, cmd: string, args: string[], stdin: Stdin, line: number): Res {
+  let strip = false
+  let count = 0
+  let skip = 0
+  let delim = '\n'
+  let name = 'MAPFILE'
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]!
+    if (a === '-t') strip = true
+    else if (a === '-n') count = Number(args[++i])
+    else if (a === '-s') skip = Number(args[++i])
+    else if (a === '-d') delim = (args[++i] ?? '').slice(0, 1) || '\0'
+    else if (a.startsWith('-')) return bad(`${where(ctx, line)}${cmd}: ${a}: invalid option`, 2)
+    else name = a
+  }
+  const text = stdin?.buf ?? ''
+  if (stdin) stdin.buf = ''
+  const pieces: string[] = []
+  let from = 0
+  while (from < text.length) {
+    const at = text.indexOf(delim, from)
+    const end = at < 0 ? text.length : at + 1
+    const piece = text.slice(from, end)
+    pieces.push(strip && piece.endsWith(delim) ? piece.slice(0, -1) : piece)
+    from = end
+  }
+  const kept = pieces.slice(skip, count ? skip + count : undefined)
+  if (ctx.scope.ro.includes(name)) return bad(`${where(ctx, line)}${readonlyMsg(name)}`)
+  ctx.scope.arrays[name] = { v: Object.fromEntries(kept.map((p, i) => [String(i), p])) }
+  delete ctx.scope.vars[name]
+  return { code: 0, chunks: [] }
+}
+
+/** getopts optstring name [args]: the next option, one call at a time. */
+function getoptsCmd(ctx: Ctx, args: string[], line: number): Res {
+  const [spec, name, ...given] = args
+  if (spec === undefined || name === undefined) return bad(`${where(ctx, line)}getopts: usage: getopts optstring name [arg ...]`, 2)
+  const sc = ctx.scope
+  const params = given.length ? given : sc.args.slice(1)
+  let optind = Number(sc.vars.OPTIND ?? '1') || 1
+  if (sc.optind !== optind) sc.optpos = 1
+  let pos = sc.optpos ?? 1
+  const silent = spec.startsWith(':')
+  const letters = silent ? spec.slice(1) : spec
+  const set = (n: string, v: string) => setVar(ctx, n, v)
+  const done = (o: number, p: number) => {
+    sc.optpos = p
+    sc.optind = o
+    set('OPTIND', String(o))
+  }
+  const arg = params[optind - 1]
+  if (arg === undefined || arg === '-' || !arg.startsWith('-') || arg === '--') {
+    if (arg === '--') optind++
+    set(name, '?')
+    done(optind, 1)
+    return { code: 1, chunks: [] }
+  }
+  const c = arg[pos]!
+  const advance = () => {
+    pos++
+    if (pos >= arg.length) {
+      optind++
+      pos = 1
+    }
+  }
+  const who = sc.args[0] ?? 'bash'
+  const at = letters.indexOf(c)
+  if (at < 0 || c === ':') {
+    advance()
+    set(name, '?')
+    done(optind, pos)
+    if (silent) {
+      set('OPTARG', c)
+      return { code: 0, chunks: [] }
+    }
+    delete sc.vars.OPTARG
+    return bad(`${who}: illegal option -- ${c}`, 0)
+  }
+  if (letters[at + 1] === ':') {
+    if (pos + 1 < arg.length) {
+      set('OPTARG', arg.slice(pos + 1))
+      optind++
+    } else if (params[optind] !== undefined) {
+      set('OPTARG', params[optind]!)
+      optind += 2
+    } else {
+      optind++
+      done(optind, 1)
+      if (silent) {
+        set(name, ':')
+        set('OPTARG', c)
+        return { code: 0, chunks: [] }
+      }
+      set(name, '?')
+      delete sc.vars.OPTARG
+      return bad(`${who}: option requires an argument -- ${c}`, 0)
+    }
+    set(name, c)
+    done(optind, 1)
+    return { code: 0, chunks: [] }
+  }
+  advance()
+  set(name, c)
+  delete sc.vars.OPTARG
+  done(optind, pos)
+  return { code: 0, chunks: [] }
+}
+
+const SIGNALS: Record<string, string> = { 0: 'EXIT', 1: 'HUP', 2: 'INT', 3: 'QUIT', 9: 'KILL', 13: 'PIPE', 14: 'ALRM', 15: 'TERM', 17: 'CHLD', 10: 'USR1', 12: 'USR2' }
+
+/** EXIT, 0, SIGINT, int, 2 → the name trap keeps it under. */
+function signalName(s: string): string | null {
+  const u = s.toUpperCase().replace(/^SIG/, '')
+  if (/^\d+$/.test(u)) return SIGNALS[u] ?? null
+  return ['EXIT', 'ERR', 'DEBUG', 'RETURN', ...Object.values(SIGNALS)].includes(u) ? u : null
+}
+
+function trapCmd(ctx: Ctx, args: string[], line: number): Res {
+  const traps = ctx.scope.traps
+  const show = (sig: string) => `trap -- ${shellQuoteSingle(traps[sig]!)} ${['EXIT', 'ERR', 'DEBUG', 'RETURN'].includes(sig) ? sig : `SIG${sig}`}`
+  let rest = args
+  if (rest[0] === '-l') return ok(Object.entries(SIGNALS).filter(([n]) => n !== '0').map(([n, v]) => `${n.padStart(2)}) SIG${v}`).join('\n'))
+  if (!rest.length || rest[0] === '-p') {
+    const sigs = rest.length > 1 ? rest.slice(1).map(signalName).filter((x): x is string => !!x) : Object.keys(traps)
+    return ok(sigs.filter((g) => traps[g] !== undefined).map(show).join('\n'))
+  }
+  if (rest[0] === '--') rest = rest.slice(1)
+  let action: string | null = rest[0]!
+  let sigs = rest.slice(1)
+  if (!sigs.length) {
+    // trap INT: back to the default for that signal.
+    sigs = [action]
+    action = null
+  }
+  if (action === '-') action = null
+  const errs: string[] = []
+  for (const sg of sigs) {
+    const n = signalName(sg)
+    if (!n) {
+      errs.push(`${where(ctx, line)}trap: ${sg}: invalid signal specification`)
+      continue
+    }
+    if (action === null) delete traps[n]
+    else traps[n] = action
+  }
+  return result('', errs, errs.length ? 1 : 0)
+}
+
+/** 'text' as trap -p shows it: single quotes, with ' written as '\''. */
+const shellQuoteSingle = (t: string) => `'${t.replace(/'/g, `'\\''`)}'`
+
+/** What a name would run: a keyword, a function, a builtin, a program here, or nothing. */
+function commandKind(ctx: Ctx, name: string): 'keyword' | 'function' | 'builtin' | 'file' | null {
+  if (KEYWORDS.includes(name)) return 'keyword'
+  if (ctx.scope.funcs[name]) return 'function'
+  if (BUILTINS.includes(name)) return 'builtin'
+  if (COMMANDS.includes(name) && !BUILTIN_ONLY.has(name)) return 'file'
+  return null
+}
+
+function describeCommand(ctx: Ctx, name: string, kind: 'keyword' | 'function' | 'builtin' | 'file'): string {
+  if (kind === 'keyword') return `${name} is a shell keyword`
+  if (kind === 'builtin') return `${name} is a shell builtin`
+  if (kind === 'file') return `${name} is /usr/bin/${name}`
+  return `${name} is a function\n${functionText(name, ctx.scope.funcs[name]!)}`
+}
+
+/** A function the way bash prints it back (type f, declare -f f). */
+function functionText(name: string, fn: Cmd): string {
+  return `${name} () \n${cmdText(fn, 0)}`
+}
+
+function cmdText(c: Cmd, depth: number): string {
+  const pad = '    '.repeat(depth)
+  const words = (ts: Token[]) => ts.map((t) => t.raw ?? t.text).join(' ')
+  const redirs = (rs: Redir[]) => rs.map((r) => (r.target ? ` ${r.op} ${r.target.raw ?? r.target.text}` : ` ${r.op}`)).join('')
+  const listText = (l: List, d: number) =>
+    l
+      .map((ao) => {
+        const pipe = (p: Pipeline) => (p.negate ? '! ' : '') + p.cmds.map((x) => cmdText(x, d).trimStart()).join(' | ')
+        return '    '.repeat(d) + [pipe(ao.first), ...ao.rest.map((r) => `${r.op} ${pipe(r.pipe)}`)].join(' ')
+      })
+      .join(';\n')
+  switch (c.type) {
+    case 'simple':
+      return pad + words(c.words) + redirs(c.redirs)
+    case 'group':
+      return `${pad}{ \n${listText(c.body, depth + 1)}\n${pad}}${redirs(c.redirs)}`
+    case 'subshell':
+      return `${pad}( ${listText(c.body, 0).trim()} )${redirs(c.redirs)}`
+    case 'if':
+      return `${pad}if ${listText(c.arms[0]!.cond, 0).trim()}; then\n${listText(c.arms[0]!.body, depth + 1)};\n${c.arms
+        .slice(1)
+        .map((a) => `${pad}elif ${listText(a.cond, 0).trim()}; then\n${listText(a.body, depth + 1)};\n`)
+        .join('')}${c.otherwise ? `${pad}else\n${listText(c.otherwise, depth + 1)};\n` : ''}${pad}fi`
+    case 'for':
+      return `${pad}for ${c.name}${c.items ? ` in ${words(c.items)}` : ''};\n${pad}do\n${listText(c.body, depth + 1)};\n${pad}done`
+    case 'cfor':
+      return `${pad}for ((${c.init}; ${c.test}; ${c.step}))\n${pad}do\n${listText(c.body, depth + 1)};\n${pad}done`
+    case 'while':
+      return `${pad}${c.until ? 'until' : 'while'} ${listText(c.cond, 0).trim()}; do\n${listText(c.body, depth + 1)};\n${pad}done`
+    case 'case':
+      return `${pad}case ${c.word.raw ?? c.word.text} in \n${c.arms.map((a) => `${pad}    ${words(a.patterns).replace(/ /g, ' | ')})\n${listText(a.body, depth + 2)}\n${pad}    ${a.end}`).join('\n')}\n${pad}esac`
+    case 'cond':
+      return `${pad}[[ ${words(c.words)} ]]`
+    case 'arith':
+      return `${pad}(( ${c.expr.trim()} ))`
+    case 'func':
+      return `${pad}${functionText(c.name, c.body)}`
+  }
+}
+
+/* ── awk, jq, paste, join, column (in their own files) ──────────────────── */
+
+/** What awk, jq and the table tools may do with this shell: read files and standard input, write files, run commands. */
+function toolIO(ctx: Ctx, stdin: Stdin): ToolIO {
+  const s = ctx.s
+  return {
+    stdin: stdin ? stdin.buf : null,
+    takeStdin: () => {
+      const t = stdin?.buf ?? ''
+      if (stdin) stdin.buf = ''
+      return t
+    },
+    readFile: (p: string) => {
+      const abs = resolve(s.cwd, p)
+      if (abs === '/dev/null') return ''
+      const node = lookup(s, abs)
+      if (!node) return { error: 'No such file or directory' }
+      if (node.kind === 'dir') return { error: 'Is a directory' }
+      return node.content
+    },
+    writeFile: (p: string, text: string, append: boolean) => {
+      const err = writeFile(s, resolve(s.cwd, p), text, append)
+      return err ? err.replace(/^bash: /, '') : null
+    },
+    run: (cmdText: string, input: string) => {
+      const sub = subshell(ctx)
+      try {
+        const r = execList(sub, parse(tokenize(cmdText)), { buf: input }, false, true)
+        return { out: stdoutOf(r), err: r.chunks.filter((c) => c[0] === 2).map((c) => c[1]).join(''), code: r.code }
+      } catch (e) {
+        return { out: '', err: `sh: 1: ${(e as Error).message}\n`, code: 2 }
+      }
+    },
+    env: Object.fromEntries(ctx.scope.exported.filter((n) => ctx.scope.vars[n] !== undefined).map((n) => [n, ctx.scope.vars[n]!])),
+  }
+}
+
+const toolRes = (r: ToolResult): Res => ({ code: r.code, chunks: r.chunks ?? [...(r.out ? [[1, r.out] as Chunk] : []), ...(r.err ? [[2, r.err] as Chunk] : [])] })
+
+function awkCmd(ctx: Ctx, args: string[], stdin: Stdin): Res {
+  return toolRes(runAwk(args, toolIO(ctx, stdin)))
+}
+
+function jqCmd(ctx: Ctx, args: string[], stdin: Stdin): Res {
+  return toolRes(runJq(args, toolIO(ctx, stdin)))
+}
+
+function tableCmd(ctx: Ctx, cmd: string, args: string[], stdin: Stdin): Res {
+  return toolRes(runTable(cmd, args, toolIO(ctx, stdin)))
 }
 
 /* ── Commands ────────────────────────────────────────────────────────────── */
@@ -1562,7 +3875,13 @@ function runScript(ctx: Ctx, file: string, args: string[], how: { child: boolean
 function flags(args: string[]): { flags: Set<string>; rest: string[] } {
   const f = new Set<string>()
   const rest: string[] = []
-  for (const a of args) {
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i]!
+    // -- ends the options: everything after it is a name, even -x.
+    if (a === '--') {
+      rest.push(...args.slice(i + 1))
+      break
+    }
     if (/^-[a-zA-Z0-9]+$/.test(a)) for (const c of a.slice(1)) f.add(c)
     else rest.push(a)
   }
@@ -1645,31 +3964,73 @@ function makeRegex(pattern: string, kind: 'basic' | 'extended' | 'fixed', flagsT
   return new RegExp(src, flagsText)
 }
 
-const unescapeEcho = (t: string) =>
-  t.replace(/\\(n|t|\\|a|r|e|0)/g, (_, c: string) => ({ n: '\n', t: '\t', '\\': '\\', a: '', r: '\r', e: '', '0': '' })[c]!)
-
-function printfFormat(fmt: string, args: string[]): string {
-  const f = fmt.replace(/\\(n|t|\\|"|'|r)/g, (_, c: string) => ({ n: '\n', t: '\t', '\\': '\\', '"': '"', "'": "'", r: '\r' })[c]!)
+/** bash's printf: the format is used again while arguments are left; bad numbers are reported. */
+function bashPrintf(fmt: string, args: string[]): { text: string; errs: string[]; chunks: [1 | 2, string][] } {
+  const pieces = parseFormat(fmt)
   let text = ''
+  const errs: string[] = []
+  // Each error is shown after the output made before it, as bash's unbuffered stderr would.
+  const chunks: [1 | 2, string][] = []
+  let flushed = 0
   let k = 0
+  const next = () => args[k++]
   for (;;) {
-    let used = false
-    text += f.replace(/%(-?)(\d*)(?:\.(\d+))?([sdifxb%])/g, (_, left: string, width: string, prec: string | undefined, conv: string) => {
-      if (conv === '%') return '%'
-      used = true
-      const a = args[k++] ?? ''
-      let v: string
-      if (conv === 's') v = prec ? a.slice(0, Number(prec)) : a
-      else if (conv === 'b') v = unescapeEcho(a)
-      else if (conv === 'f') v = (Number(a) || 0).toFixed(prec ? Number(prec) : 6)
-      else if (conv === 'x') v = Math.trunc(Number(a) || 0).toString(16)
-      else v = String(Math.trunc(Number(a) || 0))
-      const w = Number(width || 0)
-      return left ? v.padEnd(w) : v.padStart(w)
-    })
-    if (!used || k >= args.length) break
+    const before = k
+    for (const p of pieces) {
+      if (typeof p === 'string') {
+        text += unescapeC(p).text
+        continue
+      }
+      const spec = { flags: p.flags, conv: p.conv, ...(p.width !== undefined ? { width: p.width } : {}), ...(p.prec !== undefined ? { prec: p.prec } : {}) }
+      if (p.starW) {
+        const w = Math.trunc(Number(next() ?? 0)) || 0
+        spec.width = Math.abs(w)
+        if (w < 0) spec.flags += '-'
+      }
+      if (p.starP) spec.prec = Math.max(0, Math.trunc(Number(next() ?? 0)) || 0)
+      const a = next()
+      const num = (float: boolean) => {
+        const got = parseCNumber(a ?? '', float)
+        if (!got.ok) {
+          errs.push(`printf: ${a}: invalid number`)
+          if (text.length > flushed) chunks.push([1, text.slice(flushed)])
+          flushed = text.length
+          chunks.push([2, `printf: ${a}: invalid number`])
+        }
+        return got.n
+      }
+      switch (p.conv) {
+        case 's':
+        case 'c':
+          text += fmtStr(a ?? '', spec)
+          break
+        case 'q':
+          text += fmtStr(a === undefined ? '' : shellQuote(a), { ...spec, conv: 's' })
+          break
+        case 'b': {
+          const u = unescapeC(a ?? '', true)
+          text += fmtStr(u.text, { ...spec, conv: 's' })
+          if (u.stop) return { text, errs, chunks: [...chunks, [1, text.slice(flushed)]] }
+          break
+        }
+        case 'd':
+        case 'i':
+          text += fmtInt(num(false), spec)
+          break
+        case 'o':
+        case 'u':
+        case 'x':
+        case 'X':
+          text += fmtUnsigned(num(false), spec)
+          break
+        default:
+          text += fmtFloat(num(true), spec)
+      }
+    }
+    if (k === before || k >= args.length) break
   }
-  return text
+  if (text.length > flushed) chunks.push([1, text.slice(flushed)])
+  return { text, errs, chunks }
 }
 
 /** Words the way xargs reads them: split on space, quotes kept together. */
@@ -1705,9 +4066,15 @@ function splitWords(text: string): string[] {
 }
 
 /** Commands only a shell can run: xargs and find -exec cannot start them. */
-const BUILTIN_ONLY = new Set(['cd', 'export', 'unset', 'set', 'read', 'exit', 'source', '.', 'history', 'type', 'local', 'readonly', 'declare', 'alias', 'clear'])
-const KEYWORDS = ['for', 'in', 'do', 'done', 'if', 'then', 'elif', 'else', 'fi', 'while', 'until', '!']
-const BUILTINS = ['cd', 'pwd', 'echo', 'printf', 'export', 'unset', 'set', 'read', 'exit', 'source', '.', 'test', '[', 'true', 'false', 'history', 'type', 'help', ':']
+const BUILTIN_ONLY = new Set([
+  'cd', 'export', 'unset', 'set', 'read', 'exit', 'source', '.', 'history', 'type', 'local', 'readonly', 'declare', 'typeset', 'alias', 'clear',
+  'return', 'break', 'continue', 'shift', 'getopts', 'trap', 'let', 'eval', 'mapfile', 'readarray', 'shopt', 'command',
+])
+const KEYWORDS = ['for', 'in', 'do', 'done', 'if', 'then', 'elif', 'else', 'fi', 'while', 'until', '!', 'case', 'esac', 'function', '{', '}', '[[', ']]', 'select', 'time']
+const BUILTINS = [
+  'cd', 'pwd', 'echo', 'printf', 'export', 'unset', 'set', 'read', 'exit', 'source', '.', 'test', '[', 'true', 'false', 'history', 'type', 'help', ':',
+  'local', 'declare', 'typeset', 'readonly', 'return', 'break', 'continue', 'shift', 'getopts', 'trap', 'let', 'eval', 'mapfile', 'readarray', 'shopt', 'command', 'wait',
+]
 const EDITORS = ['nano', 'vim', 'vi', 'nvim', 'emacs', 'code', 'pico']
 
 function dispatch(ctx: Ctx, argv: string[], stdin: Stdin, tty: boolean, line: number, via?: string): Res {
@@ -1745,25 +4112,49 @@ function dispatch(ctx: Ctx, argv: string[], stdin: Stdin, tty: boolean, line: nu
         k++
       }
       const text = args.slice(k).join(' ')
-      return out((esc ? unescapeEcho(text) : text) + (nl ? '\n' : ''))
+      if (!esc) return out(text + (nl ? '\n' : ''))
+      const u = unescapeC(text, true)
+      return out(u.text + (nl && !u.stop ? '\n' : ''))
     }
-    case 'printf':
-      if (!args.length) return bad('printf: usage: printf FORMAT [ARGUMENTS…]', 2)
-      return out(printfFormat(args[0]!, args.slice(1)))
+    case 'printf': {
+      let rest = args
+      let into: string | null = null
+      if (rest[0] === '-v') {
+        into = rest[1] ?? null
+        rest = rest.slice(2)
+      }
+      if (rest[0] === '--') rest = rest.slice(1)
+      if (!rest.length) return bad(`${where(ctx, line)}printf: usage: printf [-v var] format [arguments]`, 2)
+      const p = bashPrintf(rest[0]!, rest.slice(1))
+      const errs = p.errs.map((e) => `${where(ctx, line)}${e}`)
+      if (into !== null) {
+        const m = /^([A-Za-z_]\w*)(?:\[(.*)\])?$/.exec(into)
+        if (!m) return bad(`${where(ctx, line)}printf: \`${into}': not a valid identifier`, 2)
+        const err = m[2] !== undefined ? assignElem(ctx, m[1]!, m[2], p.text) : setVar(ctx, m[1]!, p.text)
+        if (err) errs.push(`${where(ctx, line)}${err}`)
+        return result('', errs, errs.length ? 1 : 0)
+      }
+      return { code: errs.length ? 1 : 0, chunks: p.chunks.map(([fd, t]): Chunk => (fd === 2 ? [2, `${where(ctx, line)}${t}\n`] : [1, t])) }
+    }
     case 'node':
       return args[0] === '--version' || args[0] === '-v' ? ok('v22.12.0 (practice terminal)') : bad('node: only --version works in the practice terminal. Run real programs in Code mode.')
     case 'python':
     case 'python3':
       return args[0] === '--version' || args[0] === '-V' ? ok('Python 3.13.0 (practice terminal)') : bad(`${cmd}: only --version works here. Run Python in Code mode.`)
     case 'cd': {
-      if (args.length > 1) return bad('cd: too many arguments')
-      const target = args[0] === undefined ? HOME : args[0] === '-' ? s.prev : resolve(s.cwd, args[0])
+      let rest = args
+      while (rest.length && /^-[LPe@]+$/.test(rest[0]!)) rest = rest.slice(1)
+      if (rest[0] === '--') rest = rest.slice(1)
+      else if (rest[0] && rest[0] !== '-' && rest[0].startsWith('-')) return bad(`${where(ctx, line)}cd: ${rest[0].slice(0, 2)}: invalid option\ncd: usage: cd [-L|[-P [-e]] [-@]] [dir]`, 2)
+      if (rest.length > 1) return bad(`${where(ctx, line)}cd: too many arguments`)
+      const arg = rest[0]
+      const target = arg === undefined ? HOME : arg === '-' ? s.prev : resolve(s.cwd, arg)
       const node = lookup(s, target)
-      if (!node) return bad(`cd: ${args[0]}: No such file or directory`)
-      if (node.kind !== 'dir') return bad(`cd: ${args[0]}: Not a directory`)
+      if (!node) return bad(`${where(ctx, line)}cd: ${arg}: No such file or directory`)
+      if (node.kind !== 'dir') return bad(`${where(ctx, line)}cd: ${arg}: Not a directory`)
       s.prev = s.cwd
       s.cwd = target
-      return ok(args[0] === '-' ? pretty(target) : '')
+      return ok(arg === '-' ? pretty(target) : '')
     }
     case 'ls': {
       const { flags: f, rest } = flags(args)
@@ -1820,8 +4211,9 @@ function dispatch(ctx: Ctx, argv: string[], stdin: Stdin, tty: boolean, line: nu
       return ok()
     }
     case 'touch': {
-      if (!args.length) return bad('touch: missing file operand')
-      for (const a of args) {
+      const { rest } = flags(args)
+      if (!rest.length) return bad('touch: missing file operand')
+      for (const a of rest) {
         const path = resolve(s.cwd, a)
         if (lookup(s, path)) continue
         const err = writeFile(s, path, '', false)
@@ -1834,17 +4226,45 @@ function dispatch(ctx: Ctx, argv: string[], stdin: Stdin, tty: boolean, line: nu
       const got = inputs(ctx, 'cat', rest, stdin)
       if (isRes(got)) return got
       let text = got.srcs.map((x) => x.text).join('')
-      if (f.has('n')) text = fromLines(toLines(text).map((l, i) => `${String(i + 1).padStart(6)}\t${l}`))
+      if (f.has('A')) ['v', 'E', 'T'].forEach((c) => f.add(c))
+      if (f.has('e')) ['v', 'E'].forEach((c) => f.add(c))
+      if (f.has('t')) ['v', 'T'].forEach((c) => f.add(c))
+      if (f.has('s')) text = text.replace(/\n{3,}/g, '\n\n')
+      if (f.has('v') || f.has('T'))
+        text = [...text]
+          .map((c) => {
+            const n = c.charCodeAt(0)
+            if (c === '\n') return c
+            if (c === '\t') return f.has('T') ? '^I' : c
+            if (!f.has('v')) return c
+            if (n < 32) return `^${String.fromCharCode(n + 64)}`
+            if (n === 127) return '^?'
+            return c
+          })
+          .join('')
+      if (f.has('E')) text = text.replace(/\n/g, '$\n')
+      if (f.has('n') || f.has('b')) {
+        let k = 0
+        text = fromLines(toLines(text).map((l) => (f.has('b') && (l === '' || l === '$') ? l : `${String(++k).padStart(6)}\t${l}`)))
+      }
       return result(text, got.errs, got.errs.length ? 1 : 0)
     }
     case 'head':
     case 'tail': {
       let n = 10
       let fromStart = false
+      let bytes: number | null = null
       const files: string[] = []
       for (let i = 0; i < args.length; i++) {
         const a = args[i]!
         let v: string | undefined
+        if (a === '-c' || /^-c\+?\d+$/.test(a)) {
+          const c = a === '-c' ? args[++i] : a.slice(2)
+          if (c === undefined || !/^\+?\d+$/.test(c)) return bad(`${cmd}: invalid number of bytes: '${c ?? ''}'`)
+          fromStart = c.startsWith('+')
+          bytes = Number(c.replace('+', ''))
+          continue
+        }
         if (a === '-n') v = args[++i]
         else if (/^-n.+/.test(a)) v = a.slice(2)
         else if (/^-\d+$/.test(a)) v = a.slice(1)
@@ -1860,6 +4280,11 @@ function dispatch(ctx: Ctx, argv: string[], stdin: Stdin, tty: boolean, line: nu
       if (isRes(got)) return got
       const errs = got.errs.map((e) => e.replace(`${cmd}: `, `${cmd}: cannot open '`).replace(/: No such file or directory$/, "' for reading: No such file or directory"))
       const blocks = got.srcs.map((src) => {
+        if (bytes !== null) {
+          const b = [...new TextEncoder().encode(src.text)]
+          const picked = cmd === 'head' ? b.slice(0, bytes) : fromStart ? b.slice(Math.max(bytes - 1, 0)) : bytes === 0 ? [] : b.slice(-bytes)
+          return (got.srcs.length > 1 ? `==> ${src.name} <==\n` : '') + new TextDecoder().decode(Uint8Array.from(picked))
+        }
         const lines = toLines(src.text)
         const picked = cmd === 'head' ? lines.slice(0, n) : fromStart ? lines.slice(Math.max(n - 1, 0)) : n === 0 ? [] : lines.slice(-n)
         return (got.srcs.length > 1 ? `==> ${src.name} <==\n` : '') + fromLines(picked)
@@ -1886,6 +4311,18 @@ function dispatch(ctx: Ctx, argv: string[], stdin: Stdin, tty: boolean, line: nu
         return [...cols.map((k) => c[k as 'l']), ...(src.std ? [] : [src.name])].join(' ')
       })
       if (got.srcs.length > 1) lines.push([...cols.map((k) => total[k as 'l']), 'total'].join(' '))
+      return result(fromLines(lines), got.errs, got.errs.length ? 1 : 0)
+    }
+    case 'od': {
+      const { flags: f, rest } = flags(args)
+      const got = inputs(ctx, 'od', rest, stdin)
+      if (isRes(got)) return got
+      const b = new TextEncoder().encode(got.srcs.map((x) => x.text).join(''))
+      const named: Record<number, string> = { 0: '\\0', 7: '\\a', 8: '\\b', 9: '\\t', 10: '\\n', 11: '\\v', 12: '\\f', 13: '\\r' }
+      const cell = (x: number) => (f.has('c') ? (named[x] ?? (x >= 32 && x < 127 ? String.fromCharCode(x) : x.toString(8).padStart(3, '0'))).padStart(4) : ` ${x.toString(8).padStart(3, '0')}`)
+      const lines: string[] = []
+      for (let i = 0; i < b.length; i += 16) lines.push(i.toString(8).padStart(7, '0') + [...b.slice(i, i + 16)].map(cell).join(''))
+      lines.push(b.length.toString(8).padStart(7, '0'))
       return result(fromLines(lines), got.errs, got.errs.length ? 1 : 0)
     }
     case 'grep':
@@ -2077,152 +4514,325 @@ function dispatch(ctx: Ctx, argv: string[], stdin: Stdin, tty: boolean, line: nu
     }
     case 'export':
     case 'declare':
+    case 'typeset':
     case 'local':
     case 'readonly': {
-      const sc = ctx.scope
-      const exportIt = cmd === 'export' || args.includes('-x')
-      const names = args.filter((a) => !/^-[a-z]+$/.test(a))
-      if (!names.length)
-        return ok(
-          sc.exported
-            .filter((n) => sc.vars[n] !== undefined)
-            .sort()
-            .map((n) => `declare -x ${n}="${sc.vars[n]}"`)
-            .join('\n'),
-        )
-      for (const a of names) {
-        const eq = a.indexOf('=')
-        const name = eq < 0 ? a : a.slice(0, eq)
-        if (!/^[A-Za-z_]\w*$/.test(name)) return bad(`${where(ctx, line)}${cmd}: \`${a}': not a valid identifier`)
-        if (eq >= 0) sc.vars[name] = a.slice(eq + 1)
-        if (exportIt && args.includes('-n')) sc.exported.splice(sc.exported.indexOf(name) >>> 0, sc.exported.includes(name) ? 1 : 0)
-        else if (exportIt && !sc.exported.includes(name)) sc.exported.push(name)
+      const fl: string[] = []
+      const items: DeclItem[] = []
+      for (const a of args) {
+        if (/^[-+][a-zA-Z]+$/.test(a) && !items.length) {
+          fl.push(a)
+          continue
+        }
+        const m = /^([A-Za-z_]\w*)(\+?)=(.*)$/s.exec(a)
+        items.push(m ? { name: m[1]!, assign: { name: m[1]!, append: m[2] === '+', value: [{ t: 'lit', s: m[3]!, q: true }] }, raw: a } : { name: a, assign: null, raw: a })
       }
-      return ok()
+      return declareCmd(ctx, expander(ctx, []), cmd, fl, items, line)
     }
     case 'unset': {
       const sc = ctx.scope
-      for (const a of args.filter((x) => !x.startsWith('-'))) {
+      let fnOnly = false
+      const errs: string[] = []
+      for (const a of args) {
+        if (a === '-f') {
+          fnOnly = true
+          continue
+        }
+        if (a === '-v' || a === '-n') continue
+        if (fnOnly) {
+          delete sc.funcs[a]
+          continue
+        }
+        const m = /^([A-Za-z_]\w*)(?:\[(.*)\])?$/s.exec(a)
+        if (!m) {
+          errs.push(`${where(ctx, line)}unset: \`${a}': not a valid identifier`)
+          continue
+        }
+        if (sc.ro.includes(m[1]!)) {
+          errs.push(`${where(ctx, line)}unset: ${m[1]}: cannot unset: readonly variable`)
+          continue
+        }
+        if (m[2] !== undefined) {
+          const arr = sc.arrays[m[1]!]
+          if (m[2] === '@' || m[2] === '*') delete sc.arrays[m[1]!]
+          else if (arr) delete arr.v[keyOf(ctx, arr, m[2])]
+          else if (keyOf(ctx, undefined, m[2]) === '0') delete sc.vars[m[1]!]
+          continue
+        }
+        if (sc.vars[a] === undefined && !sc.arrays[a] && sc.funcs[a]) {
+          delete sc.funcs[a]
+          continue
+        }
         delete sc.vars[a]
+        delete sc.arrays[a]
         const i = sc.exported.indexOf(a)
         if (i >= 0) sc.exported.splice(i, 1)
       }
-      return ok()
+      return result('', errs.map((e) => e), errs.length ? 1 : 0)
     }
     case 'set': {
-      const o = ctx.scope.opts
+      const sc = ctx.scope
+      const o = sc.opts as Record<string, boolean | undefined>
       if (!args.length)
         return ok(
-          Object.keys(ctx.scope.vars)
+          Object.keys(sc.vars)
             .sort()
-            .map((n) => `${n}=${ctx.scope.vars[n]}`)
+            .map((n) => `${n}=${/[\x00-\x1f\x7f]/.test(sc.vars[n]!) ? shellQuote(sc.vars[n]!) : shq(sc.vars[n]!)}`)
             .join('\n'),
         )
+      const names: Record<string, string> = { errexit: 'e', nounset: 'u', xtrace: 'x', errtrace: 'E', noglob: 'f', pipefail: 'pipefail', verbose: 'v', noclobber: 'C', hashall: 'h', braceexpand: 'B', monitor: 'm' }
       for (let i = 0; i < args.length; i++) {
         const a = args[i]!
+        if (a === '--' || a === '-') {
+          sc.args = [sc.args[0]!, ...args.slice(i + 1)]
+          if (sc.top) ctx.s.args = sc.args
+          break
+        }
+        if (!/^[-+][a-zA-Z]+$/.test(a)) {
+          // set word…: the words become $1 $2 …
+          sc.args = [sc.args[0]!, ...args.slice(i)]
+          if (sc.top) ctx.s.args = sc.args
+          break
+        }
         const on = a.startsWith('-')
-        if (!/^[-+][a-z]+$/.test(a)) return bad(`set: ${a}: invalid option`, 2)
         for (const c of a.slice(1)) {
-          if (c === 'x') o.x = on
-          else if (c === 'e') o.e = on
-          else if (c === 'u') o.u = on
-          else if (c === 'o') {
+          if (c === 'o') {
             const name = args[++i]
-            if (name === 'pipefail') o.pipefail = on
-            else if (name === 'errexit') o.e = on
-            else if (name === 'nounset') o.u = on
-            else if (name === 'xtrace') o.x = on
-            else return bad(`set: ${name ?? ''}: invalid option name`, 2)
-          } else return bad(`set: -${c}: invalid option`, 2)
+            if (name === undefined) return ok(Object.keys(names).sort().map((n) => `${n.padEnd(15)}\t${o[names[n]!] ? 'on' : 'off'}`).join('\n'))
+            if (!names[name]) return bad(`${where(ctx, line)}set: ${name}: invalid option name`, 2)
+            o[names[name]!] = on
+          } else if ('xeuEfvChBm'.includes(c)) o[c] = on
+          else return bad(`${where(ctx, line)}set: -${c}: invalid option\nset: usage: set [-abefhkmnptuvxBCEHPT] [-o option-name] [--] [-] [arg ...]`, 2)
         }
       }
-      for (const k of ['x', 'e', 'u', 'pipefail'] as const) if (!o[k]) delete o[k]
+      for (const k of Object.keys(o)) if (!o[k]) delete o[k]
       return ok()
     }
-    case 'read': {
-      const names = args.filter((a) => !a.startsWith('-'))
-      const pi = args.indexOf('-p')
-      if (pi >= 0) names.splice(names.indexOf(args[pi + 1]!), 1)
-      if (!stdin) return bad(`${where(ctx, line)}read: the practice terminal cannot wait for typing — pipe text in: … | while read line; do …; done`)
-      if (!stdin.buf) return { code: 1, chunks: [] }
-      const nl = stdin.buf.indexOf('\n')
-      const got = nl < 0 ? stdin.buf : stdin.buf.slice(0, nl)
-      stdin.buf = nl < 0 ? '' : stdin.buf.slice(nl + 1)
-      const vars = names.length ? names : ['REPLY']
-      let restText = vars.length === 1 ? got.trim() : got.trimStart()
-      vars.forEach((v, k) => {
-        if (k === vars.length - 1) {
-          ctx.scope.vars[v] = restText.trim()
-          return
+    case 'shopt': {
+      const o = ctx.scope.opts as Record<string, boolean | undefined>
+      const known = ['nullglob', 'failglob', 'inherit_errexit', 'extglob', 'nocasematch', 'dotglob', 'globstar', 'lastpipe', 'expand_aliases']
+      let mode: 's' | 'u' | 'q' | null = null
+      const lines: string[] = []
+      let code = 0
+      for (const a of args) {
+        if (/^-[suqp]+$/.test(a)) {
+          if (a.includes('s')) mode = 's'
+          else if (a.includes('u')) mode = 'u'
+          else if (a.includes('q')) mode = 'q'
+          continue
         }
-        const m = /^(\S*)\s*(.*)$/.exec(restText)!
-        ctx.scope.vars[v] = m[1]!
-        restText = m[2]!
-      })
+        if (!known.includes(a)) {
+          lines.push(`${where(ctx, line)}shopt: ${a}: invalid shell option name`)
+          code = 1
+          continue
+        }
+        if (mode === 's') o[a] = true
+        else if (mode === 'u') delete o[a]
+        else if (mode === 'q') code = o[a] ? code : 1
+        else lines.push(`${a.padEnd(15)}\t${o[a] ? 'on' : 'off'}`)
+      }
+      return { code, chunks: lines.length ? [[code ? 2 : 1, fromLines(lines)]] : [] }
+    }
+    case 'read':
+      return readCmd(ctx, args, stdin, line)
+    case 'mapfile':
+    case 'readarray':
+      return mapfileCmd(ctx, cmd, args, stdin, line)
+    case 'getopts':
+      return getoptsCmd(ctx, args, line)
+    case 'trap':
+      return trapCmd(ctx, args, line)
+    case 'shift': {
+      const n = args[0] === undefined ? 1 : Number(args[0])
+      if (!Number.isInteger(n) || n < 0) return bad(`${where(ctx, line)}shift: ${args[0]}: numeric argument required`, 1)
+      const sc = ctx.scope
+      if (n > sc.args.length - 1) return { code: 1, chunks: [] }
+      sc.args = [sc.args[0]!, ...sc.args.slice(1 + n)]
+      if (sc.top && !ctx.funcs.length) ctx.s.args = sc.args
       return { code: 0, chunks: [] }
+    }
+    case 'break':
+    case 'continue': {
+      const n = args[0] === undefined ? 1 : Number(args[0])
+      if (!ctx.loops) return bad(`${where(ctx, line)}${cmd}: only meaningful in a \`for', \`while', or \`until' loop`, 0)
+      if (!Number.isInteger(n) || n < 1) return bad(`${where(ctx, line)}${cmd}: ${args[0]}: loop count out of range`, 1)
+      return { code: 0, chunks: [], flow: { k: cmd, n: Math.min(n, ctx.loops) } }
+    }
+    case 'return': {
+      if (!ctx.funcs.length && !ctx.sourced) return bad(`${where(ctx, line)}return: can only \`return' from a function or sourced script`, 1)
+      const n = args[0] === undefined ? ctx.status : Number(args[0])
+      if (!Number.isInteger(n)) return { ...bad(`${where(ctx, line)}return: ${args[0]}: numeric argument required`, 2), flow: { k: 'return' } }
+      return { code: ((n % 256) + 256) % 256, chunks: [], flow: { k: 'return' } }
     }
     case 'exit': {
       const n = args[0] === undefined ? ctx.status : Number(args[0])
-      return { code: Number.isFinite(n) ? n & 255 : 2, chunks: [], exit: true }
+      if (args[0] !== undefined && !Number.isInteger(n)) return { ...bad(`${where(ctx, line)}exit: ${args[0]}: numeric argument required`, 2), exit: true }
+      return { code: ((n % 256) + 256) % 256, chunks: [], exit: true }
+    }
+    case 'let': {
+      if (!args.length) return bad(`${where(ctx, line)}let: expression expected`, 1)
+      let v = 0
+      try {
+        for (const a of args) v = evalArith(a, ctx)
+      } catch (e) {
+        return bad(`${where(ctx, line)}let: ${(e as Error).message}`, 1)
+      }
+      return { code: v ? 0 : 1, chunks: [] }
+    }
+    case 'eval': {
+      const text = args.join(' ')
+      if (!text.trim()) return { code: 0, chunks: [] }
+      try {
+        return execList(ctx, parse(tokenize(text)), stdin)
+      } catch (e) {
+        return bad(`${where(ctx, line)}eval: ${(e as Error).message}`, 2)
+      }
+    }
+    case 'command': {
+      if (args[0] === '-v' || args[0] === '-V') {
+        const lines: string[] = []
+        let code = 0
+        for (const a of args.slice(1)) {
+          const kind = commandKind(ctx, a)
+          if (!kind) code = 1
+          else lines.push(args[0] === '-v' ? (kind === 'file' ? `/usr/bin/${a}` : a) : describeCommand(ctx, a, kind))
+        }
+        return { code, chunks: lines.length ? [[1, fromLines(lines)]] : [] }
+      }
+      if (!args.length) return { code: 0, chunks: [] }
+      return dispatch(ctx, args, stdin, tty, line)
     }
     case 'test':
     case '[':
-    case '[[':
       return testCmd(ctx, cmd, args, line)
     case 'source':
     case '.':
-      if (!args.length) return bad(`${cmd}: filename argument required`, 2)
+      if (!args.length) return bad(`${where(ctx, line)}${cmd}: filename argument required\n${cmd}: usage: ${cmd} filename [arguments]`, 2)
       return runScript(ctx, args[0]!, args.slice(1), { child: false }, stdin, line)
     case 'bash':
     case 'sh': {
       let k = 0
-      let trace = false
+      const opts: ShellState['opts'] = {}
       let check = false
       let command: string | null = null
-      while (k < args.length && args[k]!.startsWith('-')) {
+      while (k < args.length && /^[-+]/.test(args[k]!) && command === null) {
         const a = args[k]!
-        if (a === '-c') command = args[++k] ?? ''
-        else
-          for (const c of a.slice(1)) {
-            if (c === 'x') trace = true
-            else if (c === 'n') check = true
-            else if (c !== 'e') return bad(`${cmd}: -${c}: invalid option`, 2)
-          }
+        if (a === '--') {
+          k++
+          break
+        }
+        if (a === '-o' || a === '+o') {
+          const name = args[++k]
+          if (name === 'pipefail') opts.pipefail = true
+          else if (name === 'errexit') opts.e = true
+          else if (name === 'nounset') opts.u = true
+          else if (name === 'xtrace') opts.x = true
+          k++
+          continue
+        }
+        for (const c of a.slice(1)) {
+          if (c === 'c') command = ''
+          else if (c === 'x') opts.x = true
+          else if (c === 'n') check = true
+          else if (c === 'e') opts.e = true
+          else if (c === 'u') opts.u = true
+          else if (c === 'E') opts.E = true
+          else if (c !== 'l' && c !== 'i' && c !== 's') return bad(`${cmd}: -${c}: invalid option`, 2)
+        }
         k++
+        if (command !== null) command = args[k++] ?? ''
       }
       if (command !== null) {
-        const sub = subshell(ctx)
-        sub.scope.opts = trace ? { x: true } : {}
-        sub.scope.args = [cmd, ...args.slice(k)]
-        const [cwd, prev] = [s.cwd, s.prev]
-        let r: Res
+        let ast: List
         try {
-          r = execList(sub, parse(tokenize(command)), stdin, true)
+          ast = parse(tokenize(command))
         } catch (e) {
-          r = bad(`${cmd}: -c: ${(e as Error).message}`, 2)
+          return bad(`${cmd}: -c: line ${e instanceof ParseError ? e.line : 1}: ${(e as Error).message}`, 2)
         }
-        s.cwd = cwd
-        s.prev = prev
-        return { code: r.code, chunks: r.chunks }
+        if (check) return { code: 0, chunks: [] }
+        const scope = childScope(ctx, cmd, [args[k] ?? cmd, ...args.slice(k + 1)], opts)
+        scope.dashc = true
+        return runChild(ctx, scope, ast, stdin)
       }
       if (k >= args.length) return bad(`${cmd}: an interactive shell inside the practice terminal is not supported — run a script instead: bash script.sh`, 2)
-      return runScript(ctx, args[k]!, args.slice(k + 1), { child: true, trace, check }, stdin, line)
+      return runScript(ctx, args[k]!, args.slice(k + 1), { child: true, opts, check }, stdin, line)
     }
     case 'type':
     case 'which': {
       const lines: string[] = []
+      const errs: string[] = []
       let code = 0
-      for (const a of args) {
-        if (cmd === 'type' && KEYWORDS.includes(a)) lines.push(`${a} is a shell keyword`)
-        else if (cmd === 'type' && BUILTINS.includes(a)) lines.push(`${a} is a shell builtin`)
-        else if (COMMANDS.includes(a) && !BUILTIN_ONLY.has(a)) lines.push(cmd === 'type' ? `${a} is /usr/bin/${a}` : `/usr/bin/${a}`)
-        else {
+      const names = args.filter((a) => !/^-[aptfP]+$/.test(a))
+      const typeOnly = args.includes('-t')
+      for (const a of names) {
+        const kind = cmd === 'type' ? commandKind(ctx, a) : COMMANDS.includes(a) && !BUILTIN_ONLY.has(a) && !BUILTINS.includes(a) ? 'file' : null
+        if (!kind) {
           code = 1
-          if (cmd === 'type') lines.push(`bash: type: ${a}: not found`)
+          if (cmd === 'type' && !typeOnly) errs.push(`${where(ctx, line)}type: ${a}: not found`)
+          continue
         }
+        if (cmd === 'which') lines.push(`/usr/bin/${a}`)
+        else if (typeOnly) lines.push(kind)
+        else lines.push(describeCommand(ctx, a, kind))
       }
-      return { code, chunks: lines.length ? [[code && cmd === 'type' && lines.length === 1 ? 2 : 1, fromLines(lines)]] : [] }
+      return result(fromLines(lines), errs, code)
     }
+    case 'mktemp': {
+      const { flags: f, rest } = flags(args)
+      const tmpl = rest[0] ?? 'tmp.XXXXXXXXXX'
+      const dir = f.has('d')
+      const m = /X{3,}$/.exec(tmpl)
+      if (!m) return bad(`mktemp: too few X's in template '${tmpl}'`)
+      const base = rest[0] && (rest[0].includes('/') || !f.has('t')) ? tmpl : `/tmp/${tmpl}`
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+      let path = ''
+      for (let tries = 0; tries < 50; tries++) {
+        let seed = Number.parseInt(hash(`${s.history.length}:${tries}:${base}:${s.transcript.length}`), 16)
+        let suffix = ''
+        for (let i = 0; i < m[0].length; i++) {
+          suffix += chars[seed % chars.length]
+          seed = Math.floor(seed / chars.length) + (i + 7) * 131
+        }
+        path = resolve(s.cwd, base.slice(0, base.length - m[0].length) + suffix)
+        if (!lookup(s, path)) break
+      }
+      mkdirp(s, parentOf(path)[0])
+      if (dir) mkdirp(s, path)
+      else {
+        const err = writeFile(s, path, '', false)
+        if (err) return bad(err.replace('bash', 'mktemp'))
+      }
+      const shown = base.startsWith('/') ? path : resolve(s.cwd, base) === path ? base.slice(0, base.length - m[0].length) + path.slice(path.length - m[0].length) : path
+      return ok(shown)
+    }
+    case 'sleep':
+    case 'wait':
+      return { code: 0, chunks: [] }
+    case 'readlink':
+    case 'realpath': {
+      const { rest } = flags(args)
+      if (!rest.length) return bad(`${cmd}: missing operand`)
+      const lines: string[] = []
+      const errs: string[] = []
+      for (const a of rest) {
+        const p = resolve(s.cwd, a)
+        if (cmd === 'readlink' && !args.some((x) => /^-[a-z]*[fem]/.test(x))) {
+          errs.push('')
+          continue
+        }
+        if (!lookup(s, parentOf(p)[0])) errs.push(`${cmd}: ${a}: No such file or directory`)
+        else lines.push(p)
+      }
+      return result(fromLines(lines), errs.filter(Boolean), errs.length ? 1 : 0)
+    }
+    case 'awk':
+      return awkCmd(ctx, args, stdin)
+    case 'jq':
+      return jqCmd(ctx, args, stdin)
+    case 'paste':
+    case 'join':
+    case 'column':
+      return tableCmd(ctx, cmd, args, stdin)
     case 'git':
       return git(ctx, args)
   }
@@ -2232,7 +4842,7 @@ function dispatch(ctx: Ctx, argv: string[], stdin: Stdin, tty: boolean, line: nu
     if (!node) return bad(`${where(ctx, line)}${cmd}: No such file or directory`, 127)
     if (node.kind === 'dir') return bad(`${where(ctx, line)}${cmd}: Is a directory`, 126)
     if (!node.exec) return bad(`${where(ctx, line)}${cmd}: Permission denied`, 126)
-    return runScript(ctx, cmd, args, { child: true }, stdin, line)
+    return execFile(ctx, cmd, node, args, stdin, tty, line)
   }
   if (EDITORS.includes(cmd)) return bad(`${cmd}: there is no text editor in the practice terminal — write a file with echo "text" > file, and add lines with >>`, 127)
   if (ctx.scope.name) return bad(`${ctx.scope.name}: line ${line}: ${cmd}: command not found`, 127)
@@ -2622,218 +5232,64 @@ function findCmd(ctx: Ctx, args: string[], tty: boolean, line: number): Res {
   return { code, chunks }
 }
 
-type SedAddr = { k: 'n'; n: number } | { k: '$' } | { k: 're'; re: RegExp }
-interface SedCmd {
-  a1?: SedAddr
-  a2?: SedAddr
-  neg: boolean
-  op: string
-  re?: RegExp
-  rep?: string
-  g?: boolean
-  p?: boolean
-  nth?: number
-}
-
-function parseSed(script: string, extended: boolean): SedCmd[] {
-  const cmds: SedCmd[] = []
-  let i = 0
-  const fail = (m: string): never => {
-    throw new Error(`sed: -e expression #1, char ${i}: ${m}`)
-  }
-  const kind = extended ? 'extended' : 'basic'
-  const readTo = (d: string): string | null => {
-    let r = ''
-    while (i < script.length) {
-      const c = script[i]!
-      if (c === '\\' && script[i + 1] === d) {
-        r += d
-        i += 2
-        continue
-      }
-      if (c === '\\') {
-        r += c + (script[i + 1] ?? '')
-        i += 2
-        continue
-      }
-      if (c === d) {
-        i++
-        return r
-      }
-      r += c
-      i++
-    }
-    return null
-  }
-  const regex = (p: string, f = '') => {
-    try {
-      return makeRegex(p, kind, f)
-    } catch {
-      return fail('invalid regular expression')
-    }
-  }
-  const addr = (): SedAddr | undefined => {
-    if (/\d/.test(script[i] ?? '')) {
-      let j = i
-      while (/\d/.test(script[j] ?? '')) j++
-      const n = Number(script.slice(i, j))
-      i = j
-      return { k: 'n', n }
-    }
-    if (script[i] === '$') {
-      i++
-      return { k: '$' }
-    }
-    if (script[i] === '/') {
-      i++
-      const r = readTo('/')
-      if (r === null) fail('unterminated address regex')
-      return { k: 're', re: regex(r!) }
-    }
-    return undefined
-  }
-  while (i < script.length) {
-    while (i < script.length && /[\s;]/.test(script[i]!)) i++
-    if (i >= script.length) break
-    const c: SedCmd = { neg: false, op: '' }
-    const a1 = addr()
-    if (a1) c.a1 = a1
-    if (a1 && script[i] === ',') {
-      i++
-      const a2 = addr()
-      if (!a2) fail("unexpected `,'")
-      c.a2 = a2
-    }
-    while (script[i] === ' ') i++
-    if (script[i] === '!') {
-      c.neg = true
-      i++
-    }
-    while (script[i] === ' ') i++
-    const op = script[i++]
-    if (op === undefined) fail('missing command')
-    c.op = op!
-    if (op === 's') {
-      const d = script[i++]
-      if (!d || d === '\\' || d === '\n' || d === ' ') fail("unterminated `s' command")
-      const re = readTo(d!)
-      if (re === null) fail("unterminated `s' command")
-      const rep = readTo(d!)
-      if (rep === null) fail("unterminated `s' command")
-      let f = ''
-      while (i < script.length && /[gpiI0-9]/.test(script[i]!)) {
-        const ch = script[i++]!
-        if (ch === 'g') c.g = true
-        else if (ch === 'p') c.p = true
-        else if (ch === 'i' || ch === 'I') f = 'i'
-        else c.nth = Number(`${c.nth ?? ''}${ch}`)
-      }
-      if (i < script.length && !/[\s;}]/.test(script[i]!)) fail("unknown option to `s'")
-      c.re = regex(re!, f)
-      c.rep = rep!
-    } else if (!'dpq='.includes(op!)) fail(`unknown command: \`${op}'`)
-    cmds.push(c)
-  }
-  return cmds
-}
-
-function sedReplacement(rep: string, groups: string[]): string {
-  let r = ''
-  for (let k = 0; k < rep.length; k++) {
-    const c = rep[k]!
-    if (c === '\\' && k + 1 < rep.length) {
-      const n = rep[++k]!
-      if (/\d/.test(n)) r += groups[Number(n)] ?? ''
-      else r += n === 'n' ? '\n' : n === 't' ? '\t' : n
-    } else if (c === '&') r += groups[0] ?? ''
-    else r += c
-  }
-  return r
-}
-
-function runSed(cmds: SedCmd[], lines: string[], quiet: boolean): string[] {
-  const outL: string[] = []
-  const inRange = cmds.map(() => false)
-  for (let idx = 0; idx < lines.length; idx++) {
-    const lineNo = idx + 1
-    const last = idx === lines.length - 1
-    let ps = lines[idx]!
-    let deleted = false
-    let quit = false
-    const test = (a: SedAddr) => (a.k === 'n' ? lineNo === a.n : a.k === '$' ? last : a.re.test(ps))
-    for (let ci = 0; ci < cmds.length; ci++) {
-      const c = cmds[ci]!
-      let m: boolean
-      if (!c.a1) m = true
-      else if (!c.a2) m = test(c.a1)
-      else if (!inRange[ci]) {
-        m = test(c.a1)
-        if (m) inRange[ci] = !(c.a2.k === 'n' && c.a2.n <= lineNo)
-      } else {
-        m = true
-        if (c.a2.k === 'n' ? lineNo >= c.a2.n : test(c.a2)) inRange[ci] = false
-      }
-      if (c.neg) m = !m
-      if (!m) continue
-      if (c.op === 's') {
-        let count = 0
-        let did = false
-        const want = c.nth ?? 1
-        ps = ps.replace(new RegExp(c.re!.source, `${c.re!.flags.replace('g', '')}g`), (...m2: unknown[]) => {
-          count++
-          const groups = m2.slice(0, -2) as string[]
-          if (c.g ? count >= want : count === want) {
-            did = true
-            return sedReplacement(c.rep!, groups)
-          }
-          return groups[0]!
-        })
-        if (did && c.p) outL.push(ps)
-      } else if (c.op === 'd') {
-        deleted = true
-        break
-      } else if (c.op === 'p') outL.push(ps)
-      else if (c.op === '=') outL.push(String(lineNo))
-      else if (c.op === 'q') {
-        quit = true
-        break
-      }
-    }
-    if (!deleted && !quiet) outL.push(ps)
-    if (quit) break
-  }
-  return outL
-}
-
 function sedCmd(ctx: Ctx, args: string[], stdin: Stdin): Res {
   let quiet = false
   let extended = false
   let inPlace = false
+  let suffix = ''
   const scripts: string[] = []
   const files: string[] = []
+  let explicit = false
   for (let k = 0; k < args.length; k++) {
     const a = args[k]!
-    if (a === '--quiet') quiet = true
-    else if (/^-[nErie]+$/.test(a) || /^-i\S*$/.test(a)) {
-      if (a.startsWith('-i') && !/^-i[nEre]*$/.test(a)) {
-        inPlace = true
-        continue
-      }
-      for (const c of a.slice(1)) {
+    if (a === '--quiet' || a === '--silent') quiet = true
+    else if (a === '--') {
+      for (const f of args.slice(k + 1)) (!scripts.length && !explicit ? scripts : files).push(f)
+      break
+    } else if (a.startsWith('--in-place')) {
+      inPlace = true
+      suffix = a.slice('--in-place='.length)
+    } else if (/^-[nEries]/.test(a) && a.length > 1) {
+      for (let j = 1; j < a.length; j++) {
+        const c = a[j]!
         if (c === 'n') quiet = true
         else if (c === 'E' || c === 'r') extended = true
-        else if (c === 'i') inPlace = true
-        else if (c === 'e') scripts.push(args[++k] ?? '')
+        else if (c === 's') continue
+        else if (c === 'i') {
+          // -i.bak: everything after the i is the backup suffix.
+          inPlace = true
+          suffix = a.slice(j + 1)
+          break
+        } else if (c === 'e') {
+          scripts.push(a.slice(j + 1) || (args[++k] ?? ''))
+          explicit = true
+          break
+        } else return bad(`sed: invalid option -- '${c}'`)
       }
-    } else if (!scripts.length) scripts.push(a)
+    } else if (!scripts.length && !explicit) scripts.push(a)
     else files.push(a)
   }
   if (!scripts.length) return bad('Usage: sed [-n] [-E] [-i] SCRIPT [FILE…]   e.g. sed \'s/old/new/g\' file.txt')
-  let cmds: SedCmd[]
+  let cmds: ReturnType<typeof compileSed>
   try {
-    cmds = parseSed(scripts.join('\n'), extended)
+    cmds = compileSed(scripts.join('\n'), extended)
   } catch (e) {
     return bad((e as Error).message)
+  }
+  const io: SedIO = {
+    writeFile: (p, t, append) => writeFile(ctx.s, resolve(ctx.s.cwd, p), t, append),
+    readFile: (p) => {
+      const node = lookup(ctx.s, resolve(ctx.s.cwd, p))
+      return node?.kind === 'file' ? node.content : { error: 'No such file or directory' }
+    },
+  }
+  const runIt = (text: string): { out: string; code: number } | Res => {
+    try {
+      return runSedScript(cmds, text, quiet, io)
+    } catch (e) {
+      if (e instanceof SedError) return bad(e.message)
+      throw e
+    }
   }
   if (inPlace) {
     if (!files.length) return bad('sed: no input files (sed -i changes files in place, so it needs a file name)')
@@ -2845,13 +5301,26 @@ function sedCmd(ctx: Ctx, args: string[], stdin: Stdin): Res {
         errs.push(`sed: can't read ${f}: No such file or directory`)
         continue
       }
-      writeFile(ctx.s, path, fromLines(runSed(cmds, toLines(node.content), quiet)), false)
+      if (suffix) {
+        const [dir, base] = parentOf(path)
+        const backup = suffix.includes('*') ? resolve(dir, suffix.replace(/\*/g, base)) : `${path}${suffix}`
+        const err = writeFile(ctx.s, backup, node.content, false)
+        if (err) {
+          errs.push(err.replace(/^bash: /, 'sed: cannot rename '))
+          continue
+        }
+      }
+      const r = runIt(node.content)
+      if (isRes(r)) return r
+      writeFile(ctx.s, path, r.out, false)
     }
     return result('', errs, errs.length ? 2 : 0)
   }
   const got = inputs(ctx, 'sed', files, stdin)
   if (isRes(got)) return got
-  return result(fromLines(runSed(cmds, toLines(got.srcs.map((x) => x.text).join('')), quiet)), got.errs.map((e) => e.replace(/^sed: (.*): No such/, "sed: can't read $1: No such")), got.errs.length ? 2 : 0)
+  const r = runIt(got.srcs.map((x) => x.text).join(''))
+  if (isRes(r)) return r
+  return result(r.out, got.errs.map((e) => e.replace(/^sed: (.*): No such/, "sed: can't read $1: No such")), got.errs.length ? 2 : r.code)
 }
 
 function xargsCmd(ctx: Ctx, args: string[], stdin: Stdin, tty: boolean, line: number): Res {
@@ -2989,8 +5458,17 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
 function moveHead(repo: Repo, id: string | null, msg: string): void {
   if (repo.detached !== null) repo.detached = id
-  else repo.branches[repo.branch] = id
+  else {
+    repo.branches[repo.branch] = id
+    logBranch(repo, repo.branch, id, msg)
+  }
   if (id) repo.reflog.push({ id, msg })
+}
+
+/** Notes a branch's new position in its reflog (branch@{0}). */
+function logBranch(repo: Repo, name: string, id: string | null, msg: string): void {
+  if (!id) return
+  ;(repo.branchLog[name] ??= []).push({ id, msg })
 }
 
 function authorName(g: G, override?: string): string {
@@ -3055,10 +5533,23 @@ function resolveRev(repo: Repo, text: string): string | null {
   if (!m) return null
   const [, base = '', suffix = ''] = m
   let id: string | null = null
-  const reflogAt = /^(?:HEAD|@)@\{(\d+)\}$/.exec(base)
-  if (base === 'HEAD' || base === '@') id = headId(repo)
+  const at = /^(.*)@\{([^}]*)\}$/.exec(base)
+  if (at) {
+    const [, who = '', sel = ''] = at
+    const current = repo.detached === null ? repo.branch : null
+    if (sel === 'u' || sel === 'upstream' || sel === 'push') {
+      // @{u}: the branch this one tracks.
+      const b = who === '' || who === 'HEAD' ? current : who
+      const up = b ? repo.upstream[b] : undefined
+      return up ? resolveRev(repo, up + suffix) : null
+    }
+    if (/^-\d+$/.test(sel) && who === '') return sel === '-1' && repo.prevBranch ? resolveRev(repo, repo.prevBranch + suffix) : null
+    if (!/^\d+$/.test(sel)) return null
+    const n = Number(sel)
+    const log = who === 'HEAD' || (who === '' && !current) ? repo.reflog : repo.branchLog[who || current!]
+    id = [...(log ?? [])].reverse()[n]?.id ?? null
+  } else if (base === 'HEAD' || base === '@') id = headId(repo)
   else if (base === 'ORIG_HEAD') id = repo.origHead
-  else if (reflogAt) id = [...repo.reflog].reverse()[Number(reflogAt[1])]?.id ?? null
   else if (base in repo.branches) id = repo.branches[base] ?? null
   else if (base in repo.tags) id = repo.tags[base]!
   else if (base === 'refs/bisect/bad' || base === 'bisect/bad') id = repo.bisect?.bad ?? null
@@ -3131,13 +5622,6 @@ function dirty(s: ShellState, root: string, repo: Repo): boolean {
   const work = workingTree(s, root)
   const head = headTree(repo)
   return Object.keys(head).some((f) => work[f] !== head[f])
-}
-
-function dirtyFiles(g: G): string[] {
-  const work = workingTree(g.s, g.root)
-  const head = headTree(g.repo)
-  const index = indexTree(g.repo)
-  return [...new Set([...Object.keys(head), ...Object.keys(index)])].filter((f) => work[f] !== head[f] || index[f] !== head[f]).sort()
 }
 
 /** Moves the folder from one set of files to another; untracked files stay. */
@@ -3321,9 +5805,10 @@ function writeMergeResult(g: G, ours: Record<string, string>, m: MergeResult): v
  * Replays one commit on top of HEAD (cherry-pick, rebase) or undoes it
  * (revert). Stops with markers in the folder when it conflicts.
  */
-function replay(g: G, c: Commit, mode: 'pick' | 'revert'): { done: Commit | null; empty?: boolean; conflict?: MergeResult } {
+function replay(g: G, c: Commit, mode: 'pick' | 'revert', opts: { mainline?: number; recordOrigin?: boolean } = {}): { done: Commit | null; empty?: boolean; conflict?: MergeResult } {
   const { s, root, repo } = g
-  const parentTree = treeOf(repo, c.parent)
+  const base = opts.mainline === 2 ? (c.parent2 ?? null) : c.parent
+  const parentTree = treeOf(repo, base)
   const ours = headTree(repo)
   const label = `${c.id} (${firstLine(c.message)})`
   const m = mode === 'pick' ? mergeTrees(parentTree, ours, c.tree, { ours: 'HEAD', theirs: label }) : mergeTrees(c.tree, ours, parentTree, { ours: 'HEAD', theirs: `parent of ${label}` })
@@ -3332,7 +5817,7 @@ function replay(g: G, c: Commit, mode: 'pick' | 'revert'): { done: Commit | null
     return { done: null, conflict: m }
   }
   if (!changedFiles(ours, m.tree).length) return { done: null, empty: true }
-  const message = mode === 'pick' ? c.message : `Revert "${firstLine(c.message)}"\n\nThis reverts commit ${c.id}.`
+  const message = replayMessage(c, mode, opts)
   const commit = makeCommit(repo, { message, parent: headId(repo), tree: m.tree, author: mode === 'pick' ? (c.author ?? authorName(g)) : authorName(g) })
   applyTree(s, root, ours, m.tree)
   repo.staged = {}
@@ -3497,17 +5982,33 @@ type GitFn = (g: G, args: string[]) => Res
 
 function gitInit(s: ShellState, args: string[]): Res {
   const bare = args.includes('--bare')
-  const name = args.find((a) => !a.startsWith('-'))
+  let initial: string | null = null
+  const plain: string[] = []
+  for (let k = 0; k < args.length; k++) {
+    const a = args[k]!
+    if (a === '-b' || a === '--initial-branch') initial = args[++k] ?? null
+    else if (a.startsWith('--initial-branch=')) initial = a.slice(17)
+    else if (!a.startsWith('-')) plain.push(a)
+  }
+  const name = plain[0]
+  const fresh = (b: boolean) => {
+    const r = newRepo(b)
+    if (initial) {
+      r.branch = initial
+      r.branches = { [initial]: null }
+    }
+    return r
+  }
   const dir = name ? resolve(s.cwd, name) : s.cwd
   if (!mkdirp(s, dir)) return bad(`fatal: cannot mkdir ${name}: Not a directory`, 128)
   if (bare) {
     if (s.repos[dir]?.bare) return ok(`Reinitialized existing Git repository in ${dir}/`)
-    s.repos[dir] = newRepo(true)
+    s.repos[dir] = fresh(true)
     return ok(`Initialized empty Git repository in ${dir}/`)
   }
   if (s.repos[dir] && lookup(s, `${dir}/.git`)) return ok(`Reinitialized existing Git repository in ${dir}/.git/`)
   mkdirp(s, `${dir}/.git`)
-  s.repos[dir] = newRepo()
+  s.repos[dir] = fresh(false)
   return ok(`Initialized empty Git repository in ${dir}/.git/`)
 }
 
@@ -3549,13 +6050,14 @@ function gitClone(s: ShellState, args: string[]): Res {
   repo.remotes = { origin: { url: srcAbs, branches } }
   repo.tags = { ...from.tags }
   repo.tagNotes = { ...from.tagNotes }
-  const head = branches[from.branch] ? from.branch : (Object.keys(branches)[0] ?? 'main')
+  const head = branches[from.branch] || !Object.keys(branches).length ? from.branch : Object.keys(branches)[0]!
   repo.branch = head
   repo.branches = { [head]: branches[head] ?? null }
   repo.upstream[head] = `origin/${head}`
   s.repos[dest] = repo
   applyTree(s, dest, {}, treeOf(repo, branches[head]))
   if (branches[head]) repo.reflog.push({ id: branches[head]!, msg: `clone: from ${srcAbs}` })
+  logBranch(repo, head, branches[head] ?? null, `clone: from ${srcAbs}`)
   return ok(`Cloning into '${name}'...${Object.keys(branches).length ? '\ndone.' : '\nwarning: You appear to have cloned an empty repository.'}`)
 }
 
@@ -3843,11 +6345,12 @@ function logEntry(_repo: Repo, c: Commit, oneline: boolean, deco: Map<string, st
 }
 
 /** Revisions, A..B ranges and paths, as log and friends take them. */
-function revArgs(g: G, args: string[]): { include: string[]; exclude: string[]; paths: string[] } | Res {
+function revArgs(g: G, args: string[]): { include: string[]; exclude: string[]; paths: string[]; triple?: { base: string | null; a: string; b: string } } | Res {
   const { repo } = g
   const include: string[] = []
   const exclude: string[] = []
   const paths: string[] = []
+  let triple: { base: string | null; a: string; b: string } | undefined
   let dashdash = false
   for (const a of args) {
     if (a === '--') {
@@ -3856,6 +6359,18 @@ function revArgs(g: G, args: string[]): { include: string[]; exclude: string[]; 
     }
     if (dashdash) {
       paths.push(g.rel(a))
+      continue
+    }
+    const sym = /^(.*?)\.\.\.(.*)$/.exec(a)
+    if (sym) {
+      // A...B: what either has that the other does not (for diff: B against where they parted).
+      const x = resolveRev(repo, sym[1] || 'HEAD')
+      const y = resolveRev(repo, sym[2] || 'HEAD')
+      if (!x || !y) return bad(`fatal: ambiguous argument '${a}': unknown revision or path not in the working tree.`, 128)
+      const base = mergeBase(repo, x, y)
+      include.push(x, y)
+      if (base) exclude.push(base)
+      triple = { base, a: x, b: y }
       continue
     }
     const range = /^(.*?)\.\.(.*)$/.exec(a)
@@ -3872,7 +6387,7 @@ function revArgs(g: G, args: string[]): { include: string[]; exclude: string[]; 
     else if (lookup(g.s, resolve(g.s.cwd, a)) || Object.keys(indexTree(repo)).some((f) => f === g.rel(a) || f.startsWith(`${g.rel(a)}/`))) paths.push(g.rel(a))
     else return bad(`fatal: ambiguous argument '${a}': unknown revision or path not in the working tree.`, 128)
   }
-  return { include, exclude, paths }
+  return { include, exclude, paths, ...(triple ? { triple } : {}) }
 }
 
 const gitLog: GitFn = (g, args) => {
@@ -3881,13 +6396,39 @@ const gitLog: GitFn = (g, args) => {
   let graph = false
   let all = false
   let limit = Infinity
+  let stat = false
+  let patch = false
+  let nameOnly = false
+  let author: RegExp | null = null
+  let grep: RegExp | null = null
+  let pickaxe: string | null = null
   const rest: string[] = []
+  const val = (a: string, flag: string, k: number): [string, number] => (a.length > flag.length ? [a.slice(flag.length).replace(/^=/, ''), k] : [args[k + 1] ?? '', k + 1])
   for (let k = 0; k < args.length; k++) {
     const a = args[k]!
     if (a === '--oneline') oneline = true
     else if (a === '--graph') graph = true
     else if (a === '--all') all = true
-    else if (a === '--decorate' || a === '--no-decorate' || a === '--abbrev-commit') continue
+    else if (a === '--stat') stat = true
+    else if (a === '-p' || a === '-u' || a === '--patch') patch = true
+    else if (a === '--name-only') nameOnly = true
+    else if (a === '--author' || a.startsWith('--author=')) {
+      const [v, nk] = val(a, '--author', k)
+      k = nk
+      try {
+        author = new RegExp(v)
+      } catch {
+        author = new RegExp(v.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&'))
+      }
+    } else if (a === '--grep' || a.startsWith('--grep=')) {
+      const [v, nk] = val(a, '--grep', k)
+      k = nk
+      grep = new RegExp(v)
+    } else if (a === '-S' || (a.startsWith('-S') && a.length > 2)) {
+      const [v, nk] = val(a, '-S', k)
+      k = nk
+      pickaxe = v
+    } else if (a === '--decorate' || a === '--no-decorate' || a === '--abbrev-commit' || a === '--no-merges' || a === '--first-parent') continue
     else if (a === '-n' || a === '--max-count') limit = Number(args[++k])
     else if (/^-\d+$/.test(a)) limit = Number(a.slice(1))
     else if (a.startsWith('--max-count=')) limit = Number(a.slice(12))
@@ -3905,13 +6446,27 @@ const gitLog: GitFn = (g, args) => {
   const drop = reachable(repo, r.exclude)
   const set = new Set([...reachable(repo, starts)].filter((id) => !drop.has(id)))
   let commits = logOrder(repo, set)
-  if (r.paths.length) {
-    const hit = (f: string) => r.paths.some((p) => !p || f === p || f.startsWith(`${p}/`))
-    commits = commits.filter((c) => changedFiles(treeOf(repo, c.parent), c.tree).some(hit))
+  const hit = (f: string) => !r.paths.length || r.paths.some((p) => !p || f === p || f.startsWith(`${p}/`))
+  if (r.paths.length) commits = commits.filter((c) => changedFiles(treeOf(repo, c.parent), c.tree).some(hit))
+  if (author) commits = commits.filter((c) => author!.test(c.author ?? 'you'))
+  if (grep) commits = commits.filter((c) => grep!.test(c.message))
+  if (pickaxe !== null) {
+    // -S text: commits that change how many times the text appears.
+    const count = (t: string | undefined) => (t ?? '').split(pickaxe!).length - 1
+    commits = commits.filter((c) => !c.parent2 && changedFiles(treeOf(repo, c.parent), c.tree).some((f) => hit(f) && count(treeOf(repo, c.parent)[f]) !== count(c.tree[f])))
   }
   if (Number.isFinite(limit)) commits = commits.slice(0, limit)
   const deco = decorations(repo)
-  const lines = graph ? graphRows(commits, (c) => logEntry(repo, c, oneline, deco)) : commits.flatMap((c) => logEntry(repo, c, oneline, deco))
+  const entry = (c: Commit) => {
+    const lines = logEntry(repo, c, oneline, deco)
+    if (c.parent2 || (!stat && !patch && !nameOnly)) return lines
+    const before = treeOf(repo, c.parent)
+    const files = changedFiles(before, c.tree).filter(hit)
+    const pick = (t: Record<string, string>) => Object.fromEntries(files.filter((f) => f in t).map((f) => [f, t[f]!]))
+    const extra = [...(nameOnly ? files : []), ...(stat ? statLines(pick(before), pick(c.tree)) : []), ...(patch ? files.flatMap((f) => fileDiff(f, before[f], c.tree[f])) : [])]
+    return [...lines, ...extra, ...(oneline || patch ? [] : [''])]
+  }
+  const lines = graph ? graphRows(commits, entry) : commits.flatMap(entry)
   return ok(lines.join('\n').replace(/\n+$/, ''))
 }
 
@@ -3959,7 +6514,10 @@ const gitDiff: GitFn = (g, args) => {
   const index = indexTree(repo)
   let from: Record<string, string>
   let to: Record<string, string>
-  if (revs.length >= 2) {
+  if (r.triple) {
+    from = treeOf(repo, r.triple.base)
+    to = treeOf(repo, r.triple.b)
+  } else if (revs.length >= 2) {
     from = treeOf(repo, revs[0])
     to = treeOf(repo, revs[1])
   } else if (revs.length === 1) {
@@ -4135,6 +6693,7 @@ const gitBranch: GitFn = (g, args) => {
         return bad(`error: the branch '${n}' is not fully merged.\nIf you are sure you want to delete it, run 'git branch -D ${n}'.`)
       delete repo.branches[n]
       delete repo.upstream[n]
+      delete repo.branchLog[n]
       said.push(`Deleted branch ${n} (was ${id ?? 'nothing'}).`)
     }
     return ok(said.join('\n'))
@@ -4146,6 +6705,9 @@ const gitBranch: GitFn = (g, args) => {
     if (b in repo.branches && !flagSet.has('-M')) return bad(`fatal: a branch named '${b}' already exists`, 128)
     repo.branches[b] = repo.branches[a] ?? null
     delete repo.branches[a]
+    repo.branchLog[b] = repo.branchLog[a] ?? []
+    delete repo.branchLog[a]
+    logBranch(repo, b, repo.branches[b] ?? null, `Branch: renamed refs/heads/${a} to refs/heads/${b}`)
     if (repo.upstream[a]) {
       repo.upstream[b] = repo.upstream[a]!
       delete repo.upstream[a]
@@ -4160,6 +6722,7 @@ const gitBranch: GitFn = (g, args) => {
     const id = start ? resolveRev(repo, start) : headId(repo)
     if (start && !id) return bad(`fatal: not a valid object name: '${start}'`, 128)
     repo.branches[name] = id
+    logBranch(repo, name, id, `branch: Created from ${start ?? 'HEAD'}`)
     if (start && /^[^/]+\//.test(start) && resolveRev(repo, start) && !(start in repo.branches) && start.split('/')[0]! in repo.remotes) {
       repo.upstream[name] = start
       return ok(`branch '${name}' set up to track '${start}'.`)
@@ -4212,15 +6775,46 @@ function checkoutTo(g: G, to: { branch: string } | { detach: string }, create: b
   const { s, root, repo } = g
   const targetId = 'branch' in to ? (repo.branches[to.branch] ?? null) : to.detach
   const fromName = repo.detached !== null ? repo.detached : repo.branch
-  if (dirty(s, root, repo)) {
-    const files = dirtyFiles(g)
-    return bad(
-      `error: Your local changes to the following files would be overwritten by checkout:\n${files.map((f) => `\t${f}`).join('\n')}\nCommit them, or stash them (git stash), before you switch branches.\nAborting`,
-    )
+  // Like git: a file the two commits agree on keeps whatever you did to it;
+  // a file they disagree on must be clean, or switching would lose your work.
+  const head = headTree(repo)
+  const target = treeOf(repo, targetId)
+  const index = indexTree(repo)
+  const work = workingTree(s, root)
+  const paths = [...new Set([...Object.keys(head), ...Object.keys(target), ...Object.keys(index)])].sort()
+  const blocked: string[] = []
+  const untracked: string[] = []
+  for (const f of paths) {
+    if (head[f] === target[f]) continue
+    if (index[f] !== head[f] && index[f] !== target[f]) blocked.push(f)
+    else if (f in index ? work[f] !== index[f] && work[f] !== target[f] : f in work && f in target) (f in index ? blocked : untracked).push(f)
   }
+  if (blocked.length)
+    return bad(`error: Your local changes to the following files would be overwritten by checkout:\n${blocked.map((f) => `\t${f}`).join('\n')}\nCommit them, or stash them (git stash), before you switch branches.\nAborting`)
+  if (untracked.length) return bad(`error: The following untracked working tree files would be overwritten by checkout:\n${untracked.map((f) => `\t${f}`).join('\n')}\nPlease move or remove them before you switch branches.\nAborting`)
   const left = targetId === repo.detached ? [] : orphans(repo)
-  applyTree(s, root, headTree(repo), treeOf(repo, targetId))
-  const lines: string[] = []
+  const nextIndex: Record<string, string> = {}
+  for (const f of paths) {
+    if (head[f] === target[f]) {
+      if (f in index) nextIndex[f] = index[f]!
+      continue
+    }
+    if (f in target) {
+      nextIndex[f] = target[f]!
+      if (work[f] !== target[f] && mkdirp(s, parentOf(`${root}/${f}`)[0])) writeFile(s, `${root}/${f}`, target[f]!, false)
+    } else removePath(s, `${root}/${f}`)
+  }
+  repo.staged = Object.fromEntries(Object.entries(nextIndex).filter(([f, c]) => target[f] !== c))
+  repo.removed = Object.keys(target).filter((f) => !(f in nextIndex))
+  const after = workingTree(s, root)
+  const carried = [...new Set([...Object.keys(target), ...Object.keys(nextIndex)])]
+    .sort()
+    .flatMap((f) => {
+      if (f in target && (!(f in nextIndex) || !(f in after))) return [`D\t${f}`]
+      if (!(f in target)) return [`A\t${f}`]
+      return nextIndex[f] !== target[f] || after[f] !== nextIndex[f] ? [`M\t${f}`] : []
+    })
+  const lines: string[] = [...carried]
   if (left.length)
     lines.push(
       `Warning: you are leaving ${plural(left.length, 'commit')} behind, not connected to`,
@@ -4258,7 +6852,13 @@ function checkoutTo(g: G, to: { branch: string } | { detach: string }, create: b
   return ok(lines.join('\n'))
 }
 
-const gitSwitch = (g: G, args: string[], sub: 'switch' | 'checkout'): Res => {
+const gitSwitch = (g: G, all: string[], sub: 'switch' | 'checkout'): Res => {
+  const quiet = all.includes('-q') || all.includes('--quiet')
+  const r = switchTo(g, all.filter((a) => a !== '-q' && a !== '--quiet'), sub)
+  return quiet ? { ...r, chunks: r.chunks.filter((c) => c[0] === 2) } : r
+}
+
+function switchTo(g: G, args: string[], sub: 'switch' | 'checkout'): Res {
   const { repo } = g
   if (repo.pending) return bad(`error: you need to resolve your current index first (a ${repo.pending.kind} is in progress)`)
   const dd = args.indexOf('--')
@@ -4286,7 +6886,10 @@ const gitSwitch = (g: G, args: string[], sub: 'switch' | 'checkout'): Res => {
     if (start && !id) return bad(`fatal: '${start}' is not a commit and a branch '${name}' cannot be created from it`, 128)
     const leaving = repo.detached
     const existed = name in repo.branches ? repo.branches[name] : undefined
+    const oldLog = repo.branchLog[name]
     repo.branches[name] = id
+    if (existed === undefined) delete repo.branchLog[name]
+    logBranch(repo, name, id, `branch: Created from ${start ?? 'HEAD'}`)
     let note = ''
     if (start && start.includes('/') && start.split('/')[0]! in repo.remotes && !(start in repo.branches)) {
       repo.upstream[name] = start
@@ -4304,6 +6907,8 @@ const gitSwitch = (g: G, args: string[], sub: 'switch' | 'checkout'): Res => {
     if (r.code) {
       if (existed === undefined) delete repo.branches[name]
       else repo.branches[name] = existed
+      if (oldLog) repo.branchLog[name] = oldLog
+      else delete repo.branchLog[name]
       delete repo.upstream[name]
       return r
     }
@@ -4317,10 +6922,12 @@ const gitSwitch = (g: G, args: string[], sub: 'switch' | 'checkout'): Res => {
   if (remote) {
     repo.branches[name] = remote[1].branches[name]!
     repo.upstream[name] = `${remote[0]}/${name}`
+    logBranch(repo, name, repo.branches[name] ?? null, `branch: Created from refs/remotes/${remote[0]}/${name}`)
     const r = checkoutTo(g, { branch: name }, true)
     if (r.code) {
       delete repo.branches[name]
       delete repo.upstream[name]
+      delete repo.branchLog[name]
       return r
     }
     return { ...r, chunks: [[1, `branch '${name}' set up to track '${remote[0]}/${name}'.\n`], ...r.chunks] }
@@ -4563,15 +7170,20 @@ const gitTag: GitFn = (g, args) => {
   return ok()
 }
 
-const gitReflog: GitFn = (g) => {
+const gitReflog: GitFn = (g, args) => {
   const { repo } = g
   const deco = decorations(repo)
+  const rest = args.filter((a) => a !== 'show' && !a.startsWith('-'))
+  const ref = rest[0] ?? 'HEAD'
+  const name = ref === '@' ? 'HEAD' : ref
+  const log = name === 'HEAD' ? repo.reflog : repo.branchLog[name]
+  if (!log) return bad(`fatal: ambiguous argument '${ref}': unknown revision or path not in the working tree.`, 128)
   return ok(
-    [...repo.reflog]
+    [...log]
       .reverse()
       .map((e, i) => {
         const d = i === 0 ? deco.get(e.id) : undefined
-        return `${e.id}${d ? ` (${d.join(', ')})` : ''} HEAD@{${i}}: ${e.msg}`
+        return `${e.id}${d ? ` (${d.join(', ')})` : ''} ${name}@{${i}}: ${e.msg}`
       })
       .join('\n'),
   )
@@ -4585,9 +7197,10 @@ function runSequence(g: G, lines: string[]): Res {
     const id = p.todo.shift()!
     const c = commitById(repo, id)!
     p.current = id
-    p.message = c.message
+    const opts = { ...(p.mainline ? { mainline: p.mainline } : {}), ...(p.recordOrigin ? { recordOrigin: true } : {}) }
+    p.message = replayMessage(c, 'pick', opts)
     p.author = c.author ?? 'you'
-    const r = replay(g, c, 'pick')
+    const r = replay(g, c, 'pick', opts)
     if (r.conflict) {
       p.conflicts = [...r.conflict.conflicts]
       lines.push(
@@ -4608,6 +7221,7 @@ function runSequence(g: G, lines: string[]): Res {
     const tip = headId(repo)
     repo.branch = p.branch!
     repo.branches[p.branch!] = tip
+    logBranch(repo, p.branch!, tip, `rebase (finish): refs/heads/${p.branch} onto ${commitById(repo, tip)?.parent ?? tip}`)
     repo.detached = null
     if (tip) repo.reflog.push({ id: tip, msg: `rebase (finish): returning to refs/heads/${p.branch}` })
     lines.push(`Successfully rebased and updated refs/heads/${p.branch}.`)
@@ -4658,6 +7272,28 @@ function abortCmd(g: G, kind: Pending['kind']): Res {
 }
 
 /** Revisions for cherry-pick: single commits and A..B ranges, oldest first. */
+/** The message of a cherry-picked (-x notes the source) or reverted commit. */
+function replayMessage(c: Commit, mode: 'pick' | 'revert', opts: { mainline?: number; recordOrigin?: boolean }): string {
+  if (mode === 'pick') return opts.recordOrigin ? `${c.message.replace(/\n+$/, '')}\n\n(cherry picked from commit ${c.id})` : c.message
+  const parent = opts.mainline === 2 ? c.parent2 : c.parent
+  return c.parent2 && opts.mainline ? `Revert "${firstLine(c.message)}"\n\nThis reverts commit ${c.id}, reversing\nchanges made to ${parent}.` : `Revert "${firstLine(c.message)}"\n\nThis reverts commit ${c.id}.`
+}
+
+/** -m N / --mainline N, and the other arguments. */
+function mainlineArg(args: string[]): { mainline?: number; rest: string[] } | Res {
+  const rest: string[] = []
+  let mainline: number | undefined
+  for (let k = 0; k < args.length; k++) {
+    const a = args[k]!
+    if (a === '-m' || a === '--mainline') {
+      mainline = Number(args[++k])
+      if (!Number.isInteger(mainline) || mainline < 1) return bad(`error: switch \`m' expects a numerical value`, 129)
+    } else if (a.startsWith('--mainline=')) mainline = Number(a.slice(11))
+    else rest.push(a)
+  }
+  return { ...(mainline !== undefined ? { mainline } : {}), rest }
+}
+
 function pickList(g: G, args: string[]): string[] | Res {
   const { repo } = g
   const ids: string[] = []
@@ -4695,14 +7331,20 @@ const gitCherryPick: GitFn = (g, args) => {
     return runSequence(g, [])
   }
   if (repo.pending) return bad(`error: a ${repo.pending.kind} is in progress — finish it (--continue) or --abort it first`, 128)
-  const revs = args.filter((a) => !a.startsWith('-'))
+  const ml = mainlineArg(args)
+  if (isRes(ml)) return ml
+  const recordOrigin = ml.rest.includes('-x')
+  const revs = ml.rest.filter((a) => !a.startsWith('-'))
   if (!revs.length) return bad('usage: git cherry-pick <commit>…', 129)
   if (dirty(s, root, repo)) return bad('error: your local changes would be overwritten by cherry-pick.\nhint: commit your changes or stash them to proceed.\nfatal: cherry-pick failed', 128)
   const ids = pickList(g, revs)
   if (isRes(ids)) return ids
-  for (const id of ids)
-    if (commitById(repo, id)?.parent2) return bad(`error: commit ${id} is a merge — cherry-pick copies single commits, not merges.\nfatal: cherry-pick failed`, 128)
-  repo.pending = { kind: 'cherry-pick', message: '', conflicts: [], todo: ids, origHead: headId(repo) }
+  for (const id of ids) {
+    const merge = !!commitById(repo, id)?.parent2
+    if (merge && !ml.mainline) return bad(`error: commit ${id} is a merge but no -m option was given.\nfatal: cherry-pick failed`, 128)
+    if (!merge && ml.mainline) return bad(`error: mainline was specified but commit ${id} is not a merge.\nfatal: cherry-pick failed`, 128)
+  }
+  repo.pending = { kind: 'cherry-pick', message: '', conflicts: [], todo: ids, origHead: headId(repo), ...(ml.mainline ? { mainline: ml.mainline } : {}), ...(recordOrigin ? { recordOrigin } : {}) }
   return runSequence(g, [])
 }
 
@@ -4716,7 +7358,9 @@ const gitRevert: GitFn = (g, args) => {
   }
   if (args.includes('--abort')) return abortCmd(g, 'revert')
   if (repo.pending) return bad(`error: a ${repo.pending.kind} is in progress — finish it (--continue) or --abort it first`, 128)
-  const revs = args.filter((a) => !a.startsWith('-'))
+  const ml = mainlineArg(args)
+  if (isRes(ml)) return ml
+  const revs = ml.rest.filter((a) => !a.startsWith('-'))
   if (!revs.length) return bad('usage: git revert <commit>', 129)
   if (dirty(s, root, repo)) return bad('error: your local changes would be overwritten by revert.\nhint: commit your changes or stash them to proceed.\nfatal: revert failed', 128)
   const lines: string[] = []
@@ -4724,10 +7368,12 @@ const gitRevert: GitFn = (g, args) => {
     const id = resolveRev(repo, rev)
     const c = commitById(repo, id)
     if (!c) return bad(`fatal: bad revision '${rev}'`, 128)
-    if (c.parent2) return bad(`error: commit ${c.id} is a merge but no -m option was given.\nfatal: revert failed`, 128)
-    const r = replay(g, c, 'revert')
+    if (c.parent2 && !ml.mainline) return bad(`error: commit ${c.id} is a merge but no -m option was given.\nfatal: revert failed`, 128)
+    if (!c.parent2 && ml.mainline) return bad(`error: mainline was specified but commit ${c.id} is not a merge.\nfatal: revert failed`, 128)
+    const opts = ml.mainline ? { mainline: ml.mainline } : {}
+    const r = replay(g, c, 'revert', opts)
     if (r.conflict) {
-      repo.pending = { kind: 'revert', message: `Revert "${firstLine(c.message)}"\n\nThis reverts commit ${c.id}.`, conflicts: [...r.conflict.conflicts], current: c.id, todo: [], origHead: headId(repo), author: authorName(g) }
+      repo.pending = { kind: 'revert', message: replayMessage(c, 'revert', opts), conflicts: [...r.conflict.conflicts], current: c.id, todo: [], origHead: headId(repo), author: authorName(g) }
       lines.push(
         ...conflictLines(r.conflict),
         `error: could not revert ${c.id}... ${firstLine(c.message)}`,
@@ -4926,7 +7572,15 @@ const gitBisect: GitFn = (g, args) => {
 
 const gitBlame: GitFn = (g, args) => {
   const { repo } = g
-  const files = args.filter((a) => !a.startsWith('-'))
+  let range: string | null = null
+  const plain: string[] = []
+  for (let k = 0; k < args.length; k++) {
+    const a = args[k]!
+    if (a === '-L') range = args[++k] ?? ''
+    else if (a.startsWith('-L')) range = a.slice(2)
+    else plain.push(a)
+  }
+  const files = plain.filter((a) => !a.startsWith('-'))
   const revAndFile = files.length === 2 ? files : [null, files[0]]
   const [rev, file] = revAndFile as [string | null, string | undefined]
   if (!file) return bad('usage: git blame <file>', 129)
@@ -4953,9 +7607,23 @@ const gitBlame: GitFn = (g, args) => {
     for (const [, fi] of remaining) owner[fi] = c
   }
   blameAt(start!, lines.map((_, i) => [i, i]))
-  const w = Math.max(...owner.map((c) => (c.author ?? 'you').length))
-  const nw = String(lines.length).length
-  return ok(lines.map((l, i) => `${owner[i]!.id} (${(owner[i]!.author ?? 'you').padEnd(w)} ${String(i + 1).padStart(nw)}) ${l}`).join('\n'))
+  let first = 1
+  let last = lines.length
+  if (range !== null) {
+    // -L 3,5  -L 3,+2  -L 3  -L /regex/,+2
+    const m = /^(\d+|\/[^/]*\/)?(?:,(\+?\d+|\/[^/]*\/)?)?$/.exec(range)
+    const pos = (t: string, from: number) => (t.startsWith('/') ? lines.findIndex((l, i) => i >= from - 1 && new RegExp(t.slice(1, -1)).test(l)) + 1 : Number(t))
+    if (!m) return bad(`fatal: invalid -L range: ${range}`, 128)
+    first = m[1] ? pos(m[1], 1) : 1
+    if (first < 1) return bad(`fatal: -L parameter '${m[1]}' starting at line 1: no match`, 128)
+    last = m[2] === undefined ? (range.includes(',') ? lines.length : first) : m[2].startsWith('+') ? first + Number(m[2].slice(1)) - 1 : pos(m[2], first)
+    if (first > lines.length) return bad(`fatal: file ${f} has only ${plural(lines.length, 'line')}`, 128)
+    last = Math.min(last, lines.length)
+  }
+  const shown = lines.map((l, i) => [l, i] as const).filter(([, i]) => i + 1 >= first && i + 1 <= last)
+  const w = Math.max(...shown.map(([, i]) => (owner[i]!.author ?? 'you').length))
+  const nw = String(last).length
+  return ok(shown.map(([l, i]) => `${owner[i]!.id} (${(owner[i]!.author ?? 'you').padEnd(w)} ${String(i + 1).padStart(nw)}) ${l}`).join('\n'))
 }
 
 const gitLsFiles: GitFn = (g) =>
@@ -5017,7 +7685,7 @@ const gitRemote: GitFn = (g, args) => {
   }
 }
 
-function fetchRemote(g: G, name: string): { lines: string[] } | Res {
+function fetchRemote(g: G, name: string, prune = false): { lines: string[] } | Res {
   const { s, repo } = g
   const rem = repo.remotes[name]
   if (!rem) return bad(`fatal: '${name}' does not appear to be a git repository\nfatal: Could not read from remote repository.`, 128)
@@ -5032,7 +7700,12 @@ function fetchRemote(g: G, name: string): { lines: string[] } | Res {
     lines.push(was ? `   ${was}..${id}  ${b.padEnd(10)} -> ${name}/${b}` : ` * [new branch]      ${b.padEnd(10)} -> ${name}/${b}`)
     rem.branches[b] = id
   }
-  for (const b of Object.keys(rem.branches)) if (!from.branches[b]) delete rem.branches[b]
+  if (prune)
+    for (const b of Object.keys(rem.branches))
+      if (!from.branches[b]) {
+        delete rem.branches[b]
+        lines.push(` - [deleted]         (none)     -> ${name}/${b}`)
+      }
   for (const [t, id] of Object.entries(from.tags))
     if (!(t in repo.tags)) {
       repo.tags[t] = id
@@ -5042,11 +7715,13 @@ function fetchRemote(g: G, name: string): { lines: string[] } | Res {
   return { lines: lines.length ? [`From ${rem.url}`, ...lines] : [] }
 }
 
+
 const gitFetch: GitFn = (g, args) => {
   const names = args.includes('--all') ? Object.keys(g.repo.remotes) : [args.find((a) => !a.startsWith('-')) ?? 'origin']
+  const prune = args.includes('--prune') || args.includes('-p')
   const lines: string[] = []
   for (const n of names) {
-    const r = fetchRemote(g, n)
+    const r = fetchRemote(g, n, prune)
     if (isRes(r)) return r
     lines.push(...r.lines)
   }
@@ -5170,7 +7845,13 @@ const gitPush: GitFn = (g, args) => {
     }
     const known = !!commitById(repo, theirs)
     const ff = !theirs || ancestors(repo, id).has(theirs)
-    if (!ff && !force && !(lease && rem.branches[name] === theirs)) {
+    if (lease && !force && rem.branches[name] !== theirs) {
+      // The remote moved since our last fetch: the lease protects that work.
+      lines.push(` ! [rejected]        ${src} -> ${name} (stale info)`)
+      errs.push(`error: failed to push some refs to '${rem.url}'`)
+      continue
+    }
+    if (!ff && !force && !lease) {
       lines.push(` ! [rejected]        ${src} -> ${name} (${known ? 'non-fast-forward' : 'fetch first'})`)
       errs.push(
         `error: failed to push some refs to '${rem.url}'`,
@@ -5178,11 +7859,6 @@ const gitPush: GitFn = (g, args) => {
           ? 'hint: Updates were rejected because the tip of your current branch is behind\nhint: its remote counterpart. Integrate the remote changes (e.g.\nhint: \'git pull ...\') before pushing again.'
           : "hint: Updates were rejected because the remote contains work that you do not\nhint: have locally. This is usually caused by another person pushing to\nhint: the same branch. Integrate the remote changes (e.g. 'git pull ...')\nhint: before pushing again.",
       )
-      continue
-    }
-    if (lease && rem.branches[name] !== theirs && !force) {
-      lines.push(` ! [rejected]        ${src} -> ${name} (stale info)`)
-      errs.push(`error: failed to push some refs to '${rem.url}'`)
       continue
     }
     if (!target.bare && target.branch === name && target.detached === null) {
@@ -5210,6 +7886,139 @@ const gitPush: GitFn = (g, args) => {
       lines.push(` * [new tag]         ${t} -> ${t}`)
     }
   return { code: errs.length ? 1 : 0, chunks: [[2, fromLines([...lines, ...errs])]] }
+}
+
+/* ── Objects: cat-file, describe, fsck ── */
+
+const blobId = (content: string) => hash(`blob ${content}`)
+
+/** The tree object for the files under `prefix` in a commit's tree: its entries, and its id. */
+function treeObject(tree: Record<string, string>, prefix: string): { id: string; entries: { mode: string; type: 'blob' | 'tree'; id: string; name: string }[] } {
+  const names = new Map<string, 'blob' | 'tree'>()
+  for (const f of Object.keys(tree)) {
+    if (prefix && !f.startsWith(`${prefix}/`)) continue
+    const rest = prefix ? f.slice(prefix.length + 1) : f
+    const [head, ...more] = rest.split('/')
+    names.set(head!, more.length ? 'tree' : 'blob')
+  }
+  const entries = [...names.entries()]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([name, type]) => {
+      const path = prefix ? `${prefix}/${name}` : name
+      return { mode: type === 'tree' ? '040000' : '100644', type, id: type === 'tree' ? treeObject(tree, path).id : blobId(tree[path]!), name }
+    })
+  return { id: hash(`tree ${entries.map((e) => `${e.mode} ${e.name} ${e.id}`).join('\n')}`), entries }
+}
+
+type GitObject = { type: 'commit'; commit: Commit } | { type: 'tree'; tree: Record<string, string>; prefix: string } | { type: 'blob'; content: string } | { type: 'tag'; name: string }
+
+/** What a name points at: a commit, rev:path (a file or a folder), rev^{tree}, a tag, or an object id. */
+function findObject(repo: Repo, what: string): GitObject | null {
+  const colon = what.indexOf(':')
+  if (colon >= 0) {
+    const c = commitById(repo, resolveRev(repo, what.slice(0, colon) || 'HEAD'))
+    if (!c) return null
+    const path = what.slice(colon + 1).replace(/^\.\/|\/$/g, '')
+    if (!path) return { type: 'tree', tree: c.tree, prefix: '' }
+    if (c.tree[path] !== undefined) return { type: 'blob', content: c.tree[path]! }
+    if (Object.keys(c.tree).some((f) => f.startsWith(`${path}/`))) return { type: 'tree', tree: c.tree, prefix: path }
+    return null
+  }
+  const treeOf1 = /^(.*)\^\{tree\}$/.exec(what)
+  if (treeOf1) {
+    const c = commitById(repo, resolveRev(repo, treeOf1[1]!))
+    return c ? { type: 'tree', tree: c.tree, prefix: '' } : null
+  }
+  if (what in repo.tagNotes) return { type: 'tag', name: what }
+  const c = commitById(repo, resolveRev(repo, what))
+  if (c) return { type: 'commit', commit: c }
+  if (/^[0-9a-f]{4,40}$/.test(what))
+    for (const k of repo.commits) {
+      const found = (prefix: string): GitObject | null => {
+        const t = treeObject(k.tree, prefix)
+        if (t.id.startsWith(what)) return { type: 'tree', tree: k.tree, prefix }
+        for (const e of t.entries) {
+          const path = prefix ? `${prefix}/${e.name}` : e.name
+          if (e.type === 'blob' && e.id.startsWith(what)) return { type: 'blob', content: k.tree[path]! }
+          if (e.type === 'tree') {
+            const inner = found(path)
+            if (inner) return inner
+          }
+        }
+        return null
+      }
+      const hit = found('')
+      if (hit) return hit
+    }
+  return null
+}
+
+const gitCatFile: GitFn = (g, args) => {
+  const { repo } = g
+  const flag = args.find((a) => /^-[tpse]$/.test(a))
+  const what = args.find((a) => !a.startsWith('-'))
+  if (!flag || !what) return bad('usage: git cat-file (-t | -s | -e | -p) <object>', 129)
+  const obj = findObject(repo, what)
+  if (!obj) return flag === '-e' ? { code: 1, chunks: [] } : bad(`fatal: Not a valid object name ${what}`, 128)
+  if (flag === '-e') return { code: 0, chunks: [] }
+  if (flag === '-t') return ok(obj.type)
+  let text: string
+  if (obj.type === 'blob') text = obj.content
+  else if (obj.type === 'tree') text = fromLines(treeObject(obj.tree, obj.prefix).entries.map((e) => `${e.mode} ${e.type} ${e.id}\t${e.name}`))
+  else if (obj.type === 'tag') {
+    const id = repo.tags[obj.name]!
+    text = `object ${id}\ntype commit\ntag ${obj.name}\ntagger ${authorName(g)}\n\n${repo.tagNotes[obj.name]}\n`
+  } else {
+    const c = obj.commit
+    const who = c.author ?? 'you'
+    text = `tree ${treeObject(c.tree, '').id}\n${c.parent ? `parent ${c.parent}\n` : ''}${c.parent2 ? `parent ${c.parent2}\n` : ''}author ${who}\ncommitter ${who}\n\n${c.message.replace(/\n*$/, '\n')}`
+  }
+  if (flag === '-s') return ok(String(new TextEncoder().encode(text).length))
+  return out(text)
+}
+
+const gitDescribe: GitFn = (g, args) => {
+  const { repo } = g
+  const tagsToo = args.includes('--tags')
+  const always = args.includes('--always')
+  const abbrev0 = args.includes('--abbrev=0')
+  const rev = args.find((a) => !a.startsWith('-')) ?? 'HEAD'
+  const target = resolveRev(repo, rev)
+  if (!target) return bad(`fatal: Not a valid object name ${rev}`, 128)
+  const mine = ancestors(repo, target)
+  const usable = Object.keys(repo.tags).filter((t) => tagsToo || t in repo.tagNotes)
+  let best: { name: string; depth: number } | null = null
+  for (const t of usable.sort()) {
+    const id = repo.tags[t]!
+    if (!mine.has(id)) continue
+    const theirs = ancestors(repo, id)
+    const depth = [...mine].filter((c) => !theirs.has(c)).length
+    if (!best || depth < best.depth) best = { name: t, depth }
+  }
+  if (!best) {
+    if (always) return ok(target)
+    if (!tagsToo && Object.keys(repo.tags).some((t) => mine.has(repo.tags[t]!))) return bad(`fatal: No annotated tags can describe '${target}'.\nHowever, there were unannotated tags: try --tags.`, 128)
+    return bad('fatal: No names found, cannot describe anything.', 128)
+  }
+  return ok(best.depth === 0 || abbrev0 ? best.name : `${best.name}-${best.depth}-g${target}`)
+}
+
+const gitFsck: GitFn = (g, args) => {
+  const { repo } = g
+  const useReflogs = !args.includes('--no-reflogs')
+  const roots: (string | null | undefined)[] = [headId(repo), ...Object.values(repo.branches), ...Object.values(repo.tags), ...Object.values(repo.remotes).flatMap((r) => Object.values(r.branches)), ...repo.stash.map((x) => x.base)]
+  if (useReflogs) roots.push(...repo.reflog.map((e) => e.id), ...Object.values(repo.branchLog).flatMap((l) => l.map((e) => e.id)))
+  const kept = reachable(repo, roots)
+  const lost = repo.commits.filter((c) => !kept.has(c.id))
+  if (args.includes('--unreachable')) return ok(lost.map((c) => `unreachable commit ${c.id}`).sort().join('\n'))
+  const parents = new Set(lost.flatMap((c) => [c.parent, c.parent2]))
+  return ok(
+    lost
+      .filter((c) => !parents.has(c.id))
+      .map((c) => `dangling commit ${c.id}`)
+      .sort()
+      .join('\n'),
+  )
 }
 
 const GIT: Record<string, GitFn> = {
@@ -5240,6 +8049,9 @@ const GIT: Record<string, GitFn> = {
   fetch: gitFetch,
   pull: gitPull,
   push: gitPush,
+  'cat-file': gitCatFile,
+  describe: gitDescribe,
+  fsck: gitFsck,
 }
 
 function hash(text: string): string {
@@ -5348,12 +8160,13 @@ export const COMMANDS = [
   'help', 'pwd', 'whoami', 'date', 'clear', 'history', 'echo', 'printf', 'cd', 'ls', 'mkdir', 'touch', 'cat', 'head', 'tail', 'wc',
   'grep', 'sort', 'uniq', 'cut', 'tr', 'tee', 'find', 'sed', 'xargs', 'basename', 'dirname', 'seq', 'rm', 'rmdir', 'cp', 'mv', 'chmod',
   'env', 'printenv', 'export', 'unset', 'set', 'read', 'exit', 'source', '.', 'bash', 'sh', 'test', '[', '[[', 'true', 'false', 'type',
-  'which', 'git',
+  'which', 'git', 'awk', 'jq', 'paste', 'join', 'column', 'local', 'declare', 'typeset', 'readonly', 'return', 'break', 'continue', 'shift',
+  'getopts', 'trap', 'let', 'eval', 'command', 'mapfile', 'readarray', 'shopt', 'mktemp', 'sleep', 'wait', 'readlink', 'realpath', 'od',
 ]
 const GIT_SUBS = [
   'init', 'clone', 'config', 'status', 'add', 'rm', 'commit', 'log', 'show', 'diff', 'restore', 'reset', 'branch', 'checkout', 'switch',
   'merge', 'stash', 'tag', 'reflog', 'cherry-pick', 'revert', 'rebase', 'bisect', 'blame', 'ls-files', 'check-ignore', 'remote', 'fetch',
-  'pull', 'push', '--version',
+  'pull', 'push', '--version', 'cat-file', 'describe', 'fsck',
 ]
 
 /**
@@ -5365,26 +8178,49 @@ const GIT_SUBS = [
 export function shellCanRun(text: string): boolean {
   const lines = commandLines(text)
   if (!lines.length) return false
-  return lines.every((line) => {
-    let ast: List
+  const asts: List[] = []
+  for (const line of lines) {
     try {
-      ast = parse(tokenize(line))
+      asts.push(parse(tokenize(line)))
     } catch {
       return false
     }
-    const listOk = (list: List): boolean => list.every((ao) => [ao.first, ...ao.rest.map((r) => r.pipe)].every((p) => p.cmds.every(cmdOk)))
-    const cmdOk = (c: Cmd): boolean => {
-      if (c.type === 'for') return listOk(c.body)
-      if (c.type === 'while') return listOk(c.cond) && listOk(c.body)
-      if (c.type === 'if') return c.arms.every((a) => listOk(a.cond) && listOk(a.body)) && (!c.otherwise || listOk(c.otherwise))
-      const words = c.words.filter((w) => !isAssignment(w)).map((w) => w.text)
-      if (!words.length) return true
-      const [name = '', sub = ''] = words
-      if (!COMMANDS.includes(name) && !name.startsWith('./')) return false
-      return name !== 'git' || GIT_SUBS.includes(sub)
+  }
+  // Functions defined on one line may be called on the next.
+  const defined = new Set<string>()
+  const walk = (list: List, f: (c: Cmd) => void) => list.forEach((ao) => [ao.first, ...ao.rest.map((r) => r.pipe)].forEach((p) => p.cmds.forEach(f)))
+  const collect = (c: Cmd): void => {
+    if (c.type === 'func') defined.add(c.name)
+  }
+  asts.forEach((a) => walk(a, collect))
+  const listOk = (list: List): boolean => list.every((ao) => [ao.first, ...ao.rest.map((r) => r.pipe)].every((p) => p.cmds.every(cmdOk)))
+  const cmdOk = (c: Cmd): boolean => {
+    switch (c.type) {
+      case 'for':
+      case 'cfor':
+        return listOk(c.body)
+      case 'while':
+        return listOk(c.cond) && listOk(c.body)
+      case 'if':
+        return c.arms.every((a) => listOk(a.cond) && listOk(a.body)) && (!c.otherwise || listOk(c.otherwise))
+      case 'case':
+        return c.arms.every((a) => listOk(a.body))
+      case 'group':
+      case 'subshell':
+        return listOk(c.body)
+      case 'func':
+        return cmdOk(c.body)
+      case 'cond':
+      case 'arith':
+        return true
     }
-    return listOk(ast)
-  })
+    const words = c.words.filter((w) => !isAssignment(w)).map((w) => w.text)
+    if (!words.length) return true
+    const [name = '', sub = ''] = words
+    if (!COMMANDS.includes(name) && !name.startsWith('./') && !defined.has(name)) return false
+    return name !== 'git' || GIT_SUBS.includes(sub)
+  }
+  return asts.every(listOk)
 }
 
 /** A lesson's command lines, as they would be typed: prompts and comments dropped. */
@@ -5397,17 +8233,20 @@ export function commandLines(text: string): string[] {
 
 const GIT_USAGE = `git, in the practice terminal (a real git has more, but these behave like it):
 
-  start      init [--bare]   clone <folder> [dir]   config [--global] user.name "…"
-  look       status [-s]   log [--oneline --graph --all] [A..B] [-n N]   show [rev | rev:file]
-             diff [--staged] [rev [rev]]   blame <file>   reflog   ls-files   check-ignore -v <file>
+  start      init [--bare] [-b name]   clone <folder> [dir]   config [--global] user.name "…"
+  look       status [-s]   log [--oneline --graph --all --stat -p --author=… -S text] [A..B] [A...B] [-n N]
+             show [rev | rev:file]   diff [--staged] [rev [rev] | A...B]   blame [-L 3,5] <file>
+             reflog [branch]   ls-files   check-ignore -v <file>   cat-file -t|-p <object>
+             describe [--tags]   fsck [--no-reflogs]
   save       add <file | .>   rm [--cached] <file>   commit -m "…" [-a] [--amend]
   undo       restore [--staged] [--source=rev] <file>   reset [--soft|--mixed|--hard] <rev>
-             revert <rev>   stash [push -m "…" | list | pop | apply | drop]
+             revert [-m 1] <rev>   stash [push -m "…" | list | pop | apply | drop]
   branches   branch [-d|-D|-m|-a|-vv] [name]   switch [-c] <branch>   checkout <branch|rev|-- file>
              merge [--no-ff] <branch>   merge --abort   rebase <branch> (--continue|--skip|--abort)
-             cherry-pick <rev> (--continue|--abort)   tag [-a name -m "…"] [rev]
+             cherry-pick [-x] [-m 1] <rev> (--continue|--abort)   tag [-a name -m "…"] [rev]
   hunt       bisect start | good | bad | skip | run <cmd> | log | reset
-  share      remote -v | add <name> <folder>   fetch   pull [--rebase|--no-rebase]   push [-u] [origin] [branch]
+  share      remote -v | add <name> <folder>   fetch [--prune]   pull [--rebase|--no-rebase]
+             push [-u] [--force-with-lease] [origin] [branch]   (@{u} is the upstream, main@{1} the reflog)
 
 A remote here is a folder on this pretend computer (make one with git init --bare).`
 
@@ -5415,14 +8254,17 @@ export const HELP = `This is a practice terminal: a pretend computer that lives 
 nothing you type here can touch your real files.
 
   pwd  ls [-a -l -1]  cd <dir>  mkdir [-p]  touch  cp [-r]  mv  rm [-r]  rmdir  chmod +x
-  echo  printf  cat  head/tail -n N  wc [-l -w -c]  tee [-a]
+  echo  printf  cat  head/tail -n N  wc [-l -w -c]  tee [-a]  mktemp [-d]
   grep [-i -n -v -c -r -l -o -w -E] <pattern> [files]   find <dir> -name '*.txt' [-type f|d]
   sort [-n -r -u -k N -t ,]  uniq [-c -d]  cut -d , -f 2  tr a-z A-Z  sed 's/old/new/g'
+  awk '{ print $1 }'  jq '.key'  paste  join  column -t
   xargs <cmd>  basename  dirname  seq  history  clear  help  git (type git help)
 
 The shell: pipes  a | b,  lists  a && b,  a || b,  a ; b,  redirection  > >> < 2> 2>&1
-&> /dev/null,  variables  NAME=value  $NAME  "\${NAME}"  export NAME  $?,  $(command),
-$((1 + 2)),  wildcards  * ? [abc],  quotes '…' (as typed) and "…" (with $ expanded),
-for f in *.txt; do …; done   if [ -f x ]; then …; else …; fi   while …; do …; done
+&> /dev/null  <<EOF  <<<,  variables  NAME=value  $NAME  "\${NAME}"  export NAME  $?,
+arrays  a=(x y)  "\${a[@]}",  $(command),  $((1 + 2)),  {a,b} {1..5},  wildcards  * ? [abc],
+quotes '…' (as typed) and "…" (with $ expanded),
+for f in *.txt; do …; done   for ((i=0; i<3; i++))   while …; do …; done
+if [[ -f x ]]; then …; else …; fi   case $x in a|b) …;; *) …;; esac   name() { …; }
 Scripts: bash [-x] script.sh args, or chmod +x script.sh then ./script.sh; source file.
-set -x traces each command, set -e stops a script at the first failure.`
+set -x traces each command, set -e stops a script at the first failure, trap … EXIT cleans up.`

@@ -1,0 +1,3323 @@
+@track sql
+@course mod-cod_sql_01_select
+@module cod_sql_01_select
+@title The relational model and single-table queries: practice and test
+@schema
+CREATE TABLE satellite (
+    sat_id      TEXT    NOT NULL PRIMARY KEY,
+    name        TEXT    NOT NULL,
+    plane       INTEGER NOT NULL,
+    altitude_km INTEGER NOT NULL,
+    launch_date TEXT    NOT NULL,
+    status      TEXT    NOT NULL,
+    mass_kg     INTEGER NOT NULL
+);
+INSERT INTO satellite (sat_id, name, plane, altitude_km, launch_date, status, mass_kg) VALUES
+  ('OSP-01', 'Osprey-1', 1, 520, '2024-05-14', 'ACTIVE',        290),
+  ('OSP-02', 'Osprey-2', 1, 520, '2024-05-14', 'SAFE_MODE',     290),
+  ('OSP-03', 'Osprey-3', 2, 535, '2024-09-30', 'ACTIVE',        290),
+  ('HRN-01', 'Heron-1',  2, 535, '2024-09-30', 'ACTIVE',        610),
+  ('HRN-02', 'Heron-2',  3, 550, '2025-01-22', 'COMMISSIONING', 610),
+  ('HRN-03', 'Heron-3',  3, 550, '2025-01-22', 'ACTIVE',        610),
+  ('TRN-01', 'Tern-1',   4, 480, '2023-11-02', 'DEORBITED',     150),
+  ('TRN-02', 'Tern-2',   4, 500, '2025-06-08', 'ACTIVE',        155),
+  ('TRN-03', 'Tern-3',   1, 510, '2025-06-08', 'ACTIVE',        155),
+  ('TRN-04', 'Tern-4',   2, 545, '2025-10-19', 'COMMISSIONING', 160);
+
+CREATE TABLE telemetry (
+    sat_id  TEXT NOT NULL REFERENCES satellite (sat_id),
+    ts      TEXT NOT NULL,
+    channel TEXT NOT NULL,
+    value   REAL,
+    PRIMARY KEY (sat_id, ts, channel)
+);
+INSERT INTO telemetry (sat_id, ts, channel, value) VALUES
+  ('OSP-01', '2026-04-10T06:00:00Z', 'BATT_SOC', 0.82),
+  ('OSP-01', '2026-04-10T06:00:00Z', 'BUS_TEMP', 21.4),
+  ('OSP-01', '2026-04-10T06:00:00Z', 'BUS_V',    28.1),
+  ('OSP-01', '2026-04-10T06:10:00Z', 'BATT_SOC', 0.79),
+  ('OSP-01', '2026-04-10T06:10:00Z', 'BUS_TEMP', 22.0),
+  ('OSP-01', '2026-04-10T06:20:00Z', 'BATT_SOC', 0.77),
+  ('OSP-02', '2026-04-10T06:00:00Z', 'BATT_SOC', 0.24),
+  ('OSP-02', '2026-04-10T06:00:00Z', 'BUS_TEMP', 38.9),
+  ('OSP-02', '2026-04-10T06:00:00Z', 'BUS_V',    25.7),
+  ('OSP-02', '2026-04-10T06:10:00Z', 'BATT_SOC', NULL),
+  ('OSP-02', '2026-04-10T06:10:00Z', 'BUS_TEMP', 41.3),
+  ('OSP-02', '2026-04-10T06:20:00Z', 'BATT_SOC', 0.21),
+  ('OSP-02', '2026-04-10T06:20:00Z', 'BUS_TEMP', 43.0),
+  ('OSP-03', '2026-04-10T06:00:00Z', 'BATT_SOC', 0.70),
+  ('OSP-03', '2026-04-10T06:00:00Z', 'BUS_TEMP', 20.0),
+  ('OSP-03', '2026-04-10T06:10:00Z', 'BATT_SOC', 0.66),
+  ('OSP-03', '2026-04-10T06:20:00Z', 'BATT_SOC', NULL),
+  ('HRN-01', '2026-04-10T06:00:00Z', 'BATT_SOC', 0.91),
+  ('HRN-01', '2026-04-10T06:00:00Z', 'BUS_V',    29.0),
+  ('HRN-01', '2026-04-10T06:10:00Z', 'BATT_SOC', 0.88),
+  ('HRN-01', '2026-04-10T06:10:00Z', 'BUS_TEMP', 40.0),
+  ('HRN-01', '2026-04-10T06:20:00Z', 'BATT_SOC', 0.86),
+  ('HRN-02', '2026-04-10T06:00:00Z', 'BATT_SOC', 0.55),
+  ('HRN-02', '2026-04-10T06:00:00Z', 'BUS_TEMP', 17.5),
+  ('HRN-02', '2026-04-10T06:10:00Z', 'BATT_SOC', 0.52),
+  ('HRN-03', '2026-04-10T06:00:00Z', 'BATT_SOC', 0.30),
+  ('HRN-03', '2026-04-10T06:00:00Z', 'BUS_TEMP', 25.1),
+  ('HRN-03', '2026-04-10T06:00:00Z', 'BUS_V',    27.4),
+  ('HRN-03', '2026-04-10T06:10:00Z', 'BATT_SOC', 0.35),
+  ('TRN-02', '2026-04-10T06:00:00Z', 'BATT_SOC', 0.48),
+  ('TRN-02', '2026-04-10T06:00:00Z', 'BUS_TEMP', 12.6),
+  ('TRN-02', '2026-04-10T06:10:00Z', 'BUS_TEMP', NULL),
+  ('TRN-03', '2026-04-10T06:10:00Z', 'BATT_SOC', 0.95),
+  ('TRN-03', '2026-04-10T06:10:00Z', 'BUS_V',    28.8),
+  ('TRN-04', '2026-04-10T06:00:00Z', 'BATT_SOC', 0.62),
+  ('TRN-04', '2026-04-10T06:20:00Z', 'BATT_SOC', 0.19);
+
+CREATE TABLE pass (
+    pass_id INTEGER NOT NULL PRIMARY KEY,
+    sat_id  TEXT    NOT NULL REFERENCES satellite (sat_id),
+    station TEXT    NOT NULL,
+    aos     TEXT    NOT NULL,
+    los     TEXT    NOT NULL,
+    bytes   INTEGER
+);
+INSERT INTO pass (pass_id, sat_id, station, aos, los, bytes) VALUES
+  (4,  'OSP-01', 'Svalbard',       '2026-04-10T05:52:10Z', '2026-04-10T06:01:40Z', 48200000),
+  (1,  'OSP-02', 'Svalbard',       '2026-04-10T05:58:00Z', '2026-04-10T06:06:30Z', NULL),
+  (7,  'HRN-01', 'Awarua',         '2026-04-10T06:03:15Z', '2026-04-10T06:12:00Z', 61000000),
+  (2,  'OSP-03', 'Fairbanks',      '2026-04-10T06:10:00Z', '2026-04-10T06:18:20Z', 35500000),
+  (9,  'HRN-03', 'Punta Arenas',   '2026-04-10T06:15:45Z', '2026-04-10T06:24:05Z', 900000),
+  (5,  'TRN-02', 'Svalbard',       '2026-04-10T06:20:00Z', '2026-04-10T06:27:10Z', 12000000),
+  (11, 'OSP-01', 'Awarua',         '2026-04-10T07:27:30Z', '2026-04-10T07:36:00Z', 51000000),
+  (3,  'HRN-02', 'Hartebeesthoek', '2026-04-10T07:40:00Z', '2026-04-10T07:49:30Z', NULL),
+  (12, 'TRN-03', 'Fairbanks',      '2026-04-10T08:02:00Z', '2026-04-10T08:08:40Z', 750000),
+  (6,  'OSP-02', 'Punta Arenas',   '2026-04-10T09:59:30Z', '2026-04-10T10:07:00Z', 52000000),
+  (14, 'TRN-04', 'Svalbard',       '2026-04-10T10:00:00Z', '2026-04-10T10:05:00Z', 64000000),
+  (10, 'HRN-01', 'Svalbard',       '2026-04-10T10:00:00Z', '2026-04-10T10:09:45Z', 58000000),
+  (8,  'HRN-02', 'Fairbanks',      '2026-04-10T10:45:00Z', '2026-04-10T10:53:10Z', 41000000),
+  (13, 'OSP-03', 'Awarua',         '2026-04-10T11:20:00Z', '2026-04-10T11:28:40Z', 12000000);
+
+CREATE TABLE anomaly (
+    anomaly_id INTEGER NOT NULL PRIMARY KEY,
+    sat_id     TEXT REFERENCES satellite (sat_id),
+    opened     TEXT NOT NULL,
+    severity   TEXT NOT NULL,
+    summary    TEXT NOT NULL,
+    closed     TEXT
+);
+INSERT INTO anomaly (anomaly_id, sat_id, opened, severity, summary, closed) VALUES
+  (1, 'OSP-02', '2026-04-09T22:14:00Z', 'HIGH',   'Battery SOC below 0.25',           NULL),
+  (2, 'HRN-01', '2026-04-08T03:40:00Z', 'MEDIUM', 'Wheel 2 friction rising',          '2026-04-09T11:00:00Z'),
+  (3, NULL,     '2026-04-10T01:05:00Z', 'LOW',    'Unattributed S-band interference', NULL),
+  (4, 'OSP-02', '2026-04-10T06:12:00Z', 'MEDIUM', 'Bus temperature above 40 C',       NULL),
+  (5, 'TRN-04', '2026-04-07T15:30:00Z', 'LOW',    'Star tracker dropout',             '2026-04-07T16:10:00Z'),
+  (6, 'HRN-03', '2026-04-10T04:20:00Z', 'LOW',    'Magnetometer offset drifting',     NULL);
+@end
+
+=== sql01-l01 | Practice: Tables, rows and keys
+--- for
+l01-tables-rows-and-keys
+--- schema
+CREATE TABLE satellite (
+    sat_id TEXT NOT NULL PRIMARY KEY,
+    name   TEXT NOT NULL,
+    status TEXT NOT NULL
+);
+INSERT INTO satellite (sat_id, name, status) VALUES
+  ('OSP-01', 'Osprey-1', 'ACTIVE'),
+  ('OSP-02', 'Osprey-2', 'SAFE_MODE'),
+  ('HRN-01', 'Heron-1',  'ACTIVE'),
+  ('TRN-04', 'Tern-4',   'COMMISSIONING');
+CREATE TABLE station (
+    station_id TEXT NOT NULL PRIMARY KEY,
+    name       TEXT NOT NULL
+);
+INSERT INTO station (station_id, name) VALUES
+  ('SVB', 'Svalbard'),
+  ('AWA', 'Awarua'),
+  ('FBK', 'Fairbanks');
+
++++ practice | Antennas at the ground stations
+--- task
+The database already has a `satellite` table and a `station` table. Add a table for the dish antennas at each ground station.
+
+Create a table named `antenna` with these four columns:
+
+- `antenna_id`: text, the table's primary key.
+- `station_id`: text.
+- `dish_m`: the dish diameter in meters, a measured number with a decimal point (type `REAL`).
+- `band`: text, the radio band, such as `X` or `S`.
+
+Every column must hold a value on every row. Remember that SQLite lets a primary-key column hold NULL unless you also write `NOT NULL`.
+
+Then insert these three antennas and end with `SELECT * FROM antenna;` so you can see them:
+
+| antenna_id | station_id | dish_m | band |
+| --- | --- | --- | --- |
+| SVB-A1 | SVB | 11.3 | X |
+| SVB-A2 | SVB | 7.3 | S |
+| AWA-A1 | AWA | 9.1 | X |
+--- starter
+-- Create the antenna table, insert the three antennas, then look at them.
+
+--- solution
+CREATE TABLE antenna (
+    antenna_id TEXT NOT NULL PRIMARY KEY,
+    station_id TEXT NOT NULL,
+    dish_m     REAL NOT NULL,
+    band       TEXT NOT NULL
+);
+
+INSERT INTO antenna (antenna_id, station_id, dish_m, band) VALUES
+  ('SVB-A1', 'SVB', 11.3, 'X'),
+  ('SVB-A2', 'SVB', 7.3,  'S'),
+  ('AWA-A1', 'AWA', 9.1,  'X');
+
+SELECT * FROM antenna;
+--- hint
+Model it on the `CREATE TABLE satellite` statement in the lesson: a name, then in parentheses one line per column with its name, its type and its rules.
+--- hint
+The key column needs both `PRIMARY KEY` and `NOT NULL` in SQLite. Every other column needs `NOT NULL`. Text values go in single quotes; numbers do not.
+--- check query | The table holds the three antennas
+SELECT antenna_id, station_id, dish_m, band FROM antenna ORDER BY antenna_id
+=> [["AWA-A1", "AWA", 9.1, "X"], ["SVB-A1", "SVB", 11.3, "X"], ["SVB-A2", "SVB", 7.3, "S"]]
+--- check query | antenna_id is the primary key
+SELECT name FROM pragma_table_info('antenna') WHERE pk > 0
+=> [["antenna_id"]]
+--- check query | The dish size is stored as a number
+SELECT typeof(dish_m) FROM antenna WHERE antenna_id = 'SVB-A1'
+=> [["real"]]
+--- check query | A second SVB-A1 is refused
+INSERT OR IGNORE INTO antenna (antenna_id, station_id, dish_m, band) VALUES ('SVB-A1', 'SVB', 3.0, 'S');
+SELECT COUNT(*) FROM antenna
+=> [[3]]
+--- check query | An antenna with no id is refused
+INSERT OR IGNORE INTO antenna (antenna_id, station_id, dish_m, band) VALUES (NULL, 'AWA', 4.5, 'S');
+SELECT COUNT(*) FROM antenna
+=> [[3]]
+--- check query | A row missing any other column is refused
+INSERT OR IGNORE INTO antenna (antenna_id, dish_m, band) VALUES ('AWA-A2', 4.5, 'S');
+INSERT OR IGNORE INTO antenna (antenna_id, station_id, band) VALUES ('AWA-A3', 'AWA', 'S');
+INSERT OR IGNORE INTO antenna (antenna_id, station_id, dish_m) VALUES ('AWA-A4', 'AWA', 4.5);
+SELECT COUNT(*) FROM antenna
+=> [[3]]
+
++++ practice | A pass table that keeps every real pass
+--- task
+The database has a `satellite` table (key `sat_id`) and a `station` table (key `station_id`). Create a table named `pass` for satellite passes over ground stations, with these columns:
+
+- `sat_id`: text, which satellite.
+- `station_id`: text, which ground station heard it.
+- `aos`: text, the time the pass starts, such as `2026-04-10T06:00:00Z`.
+- `los`: text, the time the pass ends.
+- `bytes`: integer, the data received. It may be missing, because a pass's data can arrive hours later.
+
+Every column except `bytes` must always hold a value.
+
+Choose the primary key from these facts:
+
+- Two stations can hear the same satellite at the same moment.
+- A station has several antennas, so it can start passes of two different satellites at the same moment.
+- One station cannot start two passes of the same satellite at the same moment.
+
+Also make `sat_id` a foreign key that references `satellite (sat_id)`, and `station_id` one that references `station (station_id)`.
+--- starter
+-- Create the pass table.
+
+--- solution
+CREATE TABLE pass (
+    sat_id     TEXT NOT NULL REFERENCES satellite (sat_id),
+    station_id TEXT NOT NULL REFERENCES station (station_id),
+    aos        TEXT NOT NULL,
+    los        TEXT NOT NULL,
+    bytes      INTEGER,
+    PRIMARY KEY (sat_id, station_id, aos)
+);
+--- hint
+Ask what makes one pass different from every other. A single column cannot do it: which combination of columns never repeats?
+--- hint
+The facts rule out (sat_id, aos) and (station_id, aos). The key needs all three of sat_id, station_id and aos. Declare it on its own line: `PRIMARY KEY (…, …, …)`.
+--- hint
+A foreign key is written on the column: `sat_id TEXT NOT NULL REFERENCES satellite (sat_id)`.
+--- check query | The key is the satellite, the station and the start time
+SELECT name FROM pragma_table_info('pass') WHERE pk > 0 ORDER BY name
+=> [["aos"], ["sat_id"], ["station_id"]]
+--- check query | Both foreign keys are declared
+SELECT "from", "table", "to" FROM pragma_foreign_key_list('pass') ORDER BY "from"
+=> [["sat_id", "satellite", "sat_id"], ["station_id", "station", "station_id"]]
+--- check query | Passes that the facts allow all go in, one without bytes
+INSERT OR IGNORE INTO pass (sat_id, station_id, aos, los, bytes) VALUES
+  ('OSP-01', 'SVB', '2026-04-10T06:00:00Z', '2026-04-10T06:09:00Z', 1000),
+  ('OSP-01', 'AWA', '2026-04-10T06:00:00Z', '2026-04-10T06:08:00Z', NULL),
+  ('HRN-01', 'SVB', '2026-04-10T06:00:00Z', '2026-04-10T06:07:00Z', 500);
+SELECT COUNT(*) FROM pass
+=> [[3]]
+--- check query | The same pass twice is refused
+INSERT OR IGNORE INTO pass (sat_id, station_id, aos, los, bytes) VALUES ('OSP-01', 'SVB', '2026-04-10T06:00:00Z', '2026-04-10T06:10:00Z', 2000);
+SELECT COUNT(*) FROM pass
+=> [[3]]
+--- check query | A pass with no end time is refused
+INSERT OR IGNORE INTO pass (sat_id, station_id, aos, bytes) VALUES ('HRN-01', 'AWA', '2026-04-10T07:00:00Z', 10);
+SELECT COUNT(*) FROM pass
+=> [[3]]
+
++++ practice | Mode changes that obey the rules
+--- task
+Create a table named `mode_change` that logs each time a satellite switches mode, with three columns:
+
+- `sat_id`: text, a foreign key that references `satellite (sat_id)`.
+- `ts`: text, when the switch happened.
+- `new_mode`: text, the mode it switched into.
+
+The rules:
+
+- No column may ever be empty.
+- A satellite switches mode at most once at any one moment, but two satellites can switch at the same moment. Choose the primary key to match.
+- `new_mode` must be exactly one of `ACTIVE`, `SAFE_MODE`, `COMMISSIONING` or `DEORBITED`, in capitals. Add the rule to the column as `CHECK (new_mode IN ('ACTIVE', 'SAFE_MODE', 'COMMISSIONING', 'DEORBITED'))`.
+
+Then insert these three rows:
+
+| sat_id | ts | new_mode |
+| --- | --- | --- |
+| OSP-02 | 2026-04-09T22:15:00Z | SAFE_MODE |
+| TRN-04 | 2026-04-09T22:15:00Z | ACTIVE |
+| OSP-02 | 2026-04-10T03:00:00Z | ACTIVE |
+--- starter
+-- Create the mode_change table, then insert the three rows.
+
+--- solution
+CREATE TABLE mode_change (
+    sat_id   TEXT NOT NULL REFERENCES satellite (sat_id),
+    ts       TEXT NOT NULL,
+    new_mode TEXT NOT NULL CHECK (new_mode IN ('ACTIVE', 'SAFE_MODE', 'COMMISSIONING', 'DEORBITED')),
+    PRIMARY KEY (sat_id, ts)
+);
+
+INSERT INTO mode_change (sat_id, ts, new_mode) VALUES
+  ('OSP-02', '2026-04-09T22:15:00Z', 'SAFE_MODE'),
+  ('TRN-04', '2026-04-09T22:15:00Z', 'ACTIVE'),
+  ('OSP-02', '2026-04-10T03:00:00Z', 'ACTIVE');
+--- hint
+"At most once per satellite per moment" names the columns of the key.
+--- hint
+The key is `(sat_id, ts)`. The CHECK rule goes at the end of the `new_mode` line, after `NOT NULL`.
+--- check query | The three rows are in
+SELECT sat_id, ts, new_mode FROM mode_change ORDER BY ts, sat_id
+=> [["OSP-02", "2026-04-09T22:15:00Z", "SAFE_MODE"], ["TRN-04", "2026-04-09T22:15:00Z", "ACTIVE"], ["OSP-02", "2026-04-10T03:00:00Z", "ACTIVE"]]
+--- check query | The key is the satellite and the moment
+SELECT name FROM pragma_table_info('mode_change') WHERE pk > 0 ORDER BY name
+=> [["sat_id"], ["ts"]]
+--- check query | A mode in small letters, or with a space, is refused
+INSERT OR IGNORE INTO mode_change (sat_id, ts, new_mode) VALUES ('HRN-01', '2026-04-10T05:00:00Z', 'safe_mode');
+INSERT OR IGNORE INTO mode_change (sat_id, ts, new_mode) VALUES ('HRN-01', '2026-04-10T05:01:00Z', 'SAFE MODE');
+SELECT COUNT(*) FROM mode_change
+=> [[3]]
+--- check query | A second switch of one satellite at one moment is refused
+INSERT OR IGNORE INTO mode_change (sat_id, ts, new_mode) VALUES ('OSP-02', '2026-04-10T03:00:00Z', 'SAFE_MODE');
+SELECT COUNT(*) FROM mode_change
+=> [[3]]
+--- check query | A row with no satellite is refused, and another satellite at the same moment is kept
+INSERT OR IGNORE INTO mode_change (sat_id, ts, new_mode) VALUES (NULL, '2026-04-10T04:00:00Z', 'ACTIVE');
+INSERT OR IGNORE INTO mode_change (sat_id, ts, new_mode) VALUES ('HRN-01', '2026-04-10T03:00:00Z', 'SAFE_MODE');
+SELECT COUNT(*) FROM mode_change
+=> [[4]]
+
++++ practice | The key that lets a contradiction in
+--- task
+The `thermal` table holds temperature readings from several sensors on each satellite. One sensor measures one temperature at a time, so a row for the same satellite, the same moment and the same sensor should only ever exist once.
+
+The starter creates the table and loads four readings. But its key lets this row in next to the existing 21.5 reading:
+
+```text
+('OSP-01', '2026-04-10T06:00:00Z', 'PANEL_X', 23.9)
+```
+
+Two different temperatures for one sensor at one moment is a contradiction. Fix the table so that row is refused, while all four starter readings still go in, and a second sensor at the same moment is still allowed. Change only the key.
+--- starter
+DROP TABLE IF EXISTS thermal;
+CREATE TABLE thermal (
+    sat_id TEXT NOT NULL REFERENCES satellite (sat_id),
+    ts     TEXT NOT NULL,
+    sensor TEXT NOT NULL,
+    temp_c REAL NOT NULL,
+    PRIMARY KEY (sat_id, ts, sensor, temp_c)
+);
+
+INSERT INTO thermal (sat_id, ts, sensor, temp_c) VALUES
+  ('OSP-01', '2026-04-10T06:00:00Z', 'PANEL_X', 21.5),
+  ('OSP-01', '2026-04-10T06:00:00Z', 'PANEL_Y', 19.0),
+  ('OSP-01', '2026-04-10T06:01:00Z', 'PANEL_X', 21.7),
+  ('HRN-01', '2026-04-10T06:00:00Z', 'PANEL_X', 30.2);
+
+SELECT * FROM thermal;
+--- solution
+DROP TABLE IF EXISTS thermal;
+CREATE TABLE thermal (
+    sat_id TEXT NOT NULL REFERENCES satellite (sat_id),
+    ts     TEXT NOT NULL,
+    sensor TEXT NOT NULL,
+    temp_c REAL NOT NULL,
+    PRIMARY KEY (sat_id, ts, sensor)
+);
+
+INSERT INTO thermal (sat_id, ts, sensor, temp_c) VALUES
+  ('OSP-01', '2026-04-10T06:00:00Z', 'PANEL_X', 21.5),
+  ('OSP-01', '2026-04-10T06:00:00Z', 'PANEL_Y', 19.0),
+  ('OSP-01', '2026-04-10T06:01:00Z', 'PANEL_X', 21.7),
+  ('HRN-01', '2026-04-10T06:00:00Z', 'PANEL_X', 30.2);
+
+SELECT * FROM thermal;
+--- hint
+A key promises "no two rows share this combination". With the measured value inside the key, two rows only clash when their temperatures are equal too.
+--- hint
+Take `temp_c` out of the key. What identifies a reading is where and when it was taken, not what it said.
+--- check query | All four starter readings are in
+SELECT COUNT(*) FROM thermal
+=> [[4]]
+--- check query | A second, different temperature for the same sensor and moment is refused
+INSERT OR IGNORE INTO thermal (sat_id, ts, sensor, temp_c) VALUES ('OSP-01', '2026-04-10T06:00:00Z', 'PANEL_X', 23.9);
+SELECT temp_c FROM thermal WHERE sat_id = 'OSP-01' AND ts = '2026-04-10T06:00:00Z' AND sensor = 'PANEL_X'
+=> [[21.5]]
+--- check query | A third sensor at the same moment is still allowed
+INSERT OR IGNORE INTO thermal (sat_id, ts, sensor, temp_c) VALUES ('OSP-01', '2026-04-10T06:00:00Z', 'PANEL_Z', 18.4);
+SELECT COUNT(*) FROM thermal
+=> [[5]]
+--- check query | The key is the satellite, the moment and the sensor
+SELECT name FROM pragma_table_info('thermal') WHERE pk > 0 ORDER BY name
+=> [["sat_id"], ["sensor"], ["ts"]]
+
++++ practice | The command log
+--- task
+Every command the ground sends to a satellite is logged. Create a table named `command_log` with these columns, none of which may be empty:
+
+- `sat_id`: text, a foreign key that references `satellite (sat_id)`.
+- `seq`: integer, the command's number.
+- `sent_ts`: text, when it was sent.
+- `opcode`: text, what the command does.
+
+Choose the primary key from these facts, which the flight software team gave you:
+
+- Each satellite numbers its own commands 1, 2, 3 and so on, and never uses a number twice.
+- Every satellite starts from 1, so two satellites use the same numbers.
+- The ground often sends two commands to one satellite within the same second, so `sent_ts` repeats.
+
+Then insert these rows:
+
+| sat_id | seq | sent_ts | opcode |
+| --- | --- | --- | --- |
+| OSP-01 | 41 | 2026-04-10T06:02:11Z | HEATER_ON |
+| OSP-01 | 42 | 2026-04-10T06:02:11Z | TLM_RATE_HIGH |
+| HRN-01 | 41 | 2026-04-10T06:05:40Z | WHEEL_RESET |
+--- starter
+-- Create the command_log table, then insert the three rows.
+
+--- solution
+CREATE TABLE command_log (
+    sat_id  TEXT    NOT NULL REFERENCES satellite (sat_id),
+    seq     INTEGER NOT NULL,
+    sent_ts TEXT    NOT NULL,
+    opcode  TEXT    NOT NULL,
+    PRIMARY KEY (sat_id, seq)
+);
+
+INSERT INTO command_log (sat_id, seq, sent_ts, opcode) VALUES
+  ('OSP-01', 41, '2026-04-10T06:02:11Z', 'HEATER_ON'),
+  ('OSP-01', 42, '2026-04-10T06:02:11Z', 'TLM_RATE_HIGH'),
+  ('HRN-01', 41, '2026-04-10T06:05:40Z', 'WHEEL_RESET');
+--- hint
+Go through the facts one at a time and cross out the keys each one breaks. `seq` alone repeats across satellites; anything with `sent_ts` in it can repeat within a second.
+--- hint
+Which combination does the first fact promise never repeats?
+--- check query | The three commands are in
+SELECT sat_id, seq, sent_ts, opcode FROM command_log ORDER BY sat_id, seq
+=> [["HRN-01", 41, "2026-04-10T06:05:40Z", "WHEEL_RESET"], ["OSP-01", 41, "2026-04-10T06:02:11Z", "HEATER_ON"], ["OSP-01", 42, "2026-04-10T06:02:11Z", "TLM_RATE_HIGH"]]
+--- check query | The key is the satellite and its command number
+SELECT name FROM pragma_table_info('command_log') WHERE pk > 0 ORDER BY name
+=> [["sat_id"], ["seq"]]
+--- check query | A reused number on the same satellite is refused
+INSERT OR IGNORE INTO command_log (sat_id, seq, sent_ts, opcode) VALUES ('OSP-01', 41, '2026-04-10T07:00:00Z', 'HEATER_OFF');
+SELECT opcode FROM command_log WHERE sat_id = 'OSP-01' AND seq = 41
+=> [["HEATER_ON"]]
+--- check query | A third command in the same second, and the same number on another satellite, go in
+INSERT OR IGNORE INTO command_log (sat_id, seq, sent_ts, opcode) VALUES ('OSP-01', 43, '2026-04-10T06:02:11Z', 'TLM_RATE_LOW');
+INSERT OR IGNORE INTO command_log (sat_id, seq, sent_ts, opcode) VALUES ('TRN-04', 42, '2026-04-10T06:02:11Z', 'SAFE_MODE_EXIT');
+SELECT COUNT(*) FROM command_log
+=> [[5]]
+--- check query | sat_id references the satellite table
+SELECT "from", "table", "to" FROM pragma_foreign_key_list('command_log')
+=> [["sat_id", "satellite", "sat_id"]]
+
++++ question | Which statement is refused
+--- ask
+In SQLite, with foreign keys switched on, these statements have run:
+
+```sql
+PRAGMA foreign_keys = ON;
+CREATE TABLE satellite (
+    sat_id TEXT NOT NULL PRIMARY KEY,
+    name   TEXT NOT NULL
+);
+CREATE TABLE pass (
+    pass_id INTEGER NOT NULL PRIMARY KEY,
+    sat_id  TEXT NOT NULL REFERENCES satellite (sat_id),
+    station TEXT NOT NULL
+);
+INSERT INTO satellite VALUES ('OSP-01', 'Osprey-1'), ('OSP-02', 'Osprey-2');
+INSERT INTO pass VALUES (1, 'OSP-01', 'Svalbard');
+```
+
+Which one of these next statements does the database refuse?
+--- choice
+`DELETE FROM satellite WHERE sat_id = 'OSP-02';`
+--- choice correct
+`DELETE FROM satellite WHERE sat_id = 'OSP-01';`
+--- choice
+`INSERT INTO pass VALUES (2, 'OSP-02', 'Svalbard');`
+--- choice
+`INSERT INTO satellite VALUES ('OSP-03', 'Osprey-1');`
+--- why
+Pass 1 points at OSP-01. Deleting OSP-01 would leave that pass orphaned, pointing at nothing, so the foreign key refuses it. OSP-02 has no passes, so deleting it is fine. A pass for OSP-02 is fine because OSP-02 exists. And a third satellite named Osprey-1 is allowed: only `sat_id` is the key, and nothing says names are unique. That is one reason a name makes a poor key.
+
+=== sql01-l02 | Practice: SELECT, FROM, WHERE
+--- for
+l02-select-from-where
+
++++ practice | Heavy satellites not working normally
+--- task
+The fleet database has a `satellite` table with the columns `sat_id`, `name`, `plane`, `altitude_km`, `launch_date`, `status` and `mass_kg`. Run `SELECT * FROM satellite;` first to see it.
+
+Hand in your answer as a view named `answer`, as in the lesson. It must have four columns, in this order:
+
+- `sat_id`
+- `sat_name`: the satellite's `name`, under this new name
+- `status`
+- `mass_kg`
+
+Keep only the satellites that weigh more than 200 kg and whose status is not `ACTIVE`. A satellite of exactly 200 kg does not count as more than 200 kg. The rows can be in any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id
+FROM satellite;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, name AS sat_name, status, mass_kg
+FROM satellite
+WHERE mass_kg > 200
+  AND status <> 'ACTIVE';
+
+SELECT * FROM answer;
+--- hint
+Two conditions must both be true, so join them with `AND`. "Is not" is written `<>`.
+--- hint
+`name AS sat_name` renames the column in the result. Text values such as `'ACTIVE'` go in single quotes.
+--- check query | The two heavy satellites that are not active, with the four columns
+SELECT sat_id, sat_name, status, mass_kg FROM answer ORDER BY sat_id
+=> [["HRN-02", "Heron-2", "COMMISSIONING", 610], ["OSP-02", "Osprey-2", "SAFE_MODE", 290]]
+--- check query | Exactly 200 kg is left out, 201 kg is kept, and active ones never appear
+INSERT INTO satellite (sat_id, name, plane, altitude_km, launch_date, status, mass_kg) VALUES
+  ('TRN-05', 'Tern-5', 3, 505, '2026-01-10', 'SAFE_MODE', 200),
+  ('TRN-06', 'Tern-6', 3, 505, '2026-01-10', 'COMMISSIONING', 201),
+  ('VEG-01', 'Vega-1', 2, 600, '2026-02-01', 'ACTIVE', 900);
+SELECT sat_id FROM answer ORDER BY sat_id
+=> [["HRN-02"], ["OSP-02"], ["TRN-06"]]
+--- check query | No active satellite is in the view
+SELECT COUNT(*) FROM answer WHERE status = 'ACTIVE'
+=> [[0]]
+
++++ practice | Big downlinks at two stations
+--- task
+The `pass` table holds one row per satellite pass over a ground station: `pass_id`, `sat_id`, `station` (the station's name), `aos` (when the pass started), `los` (when it ended) and `bytes` (the data received, or NULL when it has not arrived yet).
+
+Create the view `answer` with the columns `pass_id`, `sat_id`, `station` and `bytes`, holding the passes at `Svalbard` or `Fairbanks` that brought down at least 30,000,000 bytes. Exactly 30,000,000 counts. Use `IN` for the two station names. Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, sat_id, station, bytes
+FROM pass;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, sat_id, station, bytes
+FROM pass
+WHERE station IN ('Svalbard', 'Fairbanks')
+  AND bytes >= 30000000;
+
+SELECT * FROM answer;
+--- hint
+`station IN ('Svalbard', 'Fairbanks')` is true when the station is either one. Numbers are written without commas in SQL.
+--- hint
+"At least" includes the value itself, so the comparison is `>=`.
+--- check query | The five big passes at the two stations
+SELECT pass_id, sat_id, station, bytes FROM answer ORDER BY pass_id
+=> [[2, "OSP-03", "Fairbanks", 35500000], [4, "OSP-01", "Svalbard", 48200000], [8, "HRN-02", "Fairbanks", 41000000], [10, "HRN-01", "Svalbard", 58000000], [14, "TRN-04", "Svalbard", 64000000]]
+--- check query | Exactly 30,000,000 bytes counts; another station or missing bytes do not
+INSERT INTO pass (pass_id, sat_id, station, aos, los, bytes) VALUES
+  (20, 'TRN-03', 'Fairbanks', '2026-04-10T12:00:00Z', '2026-04-10T12:07:00Z', 30000000),
+  (21, 'TRN-03', 'Awarua',    '2026-04-10T13:00:00Z', '2026-04-10T13:07:00Z', 90000000),
+  (22, 'TRN-03', 'Svalbard',  '2026-04-10T14:00:00Z', '2026-04-10T14:07:00Z', NULL);
+SELECT pass_id FROM answer ORDER BY pass_id
+=> [[2], [4], [8], [10], [14], [20]]
+--- check query | Only the two stations appear
+SELECT COUNT(*) FROM answer WHERE station NOT IN ('Svalbard', 'Fairbanks')
+=> [[0]]
+--- check source | Uses IN
+\b(IN|in)\s*\(
+
++++ practice | The watch band, both ends included
+--- task
+In the `telemetry` table each row is one reading: `sat_id`, `ts` (the time, as ISO text in UTC), `channel` and `value`. The channel `BATT_SOC` is the battery state of charge, a fraction from 0 to 1.
+
+Operations calls a charge from 0.30 to 0.70 the watch band, and both 0.30 and 0.70 are inside it. Create the view `answer` with the columns `sat_id`, `ts` and `value`, holding every `BATT_SOC` reading in the watch band. Readings of other channels never belong, whatever their value. Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, ts, value
+FROM telemetry
+WHERE value > 0.30 AND value < 0.70;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, ts, value
+FROM telemetry
+WHERE channel = 'BATT_SOC'
+  AND value BETWEEN 0.30 AND 0.70;
+
+SELECT * FROM answer;
+--- hint
+The starter misses two things: it drops the readings that sit exactly on the edges, and it never looks at the channel.
+--- hint
+`BETWEEN low AND high` includes both ends, smaller number first. Add the channel test with `AND`.
+--- check query | The eight battery readings in the band, edges included
+SELECT sat_id, ts, value FROM answer ORDER BY sat_id, ts
+=> [["HRN-02", "2026-04-10T06:00:00Z", 0.55], ["HRN-02", "2026-04-10T06:10:00Z", 0.52], ["HRN-03", "2026-04-10T06:00:00Z", 0.3], ["HRN-03", "2026-04-10T06:10:00Z", 0.35], ["OSP-03", "2026-04-10T06:00:00Z", 0.7], ["OSP-03", "2026-04-10T06:10:00Z", 0.66], ["TRN-02", "2026-04-10T06:00:00Z", 0.48], ["TRN-04", "2026-04-10T06:00:00Z", 0.62]]
+--- check query | New readings of 0.7 and 0.3 are in; 0.705, 0.29 and another channel are out
+INSERT INTO telemetry (sat_id, ts, channel, value) VALUES
+  ('OSP-01', '2026-04-10T06:30:00Z', 'BATT_SOC', 0.7),
+  ('OSP-01', '2026-04-10T06:40:00Z', 'BATT_SOC', 0.705),
+  ('OSP-01', '2026-04-10T06:50:00Z', 'BATT_SOC', 0.29),
+  ('OSP-01', '2026-04-10T07:00:00Z', 'BATT_SOC', 0.3),
+  ('OSP-01', '2026-04-10T06:30:00Z', 'SA_CURRENT', 0.6);
+SELECT ts, value FROM answer WHERE sat_id = 'OSP-01' ORDER BY ts
+=> [["2026-04-10T06:30:00Z", 0.7], ["2026-04-10T07:00:00Z", 0.3]]
+--- check query | Nothing but battery readings
+SELECT COUNT(*) FROM answer
+=> [[10]]
+
++++ practice | The window that counts a reading twice
+--- task
+Readings are summed up in ten-minute windows: 06:00 to 06:10, 06:10 to 06:20, and so on. A reading taken exactly at 06:10:00 belongs to the second window only.
+
+The view `answer` should hold every `telemetry` row (columns `sat_id`, `ts`, `channel`, `value`) in the window that starts at `2026-04-10T06:00:00Z`: that instant included, `2026-04-10T06:10:00Z` not included. It also returns the readings taken at 06:10:00, so they get counted in two windows. Fix the view.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, ts, channel, value
+FROM telemetry
+WHERE ts BETWEEN '2026-04-10T06:00:00Z' AND '2026-04-10T06:10:00Z';
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, ts, channel, value
+FROM telemetry
+WHERE ts >= '2026-04-10T06:00:00Z'
+  AND ts <  '2026-04-10T06:10:00Z';
+
+SELECT * FROM answer;
+--- hint
+`BETWEEN` includes both ends. The window you want includes its start but not its end.
+--- hint
+Write it as two comparisons: greater than or equal to the start, and strictly less than the end.
+--- check query | All eighteen readings from 06:00:00 are there
+SELECT COUNT(*) FROM answer
+=> [[18]]
+--- check query | Nothing from 06:10:00
+SELECT COUNT(*) FROM answer WHERE ts = '2026-04-10T06:10:00Z'
+=> [[0]]
+--- check query | A reading at 06:09:59 is in; one at 05:59:59 is out
+INSERT INTO telemetry (sat_id, ts, channel, value) VALUES
+  ('HRN-02', '2026-04-10T06:09:59Z', 'BUS_V', 26.1),
+  ('HRN-02', '2026-04-10T05:59:59Z', 'BUS_V', 26.3);
+SELECT ts FROM answer WHERE sat_id = 'HRN-02' ORDER BY ts
+=> [["2026-04-10T06:00:00Z"], ["2026-04-10T06:00:00Z"], ["2026-04-10T06:09:59Z"]]
+
++++ practice | Passes to review
+--- task
+After a busy morning, the ground team wants to review some passes from the `pass` table. Create the view `answer` with the columns `pass_id`, `sat_id`, `station`, `aos` and `bytes`, holding every pass that meets all three of these:
+
+1. It started in the four hours from `2026-04-10T06:00:00Z` (included) to `2026-04-10T10:00:00Z` (not included).
+2. It was at a station whose name starts with `Punta`, or at `Svalbard` or `Fairbanks`.
+3. Its data was small, below 1,000,000 bytes, or large, above 50,000,000 bytes. A pass with no bytes yet is neither.
+
+Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, sat_id, station, aos, bytes
+FROM pass
+WHERE aos >= '2026-04-10T06:00:00Z';
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, sat_id, station, aos, bytes
+FROM pass
+WHERE aos >= '2026-04-10T06:00:00Z'
+  AND aos <  '2026-04-10T10:00:00Z'
+  AND (station LIKE 'Punta%' OR station IN ('Svalbard', 'Fairbanks'))
+  AND (bytes < 1000000 OR bytes > 50000000);
+
+SELECT * FROM answer;
+--- hint
+Write each of the three rules as its own condition and join them with `AND`. The time window is half-open, like the lesson's one-minute window.
+--- hint
+Rules 2 and 3 each contain an `OR`. `AND` is done before `OR`, so each of those two rules needs its own parentheses.
+--- check query | The three passes that meet all three rules
+SELECT pass_id, sat_id, station, aos, bytes FROM answer ORDER BY pass_id
+=> [[6, "OSP-02", "Punta Arenas", "2026-04-10T09:59:30Z", 52000000], [9, "HRN-03", "Punta Arenas", "2026-04-10T06:15:45Z", 900000], [12, "TRN-03", "Fairbanks", "2026-04-10T08:02:00Z", 750000]]
+--- check query | A small pass at another station, a pass at 10:00:00 and one with no bytes stay out; one at 06:00:00 is in
+INSERT INTO pass (pass_id, sat_id, station, aos, los, bytes) VALUES
+  (20, 'TRN-03', 'Awarua',       '2026-04-10T07:00:00Z', '2026-04-10T07:06:00Z', 900),
+  (21, 'TRN-03', 'Svalbard',     '2026-04-10T10:00:00Z', '2026-04-10T10:06:00Z', 900),
+  (22, 'TRN-02', 'Fairbanks',    '2026-04-10T06:00:00Z', '2026-04-10T06:08:00Z', 60000000),
+  (23, 'TRN-02', 'Punta Arenas', '2026-04-10T09:00:00Z', '2026-04-10T09:08:00Z', NULL);
+SELECT pass_id FROM answer ORDER BY pass_id
+=> [[6], [9], [12], [22]]
+--- check query | Every row is inside the window
+SELECT COUNT(*) FROM answer WHERE aos < '2026-04-10T06:00:00Z' OR aos >= '2026-04-10T10:00:00Z'
+=> [[0]]
+
++++ question | Which patterns can use the index
+--- ask
+The `satellite` table has an ordinary sorted index on `name`. Which of these conditions let the database jump to one block of the index, instead of reading every row?
+
+```sql
+name LIKE 'Tern%'
+name LIKE '%-3'
+name LIKE '_ern%'
+```
+--- choice correct
+Only `name LIKE 'Tern%'`.
+--- choice
+`name LIKE 'Tern%'` and `name LIKE '_ern%'`, because both have fixed text before the `%`.
+--- choice
+All three, because any `LIKE` can use an index on the column it tests.
+--- choice
+None of them: `LIKE` always reads every row.
+--- why
+A sorted index can only narrow a search by how a value *begins*. `'Tern%'` starts with fixed text, so every match sits in one block: from `Tern` up to, but not including, `Tero`. `'%-3'` starts with a wildcard, so its matches are scattered all through the sorted order. `'_ern%'` looks close to the first, but `_` is a wildcard too: the first letter could be anything, so `Bern…`, `Fern…` and `Tern…` sit in different places, and the database must scan.
+
+=== sql01-l03 | Practice: Sorting, limiting and removing duplicates
+--- for
+l03-sorting-limiting-and-distinct
+
++++ practice | Heaviest first
+--- task
+Create the view `answer` with the columns `sat_id`, `name` and `mass_kg`, holding every satellite in the `satellite` table, heaviest first. Satellites of the same mass are listed by `sat_id`, A to Z, so the order is the same every time.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, name, mass_kg
+FROM satellite;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, name, mass_kg
+FROM satellite
+ORDER BY mass_kg DESC, sat_id;
+
+SELECT * FROM answer;
+--- hint
+Sort by mass, largest first, with `DESC`. Then give a second sort key to break the ties.
+--- hint
+`DESC` applies only to the column just before it, so `sat_id` after the comma sorts A to Z by itself.
+--- check query | All ten satellites, heaviest first, ties by id
+SELECT sat_id, name, mass_kg FROM answer
+=> [["HRN-01", "Heron-1", 610], ["HRN-02", "Heron-2", 610], ["HRN-03", "Heron-3", 610], ["OSP-01", "Osprey-1", 290], ["OSP-02", "Osprey-2", 290], ["OSP-03", "Osprey-3", 290], ["TRN-04", "Tern-4", 160], ["TRN-02", "Tern-2", 155], ["TRN-03", "Tern-3", 155], ["TRN-01", "Tern-1", 150]]
+--- check query | New satellites land in the right place among the ties
+INSERT INTO satellite (sat_id, name, plane, altitude_km, launch_date, status, mass_kg) VALUES
+  ('HRN-00', 'Heron-0', 3, 550, '2026-02-01', 'ACTIVE', 610),
+  ('AAA-01', 'Test-1',  1, 500, '2026-02-01', 'ACTIVE', 290);
+SELECT sat_id FROM answer
+=> [["HRN-00"], ["HRN-01"], ["HRN-02"], ["HRN-03"], ["AAA-01"], ["OSP-01"], ["OSP-02"], ["OSP-03"], ["TRN-04"], ["TRN-02"], ["TRN-03"], ["TRN-01"]]
+--- check query | The lightest satellite comes last
+SELECT sat_id FROM answer LIMIT 1 OFFSET 11
+=> [["TRN-01"]]
+
++++ practice | One page of the pass log
+--- task
+An operations screen shows the `pass` table five passes at a time, sorted by `aos` (the start time), and for passes that start at the same moment, by `pass_id`, smallest first.
+
+Create the view `answer` with the columns `pass_id`, `sat_id`, `station` and `aos`, holding page 2 of that list.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, sat_id, station, aos
+FROM pass
+LIMIT 5;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, sat_id, station, aos
+FROM pass
+ORDER BY aos, pass_id
+LIMIT 5 OFFSET 5;
+
+SELECT * FROM answer;
+--- hint
+Page p of size n skips (p − 1) × n rows. Here that is (2 − 1) × 5.
+--- hint
+Without an `ORDER BY`, a page holds whichever rows the database reads first. Sort by `aos`, then `pass_id`, then `LIMIT 5 OFFSET 5`.
+--- check query | Page 2 holds the sixth to tenth passes
+SELECT pass_id, sat_id, station, aos FROM answer
+=> [[5, "TRN-02", "Svalbard", "2026-04-10T06:20:00Z"], [11, "OSP-01", "Awarua", "2026-04-10T07:27:30Z"], [3, "HRN-02", "Hartebeesthoek", "2026-04-10T07:40:00Z"], [12, "TRN-03", "Fairbanks", "2026-04-10T08:02:00Z"], [6, "OSP-02", "Punta Arenas", "2026-04-10T09:59:30Z"]]
+--- check query | An earlier pass pushes everything down one place
+INSERT INTO pass (pass_id, sat_id, station, aos, los, bytes) VALUES
+  (20, 'TRN-03', 'Awarua', '2026-04-10T06:00:00Z', '2026-04-10T06:06:00Z', 100);
+SELECT pass_id FROM answer
+=> [[9], [5], [11], [3], [12]]
+--- check query | Two passes that start together are ordered by pass_id
+INSERT INTO pass (pass_id, sat_id, station, aos, los, bytes) VALUES
+  (15, 'TRN-02', 'Fairbanks', '2026-04-10T06:15:45Z', '2026-04-10T06:22:00Z', 100);
+SELECT pass_id FROM answer
+=> [[9], [15], [5], [11], [3]]
+
++++ practice | Missing downlinks at the end
+--- task
+Create the view `answer` with the columns `pass_id`, `station` and `bytes`, holding every pass in the `pass` table sorted by `bytes`, smallest first, to find the weak passes. Passes whose `bytes` is missing go at the very end, not the start. Passes with the same `bytes` are ordered by `pass_id`, smallest first.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, station, bytes
+FROM pass
+ORDER BY bytes, pass_id;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, station, bytes
+FROM pass
+ORDER BY bytes NULLS LAST, pass_id;
+
+SELECT * FROM answer;
+--- hint
+Run the starter and look at the top of the list. Where does SQLite put NULL in an ascending sort?
+--- hint
+You can say where missing values go, right after the sort key's direction: `NULLS FIRST` or `NULLS LAST`.
+--- check query | Smallest first, missing last, ties by pass_id
+SELECT pass_id, station, bytes FROM answer
+=> [[12, "Fairbanks", 750000], [9, "Punta Arenas", 900000], [5, "Svalbard", 12000000], [13, "Awarua", 12000000], [2, "Fairbanks", 35500000], [8, "Fairbanks", 41000000], [4, "Svalbard", 48200000], [11, "Awarua", 51000000], [6, "Punta Arenas", 52000000], [10, "Svalbard", 58000000], [7, "Awarua", 61000000], [14, "Svalbard", 64000000], [1, "Svalbard", null], [3, "Hartebeesthoek", null]]
+--- check query | A new missing pass and a new tie land in the right places
+INSERT INTO pass (pass_id, sat_id, station, aos, los, bytes) VALUES
+  (15, 'TRN-02', 'Awarua',   '2026-04-10T12:00:00Z', '2026-04-10T12:06:00Z', NULL),
+  (16, 'TRN-03', 'Svalbard', '2026-04-10T12:10:00Z', '2026-04-10T12:16:00Z', 750000);
+SELECT pass_id FROM answer
+=> [[12], [16], [9], [5], [13], [2], [8], [4], [11], [6], [10], [7], [14], [1], [3], [15]]
+--- check query | The first row has data
+SELECT bytes FROM answer LIMIT 1
+=> [[750000]]
+
++++ practice | Highest orbit first
+--- task
+The view `answer` should list every satellite's `sat_id` and `altitude_km`, highest altitude first, and satellites at the same altitude by `sat_id`, A to Z. Instead it lists the lowest satellites first, and at each altitude the ids run Z to A. Fix the view.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, altitude_km
+FROM satellite
+ORDER BY altitude_km, sat_id DESC;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, altitude_km
+FROM satellite
+ORDER BY altitude_km DESC, sat_id;
+
+SELECT * FROM answer;
+--- hint
+Each sort key has its own direction, and `DESC` belongs to the one key right before it.
+--- hint
+The direction is on the wrong key: it should follow `altitude_km`, and `sat_id` should keep the default.
+--- check query | Highest first, ties by id A to Z
+SELECT sat_id, altitude_km FROM answer
+=> [["HRN-02", 550], ["HRN-03", 550], ["TRN-04", 545], ["HRN-01", 535], ["OSP-03", 535], ["OSP-01", 520], ["OSP-02", 520], ["TRN-03", 510], ["TRN-02", 500], ["TRN-01", 480]]
+--- check query | A new satellite at 550 km comes first
+INSERT INTO satellite (sat_id, name, plane, altitude_km, launch_date, status, mass_kg) VALUES
+  ('AAA-09', 'Test-9', 3, 550, '2026-02-01', 'ACTIVE', 100);
+SELECT sat_id FROM answer LIMIT 3
+=> [["AAA-09"], ["HRN-02"], ["HRN-03"]]
+--- check query | The lowest satellite comes last
+SELECT sat_id FROM answer LIMIT 1 OFFSET 10
+=> [["TRN-01"]]
+
++++ practice | The next page, by key
+--- task
+The pass list is sorted by `aos`, then `pass_id`. The screen is showing a page whose last row is the pass with `aos` `2026-04-10T10:00:00Z` and `pass_id` 10. Another pass starts at that same moment.
+
+Create the view `answer` with the columns `pass_id`, `sat_id`, `station` and `aos`, holding the next page: the 3 passes that come right after that row in this order. Do not use `OFFSET`. Find the page by its key instead: keep only the rows that sort after the last row shown, then take 3.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, sat_id, station, aos
+FROM pass
+WHERE aos > '2026-04-10T10:00:00Z'
+ORDER BY aos, pass_id
+LIMIT 3;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, sat_id, station, aos
+FROM pass
+WHERE aos > '2026-04-10T10:00:00Z'
+   OR (aos = '2026-04-10T10:00:00Z' AND pass_id > 10)
+ORDER BY aos, pass_id
+LIMIT 3;
+
+SELECT * FROM answer;
+--- hint
+Run the starter. It skips a pass. Which one, and why does `aos >` miss it?
+--- hint
+A row sorts after the last one shown if it starts later, or if it starts at the same moment and has a bigger `pass_id`. Write those two cases joined by `OR`, with parentheses around the second.
+--- check query | The next three passes, starting with the one that shares the start time
+SELECT pass_id, sat_id, station, aos FROM answer
+=> [[14, "TRN-04", "Svalbard", "2026-04-10T10:00:00Z"], [8, "HRN-02", "Fairbanks", "2026-04-10T10:45:00Z"], [13, "OSP-03", "Awarua", "2026-04-10T11:20:00Z"]]
+--- check query | Another pass at the same moment joins the page in pass_id order
+INSERT INTO pass (pass_id, sat_id, station, aos, los, bytes) VALUES
+  (25, 'TRN-02', 'Awarua', '2026-04-10T10:00:00Z', '2026-04-10T10:06:00Z', 100);
+SELECT pass_id FROM answer
+=> [[14], [25], [8]]
+--- check query | The last row shown is not repeated
+SELECT COUNT(*) FROM answer WHERE pass_id = 10
+=> [[0]]
+--- check source absent | Does not use OFFSET
+[Oo][Ff][Ff][Ss][Ee][Tt]
+
++++ question | Sorting a DISTINCT result
+--- ask
+In PostgreSQL this query fails with `for SELECT DISTINCT, ORDER BY expressions must appear in select list`:
+
+```sql
+SELECT DISTINCT station
+FROM pass
+ORDER BY aos;
+```
+
+SQLite runs it and returns an answer. Why does PostgreSQL refuse?
+--- choice correct
+DISTINCT merges all of a station's passes into one row, so there is no single `aos` left to sort that row by.
+--- choice
+ORDER BY may only ever name columns that are in the SELECT list, with or without DISTINCT.
+--- choice
+DISTINCT runs after ORDER BY, so the sort would be thrown away.
+--- choice
+`aos` is text, and text cannot be sorted once DISTINCT has run.
+--- why
+DISTINCT happens before ORDER BY. After it, the one Svalbard row stands for five passes with five different start times, and "sort by aos" no longer has one value to use for it. So PostgreSQL insists you sort a DISTINCT result by columns you selected. Without DISTINCT, sorting by a column you did not select is fine. SQLite's answer is worse than an error: it quietly picks one of the five times for you.
+
+=== sql01-l04 | Practice: Computed columns and CASE WHEN
+--- for
+l04-expressions-and-case
+--- schema
+CREATE TABLE power_sample (
+    sat_id  TEXT NOT NULL,
+    ts      TEXT NOT NULL,
+    bus_v   REAL NOT NULL,
+    load_a  REAL NOT NULL,
+    array_a REAL NOT NULL,
+    temp_c  REAL NOT NULL,
+    PRIMARY KEY (sat_id, ts)
+);
+INSERT INTO power_sample (sat_id, ts, bus_v, load_a, array_a, temp_c) VALUES
+  ('OSP-01', '2026-04-10T06:00:00Z', 28.2, 3.1, 4.6,  18.5),
+  ('OSP-02', '2026-04-10T06:00:00Z', 25.4, 2.6, 0.0,  41.0),
+  ('OSP-03', '2026-04-10T06:00:00Z', 27.9, 2.9, 3.5, -10.0),
+  ('HRN-01', '2026-04-10T06:00:00Z', 29.1, 5.2, 6.0,  50.0),
+  ('HRN-02', '2026-04-10T06:00:00Z', 26.0, 4.4, 2.2, -12.5),
+  ('HRN-03', '2026-04-10T06:00:00Z', 28.6, 4.0, 4.0,  40.0),
+  ('TRN-02', '2026-04-10T06:00:00Z', 27.0, 1.5, 0.0,  22.0),
+  ('TRN-03', '2026-04-10T06:00:00Z', 28.0, 0.0, 1.2,   5.0);
+CREATE TABLE frame_count (
+    sat_id  TEXT    NOT NULL,
+    pass_no INTEGER NOT NULL,
+    good    INTEGER NOT NULL,
+    total   INTEGER NOT NULL,
+    PRIMARY KEY (sat_id, pass_no)
+);
+INSERT INTO frame_count (sat_id, pass_no, good, total) VALUES
+  ('OSP-01', 12, 388, 400),
+  ('OSP-02',  7, 150, 400),
+  ('HRN-01',  3, 399, 400),
+  ('HRN-02',  5,   0, 380),
+  ('TRN-03',  9,  40,  40);
+
++++ practice | Power, net current and kelvin
+--- task
+The `power_sample` table holds one power reading per satellite: `sat_id`, `ts`, `bus_v` (bus voltage, volts), `load_a` (current drawn by the equipment, amperes), `array_a` (current from the solar arrays, amperes) and `temp_c` (battery temperature, degrees Celsius).
+
+Create the view `answer` with four columns, one row per reading:
+
+- `sat_id`
+- `load_w`: the power the equipment draws, in watts: the bus voltage times the load current.
+- `net_a`: the array current minus the load current. Positive means the battery is charging.
+- `temp_k`: the battery temperature in kelvin: degrees Celsius plus 273.15.
+
+Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id
+FROM power_sample;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id,
+       bus_v * load_a    AS load_w,
+       array_a - load_a  AS net_a,
+       temp_c + 273.15   AS temp_k
+FROM power_sample;
+
+SELECT * FROM answer;
+--- hint
+Each new column is a calculation written straight into the `SELECT` list, followed by `AS` and its name.
+--- hint
+Watch the order in `net_a`: array current first, then minus the load current.
+--- check query | Every reading's three computed columns
+SELECT sat_id, load_w, net_a, temp_k FROM answer ORDER BY sat_id
+=> [["HRN-01", 151.32000000000002, 0.7999999999999998, 323.15], ["HRN-02", 114.4, -2.2, 260.65], ["HRN-03", 114.4, 0.0, 313.15], ["OSP-01", 87.42, 1.4999999999999996, 291.65], ["OSP-02", 66.03999999999999, -2.6, 314.15], ["OSP-03", 80.91, 0.6000000000000001, 263.15], ["TRN-02", 40.5, -1.5, 295.15], ["TRN-03", 0.0, 1.2, 278.15]]
+--- check query | A new reading is worked out the same way
+INSERT INTO power_sample (sat_id, ts, bus_v, load_a, array_a, temp_c) VALUES
+  ('TRN-04', '2026-04-10T06:00:00Z', 27.5, 2.0, 3.0, 10.0);
+SELECT load_w, net_a, temp_k FROM answer WHERE sat_id = 'TRN-04'
+=> [[55.0, 1.0, 283.15]]
+--- check query | Discharging batteries have a negative net current
+SELECT sat_id FROM answer WHERE net_a < 0 ORDER BY sat_id
+=> [["HRN-02"], ["OSP-02"], ["TRN-02"]]
+
++++ practice | Frame success as a percentage
+--- task
+The `frame_count` table records, for each pass, how many data frames arrived intact: `sat_id`, `pass_no`, `good` and `total`. Both counts are whole numbers.
+
+Create the view `answer` with two columns:
+
+- `label`: the satellite and the pass number joined by a slash, such as `OSP-01/12`.
+- `pct_good`: the percentage of frames that were good, 100 times `good` divided by `total`, with its fraction kept. For 150 good frames out of 400 it is 37.5, not 37 and not 0.
+
+Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id AS label,
+       good / total * 100 AS pct_good
+FROM frame_count;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id || '/' || pass_no AS label,
+       100.0 * good / total      AS pct_good
+FROM frame_count;
+
+SELECT * FROM answer;
+--- hint
+`||` joins pieces of text end to end. Run the starter: why is almost every percentage 0?
+--- hint
+Two whole numbers divide into a whole number. Put a number with a decimal point first, `100.0 * good / total`, so the division keeps its fraction.
+--- check query | Labels and exact percentages
+SELECT label, pct_good FROM answer ORDER BY label
+=> [["HRN-01/3", 99.75], ["HRN-02/5", 0.0], ["OSP-01/12", 97.0], ["OSP-02/7", 37.5], ["TRN-03/9", 100.0]]
+--- check query | A pass with one good frame in three
+INSERT INTO frame_count (sat_id, pass_no, good, total) VALUES ('TRN-02', 11, 1, 3);
+SELECT label, pct_good FROM answer WHERE label = 'TRN-02/11'
+=> [["TRN-02/11", 33.333333333333336]]
+--- check query | Partial passes are strictly between 0 and 100
+SELECT COUNT(*) FROM answer WHERE pct_good > 0 AND pct_good < 100
+=> [[4]]
+
++++ practice | Battery temperature states, edges included
+--- task
+Create the view `answer` with the columns `sat_id`, `temp_c` and `state`, one row per reading in `power_sample`. The state comes from the battery temperature:
+
+- `ALARM` when `temp_c` is 50 or above;
+- `WARM` when it is 40 or above, but below 50;
+- `COLD` when it is below −10 (−10 itself is not cold);
+- `NOMINAL` otherwise.
+
+List the rows worst first: all `ALARM` rows, then `COLD`, then `WARM`, then `NOMINAL`, and within each state by `sat_id`, A to Z.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, temp_c, 'NOMINAL' AS state
+FROM power_sample;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id,
+       temp_c,
+       CASE WHEN temp_c >= 50  THEN 'ALARM'
+            WHEN temp_c >= 40  THEN 'WARM'
+            WHEN temp_c < -10  THEN 'COLD'
+            ELSE 'NOMINAL'
+       END AS state
+FROM power_sample
+ORDER BY CASE WHEN temp_c >= 50 THEN 1
+              WHEN temp_c < -10 THEN 2
+              WHEN temp_c >= 40 THEN 3
+              ELSE 4
+         END,
+         sat_id;
+
+SELECT * FROM answer;
+--- hint
+The first true branch wins, so for "or above" tests put the highest threshold first. Check each edge: 50, 40 and −10 exactly.
+--- hint
+The order ALARM, COLD, WARM, NOMINAL is not alphabetical. Sort on a second CASE that hands each state a number, then on `sat_id`.
+--- check query | Every reading's state, worst first
+SELECT sat_id, temp_c, state FROM answer
+=> [["HRN-01", 50.0, "ALARM"], ["HRN-02", -12.5, "COLD"], ["HRN-03", 40.0, "WARM"], ["OSP-02", 41.0, "WARM"], ["OSP-01", 18.5, "NOMINAL"], ["OSP-03", -10.0, "NOMINAL"], ["TRN-02", 22.0, "NOMINAL"], ["TRN-03", 5.0, "NOMINAL"]]
+--- check query | Just under the edges: 49.99 is WARM, −10.01 is COLD
+INSERT INTO power_sample (sat_id, ts, bus_v, load_a, array_a, temp_c) VALUES
+  ('TRN-04', '2026-04-10T06:00:00Z', 27.0, 1.0, 1.0, 49.99),
+  ('AAA-01', '2026-04-10T06:00:00Z', 27.0, 1.0, 1.0, -10.01);
+SELECT sat_id, state FROM answer WHERE sat_id IN ('TRN-04', 'AAA-01') ORDER BY sat_id
+=> [["AAA-01", "COLD"], ["TRN-04", "WARM"]]
+--- check query | The new COLD reading sorts right after the ALARM
+SELECT sat_id FROM answer LIMIT 3
+=> [["HRN-01"], ["AAA-01"], ["HRN-02"]]
+
++++ practice | The CASE that compares the wrong thing
+--- task
+The view `answer` should list each reading's `sat_id`, `load_a` and `load_class`, where `load_class` is `HEAVY` when the load current is above 4.0 A and `LIGHT` otherwise. Instead it calls TRN-03, which draws no current at all, `HEAVY`, and calls HRN-01, at 5.2 A, `LIGHT`. Fix the CASE.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id,
+       load_a,
+       CASE load_a WHEN load_a > 4.0 THEN 'HEAVY' ELSE 'LIGHT' END AS load_class
+FROM power_sample;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id,
+       load_a,
+       CASE WHEN load_a > 4.0 THEN 'HEAVY' ELSE 'LIGHT' END AS load_class
+FROM power_sample;
+
+SELECT * FROM answer;
+--- hint
+`CASE load_a WHEN x` is the short form: it asks whether `load_a` equals `x`. Here `x` is the comparison `load_a > 4.0`, which works out to 1 (true) or 0 (false).
+--- hint
+TRN-03 draws 0.0 A, and `0.0 > 4.0` is 0, so the short form finds 0.0 equal to 0. A threshold needs the searched form: `CASE WHEN condition THEN …`.
+--- check query | Every reading classed correctly
+SELECT sat_id, load_a, load_class FROM answer ORDER BY sat_id
+=> [["HRN-01", 5.2, "HEAVY"], ["HRN-02", 4.4, "HEAVY"], ["HRN-03", 4.0, "LIGHT"], ["OSP-01", 3.1, "LIGHT"], ["OSP-02", 2.6, "LIGHT"], ["OSP-03", 2.9, "LIGHT"], ["TRN-02", 1.5, "LIGHT"], ["TRN-03", 0.0, "LIGHT"]]
+--- check query | 4.01 A is HEAVY and 1.0 A is LIGHT
+INSERT INTO power_sample (sat_id, ts, bus_v, load_a, array_a, temp_c) VALUES
+  ('AAA-01', '2026-04-10T06:00:00Z', 27.0, 4.01, 1.0, 20.0),
+  ('TRN-04', '2026-04-10T06:00:00Z', 27.0, 1.0,  1.0, 20.0);
+SELECT sat_id, load_class FROM answer WHERE sat_id IN ('AAA-01', 'TRN-04') ORDER BY sat_id
+=> [["AAA-01", "HEAVY"], ["TRN-04", "LIGHT"]]
+--- check query | Exactly three heavy loads
+SELECT COUNT(*) FROM answer WHERE load_class = 'HEAVY'
+=> [[3]]
+
++++ practice | The console summary row
+--- task
+The flight controller wants one row that sums up the fleet's power. Create the view `answer` with exactly one row and five columns, in this order:
+
+- `n_samples`: how many readings there are in `power_sample`.
+- `n_charging`: readings where the array current is greater than the load current.
+- `n_discharging`: readings where the array current is less than the load current.
+- `n_balanced`: readings where the two are equal.
+- `net_w`: the fleet's net power in watts, the sum over all readings of the bus voltage times (array current minus load current).
+
+`SUM` and `COUNT(*)` are the lesson's tools for adding up over all rows.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT COUNT(*) AS n_samples
+FROM power_sample;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT COUNT(*)                                          AS n_samples,
+       SUM(CASE WHEN array_a > load_a THEN 1 ELSE 0 END) AS n_charging,
+       SUM(CASE WHEN array_a < load_a THEN 1 ELSE 0 END) AS n_discharging,
+       SUM(CASE WHEN array_a = load_a THEN 1 ELSE 0 END) AS n_balanced,
+       SUM(bus_v * (array_a - load_a))                   AS net_w
+FROM power_sample;
+
+SELECT * FROM answer;
+--- hint
+To count only some rows, turn each row into 1 or 0 with a CASE and add those up with `SUM`.
+--- hint
+The net power is one expression per row, `bus_v * (array_a - load_a)`, and `SUM` adds it over all rows. Mind the parentheses.
+--- check query | The summary row
+SELECT n_samples, n_charging, n_discharging, n_balanced, net_w FROM answer
+=> [[8, 4, 3, 1, -47.82000000000001]]
+--- check query | A balanced reading is counted as balanced
+INSERT INTO power_sample (sat_id, ts, bus_v, load_a, array_a, temp_c) VALUES
+  ('TRN-04', '2026-04-10T06:00:00Z', 28.0, 2.0, 2.0, 15.0);
+SELECT n_samples, n_balanced FROM answer
+=> [[9, 2]]
+--- check query | A charging reading adds its power
+INSERT INTO power_sample (sat_id, ts, bus_v, load_a, array_a, temp_c) VALUES
+  ('AAA-01', '2026-04-10T06:00:00Z', 27.0, 1.0, 3.0, 10.0);
+SELECT n_charging, net_w FROM answer
+=> [[5, 6.179999999999989]]
+
++++ question | Divide, then multiply
+--- ask
+What does SQLite print for this query? Type the number.
+
+```sql
+SELECT 3 / 4 * 100 AS pct;
+```
+--- answer
+0
+--- why
+Division and multiplication are done left to right, so `3 / 4` comes first. Both are whole numbers, so it is integer division: 3 divided by 4 is 0, remainder 3. Then 0 times 100 is 0. Writing `3 * 100 / 4` gives 75, and `3.0 / 4 * 100` gives 75.0, because a decimal point on one side keeps the fraction.
+
+=== sql01-l05 | Practice: NULL and three-valued logic
+--- for
+l05-null-and-three-valued-logic
+
++++ practice | Passes with no data yet
+--- task
+In the `pass` table, `bytes` is NULL when a pass's data has not arrived yet. A pass with `bytes` of 0 is different: its data arrived, and it was empty.
+
+Create the view `answer` with the columns `pass_id`, `sat_id`, `station` and `aos`, holding every pass whose data has not arrived yet. Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, sat_id, station, aos
+FROM pass
+WHERE bytes = NULL;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, sat_id, station, aos
+FROM pass
+WHERE bytes IS NULL;
+
+SELECT * FROM answer;
+--- hint
+Run the starter: no rows and no error. What does `bytes = NULL` work out to, even for a row whose bytes are missing?
+--- hint
+Comparing with NULL gives UNKNOWN, and WHERE keeps only TRUE. SQL has a separate test for the NULL marker.
+--- check query | The two passes still waiting for data
+SELECT pass_id, sat_id, station, aos FROM answer ORDER BY pass_id
+=> [[1, "OSP-02", "Svalbard", "2026-04-10T05:58:00Z"], [3, "HRN-02", "Hartebeesthoek", "2026-04-10T07:40:00Z"]]
+--- check query | A new missing pass is in; a pass with 0 bytes is not
+INSERT INTO pass (pass_id, sat_id, station, aos, los, bytes) VALUES
+  (20, 'TRN-03', 'Awarua',   '2026-04-10T12:00:00Z', '2026-04-10T12:06:00Z', NULL),
+  (21, 'TRN-03', 'Svalbard', '2026-04-10T13:00:00Z', '2026-04-10T13:06:00Z', 0);
+SELECT pass_id FROM answer ORDER BY pass_id
+=> [[1], [3], [20]]
+--- check query | No pass whose data arrived is listed
+SELECT COUNT(*) FROM answer WHERE pass_id IN (SELECT pass_id FROM pass WHERE bytes IS NOT NULL)
+=> [[0]]
+
++++ practice | The anomaly board
+--- task
+The `anomaly` table has the columns `anomaly_id`, `sat_id`, `opened`, `severity`, `summary` and `closed`. `sat_id` is NULL while nobody knows which satellite an anomaly belongs to, and `closed` is NULL while the anomaly is still open.
+
+Create the view `answer` for the operations board, one row per anomaly, with four columns:
+
+- `anomaly_id`
+- `owner`: the `sat_id`, or the text `UNATTRIBUTED` when it is missing.
+- `severity`
+- `state`: `OPEN` when `closed` is missing, `CLOSED` otherwise.
+
+Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT anomaly_id, sat_id AS owner, severity, closed AS state
+FROM anomaly;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT anomaly_id,
+       COALESCE(sat_id, 'UNATTRIBUTED') AS owner,
+       severity,
+       CASE WHEN closed IS NULL THEN 'OPEN' ELSE 'CLOSED' END AS state
+FROM anomaly;
+
+SELECT * FROM answer;
+--- hint
+`COALESCE(a, b)` gives the first of its arguments that is not NULL. That is how a display gets a default.
+--- hint
+For `state`, a CASE whose first branch tests `closed IS NULL`.
+--- check query | Every anomaly with its owner and state
+SELECT anomaly_id, owner, severity, state FROM answer ORDER BY anomaly_id
+=> [[1, "OSP-02", "HIGH", "OPEN"], [2, "HRN-01", "MEDIUM", "CLOSED"], [3, "UNATTRIBUTED", "LOW", "OPEN"], [4, "OSP-02", "MEDIUM", "OPEN"], [5, "TRN-04", "LOW", "CLOSED"], [6, "HRN-03", "LOW", "OPEN"]]
+--- check query | A closed anomaly that was never attributed
+INSERT INTO anomaly (anomaly_id, sat_id, opened, severity, summary, closed) VALUES
+  (7, NULL, '2026-04-10T07:00:00Z', 'LOW', 'Brief ground-station outage', '2026-04-10T07:20:00Z');
+SELECT owner, state FROM answer WHERE anomaly_id = 7
+=> [["UNATTRIBUTED", "CLOSED"]]
+--- check query | No blanks on the board
+SELECT COUNT(*) FROM answer WHERE owner IS NULL OR state IS NULL
+=> [[0]]
+
++++ practice | A sensor with two kinds of missing
+--- task
+This problem has its own table, `thermistor`, with one temperature sample per row: `sat_id`, `ts` and `temp_c`. Two things stand for "no real reading": `temp_c` is NULL when the sample never arrived, and `temp_c` is exactly -999 when the readout glitched.
+
+Create the view `answer` with exactly one row and three columns:
+
+- `n_rows`: how many rows the table has.
+- `n_valid`: how many real readings there are, leaving out both kinds of missing.
+- `mean_c`: the average of the real readings only.
+
+If there are no real readings at all, `mean_c` must be NULL, not a number.
+--- schema
+CREATE TABLE thermistor (
+    sat_id TEXT NOT NULL,
+    ts     TEXT NOT NULL,
+    temp_c REAL,
+    PRIMARY KEY (sat_id, ts)
+);
+INSERT INTO thermistor (sat_id, ts, temp_c) VALUES
+  ('OSP-01', '2026-04-10T06:00:00Z',  18.0),
+  ('OSP-01', '2026-04-10T06:01:00Z',  18.5),
+  ('OSP-01', '2026-04-10T06:02:00Z', -999),
+  ('OSP-01', '2026-04-10T06:03:00Z',  19.5),
+  ('OSP-01', '2026-04-10T06:04:00Z',  NULL),
+  ('OSP-01', '2026-04-10T06:05:00Z', -999),
+  ('OSP-01', '2026-04-10T06:06:00Z',  20.0);
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT COUNT(*)      AS n_rows,
+       COUNT(temp_c) AS n_valid,
+       AVG(temp_c)   AS mean_c
+FROM thermistor;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT COUNT(*)                     AS n_rows,
+       COUNT(NULLIF(temp_c, -999))  AS n_valid,
+       AVG(NULLIF(temp_c, -999))    AS mean_c
+FROM thermistor;
+
+SELECT * FROM answer;
+--- hint
+`COUNT(column)` and `AVG(column)` already skip NULL. The -999 values are the problem: to the database they are ordinary numbers.
+--- hint
+`NULLIF(temp_c, -999)` turns the sentinel into NULL and leaves every other value alone. Count and average that instead of `temp_c`.
+--- check query | Seven rows, four real readings, mean 19.0
+SELECT n_rows, n_valid, mean_c FROM answer
+=> [[7, 4, 19.0]]
+--- check query | Another glitch changes the row count only
+INSERT INTO thermistor (sat_id, ts, temp_c) VALUES ('OSP-01', '2026-04-10T06:07:00Z', -999);
+SELECT n_rows, n_valid, mean_c FROM answer
+=> [[8, 4, 19.0]]
+--- check query | A new real reading moves the mean
+INSERT INTO thermistor (sat_id, ts, temp_c) VALUES ('OSP-01', '2026-04-10T06:08:00Z', 21.0);
+SELECT n_rows, n_valid, mean_c FROM answer
+=> [[9, 5, 19.4]]
+--- check query | With only glitches left, the mean is NULL
+DELETE FROM thermistor WHERE temp_c IS NULL OR temp_c <> -999;
+SELECT n_rows, n_valid, mean_c FROM answer
+=> [[3, 0, null]]
+
++++ practice | No clean satellites?
+--- task
+The view `answer` should list the `sat_id` and `name` of every `ACTIVE` satellite that has no open anomaly (an anomaly whose `closed` is NULL). It returns no rows at all, although most active satellites have no open anomaly. One open anomaly, number 3, has not been traced to any satellite yet, so its `sat_id` is NULL. Fix the view.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, name
+FROM satellite
+WHERE status = 'ACTIVE'
+  AND sat_id NOT IN (SELECT sat_id FROM anomaly WHERE closed IS NULL);
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, name
+FROM satellite
+WHERE status = 'ACTIVE'
+  AND sat_id NOT IN (SELECT sat_id FROM anomaly
+                     WHERE closed IS NULL AND sat_id IS NOT NULL);
+
+SELECT * FROM answer;
+--- hint
+`x NOT IN (a, b, NULL)` means `x <> a AND x <> b AND x <> NULL`. What is the last part, for every satellite?
+--- hint
+Keep the NULL out of the list: the subquery should only return anomalies that have a `sat_id`.
+--- check query | The five active satellites with no open anomaly
+SELECT sat_id, name FROM answer ORDER BY sat_id
+=> [["HRN-01", "Heron-1"], ["OSP-01", "Osprey-1"], ["OSP-03", "Osprey-3"], ["TRN-02", "Tern-2"], ["TRN-03", "Tern-3"]]
+--- check query | Another unattributed anomaly changes nothing
+INSERT INTO anomaly (anomaly_id, sat_id, opened, severity, summary, closed) VALUES
+  (7, NULL, '2026-04-10T08:00:00Z', 'LOW', 'Unexplained telemetry dropout', NULL);
+SELECT sat_id FROM answer ORDER BY sat_id
+=> [["HRN-01"], ["OSP-01"], ["OSP-03"], ["TRN-02"], ["TRN-03"]]
+--- check query | An open anomaly takes TRN-02 off the list; a closed one leaves OSP-01 on it
+INSERT INTO anomaly (anomaly_id, sat_id, opened, severity, summary, closed) VALUES
+  (8, 'TRN-02', '2026-04-10T08:30:00Z', 'MEDIUM', 'Heater stuck on', NULL),
+  (9, 'OSP-01', '2026-04-10T08:40:00Z', 'LOW', 'Clock jump', '2026-04-10T08:45:00Z');
+SELECT sat_id FROM answer ORDER BY sat_id
+=> [["HRN-01"], ["OSP-01"], ["OSP-03"], ["TRN-03"]]
+
++++ practice | A triage that accounts for every reading
+--- task
+Create the view `answer` with exactly one row that sorts every `BATT_SOC` reading in `telemetry` into exactly one bucket. Its five columns, in this order:
+
+- `n_rows`: how many `BATT_SOC` rows there are.
+- `n_no_data`: how many of them have no value.
+- `n_critical`: how many values are below 0.25.
+- `n_low`: how many are from 0.25 up to, but not including, 0.50.
+- `n_ok`: how many are 0.50 or more.
+
+The last four must always add up to `n_rows`.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT COUNT(*) AS n_rows,
+       SUM(CASE WHEN value = NULL THEN 1 ELSE 0 END) AS n_no_data,
+       SUM(CASE WHEN value < 0.25 THEN 1 ELSE 0 END) AS n_critical,
+       SUM(CASE WHEN value < 0.50 THEN 1 ELSE 0 END) AS n_low,
+       SUM(CASE WHEN value >= 0.50 THEN 1 ELSE 0 END) AS n_ok
+FROM telemetry
+WHERE channel = 'BATT_SOC';
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT COUNT(*)                                                     AS n_rows,
+       SUM(CASE WHEN value IS NULL THEN 1 ELSE 0 END)               AS n_no_data,
+       SUM(CASE WHEN value < 0.25 THEN 1 ELSE 0 END)                AS n_critical,
+       SUM(CASE WHEN value >= 0.25 AND value < 0.50 THEN 1 ELSE 0 END) AS n_low,
+       SUM(CASE WHEN value >= 0.50 THEN 1 ELSE 0 END)               AS n_ok
+FROM telemetry
+WHERE channel = 'BATT_SOC';
+
+SELECT * FROM answer;
+--- hint
+Two things are wrong in the starter. One is how it tests for a missing value. The other: which rows does `value < 0.50` catch that already belong to another bucket?
+--- hint
+Each bucket's CASE must say its whole range: `value >= 0.25 AND value < 0.50` for LOW. Missing values are tested with `IS NULL`.
+--- check query | Twenty readings, every one in exactly one bucket
+SELECT n_rows, n_no_data, n_critical, n_low, n_ok FROM answer
+=> [[20, 2, 3, 3, 12]]
+--- check query | The buckets add up to the total
+SELECT n_no_data + n_critical + n_low + n_ok = n_rows FROM answer
+=> [[1]]
+--- check query | A missing value, exactly 0.25 and exactly 0.50 land in the right buckets
+INSERT INTO telemetry (sat_id, ts, channel, value) VALUES
+  ('TRN-02', '2026-04-10T06:10:00Z', 'BATT_SOC', NULL),
+  ('TRN-02', '2026-04-10T06:20:00Z', 'BATT_SOC', 0.25),
+  ('TRN-02', '2026-04-10T06:30:00Z', 'BATT_SOC', 0.50);
+SELECT n_rows, n_no_data, n_critical, n_low, n_ok FROM answer
+=> [[23, 3, 3, 4, 13]]
+
++++ question | Everything except one satellite
+--- ask
+The `anomaly` table has three rows: one for OSP-02, one for HRN-01, and one whose `sat_id` is NULL because nobody knows yet which satellite it belongs to. You want every anomaly that is not OSP-02's, including the one that belongs to nobody yet. Which WHERE clause returns exactly those two rows?
+--- choice
+`WHERE sat_id <> 'OSP-02'`
+--- choice
+`WHERE NOT (sat_id = 'OSP-02')`
+--- choice
+`WHERE sat_id NOT IN ('OSP-02')`
+--- choice correct
+`WHERE sat_id IS DISTINCT FROM 'OSP-02'`
+--- why
+For the unattributed row, `sat_id <> 'OSP-02'` compares NULL with a value, which is UNKNOWN, and WHERE drops it. `NOT (UNKNOWN)` is still UNKNOWN, and `NOT IN` is the same `<>` test in disguise, so all three return only HRN-01's anomaly. `IS DISTINCT FROM` treats NULL as an ordinary value that is simply different from `'OSP-02'`, so it answers TRUE and keeps the row. `sat_id <> 'OSP-02' OR sat_id IS NULL` says the same thing in longer words.
+
+=== sql01-l06 | Practice: Data types
+--- for
+l06-data-types
+--- schema
+CREATE TABLE raw_frame (
+    sat_id    TEXT NOT NULL,
+    ts        TEXT NOT NULL,
+    soc_text  TEXT NOT NULL,
+    temp_text TEXT NOT NULL,
+    PRIMARY KEY (sat_id, ts)
+);
+INSERT INTO raw_frame (sat_id, ts, soc_text, temp_text) VALUES
+  ('TRN-02', '2026-04-10T06:00:00Z', '0.48', '12.6'),
+  ('TRN-02', '2026-04-10T06:01:00Z', '',     '12.9'),
+  ('TRN-02', '2026-04-10T06:02:00Z', '0.47', 'N/A'),
+  ('TRN-02', '2026-04-10T06:03:00Z', '0.47', ''),
+  ('TRN-02', '2026-04-10T06:04:00Z', '0.46', '-3.7'),
+  ('TRN-02', '2026-04-10T06:05:00Z', '0',    '0.4');
+CREATE TABLE contact_charge (
+    charge_id INTEGER NOT NULL PRIMARY KEY,
+    station   TEXT    NOT NULL,
+    cost_usd  REAL    NOT NULL
+);
+WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 1000)
+INSERT INTO contact_charge (charge_id, station, cost_usd)
+SELECT i, 'Svalbard', 0.10 FROM n;
+CREATE TABLE sun_sensor (
+    sat_id TEXT    NOT NULL,
+    ts     TEXT    NOT NULL,
+    raw    INTEGER NOT NULL,
+    PRIMARY KEY (sat_id, ts)
+);
+INSERT INTO sun_sensor (sat_id, ts, raw) VALUES
+  ('OSP-03', '2026-04-10T06:00:00Z', 2),
+  ('OSP-03', '2026-04-10T06:01:00Z', 3),
+  ('OSP-03', '2026-04-10T06:02:00Z', 5),
+  ('OSP-03', '2026-04-10T06:03:00Z', 7),
+  ('OSP-03', '2026-04-10T06:04:00Z', 8);
+CREATE TABLE frame_log (
+    sat_id   TEXT    NOT NULL,
+    frame_no TEXT    NOT NULL,
+    crc_ok   INTEGER NOT NULL
+);
+INSERT INTO frame_log (sat_id, frame_no, crc_ok) VALUES
+  ('OSP-01', '7',  1),
+  ('OSP-01', '8',  1),
+  ('OSP-01', '9',  1),
+  ('OSP-01', '10', 1),
+  ('OSP-01', '11', 0),
+  ('HRN-01', '12', 1),
+  ('HRN-01', '95', 1);
+
++++ practice | Numbers out of a text import
+--- task
+A ground-station file was loaded into the `raw_frame` table with every field as text: `sat_id`, `ts`, `soc_text` (the battery state of charge) and `temp_text`. A dropped charge reading was written as the empty string `''`. A charge of `'0'` is a real reading of zero: that battery really was flat.
+
+Create the view `answer` with the columns `ts` and `soc`, one row per `raw_frame` row, where `soc` is the charge as a `REAL` number, and NULL where the reading was dropped. Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT ts, CAST(soc_text AS REAL) AS soc
+FROM raw_frame;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT ts, CAST(NULLIF(soc_text, '') AS REAL) AS soc
+FROM raw_frame;
+
+SELECT * FROM answer;
+--- hint
+Run the starter and look at 06:01. What does SQLite make of `CAST('' AS REAL)`?
+--- hint
+Turn the empty string into NULL first with `NULLIF(soc_text, '')`, then cast. A cast of NULL is NULL.
+--- check query | Charges as numbers, the dropped one NULL, the real zero kept
+SELECT ts, soc FROM answer ORDER BY ts
+=> [["2026-04-10T06:00:00Z", 0.48], ["2026-04-10T06:01:00Z", null], ["2026-04-10T06:02:00Z", 0.47], ["2026-04-10T06:03:00Z", 0.47], ["2026-04-10T06:04:00Z", 0.46], ["2026-04-10T06:05:00Z", 0.0]]
+--- check query | soc is stored as a number, not text
+SELECT typeof(soc) FROM answer WHERE ts = '2026-04-10T06:00:00Z'
+=> [["real"]]
+--- check query | Another dropped reading becomes NULL
+INSERT INTO raw_frame (sat_id, ts, soc_text, temp_text) VALUES ('TRN-02', '2026-04-10T06:06:00Z', '', '1.0');
+SELECT soc FROM answer WHERE ts = '2026-04-10T06:06:00Z'
+=> [[null]]
+
++++ practice | Invoices to the cent
+--- task
+The `contact_charge` table holds 1,000 charges from the Svalbard station, each of 10 cents, stored in a `REAL` column `cost_usd`. Finance needs the total to the exact cent, and adding up 1,000 floats does not give it.
+
+Create the view `answer` with one row and two columns:
+
+- `total_cents`: the total in cents as an exact whole number. Turn each charge into whole cents first (dollars times 100, rounded to the nearest whole number, stored as an INTEGER), then add those up.
+- `total_usd`: `total_cents` divided by 100, with its fraction kept.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT SUM(cost_usd) * 100 AS total_cents,
+       SUM(cost_usd)       AS total_usd
+FROM contact_charge;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT SUM(CAST(ROUND(cost_usd * 100) AS INTEGER))         AS total_cents,
+       SUM(CAST(ROUND(cost_usd * 100) AS INTEGER)) / 100.0 AS total_usd
+FROM contact_charge;
+
+SELECT * FROM answer;
+--- hint
+Run the starter. The float total is a hair short of 100. Rounding one charge at a time to whole cents removes the error before it can pile up.
+--- hint
+One charge in cents is `CAST(ROUND(cost_usd * 100) AS INTEGER)`. Sum that. Then divide by `100.0`, not `100`, to keep the cents.
+--- check query | Exactly 10,000 cents, 100 dollars
+SELECT total_cents, total_usd FROM answer
+=> [[10000, 100.0]]
+--- check query | The total is a whole number, not a float
+SELECT typeof(total_cents) FROM answer
+=> [["integer"]]
+--- check query | A 7-cent charge adds exactly 7 cents
+INSERT INTO contact_charge (charge_id, station, cost_usd) VALUES (1001, 'Svalbard', 0.07);
+SELECT total_cents, total_usd FROM answer
+=> [[10007, 100.07]]
+
++++ practice | Calibrated angles, ends included
+--- task
+The `sun_sensor` table holds raw counts from a sun sensor: `sat_id`, `ts` and `raw`, a whole number. One count is 0.1 degrees, so the angle in degrees is `raw * 0.1`.
+
+Create the view `answer` with the columns `ts`, `raw` and `angle_deg` (the angle in degrees), holding the samples whose angle is from 0.3 to 0.7 degrees. Both 0.3 and 0.7 degrees are inside the range. Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT ts, raw, raw * 0.1 AS angle_deg
+FROM sun_sensor
+WHERE raw * 0.1 BETWEEN 0.3 AND 0.7;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT ts, raw, raw * 0.1 AS angle_deg
+FROM sun_sensor
+WHERE raw BETWEEN 3 AND 7;
+
+SELECT * FROM answer;
+--- hint
+Run the starter. The sample with a raw count of 7 is missing, although 7 × 0.1 is 0.7. Try `SELECT 7 * 0.1;` to see what the float really holds.
+--- hint
+0.1 is not exact in binary, so the product lands a hair above 0.7. The raw count is an exact whole number: compare the counts instead, 0.3 degrees being 3 counts and 0.7 degrees being 7.
+--- check query | Raw counts 3, 5 and 7 are in
+SELECT raw FROM answer ORDER BY ts
+=> [[3], [5], [7]]
+--- check query | The angle is the count times 0.1
+SELECT raw, angle_deg FROM answer WHERE raw = 5
+=> [[5, 0.5]]
+--- check query | Another sample at exactly 0.7 degrees is in; 0.8 is out
+INSERT INTO sun_sensor (sat_id, ts, raw) VALUES
+  ('OSP-03', '2026-04-10T06:05:00Z', 7),
+  ('OSP-03', '2026-04-10T06:06:00Z', 8);
+SELECT ts FROM answer WHERE raw >= 7 ORDER BY ts
+=> [["2026-04-10T06:03:00Z"], ["2026-04-10T06:05:00Z"]]
+
++++ practice | Frame 9 beats frame 10
+--- task
+The `frame_log` table records each data frame received: `sat_id`, `frame_no` and `crc_ok` (1 when the frame passed its error check, 0 when it did not). Somebody stored the frame numbers as text.
+
+The view `answer` should hold the three highest frame numbers of `OSP-01` among the frames that passed the check, highest first, in one column `frame_no` holding whole numbers. It returns 9, 8 and 7, although frame 10 passed. Fix the view.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT frame_no
+FROM frame_log
+WHERE sat_id = 'OSP-01' AND crc_ok = 1
+ORDER BY frame_no DESC
+LIMIT 3;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT CAST(frame_no AS INTEGER) AS frame_no
+FROM frame_log
+WHERE sat_id = 'OSP-01' AND crc_ok = 1
+ORDER BY CAST(frame_no AS INTEGER) DESC
+LIMIT 3;
+
+SELECT * FROM answer;
+--- hint
+Text sorts letter by letter. Which comes later in the dictionary, `'9'` or `'10'`?
+--- hint
+Sort on the number, not the text: `CAST(frame_no AS INTEGER)`, both in the `SELECT` list and in the `ORDER BY`.
+--- check query | Frames 10, 9 and 8, as whole numbers
+SELECT frame_no, typeof(frame_no) FROM answer
+=> [[10, "integer"], [9, "integer"], [8, "integer"]]
+--- check query | Frame 100 goes to the top
+INSERT INTO frame_log (sat_id, frame_no, crc_ok) VALUES ('OSP-01', '100', 1);
+SELECT frame_no FROM answer
+=> [[100], [10], [9]]
+--- check query | A frame that failed its check never appears
+INSERT INTO frame_log (sat_id, frame_no, crc_ok) VALUES ('OSP-01', '200', 0);
+SELECT COUNT(*) FROM answer WHERE frame_no = 200
+=> [[0]]
+
++++ practice | A clean temperature column
+--- task
+In `raw_frame`, the bus temperature arrived as text in `temp_text`. A missing temperature was written two ways: as `''` or as `'N/A'`.
+
+Create the view `answer` with four columns, one row per `raw_frame` row:
+
+- `ts`
+- `temp_c`: the temperature as a `REAL`, NULL for both kinds of missing.
+- `temp_whole`: the temperature rounded to the nearest whole degree, stored as an INTEGER, NULL when missing. −3.7 rounds to −4.
+- `shown`: the text to put on a screen: the temperature as text, or `no data` when it is missing.
+
+Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT ts,
+       CAST(temp_text AS REAL)    AS temp_c,
+       CAST(temp_text AS INTEGER) AS temp_whole,
+       temp_text                  AS shown
+FROM raw_frame;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT ts,
+       CAST(NULLIF(NULLIF(temp_text, ''), 'N/A') AS REAL)                         AS temp_c,
+       CAST(ROUND(CAST(NULLIF(NULLIF(temp_text, ''), 'N/A') AS REAL)) AS INTEGER) AS temp_whole,
+       COALESCE(NULLIF(NULLIF(temp_text, ''), 'N/A'), 'no data')                  AS shown
+FROM raw_frame;
+
+SELECT * FROM answer;
+--- hint
+Both kinds of missing must become NULL before any cast: one `NULLIF` inside another does it, one sentinel each.
+--- hint
+SQLite's `CAST(x AS INTEGER)` cuts toward zero: −3.7 becomes −3. Round first with `ROUND(x)`, then cast the result to INTEGER.
+--- hint
+`COALESCE(…, 'no data')` fills the screen text. An alias cannot be used in the same `SELECT` list, so repeat the cleaning expression.
+--- check query | Every row cleaned
+SELECT ts, temp_c, temp_whole, shown FROM answer ORDER BY ts
+=> [["2026-04-10T06:00:00Z", 12.6, 13, "12.6"], ["2026-04-10T06:01:00Z", 12.9, 13, "12.9"], ["2026-04-10T06:02:00Z", null, null, "no data"], ["2026-04-10T06:03:00Z", null, null, "no data"], ["2026-04-10T06:04:00Z", -3.7, -4, "-3.7"], ["2026-04-10T06:05:00Z", 0.4, 0, "0.4"]]
+--- check query | The whole degrees are stored as integers
+SELECT typeof(temp_whole) FROM answer WHERE ts = '2026-04-10T06:04:00Z'
+=> [["integer"]]
+--- check query | −0.6 rounds to −1, not 0
+INSERT INTO raw_frame (sat_id, ts, soc_text, temp_text) VALUES ('TRN-02', '2026-04-10T06:06:00Z', '0.45', '-0.6');
+SELECT temp_c, temp_whole, shown FROM answer WHERE ts = '2026-04-10T06:06:00Z'
+=> [[-0.6, -1, "-0.6"]]
+
++++ question | Three tenths in SQLite
+--- ask
+What does SQLite print for this query? Type the value exactly as it prints.
+
+```sql
+SELECT 0.1 + 0.2 = 0.3;
+```
+--- answer
+0
+false
+--- why
+It prints 0, SQLite's FALSE. SQLite has no exact decimal type: every number with a decimal point is an 8-byte binary float. 0.1 and 0.2 are each stored as the nearest binary number, and their sum is 0.30000000000000004, while the float nearest to 0.3 is a little smaller. PostgreSQL answers TRUE here, but only because it reads typed decimals as exact NUMERIC. Put the same values in REAL columns there and the test fails too. Compare floats with a range, or store the value exactly, as integer cents or counts.
+
+=== sql01-l07 | Practice: Time in the database
+--- for
+l07-time-in-the-database
+
++++ practice | One UTC day of anomalies
+--- task
+In the `anomaly` table, `opened` is the moment an anomaly was opened, written as ISO text in UTC, like `2026-04-10T06:12:00Z`.
+
+Create the view `answer` with the columns `anomaly_id` and `opened`, holding the anomalies opened on 10 April 2026, UTC. An anomaly opened at exactly midnight at the start of 11 April belongs to 11 April. Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT anomaly_id, opened
+FROM anomaly
+WHERE opened BETWEEN '2026-04-10T00:00:00Z' AND '2026-04-11T00:00:00Z';
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT anomaly_id, opened
+FROM anomaly
+WHERE opened >= '2026-04-10T00:00:00Z'
+  AND opened <  '2026-04-11T00:00:00Z';
+
+SELECT * FROM answer;
+--- hint
+A day is a half-open window: its first instant is in, the first instant of the next day is out.
+--- hint
+Replace `BETWEEN` with `>=` the start of the day and `<` the start of the next day. `substr(opened, 1, 10) = '2026-04-10'` works too, on one-format UTC text like this.
+--- check query | The three anomalies of 10 April
+SELECT anomaly_id, opened FROM answer ORDER BY anomaly_id
+=> [[3, "2026-04-10T01:05:00Z"], [4, "2026-04-10T06:12:00Z"], [6, "2026-04-10T04:20:00Z"]]
+--- check query | Both ends of the day are handled
+INSERT INTO anomaly (anomaly_id, sat_id, opened, severity, summary, closed) VALUES
+  (7,  'OSP-01', '2026-04-10T00:00:00Z', 'LOW', 'Midnight clock jump',  NULL),
+  (8,  'OSP-01', '2026-04-10T23:59:59Z', 'LOW', 'Late heater cycle',    NULL),
+  (9,  'OSP-01', '2026-04-11T00:00:00Z', 'LOW', 'Next-day clock jump',  NULL),
+  (10, 'OSP-01', '2026-04-09T23:59:59Z', 'LOW', 'Previous-day heater',  NULL);
+SELECT anomaly_id FROM answer ORDER BY anomaly_id
+=> [[3], [4], [6], [7], [8]]
+--- check query | Nothing from another day
+SELECT COUNT(*) FROM answer WHERE substr(opened, 1, 10) <> '2026-04-10'
+=> [[0]]
+
++++ practice | How long each pass lasts
+--- task
+In the `pass` table, `aos` and `los` are the start and end of each pass, as ISO text in UTC.
+
+Create the view `answer` with three columns, one row per pass:
+
+- `pass_id`
+- `duration_s`: the length of the pass in seconds, as a whole number.
+- `duration_min`: the same length in minutes, with its fraction kept (570 seconds is 9.5 minutes).
+
+Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id,
+       los - aos        AS duration_s,
+       (los - aos) / 60 AS duration_min
+FROM pass;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id,
+       unixepoch(los) - unixepoch(aos)          AS duration_s,
+       (unixepoch(los) - unixepoch(aos)) / 60.0 AS duration_min
+FROM pass;
+
+SELECT * FROM answer;
+--- hint
+Text cannot be subtracted as time. Turn each timestamp into a number of seconds first.
+--- hint
+`unixepoch(t)` gives the whole seconds since 1970 for an ISO time. Subtract the two, and divide by `60.0` for minutes.
+--- check query | Every pass's length in seconds and minutes
+SELECT pass_id, duration_s, duration_min FROM answer ORDER BY pass_id
+=> [[1, 510, 8.5], [2, 500, 8.333333333333334], [3, 570, 9.5], [4, 570, 9.5], [5, 430, 7.166666666666667], [6, 450, 7.5], [7, 525, 8.75], [8, 490, 8.166666666666666], [9, 500, 8.333333333333334], [10, 585, 9.75], [11, 510, 8.5], [12, 400, 6.666666666666667], [13, 520, 8.666666666666666], [14, 300, 5.0]]
+--- check query | A pass across midnight is 510 seconds
+INSERT INTO pass (pass_id, sat_id, station, aos, los, bytes) VALUES
+  (20, 'TRN-03', 'Awarua', '2026-04-10T23:55:00Z', '2026-04-11T00:03:30Z', 1000);
+SELECT duration_s, duration_min FROM answer WHERE pass_id = 20
+=> [[510, 8.5]]
+--- check query | The seconds are a whole number
+SELECT typeof(duration_s) FROM answer WHERE pass_id = 4
+=> [["integer"]]
+
++++ practice | How many samples went missing
+--- task
+A battery sensor should send one sample every 30 seconds. This problem has its own table, `sample_gap`: each row is two samples that arrived one after the other, `before_ts` and `after_ts`, as ISO text in UTC. Every gap is a whole number of 30-second steps.
+
+Create the view `answer` with the columns `sat_id`, `before_ts`, `gap_s` and `missing`:
+
+- `gap_s`: the seconds from `before_ts` to `after_ts`, as a whole number.
+- `missing`: how many samples should have arrived in between but did not. A 30-second gap means none are missing; a 150-second gap means four.
+
+Some gaps cross midnight or the end of a month. Any order.
+--- schema
+CREATE TABLE sample_gap (
+    sat_id    TEXT NOT NULL,
+    before_ts TEXT NOT NULL,
+    after_ts  TEXT NOT NULL,
+    PRIMARY KEY (sat_id, before_ts)
+);
+INSERT INTO sample_gap (sat_id, before_ts, after_ts) VALUES
+  ('HRN-02', '2026-04-10T06:00:00Z', '2026-04-10T06:00:30Z'),
+  ('HRN-02', '2026-04-10T06:00:30Z', '2026-04-10T06:03:00Z'),
+  ('HRN-02', '2026-04-10T23:59:30Z', '2026-04-11T00:01:00Z'),
+  ('TRN-04', '2026-04-30T23:58:00Z', '2026-05-01T00:00:30Z'),
+  ('TRN-04', '2026-05-01T00:00:30Z', '2026-05-01T01:00:30Z');
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id,
+       before_ts,
+       (julianday(after_ts) - julianday(before_ts)) * 86400 AS gap_s,
+       (julianday(after_ts) - julianday(before_ts)) * 86400 / 30 AS missing
+FROM sample_gap;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id,
+       before_ts,
+       unixepoch(after_ts) - unixepoch(before_ts)             AS gap_s,
+       (unixepoch(after_ts) - unixepoch(before_ts)) / 30 - 1  AS missing
+FROM sample_gap;
+
+SELECT * FROM answer;
+--- hint
+Run the starter and look at the gaps: `julianday` gives a float number of days, and the seconds come out with a tail of digits. Which SQLite function gives whole seconds?
+--- hint
+A gap of n steps of 30 seconds holds n − 1 missing samples, because the sample at the end did arrive. So `missing` is `gap_s / 30 - 1`.
+--- check query | Every gap in whole seconds, with its missing samples
+SELECT sat_id, before_ts, gap_s, missing FROM answer ORDER BY sat_id, before_ts
+=> [["HRN-02", "2026-04-10T06:00:00Z", 30, 0], ["HRN-02", "2026-04-10T06:00:30Z", 150, 4], ["HRN-02", "2026-04-10T23:59:30Z", 90, 2], ["TRN-04", "2026-04-30T23:58:00Z", 150, 4], ["TRN-04", "2026-05-01T00:00:30Z", 3600, 119]]
+--- check query | Back-to-back samples miss nothing
+INSERT INTO sample_gap (sat_id, before_ts, after_ts) VALUES ('TRN-04', '2026-05-01T01:00:30Z', '2026-05-01T01:01:00Z');
+SELECT gap_s, missing FROM answer WHERE sat_id = 'TRN-04' AND before_ts = '2026-05-01T01:00:30Z'
+=> [[30, 0]]
+--- check query | The hour-long hole is 119 missing samples
+SELECT missing FROM answer WHERE sat_id = 'TRN-04' AND before_ts = '2026-05-01T00:00:30Z'
+=> [[119]]
+
++++ practice | The format that loses every row
+--- task
+The view `answer` should hold every `telemetry` row (columns `sat_id`, `ts`, `channel`, `value`) from the 15 minutes that start at `2026-04-10T06:05:00Z`: that instant included, the end not included. It works out the end of the window with `datetime`, and returns no rows at all. Fix it so the end is compared in the same format as `ts`.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, ts, channel, value
+FROM telemetry
+WHERE ts >= '2026-04-10T06:05:00Z'
+  AND ts <  datetime('2026-04-10T06:05:00Z', '+15 minutes');
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, ts, channel, value
+FROM telemetry
+WHERE ts >= '2026-04-10T06:05:00Z'
+  AND ts <  strftime('%Y-%m-%dT%H:%M:%SZ', '2026-04-10T06:05:00Z', '+15 minutes');
+
+SELECT * FROM answer;
+--- hint
+Run `SELECT datetime('2026-04-10T06:05:00Z', '+15 minutes');` and put its answer next to a `ts` value. Compare them letter by letter.
+--- hint
+`datetime` writes a space where `ts` has a `T`, and no `Z`. A space sorts before `T`, so every `ts` looks later than the end. Build the end with `strftime('%Y-%m-%dT%H:%M:%SZ', …)` instead.
+--- check query | The twelve readings from 06:10:00
+SELECT COUNT(*) FROM answer
+=> [[12]]
+--- check query | Nothing from 06:20:00, the end of the window
+SELECT COUNT(*) FROM answer WHERE ts = '2026-04-10T06:20:00Z'
+=> [[0]]
+--- check query | 06:05:00 and 06:19:59 are in; 06:04:59 is out
+INSERT INTO telemetry (sat_id, ts, channel, value) VALUES
+  ('HRN-02', '2026-04-10T06:05:00Z', 'BUS_V', 26.1),
+  ('HRN-02', '2026-04-10T06:19:59Z', 'BUS_V', 26.0),
+  ('HRN-02', '2026-04-10T06:04:59Z', 'BUS_V', 26.2);
+SELECT ts FROM answer WHERE channel = 'BUS_V' AND sat_id = 'HRN-02' ORDER BY ts
+=> [["2026-04-10T06:05:00Z"], ["2026-04-10T06:19:59Z"]]
+
++++ practice | Passes caught by a maintenance window
+--- task
+The antennas at `Svalbard` and `Fairbanks` are down for maintenance from `2026-04-10T09:30:00Z` (included) to `2026-04-10T10:50:00Z` (not included). A pass is affected if any part of it falls inside that window: it starts before the window ends, and it ends after the window starts. A pass that ends exactly when the window starts, or starts exactly when it ends, is not affected.
+
+Create the view `answer` with the columns `pass_id`, `station`, `aos` and `los`, holding the affected passes at those two stations, sorted by `aos`, then by `pass_id`.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, station, aos, los
+FROM pass
+WHERE station IN ('Svalbard', 'Fairbanks')
+  AND aos BETWEEN '2026-04-10T09:30:00Z' AND '2026-04-10T10:50:00Z'
+ORDER BY aos, pass_id;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT pass_id, station, aos, los
+FROM pass
+WHERE station IN ('Svalbard', 'Fairbanks')
+  AND aos < '2026-04-10T10:50:00Z'
+  AND los > '2026-04-10T09:30:00Z'
+ORDER BY aos, pass_id;
+
+SELECT * FROM answer;
+--- hint
+Draw the window as a bar and a pass as another bar. Two bars overlap when each one starts before the other one ends.
+--- hint
+Translate the task's rule word for word: `aos <` the window's end, and `los >` the window's start. The starter's test only looks at the start of each pass.
+--- check query | The three affected passes, in order
+SELECT pass_id, station, aos, los FROM answer
+=> [[10, "Svalbard", "2026-04-10T10:00:00Z", "2026-04-10T10:09:45Z"], [14, "Svalbard", "2026-04-10T10:00:00Z", "2026-04-10T10:05:00Z"], [8, "Fairbanks", "2026-04-10T10:45:00Z", "2026-04-10T10:53:10Z"]]
+--- check query | Edge cases: touching the window is not overlapping it
+INSERT INTO pass (pass_id, sat_id, station, aos, los, bytes) VALUES
+  (20, 'TRN-02', 'Svalbard',  '2026-04-10T09:20:00Z', '2026-04-10T09:30:00Z', 100),
+  (21, 'TRN-02', 'Fairbanks', '2026-04-10T10:50:00Z', '2026-04-10T10:58:00Z', 100),
+  (22, 'TRN-03', 'Svalbard',  '2026-04-10T09:20:00Z', '2026-04-10T09:31:00Z', 100),
+  (23, 'TRN-03', 'Awarua',    '2026-04-10T10:00:00Z', '2026-04-10T10:05:00Z', 100);
+SELECT pass_id FROM answer
+=> [[22], [10], [14], [8]]
+--- check query | Only the two stations
+SELECT COUNT(*) FROM answer WHERE station NOT IN ('Svalbard', 'Fairbanks')
+=> [[0]]
+
++++ question | A wall clock turned into an instant
+--- ask
+In PostgreSQL, with the session's time zone set to `UTC`, you run:
+
+```sql
+SELECT TIMESTAMP '2026-04-10 06:00:00' AT TIME ZONE 'Asia/Tokyo';
+```
+
+Tokyo is 9 hours ahead of UTC. What does it print?
+--- choice
+`2026-04-10 15:00:00+00`
+--- choice correct
+`2026-04-09 21:00:00+00`
+--- choice
+`2026-04-10 06:00:00+09`
+--- choice
+`2026-04-10 06:00:00`
+--- why
+A plain TIMESTAMP is a wall-clock reading. `AT TIME ZONE 'Asia/Tokyo'` asks: "at what instant did clocks in Tokyo read 06:00 on 10 April?" Tokyo runs 9 hours ahead, so that instant is 9 hours earlier in UTC: 21:00 on 9 April. The result is a TIMESTAMPTZ, printed in the session's zone, UTC, so it ends in `+00`. Going the other way, a TIMESTAMPTZ `AT TIME ZONE 'Asia/Tokyo'` gives the Tokyo wall clock, and 15:00 would be the answer for an instant of 06:00 UTC. Mixing up the two directions is the classic mistake.
+
+=== sql01-l08 | Practice: The order a query really runs in
+--- for
+l08-the-order-a-query-runs-in
+
++++ practice | Battery readings per satellite
+--- task
+Create the view `answer` with one row per satellite that has at least one `BATT_SOC` row in `telemetry`, and four columns:
+
+- `sat_id`
+- `n_soc`: how many of its `BATT_SOC` readings have a value. A row whose value is missing does not count.
+- `lowest`: its smallest `BATT_SOC` value.
+- `highest`: its largest `BATT_SOC` value.
+
+Readings of other channels play no part. Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id,
+       COUNT(*)   AS n_soc,
+       MIN(value) AS lowest,
+       MAX(value) AS highest
+FROM telemetry
+GROUP BY sat_id;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id,
+       COUNT(value) AS n_soc,
+       MIN(value)   AS lowest,
+       MAX(value)   AS highest
+FROM telemetry
+WHERE channel = 'BATT_SOC'
+GROUP BY sat_id;
+
+SELECT * FROM answer;
+--- hint
+Rows of other channels must be thrown away before the piles are made. Which clause runs before GROUP BY?
+--- hint
+`COUNT(*)` counts rows; `COUNT(value)` counts only the rows where `value` is not NULL.
+--- check query | One row per satellite, from battery readings only
+SELECT sat_id, n_soc, lowest, highest FROM answer ORDER BY sat_id
+=> [["HRN-01", 3, 0.86, 0.91], ["HRN-02", 2, 0.52, 0.55], ["HRN-03", 2, 0.3, 0.35], ["OSP-01", 3, 0.77, 0.82], ["OSP-02", 2, 0.21, 0.24], ["OSP-03", 2, 0.66, 0.7], ["TRN-02", 1, 0.48, 0.48], ["TRN-03", 1, 0.95, 0.95], ["TRN-04", 2, 0.19, 0.62]]
+--- check query | A missing reading does not raise the count
+INSERT INTO telemetry (sat_id, ts, channel, value) VALUES ('TRN-03', '2026-04-10T06:20:00Z', 'BATT_SOC', NULL);
+SELECT n_soc FROM answer WHERE sat_id = 'TRN-03'
+=> [[1]]
+--- check query | Another channel's value never becomes the highest
+INSERT INTO telemetry (sat_id, ts, channel, value) VALUES ('TRN-04', '2026-04-10T06:20:00Z', 'BUS_V', 27.0);
+SELECT highest FROM answer WHERE sat_id = 'TRN-04'
+=> [[0.62]]
+
++++ practice | Hot buses, written portably
+--- task
+`BUS_TEMP` readings are in degrees Celsius. The degrees Fahrenheit are `value * 9 / 5 + 32`.
+
+Create the view `answer` with the columns `sat_id`, `ts` and `temp_f` (the reading in Fahrenheit), holding the `BUS_TEMP` readings above 100 °F, hottest first, and for equal temperatures by `sat_id`, then `ts`.
+
+SQLite would let you write the alias `temp_f` in `WHERE`, but PostgreSQL would not. Write the portable form: `WHERE` must not use the alias. `ORDER BY` may.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, ts, value AS temp_f
+FROM telemetry;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, ts, value * 9 / 5 + 32 AS temp_f
+FROM telemetry
+WHERE channel = 'BUS_TEMP'
+  AND value * 9 / 5 + 32 > 100
+ORDER BY temp_f DESC, sat_id, ts;
+
+SELECT * FROM answer;
+--- hint
+WHERE runs at step 2 and the alias is born at step 5, in SELECT. In WHERE, write the calculation out again.
+--- hint
+ORDER BY runs at step 7, after SELECT, so `ORDER BY temp_f DESC` is fine there.
+--- check query | The four readings above 100 °F, hottest first
+SELECT sat_id, ts, temp_f FROM answer
+=> [["OSP-02", "2026-04-10T06:20:00Z", 109.4], ["OSP-02", "2026-04-10T06:10:00Z", 106.34], ["HRN-01", "2026-04-10T06:10:00Z", 104.0], ["OSP-02", "2026-04-10T06:00:00Z", 102.02]]
+--- check query | 37.8 °C (100.04 °F) is in; 37.7 °C (99.86 °F) is out
+INSERT INTO telemetry (sat_id, ts, channel, value) VALUES
+  ('HRN-03', '2026-04-10T06:10:00Z', 'BUS_TEMP', 37.8),
+  ('HRN-03', '2026-04-10T06:20:00Z', 'BUS_TEMP', 37.7);
+SELECT sat_id, ts FROM answer WHERE sat_id = 'HRN-03'
+=> [["HRN-03", "2026-04-10T06:10:00Z"]]
+--- check query | The coolest row is last
+SELECT sat_id, ts FROM answer LIMIT 1 OFFSET 4
+=> [["HRN-03", "2026-04-10T06:10:00Z"]]
+--- check source absent | WHERE does not use the alias
+[Ww][Hh][Ee][Rr][Ee](?:(?![Oo][Rr][Dd][Ee][Rr]|;)[\s\S])*\btemp_f\b
+
++++ practice | Enough measurements to trust
+--- task
+An average of one reading is not worth much. Create the view `answer` with one row per satellite and four columns:
+
+- `sat_id`
+- `n_rows`: how many `BATT_SOC` rows it has, missing values included.
+- `n_values`: how many of those rows have a value.
+- `avg_soc`: the average of its `BATT_SOC` values.
+
+Keep only the satellites with at least 2 `BATT_SOC` values. Rows whose value is missing do not help a satellite reach 2. Sort by `avg_soc`, lowest first, then by `sat_id`.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id,
+       COUNT(*)     AS n_rows,
+       COUNT(value) AS n_values,
+       AVG(value)   AS avg_soc
+FROM telemetry
+WHERE channel = 'BATT_SOC'
+GROUP BY sat_id
+ORDER BY avg_soc, sat_id;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id,
+       COUNT(*)     AS n_rows,
+       COUNT(value) AS n_values,
+       AVG(value)   AS avg_soc
+FROM telemetry
+WHERE channel = 'BATT_SOC'
+GROUP BY sat_id
+HAVING COUNT(value) >= 2
+ORDER BY avg_soc, sat_id;
+
+SELECT * FROM answer;
+--- hint
+"At least 2 values" is a condition on a whole satellite's pile, not on one row. Which clause filters piles?
+--- hint
+`HAVING COUNT(value) >= 2`. `COUNT(*)` would let a satellite with one value and one missing row through.
+--- check query | Seven satellites, lowest average first
+SELECT sat_id, n_rows, n_values, avg_soc FROM answer
+=> [["OSP-02", 3, 2, 0.22499999999999998], ["HRN-03", 2, 2, 0.32499999999999996], ["TRN-04", 2, 2, 0.405], ["HRN-02", 2, 2, 0.535], ["OSP-03", 3, 2, 0.6799999999999999], ["OSP-01", 3, 3, 0.7933333333333333], ["HRN-01", 3, 3, 0.8833333333333333]]
+--- check query | Two rows but only one value is not enough
+INSERT INTO telemetry (sat_id, ts, channel, value) VALUES ('TRN-02', '2026-04-10T06:10:00Z', 'BATT_SOC', NULL);
+SELECT COUNT(*) FROM answer WHERE sat_id = 'TRN-02'
+=> [[0]]
+--- check query | A second value brings a satellite in
+INSERT INTO telemetry (sat_id, ts, channel, value) VALUES ('TRN-03', '2026-04-10T06:20:00Z', 'BATT_SOC', 0.05);
+SELECT sat_id, n_rows, n_values, avg_soc FROM answer WHERE sat_id = 'TRN-03'
+=> [["TRN-03", 2, 2, 0.5]]
+
++++ practice | Filtered rows instead of groups
+--- task
+The question is: "For the satellites whose battery ever dropped below 0.5, what is the average of **all** their `BATT_SOC` values?" The view `answer` has the right columns, `sat_id` and `avg_soc`, but for TRN-04 it reports 0.19, the average of its low readings only, instead of the average of both of its readings. Fix the view.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, AVG(value) AS avg_soc
+FROM telemetry
+WHERE channel = 'BATT_SOC' AND value < 0.5
+GROUP BY sat_id;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sat_id, AVG(value) AS avg_soc
+FROM telemetry
+WHERE channel = 'BATT_SOC'
+GROUP BY sat_id
+HAVING MIN(value) < 0.5;
+
+SELECT * FROM answer;
+--- hint
+`value < 0.5` in WHERE throws away TRN-04's 0.62 before its pile is made, so the average never sees it.
+--- hint
+"Ever dropped below 0.5" is a fact about the whole pile: its smallest value is below 0.5. Move that test to `HAVING`, written with an aggregate.
+--- check query | Four satellites, each averaged over all its readings
+SELECT sat_id, avg_soc FROM answer ORDER BY sat_id
+=> [["HRN-03", 0.32499999999999996], ["OSP-02", 0.22499999999999998], ["TRN-02", 0.48], ["TRN-04", 0.405]]
+--- check query | One low reading brings OSP-01 in with its full average
+INSERT INTO telemetry (sat_id, ts, channel, value) VALUES ('OSP-01', '2026-04-10T06:30:00Z', 'BATT_SOC', 0.45);
+SELECT sat_id, avg_soc FROM answer WHERE sat_id = 'OSP-01'
+=> [["OSP-01", 0.7075]]
+--- check query | TRN-04's average uses both readings
+SELECT avg_soc FROM answer WHERE sat_id = 'TRN-04'
+=> [[0.405]]
+
++++ practice | Planes at a glance
+--- task
+Create the view `answer` that summarizes the `satellite` table by orbital plane, with the columns `plane`, `n_sats`, `n_active` and `total_mass_kg`:
+
+- Deorbited satellites (status `DEORBITED`) are gone: leave them out of everything.
+- `n_sats`: how many satellites are left in the plane; `n_active`: how many of them are `ACTIVE`; `total_mass_kg`: their total mass.
+- Keep only the planes with at least 2 active satellites.
+- Sort by `n_active`, most first, then by `total_mass_kg`, heaviest first, then by `plane`.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT plane, COUNT(*) AS n_sats
+FROM satellite
+GROUP BY plane;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT plane,
+       COUNT(*)                                        AS n_sats,
+       SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END) AS n_active,
+       SUM(mass_kg)                                    AS total_mass_kg
+FROM satellite
+WHERE status <> 'DEORBITED'
+GROUP BY plane
+HAVING SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END) >= 2
+ORDER BY n_active DESC, total_mass_kg DESC, plane;
+
+SELECT * FROM answer;
+--- hint
+Sort out which conditions are about single satellites and which are about whole planes. The first go in WHERE, the second in HAVING.
+--- hint
+Count the active ones with `SUM(CASE WHEN status = 'ACTIVE' THEN 1 ELSE 0 END)`. HAVING runs before SELECT, so it cannot use the alias `n_active`: repeat the expression there.
+--- check query | Two planes qualify, in order
+SELECT plane, n_sats, n_active, total_mass_kg FROM answer
+=> [[2, 3, 2, 1060], [1, 3, 2, 735]]
+--- check query | A new active satellite brings plane 3 in first; a deorbited one changes nothing
+INSERT INTO satellite (sat_id, name, plane, altitude_km, launch_date, status, mass_kg) VALUES
+  ('HRN-04', 'Heron-4',  3, 550, '2026-02-01', 'ACTIVE',    100),
+  ('OSP-09', 'Osprey-9', 1, 520, '2021-02-01', 'DEORBITED', 999);
+SELECT plane, n_sats, n_active, total_mass_kg FROM answer
+=> [[3, 3, 2, 1320], [2, 3, 2, 1060], [1, 3, 2, 735]]
+--- check query | Plane 4 does not count its deorbited satellite
+INSERT INTO satellite (sat_id, name, plane, altitude_km, launch_date, status, mass_kg) VALUES
+  ('TRN-05', 'Tern-5', 4, 500, '2026-02-01', 'ACTIVE', 150);
+SELECT plane, n_sats, n_active, total_mass_kg FROM answer WHERE plane = 4
+=> [[4, 2, 2, 305]]
+
++++ question | Follow the rows through the stations
+--- ask
+A table `reading` has six rows:
+
+```text
+ sat_id | value
+--------+-------
+ A      |  0.9
+ A      |  NULL
+ B      |  0.4
+ B      |  0.2
+ B      |  NULL
+ C      |  0.7
+```
+
+What does this query print? Type the `sat_id` and `n` with a space between, like `A 3`.
+
+```sql
+SELECT sat_id, COUNT(*) AS n
+FROM reading
+WHERE value < 0.8
+GROUP BY sat_id
+HAVING COUNT(*) >= 2
+ORDER BY n DESC
+LIMIT 1;
+```
+--- answer
+B 2
+B, 2
+B,2
+B | 2
+B|2
+--- why
+Take the steps in logical order. WHERE drops A's 0.9 (not below 0.8) and both NULL rows, because `NULL < 0.8` is UNKNOWN. Three rows are left: B 0.4, B 0.2 and C 0.7. GROUP BY makes two piles: B with 2 rows, C with 1. HAVING keeps only B. SELECT computes `n` = 2, ORDER BY sorts one row, and LIMIT keeps it. `COUNT(*)` counted 2 for B, not 3, because the NULL row was already gone at step 2.
+
+=== sql01-l09 | Practice: Reading a schema you did not write
+--- for
+l09-reading-a-schema
+--- schema
+CREATE TABLE craft (
+    craft_code   TEXT    NOT NULL PRIMARY KEY,   -- short code painted on the bus, e.g. KES-3
+    display_name TEXT    NOT NULL,
+    orbit_plane  INTEGER NOT NULL
+);
+INSERT INTO craft (craft_code, display_name, orbit_plane) VALUES
+  ('KES-1', 'Kestrel-1', 1),
+  ('KES-2', 'Kestrel-2', 1),
+  ('KES-3', 'Kestrel-3', 2),
+  ('KES-4', 'Kestrel-4', 2);
+CREATE TABLE chan (
+    chan_code TEXT NOT NULL PRIMARY KEY,
+    meaning   TEXT NOT NULL,
+    unit      TEXT NOT NULL    -- SI symbol; '1' means a fraction with no unit
+);
+INSERT INTO chan (chan_code, meaning, unit) VALUES
+  ('PX_TEMP',     'Panel +X temperature',                'K'),
+  ('PX_TEMP_ADC', 'Panel +X thermistor, raw ADC reading', 'count'),
+  ('SOC',         'Battery state of charge',             '1'),
+  ('RW1_SPD',     'Reaction wheel 1 speed',              'rpm');
+CREATE TABLE sample (
+    craft_code TEXT    NOT NULL REFERENCES craft (craft_code),
+    chan_code  TEXT    NOT NULL REFERENCES chan (chan_code),
+    t_utc      TEXT    NOT NULL,       -- ISO-8601 in UTC, e.g. 2026-04-09T13:10:00Z
+    v          REAL,                   -- NULL when no sample arrived
+    q          INTEGER NOT NULL DEFAULT 0
+               CHECK (q IN (0, 1, 3))  -- 0 = measured, 1 = suspect, 3 = interpolated on the ground (not measured)
+);
+INSERT INTO sample (craft_code, chan_code, t_utc, v, q) VALUES
+  ('KES-1', 'PX_TEMP',     '2026-04-09T09:00:00Z', 301.2, 0),
+  ('KES-1', 'PX_TEMP_ADC', '2026-04-09T09:00:00Z', 2749,  0),
+  ('KES-1', 'PX_TEMP',     '2026-04-09T13:00:00Z', NULL,  0),
+  ('KES-1', 'PX_TEMP_ADC', '2026-04-09T13:00:00Z', NULL,  0),
+  ('KES-1', 'SOC',         '2026-04-09T09:00:00Z', 0.81,  0),
+  ('KES-1', 'SOC',         '2026-04-09T13:00:00Z', 'n/a', 0),
+  ('KES-2', 'PX_TEMP',     '2026-04-08T23:50:00Z', 318.9, 0),
+  ('KES-2', 'PX_TEMP_ADC', '2026-04-08T23:50:00Z', 3192,  0),
+  ('KES-2', 'PX_TEMP',     '2026-04-09T02:00:00Z', 318.5, 1),
+  ('KES-2', 'SOC',         '2026-04-09T02:00:00Z', 0.74,  0),
+  ('KES-3', 'PX_TEMP',     '2026-04-09T13:00:00Z', 319.4, 0),
+  ('KES-3', 'PX_TEMP',     '2026-04-09T13:10:00Z', 321.0, 0),
+  ('KES-3', 'PX_TEMP',     '2026-04-09T13:20:00Z', 318.6, 0),
+  ('KES-3', 'PX_TEMP',     '2026-04-09T13:30:00Z', 317.9, 0),
+  ('KES-3', 'PX_TEMP_ADC', '2026-04-09T13:10:00Z', 3244,  0),
+  ('KES-3', 'SOC',         '2026-04-09T13:00:00Z', 0.61,  0),
+  ('KES-3', 'SOC',         '2026-04-09T13:00:00Z', 0.61,  0),
+  ('KES-4', 'PX_TEMP',     '2026-04-09T04:20:00Z', 322.0, 3),
+  ('KES-4', 'PX_TEMP_ADC', '2026-04-09T04:20:00Z', NULL,  0),
+  ('KES-4', 'SOC',         '2026-04-09T04:20:00Z', 0.66,  0),
+  ('KES-4', 'PX_TEMP',     '2026-04-10T00:00:00Z', 320.5, 0);
+
++++ practice | What is in here?
+--- task
+Every problem in this set runs on a database another team built. You have never seen its tables.
+
+Start where the method starts: create the view `answer` with one column, `name`, listing the name of every table in the database, in alphabetical order. Only tables: not indexes, and not views (so not your own view `answer`).
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT name
+FROM sqlite_master;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT name
+FROM sqlite_master
+WHERE type = 'table'
+ORDER BY name;
+
+SELECT * FROM answer;
+--- hint
+Run `SELECT type, name FROM sqlite_master;` and look at the `type` column. What else is listed besides tables?
+--- hint
+Keep the rows whose `type` is `'table'`, and sort by `name`.
+--- check query | The three tables, A to Z
+SELECT name FROM answer
+=> [["chan"], ["craft"], ["sample"]]
+--- check query | A new table shows up in its place
+CREATE TABLE pass_plan (plan_id INTEGER);
+SELECT name FROM answer
+=> [["chan"], ["craft"], ["pass_plan"], ["sample"]]
+--- check query | Neither indexes nor the view itself are listed
+SELECT COUNT(*) FROM answer WHERE name = 'answer' OR name LIKE 'sqlite_autoindex%'
+=> [[0]]
+
++++ practice | Profile each channel
+--- task
+Now profile the measurements. First find the table that holds them and read its columns (`SELECT sql FROM sqlite_master WHERE name = '…';` shows how a table was created).
+
+Create the view `answer` with one row per channel code that has at least one sample, and five columns:
+
+- `chan_code`
+- `n_rows`: how many samples it has.
+- `n_null`: how many of them have no value.
+- `lo`: its smallest value; `hi`: its largest value.
+
+Sort by `chan_code`. If a column holds text where numbers belong, `MIN` and `MAX` will show it: that is what a profile is for.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT chan_code, COUNT(*) AS n_rows
+FROM chan
+GROUP BY chan_code;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT chan_code,
+       COUNT(*)            AS n_rows,
+       COUNT(*) - COUNT(v) AS n_null,
+       MIN(v)              AS lo,
+       MAX(v)              AS hi
+FROM sample
+GROUP BY chan_code
+ORDER BY chan_code;
+
+SELECT * FROM answer;
+--- hint
+`chan` only lists the channels that *could* exist. The samples are in `sample`, and its value column is `v`.
+--- hint
+The number of missing values is `COUNT(*) - COUNT(v)`.
+--- check query | One row per channel with samples
+SELECT chan_code, n_rows, n_null, lo, hi FROM answer
+=> [["PX_TEMP", 10, 1, 301.2, 322.0], ["PX_TEMP_ADC", 5, 2, 2749.0, 3244.0], ["SOC", 6, 0, 0.61, "n/a"]]
+--- check query | A channel with no samples is not listed until it gets one
+INSERT INTO sample (craft_code, chan_code, t_utc, v, q) VALUES ('KES-3', 'RW1_SPD', '2026-04-09T13:00:00Z', 4120, 0);
+SELECT chan_code, n_rows FROM answer WHERE chan_code = 'RW1_SPD'
+=> [["RW1_SPD", 1]]
+--- check query | Missing raw counts are counted
+SELECT n_null FROM answer WHERE chan_code = 'PX_TEMP_ADC'
+=> [[2]]
+
++++ practice | What is really stored
+--- task
+The profile showed text where a number belongs. SQLite keeps whatever it is given, whatever the declared type says, so check what the value column really holds.
+
+Create the view `answer` with the columns `stored_as` and `n`: for each storage class that `typeof(v)` reports in the `sample` table, how many samples have it. Sort by `stored_as`.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT 'real' AS stored_as, COUNT(*) AS n
+FROM sample;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT typeof(v) AS stored_as, COUNT(*) AS n
+FROM sample
+GROUP BY typeof(v)
+ORDER BY stored_as;
+
+SELECT * FROM answer;
+--- hint
+Group by the storage class itself: `GROUP BY typeof(v)`.
+--- check query | NULLs, numbers and one piece of text
+SELECT stored_as, n FROM answer
+=> [["null", 3], ["real", 17], ["text", 1]]
+--- check query | Text that looks like a number becomes a number; other text stays text
+INSERT INTO sample (craft_code, chan_code, t_utc, v, q) VALUES
+  ('KES-2', 'SOC', '2026-04-09T03:00:00Z', '0.55', 0),
+  ('KES-2', 'SOC', '2026-04-09T04:00:00Z', 'bad',  0);
+SELECT stored_as, n FROM answer
+=> [["null", 3], ["real", 18], ["text", 2]]
+--- check query | Every sample is counted once
+SELECT SUM(n) = (SELECT COUNT(*) FROM sample) FROM answer
+=> [[1]]
+
++++ practice | The guess that matched too much
+--- task
+The view `answer` should list the `craft_code`, `t_utc` and `v` of every panel +X temperature sample above 320 K. The chan table says which code that channel has. The view returns every raw sensor count as well, because its pattern matches more than one channel. Fix it so it matches exactly the temperature channel. Any order.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT craft_code, t_utc, v
+FROM sample
+WHERE chan_code LIKE 'PX_TEMP%'
+  AND v > 320;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT craft_code, t_utc, v
+FROM sample
+WHERE chan_code = 'PX_TEMP'
+  AND v > 320;
+
+SELECT * FROM answer;
+--- hint
+Run `SELECT DISTINCT chan_code FROM sample WHERE chan_code LIKE 'PX_TEMP%';`. Which codes does the pattern catch?
+--- hint
+When you know the exact code, compare with `=`. In LIKE, `_` is a wildcard too.
+--- check query | The three temperature samples above 320 K
+SELECT craft_code, t_utc, v FROM answer ORDER BY craft_code, t_utc
+=> [["KES-3", "2026-04-09T13:10:00Z", 321.0], ["KES-4", "2026-04-09T04:20:00Z", 322.0], ["KES-4", "2026-04-10T00:00:00Z", 320.5]]
+--- check query | No raw counts
+SELECT COUNT(*) FROM answer WHERE v > 1000
+=> [[0]]
+--- check query | A new channel whose code starts the same way is left out
+INSERT INTO sample (craft_code, chan_code, t_utc, v, q) VALUES ('KES-1', 'PX_TEMP2', '2026-04-09T10:00:00Z', 330.0, 0);
+SELECT COUNT(*) FROM answer
+=> [[3]]
+
++++ practice | Which spacecraft ran hot
+--- task
+Someone asks: "Which spacecraft ran hot on 9 April 2026?" Answer it with the method, not a guess.
+
+Create the view `answer` with the columns `craft_code`, `t_utc` and `temp_c`, listing every panel +X temperature sample that:
+
+- was taken on 9 April 2026, UTC;
+- was really measured, not suspect and not filled in on the ground;
+- is above 45 degrees Celsius.
+
+`temp_c` is the temperature in degrees Celsius. Sort by `craft_code`, then `t_utc`.
+
+Read the schema before you write a line: the unit of each channel and the meaning of each quality code are written in the database itself.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT craft_code, t_utc, v AS temp_c
+FROM sample
+WHERE chan_code = 'PX_TEMP'
+  AND v > 45;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT craft_code, t_utc, v - 273.15 AS temp_c
+FROM sample
+WHERE chan_code = 'PX_TEMP'
+  AND q = 0
+  AND t_utc >= '2026-04-09T00:00:00Z'
+  AND t_utc <  '2026-04-10T00:00:00Z'
+  AND v - 273.15 > 45
+ORDER BY craft_code, t_utc;
+
+SELECT * FROM answer;
+--- hint
+`SELECT * FROM chan;` gives each channel's unit, and `SELECT sql FROM sqlite_master WHERE name = 'sample';` shows the comments the designer left on each column.
+--- hint
+The temperature is stored in kelvin: degrees Celsius are kelvin minus 273.15. Only one quality code means measured. The day is a half-open window in UTC.
+--- check query | Three measured samples from KES-3, in Celsius
+SELECT craft_code, t_utc, temp_c FROM answer
+=> [["KES-3", "2026-04-09T13:00:00Z", 46.25], ["KES-3", "2026-04-09T13:10:00Z", 47.85000000000002], ["KES-3", "2026-04-09T13:20:00Z", 45.450000000000045]]
+--- check query | 23:59 on 9 April is in; a suspect sample and the next day are out
+INSERT INTO sample (craft_code, chan_code, t_utc, v, q) VALUES
+  ('KES-1', 'PX_TEMP', '2026-04-09T23:59:00Z', 318.2, 0),
+  ('KES-2', 'PX_TEMP', '2026-04-09T10:00:00Z', 330.0, 1),
+  ('KES-1', 'PX_TEMP', '2026-04-10T00:10:00Z', 330.0, 0);
+SELECT craft_code, t_utc FROM answer
+=> [["KES-1", "2026-04-09T23:59:00Z"], ["KES-3", "2026-04-09T13:00:00Z"], ["KES-3", "2026-04-09T13:10:00Z"], ["KES-3", "2026-04-09T13:20:00Z"]]
+--- check query | Every temperature is in Celsius
+SELECT COUNT(*) FROM answer WHERE temp_c > 100
+=> [[0]]
+
++++ question | What the key says one row is
+--- ask
+A table you inherit is declared like this:
+
+```sql
+CREATE TABLE downlink_file (
+    station TEXT    NOT NULL,
+    sat_id  TEXT    NOT NULL,
+    aos     TEXT    NOT NULL,
+    file_no INTEGER NOT NULL,
+    bytes   INTEGER,
+    PRIMARY KEY (station, aos, file_no)
+);
+```
+
+Which of these can the table **not** hold?
+--- choice
+Files 1 and 2 from the same pass of OSP-01 at Svalbard.
+--- choice correct
+File 1 from OSP-01 and file 1 from HRN-01, both at Svalbard, both passes starting at 06:00:00.
+--- choice
+File 1 from OSP-01 at Svalbard and file 1 from OSP-01 at Awarua, both passes starting at 06:00:00.
+--- choice
+File 1 from two different passes of OSP-01 at Svalbard, at 06:00:00 and at 07:35:00.
+--- why
+The key is the table's grain: one row is one file, from the pass that started at one instant at one station. `sat_id` is not in it. Two satellites whose passes start at the same instant at the same station would both need the key (Svalbard, 06:00:00, 1), and the second is refused. A station with two antennas can really do that, so this key is worth asking the designer about. Different file numbers, different stations or different start times all give different keys, so the other three are fine.
+
+=== sql01-test | The relational model and single-table queries: module test
+--- teach
+The test covers the whole module: tables and keys, SELECT with WHERE, sorting and paging, computed columns and CASE, NULL and three-valued logic, data types and casts, time as UTC text, the logical order of a query with GROUP BY and HAVING, and reading a schema you did not write. Its ten problems run on a new fleet, most combine several lessons, and there are no hints. Twelve questions follow, some of them on PostgreSQL behavior that SQLite cannot show you. To get ready, redo the practice problems of the lessons that felt hardest without the hints, and reread the check-yourself questions of lessons 5, 7 and 8.
+--- gate
+pass 7
+questions 10
+minutes 112
+--- schema
+CREATE TABLE spacecraft (
+    sc_id       TEXT    NOT NULL PRIMARY KEY,
+    name        TEXT    NOT NULL,
+    plane       INTEGER NOT NULL,
+    status      TEXT    NOT NULL,
+    launch_date TEXT    NOT NULL,
+    mass_kg     INTEGER NOT NULL
+);
+INSERT INTO spacecraft (sc_id, name, plane, status, launch_date, mass_kg) VALUES
+  ('LYR-01', 'Lyra-1', 1, 'ACTIVE',        '2024-08-03', 420),
+  ('LYR-02', 'Lyra-2', 1, 'ACTIVE',        '2024-08-03', 420),
+  ('LYR-03', 'Lyra-3', 2, 'SAFE_MODE',     '2025-02-17', 435),
+  ('LYR-04', 'Lyra-4', 2, 'ACTIVE',        '2025-02-17', 435),
+  ('LYR-05', 'Lyra-5', 3, 'COMMISSIONING', '2026-03-30', 440),
+  ('VEG-01', 'Vega-1', 3, 'ACTIVE',        '2023-12-12', 980),
+  ('VEG-02', 'Vega-2', 1, 'DEORBITED',     '2022-06-01', 975);
+
+CREATE TABLE reading (
+    sc_id   TEXT NOT NULL REFERENCES spacecraft (sc_id),
+    ts      TEXT NOT NULL,
+    channel TEXT NOT NULL,
+    value   REAL,
+    PRIMARY KEY (sc_id, ts, channel)
+);
+INSERT INTO reading (sc_id, ts, channel, value) VALUES
+  ('LYR-01', '2026-05-02T13:50:00Z', 'SOC',      0.71),
+  ('LYR-01', '2026-05-02T14:00:00Z', 'SOC',      0.69),
+  ('LYR-01', '2026-05-02T14:00:00Z', 'BUS_TEMP', 24.0),
+  ('LYR-01', '2026-05-02T14:30:00Z', 'SOC',      0.66),
+  ('LYR-01', '2026-05-02T14:30:00Z', 'BUS_TEMP', 25.5),
+  ('LYR-01', '2026-05-02T15:00:00Z', 'SOC',      0.64),
+  ('LYR-02', '2026-05-02T14:00:00Z', 'SOC',      0.25),
+  ('LYR-02', '2026-05-02T14:00:00Z', 'BUS_TEMP', 31.0),
+  ('LYR-02', '2026-05-02T14:30:00Z', 'SOC',      NULL),
+  ('LYR-02', '2026-05-02T14:30:00Z', 'BUS_TEMP', NULL),
+  ('LYR-02', '2026-05-02T14:59:00Z', 'SOC',      0.23),
+  ('LYR-03', '2026-05-02T14:00:00Z', 'SOC',      0.50),
+  ('LYR-03', '2026-05-02T14:00:00Z', 'BUS_TEMP', 44.8),
+  ('LYR-03', '2026-05-02T14:30:00Z', 'SOC',      0.18),
+  ('LYR-03', '2026-05-02T14:30:00Z', 'BUS_TEMP', 46.1),
+  ('LYR-04', '2026-05-02T14:00:00Z', 'SOC',      0.49),
+  ('LYR-04', '2026-05-02T14:00:00Z', 'BUS_TEMP', 20.5),
+  ('LYR-04', '2026-05-02T14:30:00Z', 'SOC',      0.52),
+  ('LYR-04', '2026-05-02T14:30:00Z', 'BUS_TEMP', 21.0),
+  ('LYR-05', '2026-05-02T14:00:00Z', 'SOC',      NULL),
+  ('LYR-05', '2026-05-02T14:00:00Z', 'BUS_TEMP', 18.0),
+  ('LYR-05', '2026-05-02T14:30:00Z', 'SOC',      0.90),
+  ('LYR-05', '2026-05-02T14:30:00Z', 'BUS_TEMP', 18.2),
+  ('VEG-01', '2026-05-02T14:15:00Z', 'SOC',      0.83),
+  ('VEG-01', '2026-05-02T14:15:00Z', 'BUS_TEMP', 30.0),
+  ('VEG-01', '2026-05-02T14:45:00Z', 'BUS_TEMP', 29.5),
+  ('VEG-01', '2026-05-02T14:45:00Z', 'BUS_V',    28.4);
+
+CREATE TABLE contact (
+    contact_id INTEGER NOT NULL PRIMARY KEY,
+    sc_id      TEXT    NOT NULL REFERENCES spacecraft (sc_id),
+    station    TEXT    NOT NULL,
+    aos        TEXT    NOT NULL,
+    los        TEXT    NOT NULL,
+    mbytes     INTEGER
+);
+INSERT INTO contact (contact_id, sc_id, station, aos, los, mbytes) VALUES
+  (1,  'LYR-01', 'Svalbard', '2026-05-02T13:40:00Z', '2026-05-02T13:48:30Z', 820),
+  (2,  'LYR-02', 'Kiruna',   '2026-05-02T13:55:00Z', '2026-05-02T14:03:20Z', NULL),
+  (3,  'LYR-03', 'Svalbard', '2026-05-02T14:10:00Z', '2026-05-02T14:19:10Z', 45),
+  (4,  'VEG-01', 'Kiruna',   '2026-05-02T14:12:30Z', '2026-05-02T14:22:00Z', 1310),
+  (5,  'LYR-04', 'Awarua',   '2026-05-02T14:40:00Z', '2026-05-02T14:47:40Z', 95),
+  (6,  'LYR-01', 'Kiruna',   '2026-05-02T15:05:00Z', '2026-05-02T15:14:00Z', 760),
+  (7,  'LYR-05', 'Svalbard', '2026-05-02T15:20:00Z', '2026-05-02T15:27:10Z', NULL),
+  (8,  'VEG-01', 'Svalbard', '2026-05-02T15:45:00Z', '2026-05-02T15:56:30Z', 1450),
+  (9,  'LYR-02', 'Awarua',   '2026-05-02T16:02:00Z', '2026-05-02T16:09:00Z', 95),
+  (10, 'LYR-04', 'Kiruna',   '2026-05-02T16:30:00Z', '2026-05-02T16:38:20Z', 310);
+
++++ problem | The contact bill
+--- task
+Each contact in the `contact` table (key `contact_id`) is billed in several lines. Create a table named `contact_bill` with these columns, none of which may ever be empty:
+
+- `contact_id`: integer, a foreign key that references `contact (contact_id)`.
+- `line_no`: integer. Each contact's lines are numbered 1, 2, 3 and so on.
+- `item`: text.
+- `amount_cents`: the amount as an exact whole number of cents. It can never be negative: add `CHECK (amount_cents >= 0)`.
+
+Choose the primary key so that one contact cannot have two lines with the same number, while different contacts each have their own line 1.
+
+Then store these three lines, with the amounts converted to cents exactly:
+
+| contact_id | line_no | item | amount |
+| --- | --- | --- | --- |
+| 4 | 1 | Antenna time | $12.40 |
+| 4 | 2 | Data handling | $0.35 |
+| 8 | 1 | Antenna time | $14.05 |
+--- starter
+-- Create the contact_bill table, then store the three lines.
+
+--- solution
+CREATE TABLE contact_bill (
+    contact_id   INTEGER NOT NULL REFERENCES contact (contact_id),
+    line_no      INTEGER NOT NULL,
+    item         TEXT    NOT NULL,
+    amount_cents INTEGER NOT NULL CHECK (amount_cents >= 0),
+    PRIMARY KEY (contact_id, line_no)
+);
+
+INSERT INTO contact_bill (contact_id, line_no, item, amount_cents) VALUES
+  (4, 1, 'Antenna time',  1240),
+  (4, 2, 'Data handling', 35),
+  (8, 1, 'Antenna time',  1405);
+--- check query | The three lines, in cents
+SELECT contact_id, line_no, item, amount_cents FROM contact_bill ORDER BY contact_id, line_no
+=> [[4, 1, "Antenna time", 1240], [4, 2, "Data handling", 35], [8, 1, "Antenna time", 1405]]
+--- check query | The amounts are stored as whole numbers
+SELECT DISTINCT typeof(amount_cents) FROM contact_bill
+=> [["integer"]]
+--- check query | The key is the contact and the line number
+SELECT name FROM pragma_table_info('contact_bill') WHERE pk > 0 ORDER BY name
+=> [["contact_id"], ["line_no"]]
+--- check query | contact_id references the contact table
+SELECT "from", "table", "to" FROM pragma_foreign_key_list('contact_bill')
+=> [["contact_id", "contact", "contact_id"]]
+--- check query | A repeated line number, a negative amount and a missing item are refused
+INSERT OR IGNORE INTO contact_bill (contact_id, line_no, item, amount_cents) VALUES (4, 2, 'Data handling again', 50);
+INSERT OR IGNORE INTO contact_bill (contact_id, line_no, item, amount_cents) VALUES (8, 2, 'Refund', -500);
+INSERT OR IGNORE INTO contact_bill (contact_id, line_no, amount_cents) VALUES (8, 3, 100);
+SELECT COUNT(*) FROM contact_bill
+=> [[3]]
+--- check query | A third line for contact 4 is accepted
+INSERT OR IGNORE INTO contact_bill (contact_id, line_no, item, amount_cents) VALUES (4, 3, 'Priority fee', 0);
+SELECT COUNT(*) FROM contact_bill
+=> [[4]]
+
++++ problem | Battery triage for one hour
+--- task
+The `reading` table holds one row per reading: `sc_id`, `ts` (ISO text in UTC), `channel` and `value`. The channel `SOC` is the battery state of charge, a fraction from 0 to 1.
+
+Create the view `answer` with the columns `sc_id`, `ts`, `value` and `state`, holding every `SOC` reading taken from `2026-05-02T14:00:00Z` (included) to `2026-05-02T15:00:00Z` (not included). The state is:
+
+- `NO DATA` when the value is missing;
+- `CRITICAL` below 0.25;
+- `LOW` from 0.25 up to, but not including, 0.50;
+- `OK` at 0.50 or more.
+
+Sort the rows so the operator sees the worst first: all `CRITICAL` rows, then `NO DATA`, then `LOW`, then `OK`. Within each state, sort by `value`, lowest first, then by `sc_id`, then by `ts`.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sc_id, ts, value, 'OK' AS state
+FROM reading;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sc_id,
+       ts,
+       value,
+       CASE WHEN value IS NULL THEN 'NO DATA'
+            WHEN value < 0.25  THEN 'CRITICAL'
+            WHEN value < 0.50  THEN 'LOW'
+            ELSE 'OK'
+       END AS state
+FROM reading
+WHERE channel = 'SOC'
+  AND ts >= '2026-05-02T14:00:00Z'
+  AND ts <  '2026-05-02T15:00:00Z'
+ORDER BY CASE WHEN value < 0.25  THEN 1
+              WHEN value IS NULL THEN 2
+              WHEN value < 0.50  THEN 3
+              ELSE 4
+         END,
+         value, sc_id, ts;
+
+SELECT * FROM answer;
+--- check query | Every reading of the hour, worst first
+SELECT sc_id, ts, value, state FROM answer
+=> [["LYR-03", "2026-05-02T14:30:00Z", 0.18, "CRITICAL"], ["LYR-02", "2026-05-02T14:59:00Z", 0.23, "CRITICAL"], ["LYR-02", "2026-05-02T14:30:00Z", null, "NO DATA"], ["LYR-05", "2026-05-02T14:00:00Z", null, "NO DATA"], ["LYR-02", "2026-05-02T14:00:00Z", 0.25, "LOW"], ["LYR-04", "2026-05-02T14:00:00Z", 0.49, "LOW"], ["LYR-03", "2026-05-02T14:00:00Z", 0.5, "OK"], ["LYR-04", "2026-05-02T14:30:00Z", 0.52, "OK"], ["LYR-01", "2026-05-02T14:30:00Z", 0.66, "OK"], ["LYR-01", "2026-05-02T14:00:00Z", 0.69, "OK"], ["VEG-01", "2026-05-02T14:15:00Z", 0.83, "OK"], ["LYR-05", "2026-05-02T14:30:00Z", 0.9, "OK"]]
+--- check query | A critical reading at 14:59:59 is in and sorts by value; 15:00:00 and another channel are out
+INSERT INTO reading (sc_id, ts, channel, value) VALUES
+  ('VEG-01', '2026-05-02T14:59:59Z', 'SOC',   0.20),
+  ('VEG-01', '2026-05-02T15:00:00Z', 'SOC',   0.10),
+  ('VEG-01', '2026-05-02T14:50:00Z', 'BUS_V', 0.30);
+SELECT sc_id, ts, state FROM answer LIMIT 3
+=> [["LYR-03", "2026-05-02T14:30:00Z", "CRITICAL"], ["VEG-01", "2026-05-02T14:59:59Z", "CRITICAL"], ["LYR-02", "2026-05-02T14:59:00Z", "CRITICAL"]]
+--- check query | Exactly 0.25 is LOW and exactly 0.50 is OK
+SELECT sc_id, value, state FROM answer WHERE value IN (0.25, 0.5) ORDER BY value
+=> [["LYR-02", 0.25, "LOW"], ["LYR-03", 0.5, "OK"]]
+--- check query | Thirteen rows after the new reading
+SELECT COUNT(*) FROM answer
+=> [[13]]
+
++++ problem | Weak contacts, page two
+--- task
+The ground team pages through the `contact` table to find weak contacts: sorted by `mbytes` (the data received, in megabytes), smallest first. Contacts whose `mbytes` is missing go at the very end. Contacts with the same `mbytes` are ordered by `contact_id`, smallest first.
+
+Create the view `answer` with the columns `contact_id`, `station` and `mbytes`, holding page 2 of that list, three contacts per page.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT contact_id, station, mbytes
+FROM contact
+LIMIT 3;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT contact_id, station, mbytes
+FROM contact
+ORDER BY mbytes NULLS LAST, contact_id
+LIMIT 3 OFFSET 3;
+
+SELECT * FROM answer;
+--- check query | Page 2 holds the fourth to sixth contacts
+SELECT contact_id, station, mbytes FROM answer
+=> [[10, "Kiruna", 310], [6, "Kiruna", 760], [1, "Svalbard", 820]]
+--- check query | A new contact tied at 95 MB pushes the page along; a new missing one does not
+INSERT INTO contact (contact_id, sc_id, station, aos, los, mbytes) VALUES
+  (11, 'LYR-05', 'Awarua', '2026-05-02T17:00:00Z', '2026-05-02T17:07:00Z', 95),
+  (12, 'LYR-05', 'Kiruna', '2026-05-02T17:30:00Z', '2026-05-02T17:37:00Z', NULL);
+SELECT contact_id FROM answer
+=> [[11], [10], [6]]
+--- check query | Three contacts on the page
+SELECT COUNT(*) FROM answer
+=> [[3]]
+
++++ problem | A raw import, cleaned and summed
+--- task
+This problem has its own table, `raw_soc`, loaded from a station file with every field as text: `sc_id`, `ts`, `soc_text` and `temp_text`. In `soc_text`, an empty string `''` means the reading was dropped, and `'-1'` means the sensor was switched off: neither is a reading. In `temp_text` (degrees Celsius), a missing temperature is written as `''` or as `'N/A'`.
+
+Create the view `answer` with exactly one row and five columns:
+
+- `n_rows`: how many rows the table has.
+- `n_soc`: how many real charge readings there are.
+- `mean_soc`: the average of the real charge readings, as a number.
+- `n_temp`: how many real temperature readings there are.
+- `max_temp_c`: the highest real temperature, as a number.
+--- schema
+CREATE TABLE raw_soc (
+    sc_id     TEXT NOT NULL,
+    ts        TEXT NOT NULL,
+    soc_text  TEXT NOT NULL,
+    temp_text TEXT NOT NULL,
+    PRIMARY KEY (sc_id, ts)
+);
+INSERT INTO raw_soc (sc_id, ts, soc_text, temp_text) VALUES
+  ('LYR-04', '2026-05-02T14:00:00Z', '0.49', '20.5'),
+  ('LYR-04', '2026-05-02T14:01:00Z', '',     '20.6'),
+  ('LYR-04', '2026-05-02T14:02:00Z', '-1',   'N/A'),
+  ('LYR-04', '2026-05-02T14:03:00Z', '0.47', ''),
+  ('LYR-04', '2026-05-02T14:04:00Z', '0.45', '21.9'),
+  ('LYR-04', '2026-05-02T14:05:00Z', '0.44', '19.8');
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT COUNT(*)                     AS n_rows,
+       COUNT(soc_text)              AS n_soc,
+       AVG(CAST(soc_text AS REAL))  AS mean_soc,
+       COUNT(temp_text)             AS n_temp,
+       MAX(temp_text)               AS max_temp_c
+FROM raw_soc;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT COUNT(*)                                                       AS n_rows,
+       COUNT(NULLIF(NULLIF(soc_text, ''), '-1'))                      AS n_soc,
+       AVG(CAST(NULLIF(NULLIF(soc_text, ''), '-1') AS REAL))          AS mean_soc,
+       COUNT(NULLIF(NULLIF(temp_text, ''), 'N/A'))                    AS n_temp,
+       MAX(CAST(NULLIF(NULLIF(temp_text, ''), 'N/A') AS REAL))        AS max_temp_c
+FROM raw_soc;
+
+SELECT * FROM answer;
+--- check query | The summary of the six rows
+SELECT n_rows, n_soc, mean_soc, n_temp, max_temp_c FROM answer
+=> [[6, 4, 0.4625, 4, 21.9]]
+--- check query | The highest temperature is a number, not text
+SELECT typeof(max_temp_c) FROM answer
+=> [["real"]]
+--- check query | A switched-off sensor with a hot reading, then a cold reading below zero
+INSERT INTO raw_soc (sc_id, ts, soc_text, temp_text) VALUES
+  ('LYR-04', '2026-05-02T14:06:00Z', '-1',   '25.0'),
+  ('LYR-04', '2026-05-02T14:07:00Z', '0.40', '-2.5');
+SELECT n_rows, n_soc, mean_soc, n_temp, max_temp_c FROM answer
+=> [[8, 5, 0.45, 6, 25.0]]
+
++++ problem | Long contacts and the next pass
+--- task
+In the `contact` table, `aos` and `los` are the start and end of each contact, as ISO text in UTC like `2026-05-02T14:10:00Z`. Each spacecraft comes round again 97 minutes after a contact starts.
+
+Create the view `answer` with the columns `contact_id`, `station`, `duration_s` and `next_aos`, holding the contacts at `Svalbard` or `Kiruna` that lasted at least 540 seconds, sorted by `aos`:
+
+- `duration_s`: the length of the contact in seconds, as a whole number.
+- `next_aos`: the contact's `aos` plus 97 minutes, written in exactly the same format as `aos`, with the `T` and the `Z`.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT contact_id, station, los - aos AS duration_s, aos AS next_aos
+FROM contact;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT contact_id,
+       station,
+       unixepoch(los) - unixepoch(aos)                  AS duration_s,
+       strftime('%Y-%m-%dT%H:%M:%SZ', aos, '+97 minutes') AS next_aos
+FROM contact
+WHERE station IN ('Svalbard', 'Kiruna')
+  AND unixepoch(los) - unixepoch(aos) >= 540
+ORDER BY aos;
+
+SELECT * FROM answer;
+--- check query | Four long contacts, in time order
+SELECT contact_id, station, duration_s, next_aos FROM answer
+=> [[3, "Svalbard", 550, "2026-05-02T15:47:00Z"], [4, "Kiruna", 570, "2026-05-02T15:49:30Z"], [6, "Kiruna", 540, "2026-05-02T16:42:00Z"], [8, "Svalbard", 690, "2026-05-02T17:22:00Z"]]
+--- check query | A late contact's next pass falls on the next day; a long one elsewhere is out
+INSERT INTO contact (contact_id, sc_id, station, aos, los, mbytes) VALUES
+  (11, 'LYR-01', 'Kiruna', '2026-05-02T23:30:00Z', '2026-05-02T23:39:00Z', 700),
+  (12, 'LYR-01', 'Awarua', '2026-05-02T20:00:00Z', '2026-05-02T20:15:00Z', 900);
+SELECT contact_id, duration_s, next_aos FROM answer WHERE contact_id IN (11, 12)
+=> [[11, 540, "2026-05-03T01:07:00Z"]]
+--- check query | Nothing shorter than 540 seconds
+SELECT COUNT(*) FROM answer WHERE duration_s < 540
+=> [[0]]
+
++++ problem | Temperature coverage per spacecraft
+--- task
+Create the view `answer` about the `BUS_TEMP` readings taken on 2 May 2026, UTC, with one row per spacecraft and five columns:
+
+- `sc_id`
+- `n_expected`: how many `BUS_TEMP` rows it has that day.
+- `n_measured`: how many of those rows have a value.
+- `coverage_pct`: 100 times `n_measured` divided by `n_expected`, with its fraction kept (2 out of 3 is 66.666…).
+- `mean_temp_c`: the average of its measured values.
+
+Keep only the spacecraft whose coverage is below 100, or whose mean temperature is above 40. Sort by `coverage_pct`, lowest first, then by `sc_id`.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sc_id,
+       COUNT(*)                     AS n_expected,
+       COUNT(value)                 AS n_measured,
+       100 * COUNT(value) / COUNT(*) AS coverage_pct,
+       AVG(value)                   AS mean_temp_c
+FROM reading
+GROUP BY sc_id;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sc_id,
+       COUNT(*)                        AS n_expected,
+       COUNT(value)                    AS n_measured,
+       100.0 * COUNT(value) / COUNT(*) AS coverage_pct,
+       AVG(value)                      AS mean_temp_c
+FROM reading
+WHERE channel = 'BUS_TEMP'
+  AND ts >= '2026-05-02T00:00:00Z'
+  AND ts <  '2026-05-03T00:00:00Z'
+GROUP BY sc_id
+HAVING 100.0 * COUNT(value) / COUNT(*) < 100
+    OR AVG(value) > 40
+ORDER BY coverage_pct, sc_id;
+
+SELECT * FROM answer;
+--- check query | The two spacecraft that need a look
+SELECT sc_id, n_expected, n_measured, coverage_pct, mean_temp_c FROM answer
+=> [["LYR-02", 2, 1, 50.0, 31.0], ["LYR-03", 2, 2, 100.0, 45.45]]
+--- check query | Two out of three is 66.666…, and a reading on another day changes nothing
+INSERT INTO reading (sc_id, ts, channel, value) VALUES
+  ('LYR-05', '2026-05-02T15:00:00Z', 'BUS_TEMP', NULL),
+  ('LYR-01', '2026-05-03T00:00:00Z', 'BUS_TEMP', NULL);
+SELECT sc_id, n_expected, n_measured, coverage_pct FROM answer
+=> [["LYR-02", 2, 1, 50.0], ["LYR-05", 3, 2, 66.66666666666667], ["LYR-03", 2, 2, 100.0]]
+--- check query | Other channels play no part
+INSERT INTO reading (sc_id, ts, channel, value) VALUES ('LYR-04', '2026-05-02T15:00:00Z', 'SOC', NULL);
+SELECT COUNT(*) FROM answer WHERE sc_id = 'LYR-04'
+=> [[0]]
+
++++ problem | The latest reading that arrived
+--- task
+A dashboard tile shows the latest battery reading of LYR-02: the view `answer`, with the columns `ts` and `value`, should hold the single most recent `SOC` reading of `LYR-02` that has a value. A reading whose value is missing never counts as the latest. Instead the tile shows the 14:00 reading. Fix the view.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT ts, value
+FROM reading
+WHERE sc_id = 'LYR-02' AND channel = 'SOC'
+LIMIT 1;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT ts, value
+FROM reading
+WHERE sc_id = 'LYR-02' AND channel = 'SOC' AND value IS NOT NULL
+ORDER BY ts DESC
+LIMIT 1;
+
+SELECT * FROM answer;
+--- check query | The 14:59 reading
+SELECT ts, value FROM answer
+=> [["2026-05-02T14:59:00Z", 0.23]]
+--- check query | A newer reading with no value does not replace it
+INSERT INTO reading (sc_id, ts, channel, value) VALUES ('LYR-02', '2026-05-02T15:10:00Z', 'SOC', NULL);
+SELECT ts, value FROM answer
+=> [["2026-05-02T14:59:00Z", 0.23]]
+--- check query | A newer reading with a value does
+INSERT INTO reading (sc_id, ts, channel, value) VALUES ('LYR-02', '2026-05-02T15:20:00Z', 'SOC', 0.22);
+SELECT ts, value FROM answer
+=> [["2026-05-02T15:20:00Z", 0.22]]
+
++++ problem | A table you have never seen
+--- task
+This problem has its own table, `rw_tlm`, reaction-wheel telemetry from another team. Someone asks: "Which wheels spun faster than 6000 rpm on 2 May 2026, UTC?"
+
+Create the view `answer` with the columns `bus`, `wheel`, `stamp` and `rpm`, listing every sample taken on 2 May 2026 (UTC) that was really measured and whose speed is above 6000 revolutions per minute. `rpm` is the speed in revolutions per minute. Sort by `bus`, then `wheel`, then `stamp`.
+
+Read the table's own definition before you write the query: it says what unit the speed is stored in, and what each status letter means.
+--- schema
+CREATE TABLE rw_tlm (
+    bus   TEXT    NOT NULL,   -- spacecraft code, as in spacecraft.sc_id
+    wheel INTEGER NOT NULL,   -- reaction wheel number, 1 to 4
+    stamp TEXT    NOT NULL,   -- ISO-8601 in UTC, e.g. 2026-05-02T14:00:00Z
+    spd   REAL,               -- wheel speed in revolutions per SECOND; NULL when the frame was lost
+    st    TEXT    NOT NULL    -- 'M' = measured, 'H' = held over from the previous frame, 'X' = corrupt frame
+          CHECK (st IN ('M', 'H', 'X')),
+    PRIMARY KEY (bus, wheel, stamp)
+);
+INSERT INTO rw_tlm (bus, wheel, stamp, spd, st) VALUES
+  ('LYR-03', 2, '2026-05-02T14:00:00Z',  98.0, 'M'),
+  ('LYR-03', 2, '2026-05-02T14:10:00Z', 101.5, 'M'),
+  ('LYR-03', 2, '2026-05-02T14:20:00Z', 101.5, 'H'),
+  ('LYR-03', 2, '2026-05-02T14:30:00Z', 104.0, 'M'),
+  ('LYR-03', 3, '2026-05-02T14:10:00Z',  55.0, 'M'),
+  ('LYR-04', 1, '2026-05-01T23:50:00Z', 102.0, 'M'),
+  ('LYR-04', 1, '2026-05-02T08:00:00Z', 140.0, 'X'),
+  ('LYR-04', 1, '2026-05-02T08:10:00Z',  NULL, 'M'),
+  ('LYR-04', 1, '2026-05-02T23:59:30Z', 100.1, 'M'),
+  ('VEG-01', 4, '2026-05-02T12:00:00Z',  99.9, 'M'),
+  ('VEG-01', 4, '2026-05-03T00:00:00Z', 120.0, 'M');
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT bus, wheel, stamp, spd AS rpm
+FROM rw_tlm
+WHERE spd > 6000;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT bus, wheel, stamp, spd * 60 AS rpm
+FROM rw_tlm
+WHERE st = 'M'
+  AND stamp >= '2026-05-02T00:00:00Z'
+  AND stamp <  '2026-05-03T00:00:00Z'
+  AND spd * 60 > 6000
+ORDER BY bus, wheel, stamp;
+
+SELECT * FROM answer;
+--- check query | Three measured samples above 6000 rpm
+SELECT bus, wheel, stamp, rpm FROM answer
+=> [["LYR-03", 2, "2026-05-02T14:10:00Z", 6090.0], ["LYR-03", 2, "2026-05-02T14:30:00Z", 6240.0], ["LYR-04", 1, "2026-05-02T23:59:30Z", 6006.0]]
+--- check query | 6000.6 rpm is in; exactly 6000 rpm is not faster than 6000
+INSERT INTO rw_tlm (bus, wheel, stamp, spd, st) VALUES
+  ('VEG-01', 4, '2026-05-02T12:10:00Z', 100.01, 'M'),
+  ('VEG-01', 4, '2026-05-02T12:20:00Z', 100.0,  'M');
+SELECT stamp FROM answer WHERE bus = 'VEG-01'
+=> [["2026-05-02T12:10:00Z"]]
+--- check query | No held or corrupt samples
+SELECT COUNT(*) FROM answer WHERE stamp IN ('2026-05-02T14:20:00Z', '2026-05-02T08:00:00Z')
+=> [[0]]
+
++++ problem | Downlink volume by station
+--- task
+Create the view `answer` that sums up the `contact` table by `station`, with six columns:
+
+- `station`
+- `n_contacts`: how many contacts it has.
+- `n_pending`: how many of them have no `mbytes` yet.
+- `n_small`: how many are below 100 MB.
+- `n_large`: how many are 100 MB or more.
+- `total_gb`: the total of its known `mbytes`, divided by 1000, with the fraction kept. It is NULL for a station none of whose contacts has data yet.
+
+Sort by `total_gb`, largest first, with stations whose total is NULL at the end, then by `station`.
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT station,
+       COUNT(*)            AS n_contacts,
+       SUM(mbytes) / 1000  AS total_gb
+FROM contact
+GROUP BY station;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT station,
+       COUNT(*)                                           AS n_contacts,
+       SUM(CASE WHEN mbytes IS NULL THEN 1 ELSE 0 END)    AS n_pending,
+       SUM(CASE WHEN mbytes < 100 THEN 1 ELSE 0 END)      AS n_small,
+       SUM(CASE WHEN mbytes >= 100 THEN 1 ELSE 0 END)     AS n_large,
+       SUM(mbytes) / 1000.0                               AS total_gb
+FROM contact
+GROUP BY station
+ORDER BY total_gb DESC NULLS LAST, station;
+
+SELECT * FROM answer;
+--- check query | Three stations, largest total first
+SELECT station, n_contacts, n_pending, n_small, n_large, total_gb FROM answer
+=> [["Kiruna", 4, 1, 0, 3, 2.38], ["Svalbard", 4, 1, 1, 2, 2.315], ["Awarua", 2, 0, 2, 0, 0.19]]
+--- check query | Exactly 100 MB is large, and a station with no data yet goes last with a NULL total
+INSERT INTO contact (contact_id, sc_id, station, aos, los, mbytes) VALUES
+  (11, 'LYR-05', 'Awarua',         '2026-05-02T17:00:00Z', '2026-05-02T17:07:00Z', 100),
+  (12, 'LYR-05', 'Hartebeesthoek', '2026-05-02T18:00:00Z', '2026-05-02T18:07:00Z', NULL);
+SELECT station, n_contacts, n_pending, n_small, n_large, total_gb FROM answer
+=> [["Kiruna", 4, 1, 0, 3, 2.38], ["Svalbard", 4, 1, 1, 2, 2.315], ["Awarua", 3, 0, 2, 1, 0.29], ["Hartebeesthoek", 1, 1, 0, 0, null]]
+--- check query | Every contact lands in exactly one of the three counts
+SELECT COUNT(*) FROM answer WHERE n_pending + n_small + n_large <> n_contacts
+=> [[0]]
+
++++ problem | Duplicates in an import
+--- task
+This problem has its own table, `reading_import`: a copy of the readings loaded from files, with the columns `sc_id`, `ts`, `channel` and `value`. It should hold one row per spacecraft, time and channel, but it was created without a primary key, and some files were loaded twice.
+
+Create the view `answer` with the columns `sc_id`, `ts`, `channel`, `copies` and `n_values`, with one row for each spacecraft, time and channel that appears more than once:
+
+- `copies`: how many rows share that spacecraft, time and channel.
+- `n_values`: how many different non-missing values those rows hold. Two rows with 0.25 count once; missing values do not count.
+
+Sort by `copies`, most first, then by `sc_id`, `ts` and `channel`.
+--- schema
+CREATE TABLE reading_import (
+    sc_id   TEXT NOT NULL,
+    ts      TEXT NOT NULL,
+    channel TEXT NOT NULL,
+    value   REAL
+);
+INSERT INTO reading_import (sc_id, ts, channel, value) VALUES
+  ('LYR-01', '2026-05-02T14:00:00Z', 'SOC',      0.69),
+  ('LYR-01', '2026-05-02T14:00:00Z', 'SOC',      0.69),
+  ('LYR-01', '2026-05-02T14:00:00Z', 'BUS_TEMP', 24.0),
+  ('LYR-02', '2026-05-02T14:00:00Z', 'SOC',      0.25),
+  ('LYR-02', '2026-05-02T14:00:00Z', 'SOC',      0.52),
+  ('LYR-02', '2026-05-02T14:00:00Z', 'SOC',      0.25),
+  ('LYR-02', '2026-05-02T14:30:00Z', 'SOC',      NULL),
+  ('LYR-02', '2026-05-02T14:30:00Z', 'SOC',      NULL),
+  ('LYR-03', '2026-05-02T14:00:00Z', 'SOC',      0.50);
+--- starter
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT DISTINCT sc_id, ts, channel, 2 AS copies, 1 AS n_values
+FROM reading_import;
+
+SELECT * FROM answer;
+--- solution
+DROP VIEW IF EXISTS answer;
+CREATE VIEW answer AS
+SELECT sc_id,
+       ts,
+       channel,
+       COUNT(*)              AS copies,
+       COUNT(DISTINCT value) AS n_values
+FROM reading_import
+GROUP BY sc_id, ts, channel
+HAVING COUNT(*) > 1
+ORDER BY copies DESC, sc_id, ts, channel;
+
+SELECT * FROM answer;
+--- check query | Three keys appear more than once
+SELECT sc_id, ts, channel, copies, n_values FROM answer
+=> [["LYR-02", "2026-05-02T14:00:00Z", "SOC", 3, 2], ["LYR-01", "2026-05-02T14:00:00Z", "SOC", 2, 1], ["LYR-02", "2026-05-02T14:30:00Z", "SOC", 2, 0]]
+--- check query | A second LYR-03 row joins the list; a row for another channel does not
+INSERT INTO reading_import (sc_id, ts, channel, value) VALUES
+  ('LYR-03', '2026-05-02T14:00:00Z', 'SOC',      0.50),
+  ('LYR-03', '2026-05-02T14:00:00Z', 'BUS_TEMP', 44.8);
+SELECT sc_id, channel, copies, n_values FROM answer WHERE sc_id = 'LYR-03'
+=> [["LYR-03", "SOC", 2, 1]]
+--- check query | Keys that appear once are not listed
+SELECT COUNT(*) FROM answer WHERE copies < 2
+=> [[0]]
+
++++ question | Neither side of the split
+--- ask
+A table `t` has one column, `value`, holding five rows: 0.9, 0.4, NULL, 0.6 and NULL. What does this print? Type the number.
+
+```sql
+SELECT COUNT(*) FROM t WHERE NOT (value > 0.5);
+```
+--- answer
+1
+--- why
+For 0.9 and 0.6, `value > 0.5` is TRUE, so `NOT` makes it FALSE. For 0.4 it is FALSE, so `NOT` makes it TRUE: that is the one row kept. For the two NULLs, `value > 0.5` is UNKNOWN, and `NOT UNKNOWN` is still UNKNOWN, which WHERE drops. `COUNT(*)` then counts the single row that survived. The "greater" side has 2 rows and this side has 1: two of the five fall through both.
+
++++ question | IN and NOT IN with a NULL
+--- ask
+Which one of these conditions is TRUE?
+--- choice correct
+`'LYR-02' IN ('LYR-02', NULL)`
+--- choice
+`'LYR-03' NOT IN ('LYR-02', NULL)`
+--- choice
+`'LYR-03' IN ('LYR-02', NULL)`
+--- choice
+`NULL = NULL`
+--- why
+`IN` is a chain of `=` joined by OR, and it needs only one TRUE: `'LYR-02' = 'LYR-02'` is TRUE, and TRUE OR anything is TRUE. `NOT IN` is a chain of `<>` joined by AND and needs every link TRUE; the link `'LYR-03' <> NULL` is UNKNOWN, so the whole chain is UNKNOWN. `'LYR-03' IN ('LYR-02', NULL)` is FALSE OR UNKNOWN, which is UNKNOWN. And `NULL = NULL` is UNKNOWN: two unknowns are not known to be equal.
+
++++ question | A time typed without an offset
+--- ask
+In PostgreSQL, a table has a column `at_wall TIMESTAMP` and a column `at_inst TIMESTAMPTZ`. New York is 4 hours behind UTC in May. You run:
+
+```sql
+SET TIME ZONE 'America/New_York';
+INSERT INTO t (at_wall, at_inst) VALUES ('2026-05-02 14:00:00', '2026-05-02 14:00:00');
+SET TIME ZONE 'UTC';
+SELECT at_wall, at_inst FROM t;
+```
+
+What does the SELECT print?
+--- choice
+`2026-05-02 14:00:00` and `2026-05-02 14:00:00+00`
+--- choice correct
+`2026-05-02 14:00:00` and `2026-05-02 18:00:00+00`
+--- choice
+`2026-05-02 18:00:00` and `2026-05-02 18:00:00+00`
+--- choice
+`2026-05-02 10:00:00` and `2026-05-02 14:00:00+00`
+--- why
+The text had no offset, so for the TIMESTAMPTZ column PostgreSQL used the session's zone at the time of the insert: 14:00 in New York, which is the instant 18:00 UTC. That instant is what is stored, and in a UTC session it prints as `18:00:00+00`. The plain TIMESTAMP column stores the wall-clock reading and nothing else, so it says 14:00 to every session. That is why loader scripts should always write `Z` or `+00`: the same text becomes a different instant on a machine set to another zone.
+
++++ question | Seconds since 1970 in a REAL column
+--- ask
+A logger stores each event's time as seconds since the Unix epoch in a PostgreSQL `REAL` column. Two events happen 30 seconds apart, at about 1,777,730,400 seconds. What is stored?
+--- choice
+The two exact numbers, because REAL holds numbers up to about 10^38.
+--- choice
+Both numbers, each rounded to the nearest microsecond.
+--- choice correct
+Very likely the same number for both, because near 1.78 billion a REAL can only hold multiples of 128.
+--- choice
+An error, because the number is bigger than a REAL can hold.
+--- why
+A REAL keeps about 7 significant digits, not a fixed number of decimal places. Its range is huge, but the gap between neighboring values grows with the size of the number, and near 1.78 billion the gap is 128. Two times 30 seconds apart usually round to the same stored value, so they claim the same instant, and a sort or a key cannot tell them apart. Store an instant as a timestamp type, or as an integer count of nanoseconds since a stated epoch.
+
++++ question | A value too big for its type
+--- ask
+What does PostgreSQL do with this query?
+
+```sql
+SELECT CAST(99.995 AS NUMERIC(4, 2));
+```
+--- choice
+It prints `99.99`, cutting off the extra digit.
+--- choice
+It prints `100.00`.
+--- choice
+It prints `99.995`, since NUMERIC is exact.
+--- choice correct
+It stops with `numeric field overflow`.
+--- why
+`NUMERIC(4, 2)` holds 4 digits in all, 2 of them after the point, so at most 99.99. The value has three decimal places, so it is rounded to two: 99.995 rounds up to 100.00. That needs three digits before the point, and the type only has two, so PostgreSQL refuses rather than store a wrong number. Rounding happens first, and the overflow comes from the rounded value.
+
++++ question | Adding up different masses
+--- ask
+In the `spacecraft` table, LYR-01 and LYR-02 weigh 420 kg each, and LYR-04 weighs 435 kg. What does this print? Type the number.
+
+```sql
+SELECT SUM(DISTINCT mass_kg)
+FROM spacecraft
+WHERE sc_id IN ('LYR-01', 'LYR-02', 'LYR-04');
+```
+--- answer
+855
+--- why
+`SUM(DISTINCT mass_kg)` adds each *different* mass once: 420 + 435 = 855. The fleet's real total is 420 + 420 + 435 = 1275. Two spacecraft that happen to weigh the same get merged into one. That is why `SUM(DISTINCT …)` is never a fix for rows counted twice by a join: it removes equal values, not repeated spacecraft.
+
++++ question | Which of these PostgreSQL accepts
+--- ask
+Which one of these queries does PostgreSQL run without an error?
+--- choice
+`SELECT value * 100 AS pct FROM reading WHERE pct > 50;`
+--- choice correct
+`SELECT value * 100 AS pct FROM reading ORDER BY pct;`
+--- choice
+`SELECT value * 100 AS pct FROM reading ORDER BY pct + 0;`
+--- choice
+`SELECT sc_id, AVG(value) AS m FROM reading GROUP BY sc_id HAVING m > 0.5;`
+--- why
+An alias is born at SELECT, step 5. WHERE (step 2) and HAVING (step 4) run before it exists, so the first and last queries fail with "column does not exist". ORDER BY runs at step 7, so it can use the alias, but in PostgreSQL only on its own: inside an expression such as `pct + 0` the name is looked up among the table's real columns, and there is none called `pct`. SQLite would run all four.
+
++++ question | A plan that runs backwards
+--- ask
+For `SELECT sc_id, ts, value FROM reading_big WHERE value < 0.25 ORDER BY ts DESC LIMIT 5`, PostgreSQL's plan is:
+
+```text
+Limit
+  ->  Index Scan Backward using reading_big_ts on reading_big
+        Filter: (value < '0.25'::double precision)
+        Rows Removed by Filter: 40
+```
+
+Which statement is right?
+--- choice
+The plan breaks the logical order, which puts WHERE before ORDER BY, so the result can differ from what the query means.
+--- choice correct
+The planner may do the work in any order as long as the rows are exactly the ones the logical order defines; walking the `ts` index newest first and stopping after five matches does that.
+--- choice
+Only 45 rows were read, so the answer may miss matching rows further back in the table.
+--- choice
+The database sorted the whole table first and then filtered it, because ORDER BY always runs first.
+--- why
+The logical order says what a query means; the physical plan is how the database gets there. Reading the index backwards produces rows already in `ts DESC` order, testing each one against WHERE as it goes. The first five that pass are exactly the five newest matching rows, so stopping after 45 rows (5 kept, 40 removed) gives the same answer as filtering and sorting everything. No sort ran at all.
+
++++ question | Twenty-four hours in autumn
+--- ask
+In PostgreSQL, with the session's time zone set to `America/Los_Angeles`, you run:
+
+```sql
+SELECT TIMESTAMPTZ '2026-10-31 12:00:00' + INTERVAL '24 hours';
+```
+
+Los Angeles clocks go back one hour, from 02:00 to 01:00, early on 1 November 2026. What does it print?
+--- choice
+`2026-11-01 12:00:00-08`
+--- choice correct
+`2026-11-01 11:00:00-08`
+--- choice
+`2026-11-01 13:00:00-08`
+--- choice
+`2026-11-01 12:00:00-07`
+--- why
+`INTERVAL '24 hours'` adds exactly 24 hours of real time. That night has 25 hours on Los Angeles clocks, because 01:00 to 02:00 happens twice, so 24 hours after noon on 31 October the wall clock reads 11:00 on 1 November, now in standard time, UTC minus 8. `INTERVAL '1 day'` would give 12:00 instead, 25 hours later. In UTC the two never differ, which is one reason fleet data is kept in UTC.
+
++++ question | A default that moves the average
+--- ask
+Four battery readings are 0.6, 0.8, NULL and 0.4. What does `AVG(COALESCE(value, 0))` return? Type the number.
+--- answer
+0.45
+.45
+0.450
+--- why
+COALESCE turns the NULL into 0, so the average is (0.6 + 0.8 + 0 + 0.4) / 4 = 1.8 / 4 = 0.45. Plain `AVG(value)` skips the NULL and gives 1.8 / 3 = 0.6. The gap has become a flat battery: the mean drops by 0.15, and nothing downstream can tell that a reading was missing rather than zero.
+
++++ question | What an underscore matches
+--- ask
+A channel table holds four codes: `BUS_V`, `BUS_VOLT`, `BUSXV` and `BUS_TEMP`. Which of them does `chan_code LIKE 'BUS_V%'` match?
+--- choice
+Only `BUS_V`.
+--- choice
+`BUS_V` and `BUS_VOLT`.
+--- choice correct
+`BUS_V`, `BUS_VOLT` and `BUSXV`.
+--- choice
+All four.
+--- why
+In LIKE, `_` is a wildcard for exactly one character, and `%` for any run of characters, even none. So `'BUS_V%'` means "BUS, any one character, V, then anything". `BUS_V` and `BUS_VOLT` fit, and so does `BUSXV`, with X as the one character. `BUS_TEMP` has T where the V must be. When you know the exact code, use `=`, and read what a pattern matches with `SELECT DISTINCT` before trusting it.
+
++++ question | A cast that does not complain
+--- ask
+What does SQLite print for this query? Type the value.
+
+```sql
+SELECT CAST('7.9 V' AS REAL);
+```
+--- answer
+7.9
+--- why
+SQLite never raises an error on a bad cast. It converts as much of the text as looks like a number, the leading `7.9`, and drops the rest. (Text with no number at the front, such as `'abc'`, becomes 0.) PostgreSQL would stop with `invalid input syntax for type real`, which is the more useful answer: it tells you the data holds a unit where a number belongs. In SQLite, check with `typeof()` and clean text before you cast it.

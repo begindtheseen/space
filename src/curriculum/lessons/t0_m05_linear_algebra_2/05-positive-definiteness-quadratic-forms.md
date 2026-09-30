@@ -231,6 +231,8 @@ except np.linalg.LinAlgError:
     print("not PD")
 ```
 
+On a laptop, `np.linalg.cholesky` raises `LinAlgError` for a matrix that is not positive definite. The browser's NumPy runs on WebAssembly, which gives it no floating-point error signal, so there it returns a matrix of `nan` instead; the eigenvalue test works the same in both places.
+
 ## Check yourself
 
 ::: check

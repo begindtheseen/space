@@ -6,7 +6,7 @@ covers:
   - Tags and semantic versioning
 ---
 
-Lesson 01 opened with the most important question on launch day: *exactly which code is on the vehicle?* A commit hash answers it precisely, but nobody wants to say "we are flying `9782d93fcd5d5a6ddec0d5f83b915a5dd774b591`" in a readiness review. People want a name — "flight software 2.4.1" — that is short, that everyone can say out loud, and that points at one commit forever.
+Lesson 01 opened with the most important question on launch day: *exactly which code is on the vehicle?* A commit hash answers it precisely, but nobody wants to say "we are flying `8a53b363aaa84dc241d15b2b85b9760e47a856bf`" in a readiness review. People want a name — "flight software 2.4.1" — that is short, that everyone can say out loud, and that points at one commit forever.
 
 That name is a **tag**. This lesson shows how Git's tags work, how they differ from branches, and how to read and write the version numbers that go in them. The numbering rules, called **semantic versioning**, are used across the software world, and they carry a promise: from the number alone, a user can tell whether upgrading is safe.
 
@@ -28,16 +28,16 @@ Git has two kinds, and the difference is what the ref points at.
 
 ### Lightweight tags
 
-A **lightweight tag** is a bare name for a commit — a branch that does not move, and nothing more. Make one with `git tag <name>`, optionally followed by the commit to tag (the default is HEAD). Maya wants a quick bookmark on the commit where she added the orbital period function:
+A **lightweight tag** is a bare name for a commit — a branch that does not move, and nothing more. Make one with `git tag <name>`, optionally followed by the commit to tag (the default is HEAD). Maya wants a quick bookmark on the commit where she added the orbital period function in lesson 07:
 
 ```bash
-git tag try-period 2659286
+git tag try-period 4c56560
 cat .git/refs/tags/try-period
 git cat-file -t try-period
 ```
 
 ```text
-265928653ae2a979c363d757e7d3c8e3302b0983
+4c565602438d7b36cd4defe23a3f78b019064398
 commit
 ```
 
@@ -45,7 +45,7 @@ The file holds a commit hash, exactly like a branch file. `git cat-file -t` ("ty
 
 ### Annotated tags
 
-An **annotated tag** is a full Git object — the fourth object type from lesson 01 — with its own tagger, date and message. Make one with `-a` ("annotate") and a message with `-m`:
+An **annotated tag** is a full Git object — the fourth object type from lesson 01 — with its own tagger, date and message. Make one with `-a` ("annotate") and a message with `-m`. With no commit named, it tags HEAD, which is where lesson 08 left `main`, `8a53b36`:
 
 ```bash
 git tag -a v0.1.0 -m "First release: point-mass gravity, circular and escape speed"
@@ -55,17 +55,17 @@ git cat-file -p v0.1.0
 ```
 
 ```text
-ce0302f2deb2cb514a36f5ea096c0424f8102d91
+2525a8bd9b50d6f14f45bb1cd69fdf4e4b630fd4
 tag
-object 9782d93fcd5d5a6ddec0d5f83b915a5dd774b591
+object 8a53b363aaa84dc241d15b2b85b9760e47a856bf
 type commit
 tag v0.1.0
-tagger Maya Chen <maya@example.com> 1790258400 -0500
+tagger Maya Chen <maya@example.com> 1790776800 -0500
 
 First release: point-mass gravity, circular and escape speed
 ```
 
-Look at the first two lines. For an annotated tag, the ref file holds the hash of a **tag object** (`ce0302f`), not of the commit, and `git cat-file -t` says `tag`, not `commit`. The tag object then names the commit (`object 9782d93…`), and records who made the tag, when (the timestamp in seconds since 1970, like a commit's), and why. The chain is ref → tag object → commit → tree → blobs.
+Look at the first two lines. For an annotated tag, the ref file holds the hash of a **tag object** (`2525a8b`), not of the commit, and `git cat-file -t` says `tag`, not `commit`. The tag object then names the commit (`object 8a53b36…`), and records who made the tag, when (the timestamp in seconds since 1970, like a commit's), and why. The chain is ref → tag object → commit → tree → blobs.
 
 Because it is an object, an annotated tag is content-addressed like everything else: change its message and it becomes a different object with a different hash.
 
@@ -95,31 +95,31 @@ v0.1.1          Clearer error for bad radius
 ```text
 tag v0.1.0
 Tagger: Maya Chen <maya@example.com>
-Date:   Thu Sep 24 09:00:00 2026 -0500
+Date:   Wed Sep 30 09:00:00 2026 -0500
 
 First release: point-mass gravity, circular and escape speed
 
-commit 9782d93fcd5d5a6ddec0d5f83b915a5dd774b591
+commit 8a53b363aaa84dc241d15b2b85b9760e47a856bf (tag: v0.1.0)
 Author: Maya Chen <maya@example.com>
-Date:   Tue Sep 22 11:30:00 2026 -0500
+Date:   Tue Sep 29 10:15:00 2026 -0500
 
-    Explain how to run the tests
+    Store golden telemetry in LFS
 ...
 ```
 
 **In the log.** `git log --oneline --decorate` shows tags beside the commits they mark:
 
 ```text
-8531fc7 (HEAD -> main) Point README at gravity.py
-7ed081b Add surface_gravity helper
-5ddfaee (tag: v0.1.1) Show repr of bad radius in accel error
-9782d93 (tag: v0.1.0) Explain how to run the tests
-b3fa7df Test escape speed against circular speed
+594a0d4 (HEAD -> main) Point README at gravity.py
+8cb8f75 Add surface_gravity helper
+a9fad92 (tag: v0.1.1) Show repr of bad radius in accel error
+8a53b36 (tag: v0.1.0) Store golden telemetry in LFS
+c235da4 Ignore build products, run output and secrets
 ```
 
 **Visiting.** `git switch --detach v0.1.0` puts you on the tagged commit in **detached HEAD** (lesson 04), and `git status` says `HEAD detached at v0.1.0`. That is how you rebuild an old release exactly. A tag cannot be "on", the way you are on a branch, because it must not move when you commit.
 
-**Deleting.** `git tag -d try-period` removes a tag (`Deleted tag 'try-period' (was 2659286)`). The commit is untouched; only the name goes.
+**Deleting.** `git tag -d try-period` removes a tag (`Deleted tag 'try-period' (was 4c56560)`). The commit is untouched; only the name goes.
 
 **No duplicates.** Git refuses to reuse a name:
 
@@ -148,15 +148,15 @@ git describe
 ```
 
 ```text
-v0.1.1-2-g8531fc7
+v0.1.1-2-g594a0d4
 ```
 
-Read it in three parts: `v0.1.1` is the nearest tag; `2` is the number of commits since that tag; `g8531fc7` is `g` (for "git") followed by the short hash of HEAD. So this is "two commits after 0.1.1, at `8531fc7`". If HEAD is exactly on a tag, `describe` prints the tag alone. Add `--tags` to let it use lightweight tags too.
+Read it in three parts: `v0.1.1` is the nearest tag; `2` is the number of commits since that tag; `g594a0d4` is `g` (for "git") followed by the short hash of HEAD. So this is "two commits after 0.1.1, at `594a0d4`". If HEAD is exactly on a tag, `describe` prints the tag alone. Add `--tags` to let it use lightweight tags too.
 
 This string is how many teams **[[stamp their builds|describe-in-builds]]**. The build script runs `git describe`, bakes the result into the program, and the software reports it at startup — in a log, or in the first telemetry packet after boot. Then "which code is on the vehicle?" has a one-line answer that leads back to one exact commit.
 
 ::: example Cutting a patch release
-Ravi reports that the error message from `accel` is hard to read when the radius is `nan`. Maya fixes it on `main` (one commit, `5ddfaee`, "Show repr of bad radius in accel error") and releases it.
+Ravi reports that the error message from `accel` is hard to read when the radius is `nan`. Maya fixes it on `main` (one commit, `a9fad92`, "Show repr of bad radius in accel error") and releases it.
 
 **Step 1 — what kind of change is it?** A bug fix that changes no function's name, arguments or results for valid inputs. Under the rules in the next section, that is a **patch**: `0.1.0` becomes `0.1.1`.
 
@@ -166,9 +166,9 @@ Ravi reports that the error message from `accel` is hard to read when the radius
 git tag -a v0.1.1 -m "Clearer error for bad radius"
 ```
 
-**Step 3 — check.** `git log --oneline --decorate -2` shows `5ddfaee (HEAD -> main, tag: v0.1.1)` on top of `9782d93 (tag: v0.1.0)`: one commit between the two releases, as intended. `git describe` now prints exactly `v0.1.1`, because HEAD sits on the tag.
+**Step 3 — check.** `git log --oneline --decorate -2` shows `a9fad92 (HEAD -> main, tag: v0.1.1)` on top of `8a53b36 (tag: v0.1.0)`: one commit between the two releases, as intended. `git describe` now prints exactly `v0.1.1`, because HEAD sits on the tag.
 
-**Step 4 — keep working.** Two commits later, `git describe` prints `v0.1.1-2-g8531fc7`. The count is right: `7ed081b` and `8531fc7` are the two commits after `5ddfaee`.
+**Step 4 — keep working.** Two commits later, `git describe` prints `v0.1.1-2-g594a0d4`. The count is right: `8cb8f75` and `594a0d4` are the two commits after `a9fad92`.
 :::
 
 ## Semantic versioning: a number that makes a promise
@@ -199,7 +199,7 @@ MAJOR.MINOR.PATCH. Bump PATCH for backward-compatible bug fixes, MINOR for backw
 Start at `v0.2.0`. Suppose the team declares the API stable and releases `v1.0.0`. What does each later release become?
 
 1. A fix: `circular_speed` returned the wrong value for radii given in kilometers by mistake in one test helper; the public functions are unchanged. **Patch** → `1.0.1`.
-2. A new function `orbital_period(r)` is added. Nothing old changes. **Minor** → `1.1.0` (PATCH resets to 0).
+2. A new function `hohmann_delta_v(r1, r2)` is added. Nothing old changes. **Minor** → `1.1.0` (PATCH resets to 0).
 3. Another new function, `j2_accel(r, lat)`. **Minor** → `1.2.0`.
 4. A bug in `escape_speed` for $r \le 0$ is fixed by raising `ValueError` (as `accel` already does). Valid inputs give the same results. **Patch** → `1.2.1`.
 5. The team renames `accel(r)` to `gravity_accel(r)` and removes the old name. Any code calling `accel` now fails. **Major** → `2.0.0` (MINOR and PATCH reset).
@@ -214,7 +214,7 @@ Suppose version `1.2.1` of a guidance library returns thrust in newtons, and `1.
 
 ## Sorting version tags
 
-Git lists tags alphabetically, as text. [[Text order|text-sort]] is not version order. With tags `v0.1.0`, `v0.1.1`, `v0.2.0`, `v0.2.0-rc.1`, `v0.9.0` and `v0.10.0`:
+Git lists tags alphabetically, as text. [[Text order|text-sort]] is not version order. Picture orbit-sim some months on, with the tags `v0.1.0`, `v0.1.1`, `v0.2.0`, `v0.2.0-rc.1`, `v0.9.0` and `v0.10.0`:
 
 ```bash
 git tag -l "v0.*"
@@ -331,13 +331,13 @@ Two commits after tagging `v0.1.1`, the branch `main` has moved forward twice. T
     </marker>
   </defs>
   <circle cx="40" cy="80" r="16" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="40" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">9782</text>
+  <text x="40" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">8a53</text>
   <circle cx="120" cy="80" r="16" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="120" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">5dda</text>
+  <text x="120" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">a9fa</text>
   <circle cx="200" cy="80" r="16" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="200" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">7ed0</text>
+  <text x="200" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">8cb8</text>
   <circle cx="280" cy="80" r="16" fill="#8fb8f0" stroke="#1f2a44" stroke-width="1.5"/>
-  <text x="280" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">8531</text>
+  <text x="280" y="84" font-size="11" text-anchor="middle" fill="#1f2a44">594a</text>
   <line x1="104" y1="80" x2="58" y2="80" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#tb)"/>
   <line x1="184" y1="80" x2="138" y2="80" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#tb)"/>
   <line x1="264" y1="80" x2="218" y2="80" stroke="#1f2a44" stroke-width="1.5" marker-end="url(#tb)"/>
@@ -408,5 +408,5 @@ In September 1999, NASA's Mars Climate Orbiter was lost as it arrived at Mars. G
 :::
 
 ::: context text-sort Why text order fails for numbers
-Text sorting compares strings one character at a time, from the left, and stops at the first difference. For `v0.10.0` and `v0.2.0`, the first four characters `v0.` and then `1` versus `2` decide it: `1` comes first, so `v0.10.0` sorts before `v0.2.0`, even though 10 is bigger than 2. Version sorting instead splits out each run of digits and compares it as a whole number. The same trap catches file names like `run_9.csv` and `run_10.csv`, which is why many telemetry pipelines pad numbers with zeros: `run_0009.csv`, `run_0010.csv`.
+Text sorting compares strings one character at a time, from the left, and stops at the first difference. For `v0.10.0` and `v0.2.0`, the first three characters `v0.` match, and then `1` versus `2` decides it: `1` comes first, so `v0.10.0` sorts before `v0.2.0`, even though 10 is bigger than 2. Version sorting instead splits out each run of digits and compares it as a whole number. The same trap catches file names like `run_9.csv` and `run_10.csv`, which is why many telemetry pipelines pad numbers with zeros: `run_0009.csv`, `run_0010.csv`.
 :::

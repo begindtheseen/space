@@ -182,7 +182,7 @@ def test_reference_orbit_matches_golden():
                                    rtol=rtol, atol=atol, err_msg=f"column {name}")
 ```
 
-The `TOLERANCE` table is the **[[tolerance contract|tolerance-contract]]**. It is part of the test, reviewed like code, with units in the comments. Time must match exactly, because it is computed from whole numbers of steps. Positions may differ by $10^{-9}$ relative or 1 mm absolute, whichever allows more. Velocities get $10^{-9}$ relative or $10^{-6}\,\mathrm{m/s}$ absolute.
+The `TOLERANCE` table is the **[[tolerance contract|tolerance-contract]]**. It is part of the test, reviewed like code, with units in the comments. Time must match exactly, because it is computed from whole numbers of steps. Positions may differ by 1 mm absolute plus $10^{-9}$ relative, that is by up to $\text{atol} + \text{rtol}\,|\text{desired}|$. Velocities get $10^{-6}\,\mathrm{m/s}$ absolute plus $10^{-9}$ relative.
 
 ::: example Three changes, measured against the tolerance
 Each change below was made to `orbit.py`, the test was run, and the differences from the golden file were measured.

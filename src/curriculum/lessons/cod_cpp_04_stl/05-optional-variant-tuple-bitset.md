@@ -31,7 +31,7 @@ Here is what you can do with an optional `o`:
 The value lives *inside* the optional object, next to a small flag that says whether it is there. There is **[[no heap|optional-layout]]**: making, filling and emptying an optional never allocates.
 
 ::: example A GPS fix that might not exist
-```cpp
+```cpp laptop
 #include <cstdio>
 #include <optional>
 
@@ -236,7 +236,7 @@ A car's dashboard does not have one light that says "something is wrong". It has
 Why not a plain `std::uint16_t` and masks like `word |= 1u << 5`? You can, and much flight code does. The bitset's advantages are the named operations, `count()` and `to_string()` for free, and a checked `test`. Its cost is size: libstdc++ stores bits in whole **[[machine words|machine-word]]**, so even a `bitset<16>` takes 8 bytes. For the downlink you convert to a fixed-width integer.
 
 ::: example A 16-bit health word for telemetry
-```cpp
+```cpp laptop
 #include <bitset>
 #include <cstdint>
 #include <cstdio>

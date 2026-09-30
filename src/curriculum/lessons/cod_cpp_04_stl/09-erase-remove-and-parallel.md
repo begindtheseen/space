@@ -271,7 +271,7 @@ On the machine used to write this lesson, TBB is not installed: `libtbb-dev` sho
 ::: example A parallel program, compiled without TBB
 The program computes $\sin$ of a million angles with `par`, sums them with `par_unseq`, sorts them largest first with `par`, and checks for negatives with `unseq`.
 
-```cpp
+```cpp laptop
 #include <algorithm>
 #include <cmath>
 #include <cstdio>

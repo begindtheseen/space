@@ -181,7 +181,7 @@ O(n) per operation when many keys collide in one bucket, and rehashing on growth
 
 Last lesson's allocation counter answers the memory question for all three candidates. This program uses it on the 128-entry table, then checks the rehash rule for references:
 
-```cpp
+```cpp laptop
 #include <array>
 #include <cstdint>
 #include <cstdio>

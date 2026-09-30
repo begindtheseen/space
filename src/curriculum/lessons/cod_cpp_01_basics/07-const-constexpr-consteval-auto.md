@@ -241,7 +241,7 @@ What is it for? Checking constants at the moment you write them. The body runs i
 ::: example A validated telemetry identifier
 Spacecraft telemetry is sent in **[[CCSDS|ccsds-header]]** packets, and each packet carries an **application process identifier** (APID) that says which part of the vehicle sent it. The APID field is 11 bits wide, so it holds $0$ to $2^{11} - 1 = 2047$. Writing an APID that does not fit should be impossible.
 
-```cpp
+```cpp laptop
 #include <cstdint>
 #include <cstdio>
 

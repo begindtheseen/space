@@ -1,0 +1,3504 @@
+@track python
+@course mod-cod_py_03_numpy
+@module cod_py_03_numpy
+@title NumPy and array thinking: practice and test
+
+=== py03-l01 | Practice: The ndarray: dtype, shape and strides
+--- for
+l01-the-ndarray
+
++++ practice | Where an element sits
+--- task
+Every array knows how many bytes to jump along each axis: its `strides`. Write a function `byte_offset(a, index)` that returns how many bytes from the start of the array's data the element at `index` begins.
+
+- `index` is a tuple with one whole number, zero or more, per axis of `a`.
+- It must work for any number of axes: `(6,)`, `(2, 3)` and `(2, 3, 4)` alike.
+- It must also work for a view such as `a.T`, whose strides are not in the usual order. Use the array's own strides; do not work them out from the shape.
+- Return a plain whole number.
+
+So for a `float64` array of shape `(5, 4)`, whose strides are `(32, 8)`, `byte_offset(a, (3, 2))` is `3 * 32 + 2 * 8 = 112`.
+--- starter
+import numpy as np
+
+
+def byte_offset(a, index):
+    pass
+--- solution
+import numpy as np
+
+
+def byte_offset(a, index):
+    """Bytes from the start of a's data to the element at index (one entry per axis)."""
+    return sum(i * s for i, s in zip(index, a.strides))
+--- hint
+`a.strides` holds one number of bytes per axis, in the same order as the index.
+--- hint
+Multiply each index by the stride of its own axis and add the products up. `zip` pairs the two tuples.
+--- check case | A (5, 4) float64 table
+byte_offset(np.zeros((5, 4)), (3, 2))
+=> 112
+--- check case | A (50, 7) float32 table
+byte_offset(np.zeros((50, 7), dtype=np.float32), (3, 5))
+=> 104
+--- check case | Three axes
+byte_offset(np.zeros((2, 3, 4)), (1, 2, 3))
+=> 184
+--- check case | One axis
+byte_offset(np.zeros(9, dtype=np.float32), (6,))
+=> 24
+--- check test | The transpose finds the same bytes for the same number
+(lambda a: byte_offset(a.T, (2, 1)) == byte_offset(a, (1, 2)) == 40)(np.zeros((2, 3)))
+
++++ practice | Strides before the array exists
+--- task
+Write a function `c_strides(shape, itemsize)` that works out, without making any array, the strides NumPy gives a new array of that shape in its default row-major order.
+
+- `shape` is a tuple of lengths, each at least 1. `itemsize` is the number of bytes per element.
+- The last axis has a stride of `itemsize`: the next element along a row sits right after this one.
+- Every earlier axis has a stride equal to the next axis's stride times the next axis's length.
+- The empty shape `()`, a single number, has the empty strides `()`.
+- Return a tuple.
+
+So `c_strides((7, 5), 8)` is `(40, 8)`, and `c_strides((2, 3, 4), 4)` is `(48, 16, 4)`.
+--- starter
+def c_strides(shape, itemsize):
+    pass
+--- solution
+def c_strides(shape, itemsize):
+    """Row-major strides, in bytes, of an array with this shape and item size."""
+    strides = []
+    step = itemsize
+    for length in reversed(shape):
+        strides.append(step)
+        step *= length
+    return tuple(reversed(strides))
+--- hint
+Work from the last axis to the first. The step starts as one element; after each axis, a step along the axis before it jumps over that whole axis.
+--- hint
+Walk `reversed(shape)`, record the current step, then multiply the step by that axis's length. Reverse what you recorded at the end.
+--- check case | Two axes
+c_strides((7, 5), 8)
+=> (40, 8)
+--- check case | Three axes, four-byte items
+c_strides((2, 3, 4), 4)
+=> (48, 16, 4)
+--- check case | One axis, and no axes
+(c_strides((10,), 1), c_strides((), 8))
+=> ((1,), ())
+--- check test | Agrees with NumPy on several shapes
+(lambda np: all(c_strides(s, 8) == np.zeros(s).strides and c_strides(s, 4) == np.zeros(s, dtype=np.float32).strides for s in [(3,), (4, 3), (2, 5, 6), (3, 1, 2, 7)]))(__import__("numpy"))
+
++++ practice | Averaging two camera frames
+--- task
+A star camera delivers each image as an array of `uint8` brightness values, 0 to 255. Write a function `average_frames(a, b)` that returns the pixel-by-pixel average of two frames of the same shape, as a `float64` array of that shape.
+
+- The average of 200 and 100 is 150.0, and the average of 255 and 255 is 255.0. No value may wrap around.
+- Half values are kept: the average of 0 and 255 is 127.5.
+- Do not change `a` or `b`.
+--- starter
+import numpy as np
+
+
+def average_frames(a, b):
+    pass
+--- solution
+import numpy as np
+
+
+def average_frames(a, b):
+    """Pixel-by-pixel mean of two uint8 frames, as float64, with no wraparound."""
+    return (a.astype(np.float64) + b.astype(np.float64)) / 2.0
+--- hint
+A `uint8` holds 0 to 255. What does `a + b` hold when a pixel is 200 in one frame and 100 in the other?
+--- hint
+Convert both frames to `float64` with `.astype` before adding. `.astype` returns a new array, so the frames themselves are untouched.
+--- check case | Bright pixels do not wrap around
+average_frames(np.array([200, 100, 0, 255], dtype=np.uint8), np.array([100, 100, 255, 255], dtype=np.uint8)).tolist()
+=> [150.0, 100.0, 127.5, 255.0]
+--- check test | The result is float64 and keeps a 2-D shape
+(lambda r: r.dtype == np.float64 and r.shape == (2, 2) and r.tolist() == [[250.0, 5.0], [128.0, 0.5]])(average_frames(np.array([[250, 10], [255, 1]], dtype=np.uint8), np.array([[250, 0], [1, 0]], dtype=np.uint8)))
+--- check case | The frames are left alone
+(lambda a, b: (average_frames(a, b), a.tolist(), b.tolist())[1:])(np.array([250, 7], dtype=np.uint8), np.array([10, 9], dtype=np.uint8))
+=> ([250, 7], [10, 9])
+
++++ practice | Volts that come out as whole numbers
+--- task
+An analog-to-digital converter reports whole-number counts. `scale_counts(counts, gain)` should return each count times `gain` as a new `float64` array of volts, leaving `counts` unchanged. `counts` is a list or an integer array.
+
+Instead, `scale_counts([100, 205, 3], 0.25)` returns `[25, 51, 0]`: every fraction is lost. Fix it.
+--- starter
+import numpy as np
+
+
+def scale_counts(counts, gain):
+    """Each converter count times gain, in volts, as a new float64 array."""
+    volts = np.array(counts)
+    for i in range(len(volts)):
+        volts[i] = volts[i] * gain
+    return volts
+--- solution
+import numpy as np
+
+
+def scale_counts(counts, gain):
+    """Each converter count times gain, in volts, as a new float64 array."""
+    volts = np.array(counts, dtype=np.float64)
+    for i in range(len(volts)):
+        volts[i] = volts[i] * gain
+    return volts
+--- hint
+Check `np.array([100, 205, 3]).dtype`. What happens to 51.25 when it is stored into that array?
+--- hint
+The dtype belongs to the array and is fixed when the array is made. Make `volts` a `float64` array from the start.
+--- check case | Fractions survive
+scale_counts([100, 205, 3], 0.25).tolist()
+=> [25.0, 51.25, 0.75]
+--- check test | The result is float64 and close to the exact volts
+(lambda v: v.dtype == np.float64 and np.allclose(v, [1.25, 2.5625, 0.0375]))(scale_counts([100, 205, 3], 0.0125))
+--- check case | An integer array passed in is not changed
+(lambda c: (scale_counts(c, 0.5), c.tolist())[1])(np.array([3, 5]))
+=> [3, 5]
+
++++ practice | Read an element the way NumPy does
+--- task
+An array is a block of memory plus a small header. Write a function `read(memory, header, index)` that finds one element the way NumPy does, using only the header.
+
+- `memory` is a Python list standing for the data block: each item is one 8-byte number, so the byte position `p` holds `memory[p // 8]`.
+- `header` is a dictionary with three keys: `"offset"`, the byte where the array starts; `"shape"`, a tuple of lengths; and `"strides"`, a tuple of steps in bytes, one per axis. A stride can be negative.
+- `index` is a tuple with one whole number per axis. A negative index counts from the end of its axis, as usual.
+- Raise `IndexError` if `index` does not have one entry per axis, or if any entry is out of range for its axis.
+- The byte position is the offset plus, for each axis, the index times the stride.
+
+So with `memory = [0.0, 1.0, ..., 11.0]` and the header `{"offset": 0, "shape": (4, 3), "strides": (24, 8)}`, `read(memory, header, (3, 2))` is `11.0`. The header `{"offset": 0, "shape": (3, 4), "strides": (8, 24)}` reads the same memory as its transpose.
+--- starter
+def read(memory, header, index):
+    pass
+--- solution
+def read(memory, header, index):
+    """The element at index, found as NumPy finds it: offset plus index times stride."""
+    shape = header["shape"]
+    strides = header["strides"]
+    if len(index) != len(shape):
+        raise IndexError(f"expected {len(shape)} indexes, got {len(index)}")
+    byte = header["offset"]
+    for i, n, s in zip(index, shape, strides):
+        if i < 0:
+            i += n
+        if not 0 <= i < n:
+            raise IndexError(f"index out of range for an axis of length {n}")
+        byte += i * s
+    return memory[byte // 8]
+--- hint
+Deal with each axis in turn: turn a negative index into its positive partner by adding the axis length, check it is in range, then add index times stride to the byte position.
+--- hint
+Start the byte position at the header's offset, not at 0. Only divide by 8 at the very end, to turn bytes into a list position.
+--- check case | A (4, 3) table
+read([float(k) for k in range(12)], {"offset": 0, "shape": (4, 3), "strides": (24, 8)}, (3, 2))
+=> 11.0
+--- check test | The transposed header reads every element NumPy's transpose does
+(lambda m, T: all(read(m, {"offset": 0, "shape": (3, 4), "strides": (8, 24)}, (i, j)) == T[i, j] for i in range(3) for j in range(4)))([float(k) for k in range(12)], __import__("numpy").arange(12.0).reshape(4, 3).T)
+--- check case | An offset and a step of two, like a slice
+[read([float(k) for k in range(12)], {"offset": 32, "shape": (3,), "strides": (16,)}, (i,)) for i in range(3)]
+=> [4.0, 6.0, 8.0]
+--- check case | Negative indexes, and a negative stride that walks backwards
+(read([float(k) for k in range(12)], {"offset": 0, "shape": (4, 3), "strides": (24, 8)}, (-1, -2)), read([float(k) for k in range(12)], {"offset": 88, "shape": (12,), "strides": (-8,)}, (0,)), read([float(k) for k in range(12)], {"offset": 88, "shape": (12,), "strides": (-8,)}, (11,)))
+=> (10.0, 11.0, 0.0)
+--- check test | Out of range, or the wrong number of indexes, raises IndexError
+(lambda m, h: raises(IndexError, lambda: read(m, h, (4, 0))) and raises(IndexError, lambda: read(m, h, (-5, 0))) and raises(IndexError, lambda: read(m, h, (0,))) and raises(IndexError, lambda: read(m, h, (0, 3))))([float(k) for k in range(12)], {"offset": 0, "shape": (4, 3), "strides": (24, 8)})
+
++++ question | A count that was stored as 2.7
+--- ask
+What does this print?
+
+```python
+import numpy as np
+
+counts = np.array([3, 1, 4])
+counts[1] = 2.7
+half = counts.astype(np.float64) / 2
+print(counts[1], half[1])
+```
+--- answer
+2 1.0
+2, 1.0
+--- why
+`counts` was built from whole numbers only, so its dtype is an integer type. Storing 2.7 converts it to that dtype, which drops the fraction and keeps 2, with no warning. `astype(np.float64)` then makes a new float array from the stored values, so element 1 is 2.0, and half of it is 1.0. The 0.7 was already gone before the conversion; `astype` cannot bring it back.
+
+=== py03-l02 | Practice: Making arrays
+--- for
+l02-creating-arrays
+
++++ practice | A time grid that ends on time
+--- task
+Write a function `time_grid(duration, rate_hz)` that returns the sample times of a recording that starts at 0 s, lasts `duration` seconds and samples `rate_hz` times a second, with a sample at both ends.
+
+- `duration` is always a whole number of sample intervals, but it is a float, so `duration * rate_hz` may come out a hair away from a whole number: `2.3 * 100` is `229.99999999999997`.
+- The last time must be exactly `duration`.
+- A duration of 0 gives one sample, `[0.0]`.
+
+So `time_grid(1.0, 4)` returns `[0.0, 0.25, 0.5, 0.75, 1.0]`.
+--- starter
+import numpy as np
+
+
+def time_grid(duration, rate_hz):
+    pass
+--- solution
+import numpy as np
+
+
+def time_grid(duration, rate_hz):
+    """Sample times from 0 to duration inclusive, at rate_hz samples a second."""
+    n_gaps = round(duration * rate_hz)
+    return np.linspace(0.0, duration, n_gaps + 1)
+--- hint
+Count the gaps first: duration times rate. The points are one more than the gaps, because both ends are included.
+--- hint
+`int(229.99999999999997)` is 229, one gap short. `round` gives the whole number you meant. Then `np.linspace` makes exactly that many points and ends exactly on `duration`.
+--- check case | One second at 4 Hz
+time_grid(1.0, 4).tolist()
+=> [0.0, 0.25, 0.5, 0.75, 1.0]
+--- check test | 2.3 s at 100 Hz has 231 samples and ends at 2.3
+(lambda t: len(t) == 231 and t[-1] == 2.3 and abs(t[1] - t[0] - 0.01) < 1e-12)(time_grid(2.3, 100))
+--- check case | A duration of zero
+time_grid(0.0, 50).tolist()
+=> [0.0]
+--- check test | Ten minutes at 10 Hz
+(lambda t: t.shape == (6001,) and t.dtype == np.float64 and t[0] == 0.0 and t[-1] == 600.0)(time_grid(600.0, 10))
+
++++ practice | A starting covariance
+--- task
+A navigation filter starts with an uncertainty for each of its states, given as a list of standard deviations. Write a function `diagonal_covariance(sigmas)` that returns the square covariance matrix: each standard deviation squared on the main diagonal, in order, and 0.0 everywhere else.
+
+- The result is always a `float64` array, even when every sigma is a whole number.
+- The sigmas may all differ, so `np.eye(n)` times one number is not enough on its own.
+- An empty list gives an array of shape `(0, 0)`.
+
+So `diagonal_covariance([3, 0.5])` returns `[[9.0, 0.0], [0.0, 0.25]]`.
+--- starter
+import numpy as np
+
+
+def diagonal_covariance(sigmas):
+    pass
+--- solution
+import numpy as np
+
+
+def diagonal_covariance(sigmas):
+    """Square float64 matrix with each sigma squared on the diagonal and zeros elsewhere."""
+    n = len(sigmas)
+    cov = np.zeros((n, n))
+    for i, sigma in enumerate(sigmas):
+        cov[i, i] = sigma * sigma
+    return cov
+--- hint
+Make the blank matrix first: `np.zeros` with the shape as one tuple gives `float64` zeros.
+--- hint
+Then walk the sigmas with `enumerate` and write each variance into position `[i, i]`.
+--- check case | Two states
+diagonal_covariance([3, 0.5]).tolist()
+=> [[9.0, 0.0], [0.0, 0.25]]
+--- check test | Whole-number sigmas still give a float64 matrix
+(lambda P: P.dtype == np.float64 and P.tolist() == [[4.0, 0.0], [0.0, 9.0]])(diagonal_covariance([2, 3]))
+--- check test | Six states: positions then velocities, zeros off the diagonal
+(lambda P: P.shape == (6, 6) and [P[i, i] for i in range(6)] == [10000.0] * 3 + [0.25] * 3 and (P - P * np.eye(6) == 0).all())(diagonal_covariance([100.0, 100.0, 100.0, 0.5, 0.5, 0.5]))
+--- check case | No states
+diagonal_covariance([]).shape
+=> (0, 0)
+
++++ practice | Frame times without an extra frame
+--- task
+A camera starts a frame every `dt` seconds. Write a function `frame_times(t0, t1, dt)` that returns the start times of the frames from `t0` up to but **not** including `t1`.
+
+- `t1 - t0` is always a whole number of `dt` steps, but in floats the division may come out a hair above or below that whole number.
+- Equal `t0` and `t1` give an empty array.
+- Do not use `np.arange` with a float step: count the frames as a whole number, then scale.
+
+So `frame_times(1.0, 1.3, 0.1)` returns three times, about `[1.0, 1.1, 1.2]`. `np.arange(1.0, 1.3, 0.1)` gives four.
+--- starter
+import numpy as np
+
+
+def frame_times(t0, t1, dt):
+    pass
+--- solution
+import numpy as np
+
+
+def frame_times(t0, t1, dt):
+    """Frame start times from t0 up to, not including, t1; t1 - t0 is a whole number of dt."""
+    n_frames = round((t1 - t0) / dt)
+    return t0 + np.arange(n_frames) * dt
+--- hint
+How many frames fit between `t0` and `t1`? Work it out as a float, then make it the whole number it should be.
+--- hint
+`round` turns 4.999999999999982 into 5. Then `np.arange(n)` counts 0, 1, ..., n - 1 exactly, and multiplying by `dt` and adding `t0` gives the times.
+--- check test | 1.0 to 1.3 in steps of 0.1 is three frames
+(lambda t: len(t) == 3 and np.allclose(t, [1.0, 1.1, 1.2]))(frame_times(1.0, 1.3, 0.1))
+--- check test | 2.0 to 2.05 in steps of 0.01 is five frames
+(lambda t: len(t) == 5 and np.allclose(t, [2.0, 2.01, 2.02, 2.03, 2.04]))(frame_times(2.0, 2.05, 0.01))
+--- check case | No time, no frames
+frame_times(3.0, 3.0, 0.1).shape
+=> (0,)
+--- check test | Ten seconds at 100 frames a second
+(lambda t: t.shape == (1000,) and t[0] == 0.0 and abs(t[-1] - 9.99) < 1e-9)(frame_times(0.0, 10.0, 0.01))
+
++++ practice | Running means that come out whole
+--- task
+`running_means(values)` should return a `float64` array whose element `i` is the mean of `values[0]` to `values[i]`. An empty list gives an empty array.
+
+Instead, `running_means([1.0, 2.0, 4.0])` returns `[1, 1, 2]` instead of about `[1.0, 1.5, 2.333]`. Fix it.
+--- starter
+import numpy as np
+
+
+def running_means(values):
+    """Element i is the mean of values[0] to values[i]."""
+    means = np.full(len(values), 0)
+    total = 0.0
+    for i, v in enumerate(values):
+        total += v
+        means[i] = total / (i + 1)
+    return means
+--- solution
+import numpy as np
+
+
+def running_means(values):
+    """Element i is the mean of values[0] to values[i]."""
+    means = np.full(len(values), 0.0)
+    total = 0.0
+    for i, v in enumerate(values):
+        total += v
+        means[i] = total / (i + 1)
+    return means
+--- hint
+The arithmetic is right: `total / (i + 1)` is 1.5 on the second step. Look at where it is stored.
+--- hint
+`np.full` takes its dtype from the fill value. What dtype does a fill value of `0` give?
+--- check test | Three values
+(lambda m: m.dtype == np.float64 and np.allclose(m, [1.0, 1.5, 7.0 / 3.0]))(running_means([1.0, 2.0, 4.0]))
+--- check case | Halves are kept
+running_means([0.5, 0.0]).tolist()
+=> [0.5, 0.25]
+--- check case | No values
+running_means([]).shape
+=> (0,)
+
++++ practice | How much does averaging help?
+--- task
+Averaging `n` noisy readings shrinks the noise. Check it by simulation. Write a function `noise_of_mean(n_readings, sigma, n_trials, seed)` that returns a `float64` array of `n_trials` numbers: for each trial, the mean of `n_readings` noise values drawn from a normal distribution with mean 0 and standard deviation `sigma`.
+
+- Make exactly one generator, with `np.random.default_rng(seed)`, before the first trial.
+- Draw each trial's readings with one call, `rng.normal(0.0, sigma, n_readings)`, trial after trial, from that one generator.
+- Fill a preallocated array of results.
+
+The same seed must give the same array every time, and the spread of the results should come out close to `sigma / sqrt(n_readings)`.
+--- starter
+import numpy as np
+
+
+def noise_of_mean(n_readings, sigma, n_trials, seed):
+    pass
+--- solution
+import numpy as np
+
+
+def noise_of_mean(n_readings, sigma, n_trials, seed):
+    """The mean of n_readings normal noise values, once per trial, from one seeded generator."""
+    rng = np.random.default_rng(seed)
+    means = np.zeros(n_trials)
+    for k in range(n_trials):
+        means[k] = rng.normal(0.0, sigma, n_readings).mean()
+    return means
+--- hint
+Make the generator once, before the loop. A generator made inside the loop with the same seed would hand every trial the same readings.
+--- hint
+Start with `np.zeros(n_trials)` and write each trial's `.mean()` into its slot.
+--- check test | The same seed gives the same results
+np.array_equal(noise_of_mean(10, 0.02, 50, 3), noise_of_mean(10, 0.02, 50, 3))
+--- check test | Trial 0 and trial 1 are the first two draws of one generator
+(lambda g, m: abs(m[0] - g.normal(0.0, 0.02, 10).mean()) < 1e-15 and abs(m[1] - g.normal(0.0, 0.02, 10).mean()) < 1e-15)(np.random.default_rng(3), noise_of_mean(10, 0.02, 50, 3))
+--- check test | Every trial is different
+len(set(noise_of_mean(10, 0.02, 50, 3).tolist())) == 50
+--- check test | The spread is about sigma over the square root of n
+(lambda m: m.shape == (2000,) and m.dtype == np.float64 and abs(m.std() - 0.2) < 0.02)(noise_of_mean(25, 1.0, 2000, 11))
+
++++ question | A full array of ones
+--- ask
+What does this print?
+
+```python
+import numpy as np
+
+k = np.full((2, 2), 1)
+k[0, 0] = 0.5
+print(k[0, 0] + k[1, 1])
+```
+--- answer
+1
+--- why
+`np.full` takes its dtype from the fill value, and `1` is a whole number, so `k` is an integer array. Storing 0.5 into it drops the fraction and stores 0, silently. So the sum is 0 + 1 = 1. Writing the fill value as `1.0`, or using `np.ones((2, 2))`, would have kept the 0.5 and printed 1.5.
+
+=== py03-l03 | Practice: Slicing, views and copies
+--- for
+l03-slicing-views-and-copies
+
++++ practice | A window of gyro rates, without copying
+--- task
+A gyro log `tel` is a 2-D array: column 0 is time in seconds, starting at 0, and the other columns are rates, sampled `rate_hz` times a second. Write a function `cut(tel, rate_hz, t_start, t_end)` that returns the rate columns (every column but the time) for the samples from `t_start` up to but not including `t_end`.
+
+- `t_start` and `t_end` are whole numbers of samples from the start, but they are floats, so round the sample numbers.
+- If `t_end` is past the end of the log, stop quietly at the end.
+- Return a view: no numbers may be copied.
+
+So for a log at 10 Hz, `cut(tel, 10, 0.2, 0.5)` returns rows 2, 3 and 4 without their time column.
+--- starter
+import numpy as np
+
+
+def cut(tel, rate_hz, t_start, t_end):
+    pass
+--- solution
+import numpy as np
+
+
+def cut(tel, rate_hz, t_start, t_end):
+    """Rate columns of the samples from t_start up to t_end, as a view of tel."""
+    first = round(t_start * rate_hz)
+    stop = round(t_end * rate_hz)
+    return tel[first:stop, 1:]
+--- hint
+Turn each time into a sample number: time times rate, rounded. Those are the row bounds of a half-open slice.
+--- hint
+One slice per axis, separated by a comma: rows from the first sample to the stop, columns from 1 on. A basic slice is always a view.
+--- check case | Rows 2 to 4, rate columns only
+cut(np.arange(24.0).reshape(6, 4), 10, 0.2, 0.5).tolist()
+=> [[9.0, 10.0, 11.0], [13.0, 14.0, 15.0], [17.0, 18.0, 19.0]]
+--- check test | The result is a view of the log
+(lambda tel: (lambda w: np.shares_memory(w, tel) and w.shape == (3, 3))(cut(tel, 10, 0.1, 0.4)))(np.arange(24.0).reshape(6, 4))
+--- check case | An end past the log stops at the end
+cut(np.arange(24.0).reshape(6, 4), 10, 0.4, 9.0).shape
+=> (2, 3)
+--- check test | 0.7 s at 100 Hz is sample 70, not 69
+(lambda tel: cut(tel, 100, 0.7, 0.72)[0, 0] == tel[70, 1])(np.arange(1000.0).reshape(250, 4))
+
++++ practice | The last few seconds
+--- task
+Write a function `last_seconds(x, rate_hz, seconds)` that returns the last `seconds` of a 1-D record `x` sampled `rate_hz` times a second, as a view.
+
+- The number of samples is `seconds * rate_hz`, rounded to a whole number.
+- Zero seconds gives an empty array of shape `(0,)`.
+- If more samples are asked for than the record holds, return the whole record.
+
+Careful: `x[-n:]` is the last `n` samples only while `n` is at least 1. `x[-0:]` is the same as `x[0:]`, the whole record.
+--- starter
+import numpy as np
+
+
+def last_seconds(x, rate_hz, seconds):
+    pass
+--- solution
+import numpy as np
+
+
+def last_seconds(x, rate_hz, seconds):
+    """The last `seconds` of x as a view; empty for 0 s, the whole record if it is shorter."""
+    n = round(seconds * rate_hz)
+    start = max(len(x) - n, 0)
+    return x[start:]
+--- hint
+Work out where the window starts, counted from the front: the length of the record minus the number of samples you want.
+--- hint
+If that start comes out negative, the record is too short: start at 0 instead. Then slice from the start to the end.
+--- check case | The last half second at 10 Hz
+last_seconds(np.arange(20.0), 10, 0.5).tolist()
+=> [15.0, 16.0, 17.0, 18.0, 19.0]
+--- check case | Zero seconds is empty, not everything
+last_seconds(np.arange(20.0), 10, 0.0).shape
+=> (0,)
+--- check case | More than the record holds
+last_seconds(np.arange(4.0), 10, 3.0).tolist()
+=> [0.0, 1.0, 2.0, 3.0]
+--- check test | The result shares memory with the record
+(lambda x: np.shares_memory(last_seconds(x, 10, 0.3), x))(np.arange(20.0))
+
++++ practice | Remove each channel's starting bias
+--- task
+Write a function `debiased(tel, n)` for a telemetry table `tel` whose column 0 is time and whose other columns are sensor channels. It returns a **new** table of the same shape in which:
+
+- column 0 is the time, unchanged;
+- every other column has had the mean of its own first `n` samples subtracted from all of its samples.
+
+`tel` itself must not change, and the result must share no memory with it. `n` is at least 1.
+
+So for the rows `[0.0, 1.0, 10.0]`, `[0.1, 3.0, 10.0]` and `[0.2, 5.0, 16.0]` with `n = 2`, the result rows are `[0.0, -1.0, 0.0]`, `[0.1, 1.0, 0.0]` and `[0.2, 3.0, 6.0]`.
+--- starter
+import numpy as np
+
+
+def debiased(tel, n):
+    pass
+--- solution
+import numpy as np
+
+
+def debiased(tel, n):
+    """New table: time column kept, every other column minus the mean of its first n samples."""
+    out = tel.copy()
+    for col in range(1, tel.shape[1]):
+        out[:, col] -= tel[:n, col].mean()
+    return out
+--- hint
+Make your own copy of the table first. After that, changing the copy in place is safe, and it is what you want.
+--- hint
+For each channel column, `tel[:n, col]` is its first `n` samples. Subtract their mean from the whole column of the copy.
+--- check case | Two channels, bias from the first two samples
+debiased(np.array([[0.0, 1.0, 10.0], [0.1, 3.0, 10.0], [0.2, 5.0, 16.0]]), 2).tolist()
+=> [[0.0, -1.0, 0.0], [0.1, 1.0, 0.0], [0.2, 3.0, 6.0]]
+--- check test | The table is not changed and nothing is shared
+(lambda tel: (lambda out: np.array_equal(tel, np.array([[0.0, 1.0, 10.0], [0.1, 3.0, 10.0], [0.2, 5.0, 16.0]])) and not np.shares_memory(out, tel))(debiased(tel, 2)))(np.array([[0.0, 1.0, 10.0], [0.1, 3.0, 10.0], [0.2, 5.0, 16.0]]))
+--- check test | With n = 1 every channel starts at zero, and time is untouched
+(lambda tel: (lambda out: (out[0, 1:] == 0).all() and np.array_equal(out[:, 0], tel[:, 0]) and np.allclose(out[:, 1:], tel[:, 1:] - tel[0, 1:]))(debiased(tel, 1)))(np.array([[0.0, 0.12, -0.03, 0.01], [0.1, 0.15, -0.02, 0.0], [0.2, 0.11, -0.04, 0.02]]))
+
++++ practice | A despiker that edits its input
+--- task
+`despike(x, limit)` should return a **new** array in which every sample above `limit` is replaced by the sample before it (after that one has been fixed, so a run of spikes all take the last good value). The first sample is kept as it is. The caller's array must not change.
+
+It gives the right values, but after `y = despike(x, 5.0)` the caller finds that `x` has been changed too, and when `x` is a column of a table, the table changes. Fix it.
+--- starter
+import numpy as np
+
+
+def despike(x, limit):
+    """A copy of x where each sample above limit takes the value of the sample before it."""
+    out = x[:]
+    for i in range(1, len(out)):
+        if out[i] > limit:
+            out[i] = out[i - 1]
+    return out
+--- solution
+import numpy as np
+
+
+def despike(x, limit):
+    """A copy of x where each sample above limit takes the value of the sample before it."""
+    out = x.copy()
+    for i in range(1, len(out)):
+        if out[i] > limit:
+            out[i] = out[i - 1]
+    return out
+--- hint
+For a Python list, `xs[:]` makes a copy. Is that true for a NumPy array?
+--- hint
+Test it: `np.shares_memory(x, x[:])`. A basic slice is a view. Ask for a real copy.
+--- check case | Spikes take the last good value
+despike(np.array([1.0, 9.0, 2.0, 8.0, 8.5, 3.0]), 5.0).tolist()
+=> [1.0, 1.0, 2.0, 2.0, 2.0, 3.0]
+--- check test | The caller's array is unchanged
+(lambda x: (despike(x, 5.0), x.tolist() == [1.0, 9.0, 2.0, 8.0])[1])(np.array([1.0, 9.0, 2.0, 8.0]))
+--- check test | A column of a table: the table is unchanged
+(lambda tel: (lambda y: y.tolist() == [0.5, 0.5, 0.7] and tel[1, 1] == 7.0)(despike(tel[:, 1], 1.0)))(np.array([[0.0, 0.5], [0.1, 7.0], [0.2, 0.7]]))
+--- check case | A first sample over the limit is kept
+despike(np.array([9.0, 1.0]), 5.0).tolist()
+=> [9.0, 1.0]
+
++++ practice | A ring buffer for the latest samples
+--- task
+Flight software often keeps only the most recent samples in a fixed block of memory, writing over the oldest. Write a class `RingLog`:
+
+- `RingLog(capacity, width)` holds at most `capacity` rows of `width` numbers, in one preallocated `float64` array made once.
+- `add(rows)` takes a 2-D `float64` array of shape `(m, width)` and stores its rows as the newest, writing over the oldest when full. `m` can be 0, and it can be larger than `capacity`, in which case only its last `capacity` rows matter.
+- `latest()` returns the rows held, oldest first, as a new array of shape `(k, width)`, where `k` is the number of rows held (at most `capacity`). Changing the returned array must not change the log.
+
+Write rows with slice assignment, not one number at a time. When the new rows run past the end of the block, they wrap round to its start: at most two slices.
+--- starter
+import numpy as np
+
+
+class RingLog:
+    def __init__(self, capacity, width):
+        pass
+
+    def add(self, rows):
+        pass
+
+    def latest(self):
+        pass
+--- solution
+import numpy as np
+
+
+class RingLog:
+    """The latest `capacity` rows of `width` numbers, in one preallocated block."""
+
+    def __init__(self, capacity, width):
+        self.capacity = capacity
+        self.block = np.zeros((capacity, width))
+        self.next = 0        # the row the next sample goes into
+        self.count = 0       # how many rows are held
+
+    def add(self, rows):
+        m = len(rows)
+        if m >= self.capacity:
+            self.block[:] = rows[m - self.capacity:]
+            self.next = 0
+            self.count = self.capacity
+            return
+        end = self.next + m
+        if end <= self.capacity:
+            self.block[self.next:end] = rows
+        else:
+            first = self.capacity - self.next
+            self.block[self.next:] = rows[:first]
+            self.block[:m - first] = rows[first:]
+        self.next = end % self.capacity
+        self.count = min(self.count + m, self.capacity)
+
+    def latest(self):
+        if self.count < self.capacity:
+            return self.block[:self.count].copy()
+        out = np.empty_like(self.block)
+        tail = self.capacity - self.next
+        out[:tail] = self.block[self.next:]
+        out[tail:] = self.block[:self.next]
+        return out
+--- hint
+Keep two numbers besides the block: the row where the next sample goes, and how many rows are held. Once the log is full, the oldest row is the one where the next sample goes.
+--- hint
+When the new rows do not fit before the end of the block, write the first part into `block[next:]` and the rest into `block[:rest]`. `latest()` reassembles the same two pieces in order into a new array.
+--- check case | Before it is full
+(lambda log: (log.add(np.array([[1.0, 10.0], [2.0, 20.0]])), log.latest().tolist())[1])(RingLog(3, 2))
+=> [[1.0, 10.0], [2.0, 20.0]]
+--- check case | It wraps round and keeps the newest, oldest first
+(lambda log: (log.add(np.array([[1.0], [2.0]])), log.add(np.array([[3.0], [4.0]])), log.add(np.array([[5.0]])), log.latest().tolist())[3])(RingLog(3, 1))
+=> [[3.0], [4.0], [5.0]]
+--- check case | A block longer than the log keeps its last rows
+(lambda log: (log.add(np.array([[0.0]])), log.add(np.arange(7.0).reshape(7, 1)), log.latest().tolist())[2])(RingLog(3, 1))
+=> [[4.0], [5.0], [6.0]]
+--- check test | The returned rows are a copy
+(lambda log: (log.add(np.array([[1.0], [2.0], [3.0], [4.0]])), log.latest().__setitem__(0, 99.0), log.latest().tolist() == [[2.0], [3.0], [4.0]])[2])(RingLog(3, 1))
+--- check case | An empty log, and adding no rows
+(lambda log: (log.add(np.zeros((0, 2))), log.latest().shape)[1])(RingLog(4, 2))
+=> (0, 2)
+--- check test | Changing the caller's rows after add does not change the log
+(lambda log, rows: (log.add(rows), rows.__setitem__(0, -1.0), log.latest().tolist() == [[1.0, 2.0]])[2])(RingLog(2, 2), np.array([[1.0, 2.0]]))
+
++++ question | Rebinding and writing in place
+--- ask
+What does this print?
+
+```python
+import numpy as np
+
+x = np.arange(1.0, 7.0)
+y = x[1:4]
+y = y * 10
+z = x[::2]
+z *= -1
+print(x.sum())
+```
+--- answer
+3.0
+3
+--- why
+`x` starts as `[1, 2, 3, 4, 5, 6]`. `y * 10` builds a new array, and `y = ...` only moves the name `y` onto it, so `x` is untouched. `z = x[::2]` is a view of elements 0, 2 and 4, and `z *= -1` multiplies them where they sit, inside `x`. So `x` becomes `[-1, 2, -3, 4, -5, 6]`, whose sum is 3.0.
+
+=== py03-l04 | Practice: Fancy indexing and boolean masks
+--- for
+l04-fancy-indexing-and-masks
+
++++ practice | The fraction of good samples
+--- task
+Write a function `valid_fraction(x, lo, hi)` that returns, as a plain float, the fraction of the samples of the 1-D array `x` that lie between `lo` and `hi`, both ends included.
+
+- A NaN sample is never valid.
+- An empty array gives `0.0`, with no warning.
+- Use a mask, not a loop.
+
+So `valid_fraction(np.array([1.0, 5.0, 3.0, 7.0]), 2.0, 5.0)` is `0.5`.
+--- starter
+import numpy as np
+
+
+def valid_fraction(x, lo, hi):
+    pass
+--- solution
+import numpy as np
+
+
+def valid_fraction(x, lo, hi):
+    """Fraction of x lying in [lo, hi]; NaN is never valid; 0.0 for an empty array."""
+    if len(x) == 0:
+        return 0.0
+    good = (x >= lo) & (x <= hi)
+    return float(good.mean())
+--- hint
+Two comparisons, each in its own parentheses, joined with `&`. The mean of a True/False array is the fraction that is True.
+--- hint
+The mean of an empty array is NaN with a warning, so deal with the empty array first. Every comparison with NaN is False, so NaN samples take care of themselves.
+--- check case | Half the samples are in range, ends included
+valid_fraction(np.array([1.0, 5.0, 3.0, 7.0]), 2.0, 5.0)
+=> 0.5
+--- check case | Both ends count
+valid_fraction(np.array([2.0, 5.0, 5.000001]), 2.0, 5.0)
+=> 2 / 3
+--- check case | NaN is not valid
+valid_fraction(np.array([np.nan, 4.0]), 0.0, 10.0)
+=> 0.5
+--- check case | An empty array
+valid_fraction(np.array([]), 0.0, 1.0)
+=> 0.0
+--- check source | Uses a mask, not a loop
+&
+
++++ practice | Clip rates in place
+--- task
+Write a function `clip_rates(rate, limit)` that limits every sample of the 1-D array `rate` to the range from `-limit` to `limit`, **in place**, and returns how many samples it changed, as a plain whole number.
+
+- A sample exactly at `limit` or `-limit` is not changed and not counted.
+- `rate` may be a column of a bigger table; the table must see the change.
+- Use masked assignment, not a loop.
+
+So after `r = np.array([0.2, 0.7, -0.9, 0.5])` and `clip_rates(r, 0.5)`, which returns 2, `r` is `[0.2, 0.5, -0.5, 0.5]`.
+--- starter
+import numpy as np
+
+
+def clip_rates(rate, limit):
+    pass
+--- solution
+import numpy as np
+
+
+def clip_rates(rate, limit):
+    """Clip rate to [-limit, limit] in place; return how many samples changed."""
+    high = rate > limit
+    low = rate < -limit
+    rate[high] = limit
+    rate[low] = -limit
+    return int(high.sum() + low.sum())
+--- hint
+Make both masks before you change anything, so you can count them afterwards.
+--- hint
+`rate[mask] = value` stores straight into `rate`. A column view passes the stores through to its table.
+--- check case | Two samples clipped
+(lambda r: (clip_rates(r, 0.5), r.tolist()))(np.array([0.2, 0.7, -0.9, 0.5, -0.5]))
+=> (2, [0.2, 0.5, -0.5, 0.5, -0.5])
+--- check case | A column of a table: the table changes
+(lambda tel: (clip_rates(tel[:, 1], 1.0), tel[:, 1].tolist()))(np.array([[0.0, 2.0], [0.1, -3.0], [0.2, 0.5]]))
+=> (2, [1.0, -1.0, 0.5])
+--- check case | Nothing to clip
+(lambda r: (clip_rates(r, 1.0), r.tolist()))(np.array([0.1, -1.0, 1.0]))
+=> (0, [0.1, -1.0, 1.0])
+
++++ practice | Counting hits per bin
+--- task
+A star tracker reports which of `n_bins` sky regions each detected star fell in, as an integer array `bins` of region numbers from 0 to `n_bins - 1`. Write a function `hits_per_bin(n_bins, bins)` that returns an integer array of length `n_bins` holding how many stars fell in each region.
+
+- A region can appear many times in `bins`, and every appearance counts.
+- `bins` can be empty: then every count is 0.
+- Do not loop over the stars.
+
+So `hits_per_bin(4, np.array([1, 1, 3, 1]))` returns `[0, 3, 0, 1]`.
+--- starter
+import numpy as np
+
+
+def hits_per_bin(n_bins, bins):
+    pass
+--- solution
+import numpy as np
+
+
+def hits_per_bin(n_bins, bins):
+    """How many entries of bins name each region 0 .. n_bins - 1."""
+    counts = np.zeros(n_bins, dtype=np.int64)
+    np.add.at(counts, bins, 1)
+    return counts
+--- hint
+Try `counts[bins] += 1` with a repeated region and look at the count. A store to the same place three times is still one store.
+--- hint
+`np.add.at(counts, positions, value)` adds once for every entry of `positions`, repeats included.
+--- check case | Repeated regions all count
+hits_per_bin(4, np.array([1, 1, 3, 1])).tolist()
+=> [0, 3, 0, 1]
+--- check case | Every region, some twice
+hits_per_bin(3, np.array([2, 0, 1, 2, 0])).tolist()
+=> [2, 1, 2]
+--- check case | No stars
+hits_per_bin(3, np.array([], dtype=np.int64)).tolist()
+=> [0, 0, 0]
+--- check test | A thousand stars in one region
+hits_per_bin(2, np.ones(1000, dtype=np.int64)).tolist() == [0, 1000]
+
++++ practice | Gaps that were never filled
+--- task
+`fill_gaps(x, value)` should return a copy of the 1-D array `x` with every NaN replaced by `value`, leaving `x` unchanged.
+
+It runs without an error, but the NaNs are still there in what it returns. Fix it.
+--- starter
+import numpy as np
+
+
+def fill_gaps(x, value):
+    """A copy of x with every NaN replaced by value."""
+    out = x.copy()
+    out[out == np.nan] = value
+    return out
+--- solution
+import numpy as np
+
+
+def fill_gaps(x, value):
+    """A copy of x with every NaN replaced by value."""
+    out = x.copy()
+    out[np.isnan(out)] = value
+    return out
+--- hint
+Print the mask `out == np.nan` for an array with a NaN in it. How many True values does it have?
+--- hint
+NaN is not equal to anything, itself included. NumPy has a function that asks "is this NaN?" element by element.
+--- check case | Both gaps are filled
+fill_gaps(np.array([1.0, np.nan, 3.0, np.nan]), 0.0).tolist()
+=> [1.0, 0.0, 3.0, 0.0]
+--- check test | The input still has its gaps
+(lambda x: (fill_gaps(x, -1.0), int(np.isnan(x).sum()) == 2)[1])(np.array([np.nan, 2.0, np.nan]))
+--- check case | Nothing to fill
+fill_gaps(np.array([4.0, 5.0]), 0.0).tolist()
+=> [4.0, 5.0]
+
++++ practice | When did it settle?
+--- task
+After a slew, a spacecraft's pointing error `x` rings and then settles on a target value. Write a function `settle_time(t, x, target, tol)` that returns the time of the first sample from which **every** remaining sample, that one included, is within `tol` of `target` (a distance equal to `tol` counts as within).
+
+- If the last sample is outside the band, it never settled: return `None`.
+- If every sample is inside the band, return the first time.
+- Return a plain float. Use masks and index positions, not a loop over the samples.
+
+So for `t = [0, 1, 2, 3, 4, 5]` and `x = [5.0, 0.5, 1.5, 0.7, 1.1, 0.95]` with `target = 1.0` and `tol = 0.2`, the samples at 3, 4 and 5 are outside, inside, inside; the last excursion is at 3, so the answer is 4.0.
+--- starter
+import numpy as np
+
+
+def settle_time(t, x, target, tol):
+    pass
+--- solution
+import numpy as np
+
+
+def settle_time(t, x, target, tol):
+    """Time from which x stays within tol of target to the end; None if it never settles."""
+    outside = np.abs(x - target) > tol
+    if not outside.any():
+        return float(t[0])
+    last_out = np.flatnonzero(outside)[-1]
+    if last_out == len(x) - 1:
+        return None
+    return float(t[last_out + 1])
+--- hint
+Build the mask of samples outside the band. The answer is decided by the **last** sample outside it, not the first one inside it.
+--- hint
+`np.flatnonzero(mask)[-1]` is the position of the last True. The settling time is the time of the sample after it.
+--- check case | It settles after its last excursion
+settle_time(np.arange(6.0), np.array([5.0, 0.5, 1.5, 0.7, 1.1, 0.95]), 1.0, 0.2)
+=> 4.0
+--- check case | Leaving the band late means it never settled
+settle_time(np.arange(4.0), np.array([1.0, 1.0, 1.0, 1.5]), 1.0, 0.2)
+=> None
+--- check case | Always inside
+settle_time(np.array([10.0, 10.5, 11.0]), np.array([1.1, 0.9, 1.0]), 1.0, 0.2)
+=> 10.0
+--- check case | Exactly on the edge counts as inside
+settle_time(np.arange(3.0), np.array([2.0, 1.25, 0.75]), 1.0, 0.25)
+=> 1.0
+
++++ question | Two lists on two axes
+--- ask
+What does this print?
+
+```python
+import numpy as np
+
+m = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+print(m[[0, 1], [2, 0]].sum())
+```
+--- answer
+7
+--- why
+With a list on both axes, NumPy pairs the lists up position by position instead of making a block: it picks `m[0, 2]`, which is 3, and `m[1, 0]`, which is 4. Their sum is 7. The block of rows 0 and 1 with columns 2 and 0 would need `m[np.ix_([0, 1], [2, 0])]`, and its sum would be 3 + 1 + 6 + 4 = 14.
+
+=== py03-l05 | Practice: Broadcasting
+--- for
+l05-broadcasting
+
++++ practice | Each load's share of its row
+--- task
+A power log `w` has one row per sample and one column per electrical load, in watts. Write a function `row_fractions(w)` that returns a new array of the same shape in which each entry is that load's share of its own row's total.
+
+- Every row's total is greater than zero.
+- It must work for any number of rows and columns, including a square table, where a per-row value lined up the wrong way still fits and gives wrong numbers.
+- No loops. Leave `w` unchanged.
+
+So the row `[1.0, 1.0, 2.0]` becomes `[0.25, 0.25, 0.5]`.
+--- starter
+import numpy as np
+
+
+def row_fractions(w):
+    pass
+--- solution
+import numpy as np
+
+
+def row_fractions(w):
+    """Each entry divided by the total of its own row."""
+    totals = w.sum(axis=1)          # one total per row, shape (N,)
+    return w / totals[:, None]      # (N, C) / (N, 1): one divisor per row
+--- hint
+`w.sum(axis=1)` gives one total per row, shape `(N,)`. Write both shapes right-aligned: which axis of `w` does a `(N,)` array line up with?
+--- hint
+One value per row needs shape `(N, 1)`. Add the length-1 axis with `None`.
+--- check case | Two rows of three loads
+row_fractions(np.array([[1.0, 1.0, 2.0], [3.0, 0.0, 1.0]])).tolist()
+=> [[0.25, 0.25, 0.5], [0.75, 0.0, 0.25]]
+--- check case | A square table
+row_fractions(np.array([[1.0, 1.0, 2.0], [6.0, 0.0, 2.0], [1.0, 1.0, 0.0]])).tolist()
+=> [[0.25, 0.25, 0.5], [0.75, 0.0, 0.25], [0.5, 0.5, 0.0]]
+--- check test | Every row sums to one, and the log is unchanged
+(lambda w: (lambda f: f.shape == (5, 4) and np.allclose(f.sum(axis=1), 1.0) and w[0, 0] == 1.0)(row_fractions(w)))(np.arange(1.0, 21.0).reshape(5, 4))
+--- check case | A single row
+row_fractions(np.array([[2.0, 6.0]])).tolist()
+=> [[0.25, 0.75]]
+
++++ practice | Which stations can see which satellites
+--- task
+Write a function `visibility(sats, stations, max_km)` for satellite positions `sats`, shape `(S, 3)`, and ground station positions `stations`, shape `(G, 3)`, both in kilometers. It returns a tuple `(visible, counts)`:
+
+- `visible` is a `bool` array of shape `(S, G)`: entry `[i, j]` is True when satellite `i` is within `max_km` of station `j`, the distance exactly `max_km` included;
+- `counts` has shape `(G,)`: how many satellites each station can see.
+
+Use broadcasting for every pair at once, with no loops. `S` and `G` can be equal, or 1.
+--- starter
+import numpy as np
+
+
+def visibility(sats, stations, max_km):
+    pass
+--- solution
+import numpy as np
+
+
+def visibility(sats, stations, max_km):
+    """(S, G) mask of satellite-station pairs within max_km, and how many each station sees."""
+    diff = sats[:, None, :] - stations[None, :, :]     # (S, G, 3)
+    dist = np.sqrt((diff**2).sum(axis=2))              # (S, G)
+    visible = dist <= max_km
+    return visible, visible.sum(axis=0)
+--- hint
+Put the satellites on axis 0 and the stations on axis 1, and keep the three components last: `(S, 1, 3)` minus `(1, G, 3)` gives every difference vector, `(S, G, 3)`.
+--- hint
+Square, add up over the components (the last axis) and take the square root. Compare with `max_km`, then count the True values down each station's column.
+--- check test | Three satellites, two stations
+(lambda v, c: v.tolist() == [[True, True], [False, True], [False, False]] and c.tolist() == [1, 2])(*visibility(np.array([[0.0, 0.0, 0.0], [100.0, 0.0, 0.0], [0.0, 300.0, 0.0]]), np.array([[0.0, 0.0, 50.0], [100.0, 0.0, 0.0]]), 100.0))
+--- check test | As many stations as satellites: matches a pair-by-pair check
+(lambda s, g: (lambda v, c: v.shape == (3, 3) and all(v[i, j] == (np.linalg.norm(s[i] - g[j]) <= 400.0) for i in range(3) for j in range(3)) and c.tolist() == v.sum(axis=0).tolist())(*visibility(s, g, 400.0)))(np.array([[0.0, 0.0, 0.0], [300.0, 100.0, 0.0], [0.0, 500.0, 200.0]]), np.array([[100.0, 0.0, 0.0], [0.0, 400.0, 0.0], [600.0, 0.0, 0.0]]))
+--- check test | One satellite
+(lambda v, c: v.shape == (1, 2) and c.tolist() == [1, 0])(*visibility(np.array([[0.0, 0.0, 0.0]]), np.array([[3.0, 4.0, 0.0], [30.0, 40.0, 0.0]]), 5.0))
+
++++ practice | The broadcasting rule, by hand
+--- task
+Write a function `broadcast_shape(s1, s2)` that applies NumPy's broadcasting rule to two shapes (tuples of whole numbers, each 0 or more) and returns the result shape as a tuple, or `None` if the shapes cannot be broadcast together. Do not call NumPy.
+
+- Line the shapes up on the right. Pad the shorter one on the left with 1s.
+- Two lengths fit if they are equal or if one of them is 1. The result takes the other one, so a 1 against a 0 gives 0.
+- Any pair that does not fit, such as 3 against 0 or 4 against 3, makes the whole thing `None`.
+- The empty shape `()`, a single number, fits anything.
+
+So `broadcast_shape((6, 1), (1, 5))` is `(6, 5)`, and `broadcast_shape((4, 3), (4,))` is `None`.
+--- starter
+def broadcast_shape(s1, s2):
+    pass
+--- solution
+def broadcast_shape(s1, s2):
+    """The broadcast result of two shapes, or None when they do not fit."""
+    n = max(len(s1), len(s2))
+    a = (1,) * (n - len(s1)) + tuple(s1)
+    b = (1,) * (n - len(s2)) + tuple(s2)
+    result = []
+    for x, y in zip(a, b):
+        if x == y or y == 1:
+            result.append(x)
+        elif x == 1:
+            result.append(y)
+        else:
+            return None
+    return tuple(result)
+--- hint
+Make both shapes the same length first by putting 1s at the front of the shorter one. Then compare them position by position.
+--- hint
+In each position: equal, or the other one is 1, keeps the length; a 1 takes the other length; anything else means no result at all.
+--- check case | An outer combination
+broadcast_shape((6, 1), (1, 5))
+=> (6, 5)
+--- check case | The 4 lines up under the 3
+broadcast_shape((4, 3), (4,))
+=> None
+--- check case | Different lengths of shape
+broadcast_shape((2, 1, 4), (3, 1))
+=> (2, 3, 4)
+--- check case | Zero-length axes
+(broadcast_shape((0,), (1,)), broadcast_shape((0,), (3,)), broadcast_shape((), ()))
+=> ((0,), None, ())
+--- check test | Agrees with np.broadcast_shapes
+(lambda np: all(broadcast_shape(a, b) == np.broadcast_shapes(a, b) for a, b in [((8, 1, 6, 1), (7, 1, 5)), ((5, 1, 3), (4, 3)), ((), (2, 3)), ((3,), ()), ((2, 1), (1, 0)), ((1, 1, 1), (9,))]))(__import__("numpy"))
+
++++ practice | A bias that meets the wrong axis
+--- task
+A team stores vectors as columns: `p` has shape `(3, N)`, with row 0 holding every x value. `remove_bias(p, bias)` should return a new `(3, N)` array with each component's bias removed: `bias[0]` from every x, `bias[1]` from every y and `bias[2]` from every z.
+
+It works for no value of `N` at all. With `N = 5` it raises a shape error. With `N = 3` it returns an answer, but a wrong one. With `N = 1` it returns a `(3, 3)` array. Fix it.
+--- starter
+import numpy as np
+
+
+def remove_bias(p, bias):
+    """p: (3, N), one vector per column; bias: (3,). Return p minus each component's bias."""
+    return p - bias
+--- solution
+import numpy as np
+
+
+def remove_bias(p, bias):
+    """p: (3, N), one vector per column; bias: (3,). Return p minus each component's bias."""
+    return p - bias[:, None]
+--- hint
+Write `(3, N)` over `(3,)`, right-aligned. The bias lines up with the last axis, the samples. You want it lined up with the first.
+--- hint
+One value per row of `p` needs shape `(3, 1)`.
+--- check case | Five samples
+remove_bias(np.arange(15.0).reshape(3, 5), np.array([1.0, 2.0, 3.0])).tolist()
+=> [[-1.0, 0.0, 1.0, 2.0, 3.0], [3.0, 4.0, 5.0, 6.0, 7.0], [7.0, 8.0, 9.0, 10.0, 11.0]]
+--- check case | Three samples: the square case
+remove_bias(np.array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]]), np.array([1.0, 2.0, 3.0])).tolist()
+=> [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+--- check case | One sample keeps its shape
+remove_bias(np.array([[5.0], [6.0], [7.0]]), np.array([1.0, 2.0, 3.0])).tolist()
+=> [[4.0], [4.0], [4.0]]
+
++++ practice | Ground passes that overlap
+--- task
+A ground station has a list of planned passes, each a start time and an end time in seconds. A pass covers the half-open interval from its start up to but not including its end, and every pass ends after it starts. Two passes overlap when they share any moment. Write a function `overlapping_pairs(starts, ends)` that returns how many **pairs** of passes overlap, as a plain whole number.
+
+- `starts` and `ends` are 1-D arrays of the same length. Pass `i` runs from `starts[i]` to `ends[i]`.
+- A pass that ends at 100 and one that starts at 100 do not overlap.
+- Count each pair once, and never pair a pass with itself. No passes, or one, give 0.
+- Compare every pass with every other at once, by broadcasting. No loops.
+--- starter
+import numpy as np
+
+
+def overlapping_pairs(starts, ends):
+    pass
+--- solution
+import numpy as np
+
+
+def overlapping_pairs(starts, ends):
+    """How many pairs of half-open passes [start, end) share a moment."""
+    overlap = (starts[:, None] < ends[None, :]) & (starts[None, :] < ends[:, None])
+    overlap &= ~np.eye(len(starts), dtype=bool)      # a pass with itself is not a pair
+    return int(overlap.sum()) // 2
+--- hint
+Passes `i` and `j` overlap exactly when `i` starts before `j` ends and `j` starts before `i` ends. With `starts[:, None]` against `ends[None, :]`, one comparison covers every `(i, j)`.
+--- hint
+The table is symmetric and its diagonal compares each pass with itself. Knock out the diagonal with `~np.eye(n, dtype=bool)`, then every pair has been counted twice.
+--- check case | One overlapping pair
+overlapping_pairs(np.array([0.0, 50.0, 200.0]), np.array([100.0, 150.0, 300.0]))
+=> 1
+--- check case | Touching passes do not overlap
+overlapping_pairs(np.array([0.0, 100.0, 200.0]), np.array([100.0, 200.0, 300.0]))
+=> 0
+--- check case | Three passes inside one long one, overlapping each other too
+overlapping_pairs(np.array([0.0, 10.0, 20.0, 30.0]), np.array([100.0, 40.0, 50.0, 60.0]))
+=> 6
+--- check case | No passes, and one pass
+(overlapping_pairs(np.array([]), np.array([])), overlapping_pairs(np.array([5.0]), np.array([9.0])))
+=> (0, 0)
+
++++ question | A shape before you run it
+--- ask
+`a` has shape `(6, 1, 2)` and `b` has shape `(5, 1)`. What is the shape of `a + b`? Type it as a tuple, or type `error` if it fails.
+--- answer
+(6, 5, 2)
+(6,5,2)
+6, 5, 2
+--- why
+Line the shapes up on the right and pad `b` to `(1, 5, 1)`. Then compare column by column from the right: 2 against 1 gives 2, 1 against 5 gives 5, and 6 against the padded 1 gives 6. Every pair is equal or has a 1 in it, so it works, and the result is `(6, 5, 2)`. Both arrays were stretched: `a` along its middle axis and `b` along its first and last.
+
+=== py03-l06 | Practice: Axes and reductions
+--- for
+l06-axes-and-reductions
+
++++ practice | The peak of each day
+--- task
+A temperature log `x` holds one row per day and one column per sample of that day: shape `(days, samples)`. Write a function `daily_peaks(x)` that returns a tuple `(peaks, where)`:
+
+- `peaks`, shape `(days,)`: each day's highest reading;
+- `where`, shape `(days,)`: the sample index at which it happened. On a tie, the first one.
+
+No loops.
+--- starter
+import numpy as np
+
+
+def daily_peaks(x):
+    pass
+--- solution
+import numpy as np
+
+
+def daily_peaks(x):
+    """Each day's highest reading and the sample index where it first happened."""
+    return x.max(axis=1), x.argmax(axis=1)
+--- hint
+"One answer per day" means the samples must disappear. Which axis holds the samples?
+--- hint
+`max` gives the value and `argmax` gives the position, both with the same `axis=`.
+--- check test | Two days
+(lambda p, w: p.tolist() == [24.0, 19.0] and w.tolist() == [2, 0])(*daily_peaks(np.array([[20.0, 22.0, 24.0, 21.0], [19.0, 18.0, 17.5, 18.2]])))
+--- check test | A tie goes to the first sample
+(lambda p, w: p.tolist() == [5.0] and w.tolist() == [1])(*daily_peaks(np.array([[3.0, 5.0, 2.0, 5.0]])))
+--- check test | Five days of 96 samples
+(lambda x: (lambda p, w: p.shape == (5,) and w.shape == (5,) and all(x[d, w[d]] == p[d] == x[d].max() for d in range(5)))(*daily_peaks(x)))(np.random.default_rng(1).normal(20.0, 3.0, size=(5, 96)))
+
++++ practice | Channels on one scale
+--- task
+Write a function `standardize(a)` for a table `a` with one row per sample and one column per channel. It returns a new table of the same shape in which each column has had its own mean subtracted and has then been divided by its own standard deviation, computed with `ddof=1`.
+
+- A column whose values are all the same has a standard deviation of 0. Its result is all 0.0, with no division by zero and no NaN.
+- No loops. Leave `a` unchanged.
+--- starter
+import numpy as np
+
+
+def standardize(a):
+    pass
+--- solution
+import numpy as np
+
+
+def standardize(a):
+    """Each column minus its mean, over its ddof=1 standard deviation; constant columns give 0."""
+    mean = a.mean(axis=0)
+    std = a.std(axis=0, ddof=1)
+    safe = np.where(std > 0, std, 1.0)
+    return (a - mean) / safe
+--- hint
+"One number per column" means the rows disappear: `axis=0`. A `(C,)` result lines up with the columns of an `(N, C)` table on its own.
+--- hint
+Replace every zero standard deviation with 1.0 before dividing. A constant column minus its mean is already all zeros, so dividing it by 1.0 leaves zeros.
+--- check test | Two channels
+np.allclose(standardize(np.array([[1.0, 10.0], [2.0, 20.0], [3.0, 60.0]])), [[-1.0, -0.7559289460184544], [0.0, -0.3779644730092272], [1.0, 1.1338934190276817]])
+--- check test | Every column comes out with mean 0 and ddof=1 spread 1
+(lambda z: z.shape == (40, 3) and np.allclose(z.mean(axis=0), 0.0) and np.allclose(z.std(axis=0, ddof=1), 1.0))(standardize(np.random.default_rng(2).normal(5.0, 2.0, size=(40, 3))))
+--- check test | A constant column gives zeros, with no division by zero
+(lambda old: (lambda z: (np.seterr(**old), z[:, 1].tolist() == [0.0, 0.0, 0.0] and np.isfinite(z).all())[1])(standardize(np.array([[1.0, 7.0], [2.0, 7.0], [4.0, 7.0]]))))(np.seterr(all="raise"))
+--- check test | The table is left alone
+(lambda a: (standardize(a), a.tolist() == [[1.0, 2.0], [3.0, 5.0], [4.0, 9.0]])[1])(np.array([[1.0, 2.0], [3.0, 5.0], [4.0, 9.0]]))
+
++++ practice | The hottest moment, with gaps
+--- task
+Thermistor readings `T` have one row per sample and one column per sensor, shape `(N, K)`, with NaN wherever a reading was lost. `t`, shape `(N,)`, holds the sample times. Write a function `hottest_times(T, t)` that returns a `float64` array of shape `(K,)`: for each sensor, the time of its highest real reading.
+
+- NaN readings are ignored. On a tie, the earliest time.
+- A sensor with no real readings at all gets NaN, and the function must not raise an error for it.
+- No loops.
+--- starter
+import numpy as np
+
+
+def hottest_times(T, t):
+    pass
+--- solution
+import numpy as np
+
+
+def hottest_times(T, t):
+    """Time of each sensor's highest real reading; NaN for a sensor with none."""
+    missing = np.isnan(T)
+    no_data = missing.all(axis=0)                # (K,): sensors with no real readings
+    filled = np.where(missing, -np.inf, T)       # a gap can never be the maximum
+    where = filled.argmax(axis=0)
+    out = t[where].astype(np.float64)
+    out[no_data] = np.nan
+    return out
+--- hint
+Plain `argmax` treats NaN as the winner, and `np.nanargmax` raises an error on a column that is all NaN. Deal with the all-NaN sensors on their own.
+--- hint
+Replace the gaps with `-np.inf`, which can never be a maximum, and take `argmax` down each column. Index `t` with those positions, then put NaN back for the sensors that had no data at all.
+--- check test | Gaps are skipped, ties go to the earliest, and an empty sensor gives NaN
+(lambda r: r.dtype == np.float64 and r[:2].tolist() == [10.0, 20.0] and np.isnan(r[2]))(hottest_times(np.array([[20.0, 21.0, np.nan], [25.0, np.nan, np.nan], [np.nan, 23.0, np.nan], [22.0, 23.0, np.nan]]), np.array([0.0, 10.0, 20.0, 30.0])))
+--- check case | A gap in the first sample does not win
+hottest_times(np.array([[np.nan], [1.0], [5.0], [4.0]]), np.array([0.0, 0.5, 1.0, 1.5])).tolist()
+=> [1.0]
+--- check test | Matches np.nanargmax on sensors that have data
+(lambda T, t: np.array_equal(hottest_times(T, t), t[np.nanargmax(T, axis=0)]))(np.where(np.random.default_rng(3).random((50, 4)) < 0.2, np.nan, np.random.default_rng(4).normal(30.0, 5.0, (50, 4))), np.arange(50) * 0.1)
+
++++ practice | RMS down the wrong axis
+--- task
+`rms_per_sample(a)` takes an `(N, 3)` array of accelerations and should return the `(N,)` array holding, for each sample, the root mean square of its three components: the square root of the mean of their squares.
+
+It returns three numbers instead of `N`, and when `N` is 3 it returns three wrong numbers without complaint. Fix it.
+--- starter
+import numpy as np
+
+
+def rms_per_sample(a):
+    """(N, 3) accelerations -> (N,) RMS of the three components of each sample."""
+    return np.sqrt(np.mean(a**2, axis=0))
+--- solution
+import numpy as np
+
+
+def rms_per_sample(a):
+    """(N, 3) accelerations -> (N,) RMS of the three components of each sample."""
+    return np.sqrt(np.mean(a**2, axis=1))
+--- hint
+Write the shape `(N, 3)` and cross out the axis you reduce. You want `(N,)` left.
+--- hint
+The components are axis 1.
+--- check test | Four samples
+(lambda r: r.shape == (4,) and np.allclose(r, [1.0, 2.0, 0.0, np.sqrt(3.0)]))(rms_per_sample(np.array([[1.0, -1.0, 1.0], [2.0, 2.0, -2.0], [0.0, 0.0, 0.0], [3.0, 0.0, 0.0]])))
+--- check test | Three samples: the square case
+np.allclose(rms_per_sample(np.array([[3.0, 3.0, 3.0], [0.0, 0.0, 0.0], [0.0, 0.0, 6.0]])), [3.0, 0.0, np.sqrt(12.0)])
+--- check case | One sample
+rms_per_sample(np.array([[2.0, 2.0, 2.0]])).tolist()
+=> [2.0]
+
++++ practice | A gyro at rest: bias, noise and the worst sample
+--- task
+A gyro sits still on a table and logs `g`, shape `(N, 3)`, in rad/s. Write a function `rest_report(g)` that returns a dictionary with three keys:
+
+- `"bias"`: shape `(3,)`, the mean of each axis;
+- `"noise"`: shape `(3,)`, the standard deviation of each axis, with `ddof=1`;
+- `"worst"`: a tuple `(sample, axis)` of plain whole numbers naming the reading that lies furthest from its axis's bias **measured in that axis's own noise**: the largest `abs(g - bias) / noise`. On a tie, the first in row-by-row order.
+
+Every axis has some noise. No loops. A quiet axis with a modest excursion can be worse than a noisy axis with a big one.
+--- starter
+import numpy as np
+
+
+def rest_report(g):
+    pass
+--- solution
+import numpy as np
+
+
+def rest_report(g):
+    """Per-axis bias and ddof=1 noise, and the reading furthest out in noise units."""
+    bias = g.mean(axis=0)
+    noise = g.std(axis=0, ddof=1)
+    score = np.abs(g - bias) / noise              # (N, 3): each (3,) row lines up with the axes
+    sample, axis = np.unravel_index(score.argmax(), score.shape)
+    return {"bias": bias, "noise": noise, "worst": (int(sample), int(axis))}
+--- hint
+Bias and noise are one number per axis, so the samples disappear: `axis=0`. Both have shape `(3,)`, which broadcasts against `(N, 3)` without any `None`.
+--- hint
+`argmax` with no axis counts through the flattened table; `np.unravel_index` turns that count back into a row and a column. Convert both to `int`.
+--- check test | Bias and noise per axis
+(lambda r: np.allclose(r["bias"], [0.02, 0.0, 1.0]) and np.allclose(r["noise"], [0.02, np.sqrt(0.08 / 3), np.sqrt(0.02 / 3)]))(rest_report(np.array([[0.01, 0.0, 1.0], [0.05, 0.2, 1.1], [0.01, -0.2, 0.9], [0.01, 0.0, 1.0]])))
+--- check case | The worst reading in noise units, not the biggest in rad/s
+rest_report(np.array([[0.01, 0.0, 1.0], [0.05, 0.2, 1.1], [0.01, -0.2, 0.9], [0.01, 0.0, 1.0]]))["worst"]
+=> (1, 0)
+--- check test | The indexes are plain ints
+(lambda w: type(w[0]) is int and type(w[1]) is int)(rest_report(np.random.default_rng(5).normal(0.0, 0.01, size=(100, 3)))["worst"])
+--- check test | Agrees with a direct search on random data
+(lambda g: (lambda r, s: r["worst"] == tuple(int(k) for k in np.argwhere(s == s.max())[0]))(rest_report(g), np.abs(g - g.mean(axis=0)) / g.std(axis=0, ddof=1)))(np.random.default_rng(6).normal(0.0, [0.01, 0.02, 0.05], size=(200, 3)))
+
++++ question | Keeping two axes
+--- ask
+`w` has shape `(4, 5, 6)`. What is the shape of `w.sum(axis=(0, 2), keepdims=True)`?
+--- answer
+(1, 5, 1)
+(1,5,1)
+1, 5, 1
+--- why
+The tuple `(0, 2)` reduces axes 0 and 2 together, so every result sums 4 × 6 = 24 numbers. Without `keepdims` those axes would disappear, leaving `(5,)`. With `keepdims=True` each reduced axis stays in its place with length 1, giving `(1, 5, 1)`, which broadcasts straight back against `w`.
+
+=== py03-l07 | Practice: Reshaping, transposing and stacking
+--- for
+l07-reshaping-and-stacking
+
++++ practice | Three channels into one stream
+--- task
+A downlink sends a vector channel as one flat stream: `x0 y0 z0 x1 y1 z1 ...`. Write a function `interleave(x, y, z)` that takes three 1-D arrays of the same length `N` and returns the 1-D stream of `3 * N` numbers in that order.
+
+- Empty inputs give an empty stream, of shape `(0,)`.
+- No loops.
+
+So `interleave(np.array([1.0, 2.0]), np.array([10.0, 20.0]), np.array([100.0, 200.0]))` returns `[1.0, 10.0, 100.0, 2.0, 20.0, 200.0]`.
+--- starter
+import numpy as np
+
+
+def interleave(x, y, z):
+    pass
+--- solution
+import numpy as np
+
+
+def interleave(x, y, z):
+    """One flat stream x0 y0 z0 x1 y1 z1 ... from three component arrays."""
+    return np.stack([x, y, z], axis=1).ravel()
+--- hint
+First make the `(N, 3)` table whose row `k` is `(x[k], y[k], z[k])`. Is that a new axis or a longer old one?
+--- hint
+Reading that table row by row, as `ravel` does, gives exactly the stream.
+--- check case | Two samples
+interleave(np.array([1.0, 2.0]), np.array([10.0, 20.0]), np.array([100.0, 200.0])).tolist()
+=> [1.0, 10.0, 100.0, 2.0, 20.0, 200.0]
+--- check test | Regrouping the stream by threes gives the components back as columns
+(lambda x, y, z: (lambda s: s.shape == (15,) and np.array_equal(s.reshape(-1, 3)[:, 0], x) and np.array_equal(s.reshape(-1, 3)[:, 2], z))(interleave(x, y, z)))(np.arange(5.0), np.arange(5.0) + 0.5, -np.arange(5.0))
+--- check case | Empty inputs
+interleave(np.array([]), np.array([]), np.array([])).shape
+=> (0,)
+--- check source absent | No loop
+\bfor\s+\w+(\s*,\s*\w+)*\s+in\b
+
++++ practice | One stream into channels, without copying
+--- task
+Write a function `split_stream(stream, n_channels)` for a flat 1-D stream that holds `n_channels` channels interleaved, sample by sample: channel `c` is `stream[c]`, `stream[c + n_channels]`, `stream[c + 2 * n_channels]`, and so on.
+
+- Return a tuple of `n_channels` 1-D arrays, channel 0 first.
+- Each channel must be a view of `stream`: no numbers copied.
+- If the length of `stream` is not a whole number of samples, raise `ValueError`.
+--- starter
+import numpy as np
+
+
+def split_stream(stream, n_channels):
+    pass
+--- solution
+import numpy as np
+
+
+def split_stream(stream, n_channels):
+    """The channels of an interleaved stream, as views; ValueError if it does not divide."""
+    table = stream.reshape(-1, n_channels)      # one row per sample; ValueError if it does not divide
+    return tuple(table[:, c] for c in range(n_channels))
+--- hint
+Regroup the stream into one row per sample, with `-1` for the number of samples. A reshape that does not divide raises `ValueError` on its own.
+--- hint
+Each channel is one column of that table, and a column slice is a view.
+--- check test | Two channels
+(lambda a, b: a.tolist() == [0.0, 2.0, 4.0] and b.tolist() == [1.0, 3.0, 5.0])(*split_stream(np.arange(6.0), 2))
+--- check test | Every channel is a view of the stream
+(lambda s: all(np.shares_memory(ch, s) for ch in split_stream(s, 4)) and len(split_stream(s, 4)) == 4)(np.arange(20.0))
+--- check test | A stream that does not divide raises ValueError
+raises(ValueError, lambda: split_stream(np.arange(7.0), 2))
+--- check test | One channel is the whole stream
+(lambda chans: len(chans) == 1 and chans[0].tolist() == [5.0, 6.0, 7.0])(split_stream(np.array([5.0, 6.0, 7.0]), 1))
+
++++ practice | Averages over blocks of rows
+--- task
+Write a function `block_average(x, block)` for a table `x` of shape `(N, C)`, one row per sample. It returns the `(N // block, C)` table whose row `k` is the mean of rows `k * block` to `k * block + block - 1`.
+
+- Rows left over at the end, too few to fill a block, are dropped.
+- Fewer rows than one block gives shape `(0, C)`.
+- No loops. Regroup the rows, then reduce.
+
+So with `block = 2`, the rows `[1, 10]`, `[3, 30]`, `[5, 50]`, `[7, 70]`, `[9, 90]` give `[[2, 20], [6, 60]]`; the fifth row is dropped.
+--- starter
+import numpy as np
+
+
+def block_average(x, block):
+    pass
+--- solution
+import numpy as np
+
+
+def block_average(x, block):
+    """Mean of each run of `block` rows; rows left over at the end are dropped."""
+    n_blocks = len(x) // block
+    kept = x[:n_blocks * block]
+    return kept.reshape(n_blocks, block, x.shape[1]).mean(axis=1)
+--- hint
+Trim the table to a whole number of blocks first. Then give it three axes: blocks, rows within a block, channels.
+--- hint
+Averaging within each block means the middle axis must disappear.
+--- check case | Two blocks of two, one row dropped
+block_average(np.array([[1.0, 10.0], [3.0, 30.0], [5.0, 50.0], [7.0, 70.0], [9.0, 90.0]]), 2).tolist()
+=> [[2.0, 20.0], [6.0, 60.0]]
+--- check case | Fewer rows than one block
+block_average(np.ones((3, 4)), 5).shape
+=> (0, 4)
+--- check test | Blocks of one change nothing
+(lambda x: np.array_equal(block_average(x, 1), x))(np.arange(12.0).reshape(4, 3))
+--- check test | Matches the mean of each slice
+(lambda x: (lambda b: b.shape == (33, 3) and np.allclose(b[7], x[70:80].mean(axis=0)))(block_average(x, 10)))(np.random.default_rng(1).normal(size=(335, 3)))
+
++++ practice | Transpose every matrix in a stack
+--- task
+Write a function `transpose_each(Cs)` that transposes every matrix in `Cs`, whose **last two** axes are a matrix and whose other axes, if any, only count how many.
+
+- It must work for a single matrix `(3, 3)`, a stack `(N, 3, 3)`, a stack of stacks `(D, N, 3, 3)`, and matrices that are not square, such as `(N, 2, 3)`, which gives `(N, 3, 2)`.
+- Return a view: no copying.
+- `Cs.T` reverses every axis, so it is right only for a single matrix.
+--- starter
+import numpy as np
+
+
+def transpose_each(Cs):
+    pass
+--- solution
+import numpy as np
+
+
+def transpose_each(Cs):
+    """Swap the last two axes: every matrix transposed, the stack axes left alone."""
+    return Cs.swapaxes(-1, -2)
+--- hint
+Only the last two axes should trade places. Count them from the end, so the number of axes in front does not matter.
+--- hint
+`swapaxes` with two negative axis numbers says "the last two", however many axes come before.
+--- check test | A single matrix
+(lambda C: np.array_equal(transpose_each(C), C.T))(np.arange(9.0).reshape(3, 3))
+--- check test | A stack: each matrix transposed, in place in the stack
+(lambda S: (lambda T: T.shape == (4, 3, 3) and all(np.array_equal(T[n], S[n].T) for n in range(4)))(transpose_each(S)))(np.arange(36.0).reshape(4, 3, 3))
+--- check test | A stack of stacks, and a view
+(lambda S: (lambda T: T.shape == (2, 5, 3, 3) and np.array_equal(T[1, 3], S[1, 3].T) and np.shares_memory(T, S))(transpose_each(S)))(np.arange(90.0).reshape(2, 5, 3, 3))
+--- check case | Matrices that are not square
+transpose_each(np.zeros((7, 2, 3))).shape
+=> (7, 3, 2)
+
++++ practice | Positions with the components mixed up
+--- task
+`positions(x, y, z)` should return the `(N, 3)` array whose row `k` is `(x[k], y[k], z[k])`, for three 1-D arrays of length `N`.
+
+The shape is right, but the numbers are not: for `x = [1, 2]`, `y = [3, 4]`, `z = [5, 6]` it returns rows `(1, 2, 3)` and `(4, 5, 6)` instead of `(1, 3, 5)` and `(2, 4, 6)`. Fix it.
+--- starter
+import numpy as np
+
+
+def positions(x, y, z):
+    """The (N, 3) array whose row k is (x[k], y[k], z[k])."""
+    return np.hstack([x, y, z]).reshape(-1, 3)
+--- solution
+import numpy as np
+
+
+def positions(x, y, z):
+    """The (N, 3) array whose row k is (x[k], y[k], z[k])."""
+    return np.column_stack([x, y, z])
+--- hint
+Print `np.hstack([x, y, z])`. What order are the numbers in before the reshape regroups them by threes?
+--- hint
+`hstack` of 1-D arrays joins them end to end. You want each input to become a column, side by side.
+--- check case | Two samples
+positions(np.array([1.0, 2.0]), np.array([3.0, 4.0]), np.array([5.0, 6.0])).tolist()
+=> [[1.0, 3.0, 5.0], [2.0, 4.0, 6.0]]
+--- check test | Three samples: each column is one component
+(lambda x, y, z: (lambda r: r.shape == (3, 3) and np.array_equal(r[:, 0], x) and np.array_equal(r[:, 1], y) and np.array_equal(r[:, 2], z))(positions(x, y, z)))(np.array([12.0, 13.5, 15.0]), np.array([10.0, 17.6, 25.1]), np.array([0.0, 0.4, 0.8]))
+--- check case | One sample
+positions(np.array([7.0]), np.array([8.0]), np.array([9.0])).tolist()
+=> [[7.0, 8.0, 9.0]]
+
++++ practice | A recorder that writes column by column
+--- task
+An old flight recorder writes its table of `N` samples by `n_channels` channels **column by column**: all of channel 0, then all of channel 1, and so on, as one flat stream. A C library downstream needs the usual `(N, n_channels)` table, one row per sample, and it reads raw memory, so each row must sit together in memory.
+
+Write a function `read_column_major(stream, n_channels)` that returns that table as a C-contiguous array (its `flags["C_CONTIGUOUS"]` is True).
+
+- Row `k` is sample `k`: `(stream[k], stream[N + k], stream[2 * N + k], ...)`.
+- If the length of `stream` is not a whole number of channels, raise `ValueError`.
+- One channel gives shape `(N, 1)`.
+--- starter
+import numpy as np
+
+
+def read_column_major(stream, n_channels):
+    pass
+--- solution
+import numpy as np
+
+
+def read_column_major(stream, n_channels):
+    """The (N, n_channels) table from a column-by-column stream, laid out row by row."""
+    table = stream.reshape(-1, n_channels, order="F")    # fill the table column by column
+    return np.ascontiguousarray(table)
+--- hint
+Either regroup into one row per **channel** and transpose, or reshape into `(N, n_channels)` filling column by column with `order="F"`. Both give the right numbers.
+--- hint
+Both results are laid out column by column in memory. `np.ascontiguousarray` returns the same numbers laid out row by row.
+--- check case | Two channels of three samples
+read_column_major(np.array([1.0, 2.0, 3.0, 10.0, 20.0, 30.0]), 2).tolist()
+=> [[1.0, 10.0], [2.0, 20.0], [3.0, 30.0]]
+--- check test | The rows sit together in memory
+(lambda r: r.flags["C_CONTIGUOUS"] and r.shape == (4, 3) and r[3].tolist() == [3.0, 7.0, 11.0])(read_column_major(np.arange(12.0), 3))
+--- check test | A stream that does not divide raises ValueError
+raises(ValueError, lambda: read_column_major(np.arange(10.0), 3))
+--- check case | One channel
+read_column_major(np.array([4.0, 5.0]), 1).tolist()
+=> [[4.0], [5.0]]
+
++++ question | A new axis in the middle
+--- ask
+`a` has shape `(4, 3)`. What is the shape of `np.stack([a, a], axis=1)`?
+--- answer
+(4, 2, 3)
+(4,2,3)
+4, 2, 3
+--- why
+`np.stack` joins along a **new** axis, placed at the position you name. The inputs are `(4, 3)`; a new axis of length 2 (one entry per input) goes in at position 1, giving `(4, 2, 3)`. `np.concatenate([a, a], axis=1)` would instead make the existing axis 1 longer: `(4, 6)`.
+
+=== py03-l08 | Practice: Products: @, dot, cross and einsum
+--- for
+l08-products-matmul-dot-cross-einsum
+
++++ practice | Back from body to inertial
+--- task
+`C` is a body-from-inertial direction cosine matrix: `C @ v_inertial` gives the body components of one vector. Write a function `to_inertial(C, v_body)` that goes the other way, for `v_body` of shape `(N, 3)` holding one body-frame vector per row. It returns the `(N, 3)` inertial vectors: row `i` is `C.T @ v_body[i]`.
+
+- One expression, no loop.
+- It must also work when `v_body` is a single vector of shape `(3,)`, returning shape `(3,)`.
+
+So with `C` for a yaw of 90°, `[[0, 1, 0], [-1, 0, 0], [0, 0, 1]]`, the body vector `(0, -1, 0)` is the inertial `(1, 0, 0)`.
+--- starter
+import numpy as np
+
+
+def to_inertial(C, v_body):
+    pass
+--- solution
+import numpy as np
+
+
+def to_inertial(C, v_body):
+    """Rows of v_body (body frame) in the inertial frame: row i is C.T @ v_body[i]."""
+    return v_body @ C
+--- hint
+The inverse of a DCM is its transpose. You want each row multiplied by `C.T`, with rows as the stack.
+--- hint
+Row form: if a column vector `u` becomes `M @ u`, a row of vectors `V` becomes `V @ M.T`. Here `M` is `C.T`, and the transpose of `C.T` is `C`.
+--- check case | A yaw of 90 degrees
+to_inertial(np.array([[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]), np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0]])).tolist()
+=> [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+--- check test | Matches C.T @ v row by row, and undoes C
+(lambda C, V: (lambda W: W.shape == (50, 3) and np.allclose(W, np.array([C.T @ v for v in V])) and np.allclose(to_inertial(C, V @ C.T), V))(to_inertial(C, V)))(np.linalg.qr(np.random.default_rng(7).normal(size=(3, 3)))[0], np.random.default_rng(1).normal(size=(50, 3)))
+--- check test | A single vector
+(lambda C: (lambda w: w.shape == (3,) and np.allclose(w, C.T @ np.array([1.0, 2.0, 3.0])))(to_inertial(C, np.array([1.0, 2.0, 3.0]))))(np.array([[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]))
+
++++ practice | Angles between matching rows
+--- task
+Write a function `angles_between(a, b)` for two `(N, 3)` arrays that returns the `(N,)` array of angles, in radians, between `a[i]` and `b[i]`.
+
+- The rows do not have to be unit vectors.
+- Use `theta = arctan2(|a x b|, a . b)`: the length of the cross product against the dot product. It stays accurate for nearly parallel vectors, where `arccos` of the dot product rounds to 0.
+- Compute the row-by-row dot products with `np.einsum`. No loops.
+
+Perpendicular rows give about 1.5708, opposite rows about 3.1416.
+--- starter
+import numpy as np
+
+
+def angles_between(a, b):
+    pass
+--- solution
+import numpy as np
+
+
+def angles_between(a, b):
+    """Angle in radians between a[i] and b[i], accurate even when nearly parallel."""
+    cross = np.linalg.norm(np.cross(a, b), axis=1)
+    dot = np.einsum("ni,ni->n", a, b)
+    return np.arctan2(cross, dot)
+--- hint
+`np.cross` works along the last axis, so two `(N, 3)` arrays give `N` cross products. `np.linalg.norm(..., axis=1)` gives one length per row.
+--- hint
+For the dot products, the letter for the components appears in both inputs and not in the output, so it is summed away; the row letter is kept.
+--- check test | Perpendicular, opposite and parallel rows, not all unit length
+np.allclose(angles_between(np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [3.0, 3.0, 0.0]]), np.array([[0.0, 5.0, 0.0], [0.0, -1.0, 0.0], [1.0, 1.0, 0.0]])), [np.pi / 2, np.pi, 0.0])
+--- check test | Ten nanoradians apart
+(lambda th: abs(th[0] - 1e-8) < 1e-15)(angles_between(np.array([[1.0, 0.0, 0.0]]), np.array([[np.cos(1e-8), np.sin(1e-8), 0.0]])))
+--- check test | 60 degrees, many rows at once
+(lambda a: np.allclose(angles_between(a, np.tile([0.5, np.sqrt(3.0) / 2, 0.0], (100, 1))), np.pi / 3))(np.tile([1.0, 0.0, 0.0], (100, 1)))
+--- check source | Uses einsum
+einsum
+
++++ practice | One attitude per sample, or one for all
+--- task
+Write a function `apply_dcms(Cs, v)` that rotates each row of `v`, shape `(N, 3)`, and returns the `(N, 3)` results.
+
+- `Cs` is either a stack of `N` direction cosine matrices, shape `(N, 3, 3)`, in which case row `n` of the result is `Cs[n] @ v[n]`; or a single matrix, shape `(3, 3)`, used for every row.
+- It must be right for every `N`, including `N = 3`, where treating `v` as one matrix still fits and gives wrong numbers.
+- No loops.
+--- starter
+import numpy as np
+
+
+def apply_dcms(Cs, v):
+    pass
+--- solution
+import numpy as np
+
+
+def apply_dcms(Cs, v):
+    """Row n is Cs[n] @ v[n] for a stack, or C @ v[n] for a single matrix."""
+    return (Cs @ v[..., None])[..., 0]
+--- hint
+`Cs @ v` reads `v` as one `(N, 3)` matrix. Make `v` a stack of `N` columns, `(N, 3, 1)`, so `@` pairs matrix `n` with column `n`.
+--- hint
+A single `(3, 3)` matrix is broadcast across the stack of columns by itself. Take the length-1 axis off at the end.
+--- check test | Three different attitudes, N = 3
+(lambda Cs, v: np.allclose(apply_dcms(Cs, v), np.array([Cs[n] @ v[n] for n in range(3)])))(np.array([[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]], [[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], [[1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]]]), np.array([[1.0, 2.0, 3.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]))
+--- check test | Five samples with five attitudes
+(lambda rng: (lambda Cs, v: np.allclose(apply_dcms(Cs, v), np.array([Cs[n] @ v[n] for n in range(5)])))(rng.normal(size=(5, 3, 3)), rng.normal(size=(5, 3))))(np.random.default_rng(2))
+--- check test | One matrix for every row
+(lambda C, v: (lambda w: w.shape == (4, 3) and np.allclose(w, v @ C.T))(apply_dcms(C, v)))(np.array([[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]), np.arange(12.0).reshape(4, 3))
+
++++ practice | An einsum that rotates the wrong way
+--- task
+`to_body(Cs, v_inertial)` takes a stack of body-from-inertial DCMs `Cs`, shape `(N, 3, 3)`, and inertial vectors `v_inertial`, shape `(N, 3)`, and should return the `(N, 3)` body vectors: row `n` is `Cs[n] @ v_inertial[n]`.
+
+The shape is right and every length is preserved, but the vectors come out rotated the opposite way. Fix it.
+--- starter
+import numpy as np
+
+
+def to_body(Cs, v_inertial):
+    """Row n is Cs[n] @ v_inertial[n]."""
+    return np.einsum("nji,nj->ni", Cs, v_inertial)
+--- solution
+import numpy as np
+
+
+def to_body(Cs, v_inertial):
+    """Row n is Cs[n] @ v_inertial[n]."""
+    return np.einsum("nij,nj->ni", Cs, v_inertial)
+--- hint
+Read the string aloud. In `Cs[n] @ v[n]`, which index of the matrix is summed against the vector's index, and which one is kept for the output?
+--- hint
+Output component `i` is row `i` of the matrix dotted with the vector: the matrix's letters are `ij`, and `j` is shared with the vector.
+--- check test | A yaw of 90 degrees turns inertial x into body -y
+np.allclose(to_body(np.array([[[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]]]), np.array([[1.0, 0.0, 0.0]])), [[0.0, -1.0, 0.0]])
+--- check test | Matches a loop on random matrices
+(lambda rng: (lambda Cs, v: np.allclose(to_body(Cs, v), np.array([Cs[n] @ v[n] for n in range(6)])))(rng.normal(size=(6, 3, 3)), rng.normal(size=(6, 3))))(np.random.default_rng(3))
+--- check test | Three samples
+(lambda rng: (lambda Cs, v: np.allclose(to_body(Cs, v), np.array([Cs[n] @ v[n] for n in range(3)])))(rng.normal(size=(3, 3, 3)), rng.normal(size=(3, 3))))(np.random.default_rng(4))
+
++++ practice | Momentum, energy and gyroscopic torque
+--- task
+A spacecraft with inertia matrix `J` (3 by 3, symmetric, in kg m²) spins at a different body rate at each of `N` time steps: `omega`, shape `(N, 3)`, in rad/s. Write a function `spin_state(J, omega)` that returns a tuple of three arrays, with no loops:
+
+- `H`, shape `(N, 3)`: the angular momentum at each step, `J @ omega[n]`;
+- `T`, shape `(N,)`: the rotational kinetic energy at each step, `0.5 * omega[n] . H[n]`;
+- `tau`, shape `(N, 3)`: the gyroscopic torque at each step, `-(omega[n] x H[n])`.
+
+A spin about a principal axis, where `J @ omega` is parallel to `omega`, has zero gyroscopic torque.
+--- starter
+import numpy as np
+
+
+def spin_state(J, omega):
+    pass
+--- solution
+import numpy as np
+
+
+def spin_state(J, omega):
+    """Angular momentum, kinetic energy and gyroscopic torque at every time step."""
+    H = omega @ J.T                               # row n is J @ omega[n]
+    T = 0.5 * np.einsum("ni,ni->n", omega, H)     # row-by-row dot products
+    tau = -np.cross(omega, H)
+    return H, T, tau
+--- hint
+`H` is the same matrix applied to every row: the row form of a matrix-vector product puts the transpose on the right.
+--- hint
+The energy needs one dot product per row, and `np.cross` already works row by row on two `(N, 3)` arrays.
+--- check test | Matches a loop
+(lambda J, w: (lambda H, T, tau: np.allclose(H, np.array([J @ x for x in w])) and np.allclose(T, np.array([0.5 * x @ (J @ x) for x in w])) and np.allclose(tau, np.array([-np.cross(x, J @ x) for x in w])))(*spin_state(J, w)))(np.array([[1200.0, -30.0, 15.0], [-30.0, 950.0, 40.0], [15.0, 40.0, 700.0]]), np.random.default_rng(5).normal(0.0, 0.05, size=(20, 3)))
+--- check test | Shapes
+(lambda H, T, tau: H.shape == (7, 3) and T.shape == (7,) and tau.shape == (7, 3))(*spin_state(np.diag([10.0, 20.0, 30.0]), np.ones((7, 3))))
+--- check test | A spin about a principal axis has no gyroscopic torque
+(lambda H, T, tau: np.allclose(tau, 0.0) and np.allclose(T, [0.5 * 20.0 * 0.01, 0.5 * 30.0 * 4.0]))(*spin_state(np.diag([10.0, 20.0, 30.0]), np.array([[0.0, 0.1, 0.0], [0.0, 0.0, 2.0]])))
+
++++ question | np.dot on two stacks
+--- ask
+`A` and `B` both have shape `(4, 3, 3)`. What is the shape of `np.dot(A, B)`?
+--- answer
+(4, 3, 4, 3)
+(4,3,4,3)
+4, 3, 4, 3
+--- why
+Above two dimensions, `np.dot` sums the last axis of `A` against the second-to-last axis of `B`, and pairs **every** matrix of `A` with **every** matrix of `B`. The result keeps `A`'s other axes, `(4, 3)`, followed by `B`'s other axes, `(4, 3)`: `(4, 3, 4, 3)`, all 16 combinations. `A @ B` pairs them in order and gives `(4, 3, 3)`.
+
+=== py03-l09 | Practice: Linear algebra: solve, lstsq, eig, svd
+--- for
+l09-linear-algebra
+
++++ practice | Solve, then check the residual
+--- task
+Write a function `solve_checked(A, b)` that solves `A x = b` for a square matrix `A` and returns a tuple `(x, residual)`, where `residual` is the norm of `A @ x - b` as a plain float.
+
+- `b` is either one right-hand side, shape `(n,)`, or several, as the columns of an `(n, k)` array; `x` then has the same shape as `b`, and the residual is the norm of the whole `(n, k)` difference.
+- If `A` is singular, raise `np.linalg.LinAlgError`. On a laptop `np.linalg.solve` raises it by itself. The browser's NumPy runs on WebAssembly, which gives LAPACK no floating-point error signal, so there it quietly returns `nan` instead. Check that `x` is finite and raise the error yourself if it is not, and the function behaves the same in both places.
+- Never form the inverse.
+--- starter
+import numpy as np
+
+
+def solve_checked(A, b):
+    pass
+--- solution
+import numpy as np
+
+
+def solve_checked(A, b):
+    """x with A x = b, and the norm of the residual A x - b."""
+    x = np.linalg.solve(A, b)             # a laptop's NumPy raises LinAlgError here if A is singular
+    if not np.all(np.isfinite(x)):        # the browser's NumPy returns nan instead
+        raise np.linalg.LinAlgError("Singular matrix")
+    residual = float(np.linalg.norm(A @ x - b))
+    return x, residual
+--- hint
+`np.linalg.solve` handles one right-hand side or many columns with one factorization. On a singular matrix it raises `LinAlgError` on a laptop but returns `nan` in the browser, so test `np.all(np.isfinite(x))` and `raise np.linalg.LinAlgError("Singular matrix")` when it fails.
+--- hint
+Put the answer back in: `A @ x - b` is what is left over. `np.linalg.norm` with no `axis` measures the whole array as one size.
+--- check test | A 3 by 3 system
+(lambda x, r: np.allclose(x, [1.0, -1.0, 2.0]) and r < 1e-12)(*solve_checked(np.array([[2.0, 1.0, 0.0], [1.0, 3.0, 1.0], [0.0, 1.0, 4.0]]), np.array([1.0, 0.0, 7.0])))
+--- check test | Two right-hand sides at once
+(lambda x, r: x.shape == (3, 2) and np.allclose(x[:, 0], [1.0, -1.0, 2.0]) and np.allclose(x[:, 1], [0.0, 1.0, 0.0]) and r < 1e-12)(*solve_checked(np.array([[2.0, 1.0, 0.0], [1.0, 3.0, 1.0], [0.0, 1.0, 4.0]]), np.array([[1.0, 1.0], [0.0, 3.0], [7.0, 1.0]])))
+--- check test | A singular matrix raises LinAlgError
+raises(np.linalg.LinAlgError, lambda: solve_checked(np.array([[1.0, 2.0], [2.0, 4.0]]), np.array([1.0, 2.0])))
+--- check source absent | No inverse
+\binv\b
+
++++ practice | Principal axes with a fixed sign
+--- task
+An eigenvector is only fixed up to its sign: `v` and `-v` are both right, and different computers may hand back either. Write a function `principal_axes(J)` for a symmetric inertia matrix `J` that returns a tuple `(moments, axes)`:
+
+- `moments`: the eigenvalues, smallest first;
+- `axes`: a square array whose **column** `k` is the unit eigenvector for `moments[k]`, with its sign chosen so that its component of largest size is positive.
+
+No loops.
+
+So for `J` with 30, 10 and 20 on its diagonal and zeros elsewhere, `moments` is `[10, 20, 30]` and `axes` has columns `(0, 1, 0)`, `(0, 0, 1)` and `(1, 0, 0)`.
+--- starter
+import numpy as np
+
+
+def principal_axes(J):
+    pass
+--- solution
+import numpy as np
+
+
+def principal_axes(J):
+    """Eigenvalues ascending, and unit eigenvectors as columns, each with its largest entry positive."""
+    moments, axes = np.linalg.eigh(J)
+    n = len(moments)
+    biggest = np.abs(axes).argmax(axis=0)          # row of the largest entry in each column
+    signs = np.sign(axes[biggest, np.arange(n)])   # that entry's sign, one per column
+    return moments, axes * signs                   # (n, n) * (n,): one sign per column
+--- hint
+`np.linalg.eigh` already sorts the eigenvalues and puts the eigenvectors in the columns. Only the signs need fixing.
+--- hint
+For each column, find the row of its largest-size entry with `argmax` down the columns, read those entries with a pair of index arrays, and multiply each column by that entry's sign.
+--- check test | A diagonal inertia matrix
+(lambda m, V: np.allclose(m, [10.0, 20.0, 30.0]) and np.allclose(V, [[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]))(*principal_axes(np.diag([30.0, 10.0, 20.0])))
+--- check test | Each column is an eigenvector for its moment
+(lambda J: (lambda m, V: np.allclose(J @ V, V * m) and np.allclose(V.T @ V, np.eye(3)))(*principal_axes(J)))(np.array([[1200.0, -30.0, 15.0], [-30.0, 950.0, 40.0], [15.0, 40.0, 700.0]]))
+--- check test | The largest entry of every column is positive
+(lambda V: all(V[np.abs(V[:, k]).argmax(), k] > 0 for k in range(3)))(principal_axes(np.array([[500.0, 120.0, -80.0], [120.0, 400.0, 60.0], [-80.0, 60.0, 300.0]]))[1])
+--- check test | Another matrix: eigenvectors, and the sign rule
+(lambda J: (lambda m, V: np.allclose(J @ V, V * m) and all(V[np.abs(V[:, k]).argmax(), k] > 0 for k in range(3)))(*principal_axes(J)))(np.array([[4.0, 1.0, 0.0], [1.0, 3.0, 0.5], [0.0, 0.5, 2.0]]))
+
++++ practice | Refuse a matrix that is too touchy
+--- task
+Write a function `safe_solve(A, b, max_cond)` that returns the solution of `A x = b`, or `None` when the condition number of the square matrix `A` is `max_cond` or more.
+
+- A singular matrix, even an all-zero one, has a huge or infinite condition number, so it gives `None`. It must not raise an error.
+- `b` may be one right-hand side or several columns.
+
+So a well-behaved 2 by 2 matrix gives its solution, and `[[1, 2], [2, 4]]` gives `None`.
+--- starter
+import numpy as np
+
+
+def safe_solve(A, b, max_cond):
+    pass
+--- solution
+import numpy as np
+
+
+def safe_solve(A, b, max_cond):
+    """The solution of A x = b, or None when cond(A) is max_cond or more."""
+    if not np.linalg.cond(A) < max_cond:
+        return None
+    return np.linalg.solve(A, b)
+--- hint
+Check the condition number before solving, not after: a singular matrix would make `solve` raise (on a laptop) or return `nan` (in the browser).
+--- hint
+`np.linalg.cond` of an all-zero matrix is `inf`, and of a singular one about `1e16` or more. Write the test so that anything not clearly below the limit is refused.
+--- check test | A good matrix is solved
+(lambda x: x is not None and np.allclose(x, [2.0, 1.0]))(safe_solve(np.array([[3.0, 1.0], [1.0, 2.0]]), np.array([7.0, 4.0]), 1e12))
+--- check case | A singular matrix gives None
+safe_solve(np.array([[1.0, 2.0], [2.0, 4.0]]), np.array([1.0, 2.0]), 1e12)
+=> None
+--- check case | An all-zero matrix gives None, with no error
+safe_solve(np.zeros((3, 3)), np.ones(3), 1e12)
+=> None
+--- check test | The limit decides: cond about 4e4
+(lambda A: safe_solve(A, np.ones(2), 1e4) is None and safe_solve(A, np.ones(2), 1e5) is not None)(np.array([[1.0, 1.0], [1.0, 1.0001]]))
+--- check test | Several right-hand sides
+(lambda x: x.shape == (2, 3) and np.allclose(np.array([[3.0, 1.0], [1.0, 2.0]]) @ x, np.arange(6.0).reshape(2, 3)))(safe_solve(np.array([[3.0, 1.0], [1.0, 2.0]]), np.arange(6.0).reshape(2, 3), 1e12))
+
++++ practice | The spin axis that was a row
+--- task
+`spin_axis(J)` should return the unit vector along the principal axis of **largest** moment of inertia of a symmetric inertia matrix `J`: an eigenvector `v` with `J @ v` equal to the largest eigenvalue times `v`.
+
+It returns a unit vector, but `J @ v` points somewhere else. Fix it.
+--- starter
+import numpy as np
+
+
+def spin_axis(J):
+    """Unit vector along the principal axis of largest moment of inertia."""
+    w, V = np.linalg.eigh(J)
+    return V[-1]
+--- solution
+import numpy as np
+
+
+def spin_axis(J):
+    """Unit vector along the principal axis of largest moment of inertia."""
+    w, V = np.linalg.eigh(J)
+    return V[:, -1]
+--- hint
+`eigh` returns the eigenvalues smallest first, so the last one is the right one. But where in `V` are the eigenvectors?
+--- hint
+Eigenvector `k` is column `k`: `V[:, k]`. `V[k]` is a row.
+--- check test | J @ v is the largest moment times v
+(lambda J: (lambda v: v.shape == (3,) and abs(np.linalg.norm(v) - 1.0) < 1e-12 and np.allclose(J @ v, np.linalg.eigh(J)[0][-1] * v))(spin_axis(J)))(np.array([[900.0, 50.0, 0.0], [50.0, 600.0, -20.0], [0.0, -20.0, 1100.0]]))
+--- check test | Another inertia matrix
+(lambda J: (lambda v: np.allclose(J @ v, np.linalg.eigh(J)[0][-1] * v))(spin_axis(J)))(np.array([[1200.0, -30.0, 15.0], [-30.0, 950.0, 40.0], [15.0, 40.0, 700.0]]))
+--- check test | A diagonal matrix: the axis of the biggest entry
+(lambda v: np.allclose(np.abs(v), [0.0, 1.0, 0.0]))(spin_axis(np.diag([5.0, 9.0, 7.0])))
+
++++ practice | Calibrate a gyro on a turntable
+--- task
+A turntable spins a three-axis gyro at known rates. `true_rates`, shape `(M, 3)`, holds the true rate about x, y and z in each of `M` settings, and `measured`, shape `(M, 3)`, what the gyro reported. Each axis follows its own straight line, `measured = (1 + k) * true + b`, with a scale-factor error `k` and a bias `b`.
+
+Write a function `calibrate(true_rates, measured)` that returns a tuple `(k, b, rms)` of three arrays of shape `(3,)`:
+
+- fit each axis on its own by least squares with `np.linalg.lstsq`, using a design matrix with one column for the true rate and one column of ones;
+- `rms` is each axis's root mean square residual, the square root of the mean of the squared misses of its fitted line;
+- raise `ValueError` if any axis's design matrix has rank below 2, for example when every setting used the same rate about that axis: then `k` and `b` cannot be told apart.
+--- starter
+import numpy as np
+
+
+def calibrate(true_rates, measured):
+    pass
+--- solution
+import numpy as np
+
+
+def calibrate(true_rates, measured):
+    """Per-axis scale-factor error, bias and RMS residual of measured = (1 + k) * true + b."""
+    k = np.zeros(3)
+    b = np.zeros(3)
+    rms = np.zeros(3)
+    for axis in range(3):
+        A = np.column_stack([true_rates[:, axis], np.ones(len(true_rates))])
+        coef, res, rank, sv = np.linalg.lstsq(A, measured[:, axis])
+        if rank < 2:
+            raise ValueError(f"axis {axis}: these rates cannot separate scale factor from bias")
+        k[axis] = coef[0] - 1.0
+        b[axis] = coef[1]
+        rms[axis] = np.sqrt(np.mean((A @ coef - measured[:, axis]) ** 2))
+    return k, b, rms
+--- hint
+For one axis the unknowns are the slope `1 + k` and the intercept `b`: a design matrix of two columns, the true rates and ones, and `lstsq` returns the slope first.
+--- hint
+`lstsq` also returns the rank: check it before trusting the fit. Work the residual out yourself as `A @ coef - y`; the residual sum `lstsq` returns is empty when there are exactly as many settings as unknowns.
+--- check test | Noise-free data gives the exact errors back
+(lambda T: (lambda k, b, rms: np.allclose(k, [0.02, -0.01, 0.0]) and np.allclose(b, [0.001, -0.002, 0.0005]) and np.allclose(rms, 0.0, atol=1e-12))(*calibrate(T, T * np.array([1.02, 0.99, 1.0]) + np.array([0.001, -0.002, 0.0005]))))(np.array([[-0.5, 0.2, 1.0], [0.0, 0.4, -1.0], [0.5, -0.3, 0.3], [1.0, 0.1, -0.2]]))
+--- check test | Noisy data: close to the truth, with an RMS near the noise
+(lambda rng: (lambda T: (lambda k, b, rms: np.allclose(k, [0.02, -0.01, 0.005], atol=5e-4) and np.allclose(b, [0.001, -0.002, 0.0], atol=5e-4) and np.all((rms > 5e-4) & (rms < 2e-3)))(*calibrate(T, T * np.array([1.02, 0.99, 1.005]) + np.array([0.001, -0.002, 0.0]) + rng.normal(0.0, 1e-3, T.shape))))(rng.uniform(-1.0, 1.0, (200, 3))))(np.random.default_rng(8))
+--- check test | The same rate in every setting raises ValueError
+raises(ValueError, lambda: calibrate(np.array([[0.1, 0.5, 0.3], [0.2, 0.5, 0.1], [0.3, 0.5, 0.2]]), np.zeros((3, 3))))
+--- check test | Two settings are enough, with nothing left over
+(lambda k, b, rms: np.allclose(k, [1.0, 1.0, 1.0]) and np.allclose(b, 0.0, atol=1e-12) and np.allclose(rms, 0.0, atol=1e-12))(*calibrate(np.array([[1.0, 2.0, 3.0], [2.0, 3.0, 4.0]]), np.array([[2.0, 4.0, 6.0], [4.0, 6.0, 8.0]])))
+
++++ question | A tiny residual and a big condition number
+--- ask
+You solve `A x = b` with `np.linalg.solve`. `np.linalg.cond(A)` is about `1e10`, and the residual `A @ x - b` is about `1e-15` of the size of `b`. At worst, about how many significant digits of `x` can you trust?
+--- choice
+All of them, about 16: the residual shows `x` fits the equations to the last digit.
+--- choice
+About 15, since the residual is about `1e-15`.
+--- choice correct
+About 6: a condition number of `1e10` can eat about 10 of the 16 digits a `float64` carries.
+--- choice
+None: any condition number above `1e6` makes the answer meaningless.
+--- why
+A small residual only says that `x` fits the equations as well as floats can. With a condition number of `1e10`, many quite different `x` fit almost as well, and rounding errors of about `1e-16` can be magnified up to `1e10` times, to about `1e-6` relative. So at worst about 16 - 10 = 6 digits are right. It is a worst case, often fewer are lost, but you cannot count on that.
+
+=== py03-l10 | Practice: Floating-point pitfalls
+--- for
+l10-floating-point-pitfalls
+
++++ practice | A square root that loses its digits
+--- task
+Write a function `sqrt1pm1(x)` that returns `sqrt(1 + x) - 1`, element by element, for an array `x` whose values are all -1 or more. It must stay accurate when `x` is tiny.
+
+- Written directly, `np.sqrt(1 + x) - 1` subtracts two nearly equal numbers when `x` is small: for `x = 1e-10` it is wrong in the eighth digit.
+- Rearrange it so there is no such subtraction. Multiplying top and bottom by `sqrt(1 + x) + 1` does it.
+- The result has the same shape as `x`.
+
+So `sqrt1pm1(np.array([3.0, 0.0]))` is `[1.0, 0.0]`, and for `x = 1e-10` the answer is `4.999999999875e-11`.
+--- starter
+import numpy as np
+
+
+def sqrt1pm1(x):
+    pass
+--- solution
+import numpy as np
+
+
+def sqrt1pm1(x):
+    """sqrt(1 + x) - 1, accurate for tiny x: rewritten so nothing nearly equal is subtracted."""
+    return x / (np.sqrt(1.0 + x) + 1.0)
+--- hint
+`(sqrt(1 + x) - 1) * (sqrt(1 + x) + 1)` is `(1 + x) - 1`, which is just `x`.
+--- hint
+So `sqrt(1 + x) - 1` equals `x / (sqrt(1 + x) + 1)`, and the bottom adds two positive numbers: nothing cancels.
+--- check test | Accurate for a tiny x
+(lambda r: abs(r[0] - 4.999999999875e-11) / 4.999999999875e-11 < 1e-14)(sqrt1pm1(np.array([1e-10])))
+--- check case | Ordinary values
+sqrt1pm1(np.array([3.0, 0.0, -1.0, 8.0])).tolist()
+=> [1.0, 0.0, -1.0, 2.0]
+--- check test | A 2-D array keeps its shape, and small values are accurate
+(lambda x: (lambda r: r.shape == (2, 2) and np.allclose(r, x / 2 - x**2 / 8, rtol=1e-12, atol=0.0))(sqrt1pm1(x)))(np.array([[1e-9, 2e-9], [1e-12, 3e-8]]))
+
++++ practice | Both roots of a quadratic, stably
+--- task
+Write a function `quadratic_roots(a, b, c)` that returns the two roots of `a x² + b x + c = 0` as a tuple of plain floats, using the stable method, so that a tiny root next to a huge one keeps its digits. `a` is never 0, and the roots are always real (`b² - 4ac` is 0 or more).
+
+- Let `s` be 1 when `b` is 0 or more, and -1 when `b` is negative.
+- Compute `q = -0.5 * (b + s * sqrt(b² - 4ac))`.
+- Return `(q / a, c / q)`, in that order.
+- `q` is 0 only when `b` and `c` are both 0. Then both roots are 0: return `(0.0, 0.0)`.
+
+So `quadratic_roots(2.0, -3.0, 1.0)` is `(1.0, 0.5)`, and `quadratic_roots(1.0, 1e8, 1.0)` gives a second root of about `-1e-8`, correct to every digit.
+--- starter
+import math
+
+
+def quadratic_roots(a, b, c):
+    pass
+--- solution
+import math
+
+
+def quadratic_roots(a, b, c):
+    """Both real roots of a x^2 + b x + c, the small one by division so it keeps its digits."""
+    s = 1.0 if b >= 0 else -1.0
+    q = -0.5 * (b + s * math.sqrt(b * b - 4.0 * a * c))
+    if q == 0.0:
+        return (0.0, 0.0)
+    return (q / a, c / q)
+--- hint
+With the sign of `b` in front of the square root, `b` and `s * sqrt(...)` always have the same sign, so the sum inside `q` adds sizes and never cancels.
+--- hint
+Check for `q == 0` before dividing by it. Note the rule for `s` when `b` is exactly 0.
+--- check case | A plain quadratic
+quadratic_roots(2.0, -3.0, 1.0)
+=> (1.0, 0.5)
+--- check test | A tiny root next to a huge one
+(lambda r: abs(r[0] + 1e8) / 1e8 < 1e-15 and abs(r[1] + 1e-8) / 1e-8 < 1e-14)(quadratic_roots(1.0, 1e8, 1.0))
+--- check case | b is zero
+quadratic_roots(1.0, 0.0, -4.0)
+=> (-2.0, 2.0)
+--- check case | b and c are both zero
+quadratic_roots(3.0, 0.0, 0.0)
+=> (0.0, 0.0)
+--- check test | A double root
+(lambda r: abs(r[0] - 3.0) < 1e-12 and abs(r[1] - 3.0) < 1e-12)(quadratic_roots(1.0, -6.0, 9.0))
+
++++ practice | Lengths that overflow in float32
+--- task
+A deep-space tool keeps velocity vectors in `float32`, in an internal unit where components can be as large as `1e30` or exactly 0. Write a function `row_norms(v)` for an `(N, 3)` `float32` array that returns the `(N,)` lengths as `float32`.
+
+- Squaring `1e30` gives `1e60`, far past the largest `float32` (about `3.4e38`), so the direct sum of squares overflows to `inf`. The true lengths all fit.
+- Scale first: divide each row by the size of its largest component, take the length of the scaled row, and multiply back.
+- A row of zeros has length 0, with no division by zero and no warning.
+- No loops.
+--- starter
+import numpy as np
+
+
+def row_norms(v):
+    pass
+--- solution
+import numpy as np
+
+
+def row_norms(v):
+    """Length of each row of a float32 array, scaled so the squares cannot overflow."""
+    scale = np.abs(v).max(axis=1)                 # (N,): the largest size in each row
+    safe = np.where(scale > 0, scale, 1.0)        # a zero row divides by 1, not 0
+    u = v / safe[:, None]                         # every entry now at most 1 in size
+    return (safe * np.sqrt((u * u).sum(axis=1))).astype(np.float32)
+--- hint
+After dividing a row by its largest component's size, every entry is at most 1, so the squares cannot overflow. The scale factor is one number per row: it needs a length-1 axis to divide the rows.
+--- hint
+Replace a scale of 0 by 1.0 before dividing, as you would for any safe division; a zero row then stays zero.
+--- check test | Components of 1e20 in float32
+(lambda old: (lambda r: (np.seterr(**old), r.dtype == np.float32 and abs(float(r[0]) - np.sqrt(3.0) * 1e20) / 1e20 < 1e-6)[1])(row_norms(np.array([[1e20, 1e20, 1e20]], dtype=np.float32))))(np.seterr(over="raise", divide="raise", invalid="raise"))
+--- check test | 1e30 and a zero row, with no warnings
+(lambda old: (lambda r: (np.seterr(**old), abs(float(r[0]) - 5e30) / 5e30 < 1e-6 and float(r[1]) == 0.0)[1])(row_norms(np.array([[3e30, -4e30, 0.0], [0.0, 0.0, 0.0]], dtype=np.float32))))(np.seterr(over="raise", divide="raise", invalid="raise"))
+--- check test | Ordinary vectors
+np.allclose(row_norms(np.array([[3.0, 4.0, 0.0], [1.0, 2.0, 2.0], [-6.0, 0.0, 8.0]], dtype=np.float32)), [5.0, 3.0, 10.0])
+
++++ practice | An orthonormality test that always fails
+--- task
+`is_orthonormal(C, tol=1e-12)` should return True when every entry of `C @ C.T` is within `tol` of the matching entry of the 3 by 3 identity, and False otherwise.
+
+It returns False for almost every real direction cosine matrix, even perfect ones, and it ignores `tol`. Fix it.
+--- starter
+import numpy as np
+
+
+def is_orthonormal(C, tol=1e-12):
+    """True when C @ C.T is within tol of the identity, entry by entry."""
+    return bool((C @ C.T == np.eye(3)).all())
+--- solution
+import numpy as np
+
+
+def is_orthonormal(C, tol=1e-12):
+    """True when C @ C.T is within tol of the identity, entry by entry."""
+    return bool(np.allclose(C @ C.T, np.eye(3), rtol=0.0, atol=tol))
+--- hint
+Build a rotation from a few sines and cosines and print `C @ C.T - np.eye(3)`. Are the entries exactly 0?
+--- hint
+"Within `tol`, entry by entry" is an absolute tolerance with no relative part: `np.allclose` with `rtol=0.0` and `atol=tol`.
+--- check test | A rotation built from three turns
+(lambda a, b: is_orthonormal(np.array([[np.cos(a), np.sin(a), 0.0], [-np.sin(a), np.cos(a), 0.0], [0.0, 0.0, 1.0]]) @ np.array([[np.cos(b), 0.0, -np.sin(b)], [0.0, 1.0, 0.0], [np.sin(b), 0.0, np.cos(b)]]) @ np.array([[1.0, 0.0, 0.0], [0.0, np.cos(a), np.sin(a)], [0.0, -np.sin(a), np.cos(a)]])))(0.7, -0.4)
+--- check case | A matrix that stretches is not orthonormal
+is_orthonormal(1.001 * np.eye(3))
+=> False
+--- check test | The tolerance is used
+(lambda C: not is_orthonormal(C) and is_orthonormal(C, tol=1e-5))(np.eye(3) + np.diag([1e-6, 0.0, 0.0]))
+
++++ practice | Mean and variance, one chunk at a time
+--- task
+A telemetry archive is too big to load, so its samples arrive in chunks. Write a function `combined_stats(chunks)` that returns `(count, mean, variance)`, the variance with `ddof=0`, for all the samples of all the chunks together, keeping only three running numbers between chunks.
+
+`chunks` is any iterable of 1-D `float64` arrays, such as a generator. Some chunks may be empty; skip them. If there are no samples at all, raise `ValueError`.
+
+The one-pass formula "mean of the squares minus the square of the mean" fails badly here: the samples can be about `7e6` with a spread of centimeters. Use this instead:
+
+- For a chunk `x`: `n_b = len(x)`, `mean_b = x.mean()`, and `m2_b = ((x - mean_b)**2).sum()`.
+- To merge it into the running `n_a`, `mean_a`, `m2_a`: `delta = mean_b - mean_a`, `n = n_a + n_b`, `mean = mean_a + delta * n_b / n`, and `m2 = m2_a + m2_b + delta**2 * n_a * n_b / n`.
+- At the end, the variance is `m2 / n`.
+--- starter
+import numpy as np
+
+
+def combined_stats(chunks):
+    pass
+--- solution
+import numpy as np
+
+
+def combined_stats(chunks):
+    """Count, mean and ddof=0 variance of all chunks together, merged one chunk at a time."""
+    n_a, mean_a, m2_a = 0, 0.0, 0.0
+    for x in chunks:
+        n_b = len(x)
+        if n_b == 0:
+            continue
+        mean_b = x.mean()
+        m2_b = ((x - mean_b) ** 2).sum()
+        delta = mean_b - mean_a
+        n = n_a + n_b
+        mean_a = mean_a + delta * n_b / n
+        m2_a = m2_a + m2_b + delta**2 * n_a * n_b / n
+        n_a = n
+    if n_a == 0:
+        raise ValueError("no samples")
+    return n_a, float(mean_a), float(m2_a / n_a)
+--- hint
+Start with nothing: a count of 0, a mean of 0.0 and an `m2` of 0.0. The merge formula then handles the first chunk like any other.
+--- hint
+Inside each chunk, subtract the chunk's own mean before squaring: that is the two-pass idea, and it is what keeps the digits.
+--- check test | Two chunks of small numbers, and an empty one
+(lambda r: r[0] == 5 and abs(r[1] - 3.0) < 1e-12 and abs(r[2] - 2.0) < 1e-12)(combined_stats([np.array([1.0, 2.0]), np.array([]), np.array([3.0, 4.0, 5.0])]))
+--- check test | Orbit radii with centimeter noise, from a generator
+(lambda x: (lambda r: r[0] == 50000 and abs(r[1] - x.mean()) < 1e-6 and abs(r[2] - np.var(x)) / np.var(x) < 1e-6 and r[2] > 0)(combined_stats(x[i:i + 4096] for i in range(0, len(x), 4096))))(7_000_000.0 + np.random.default_rng(4).normal(0.0, 0.05, size=50_000))
+--- check test | No samples at all raises ValueError
+raises(ValueError, lambda: combined_stats([np.array([]), np.array([])]))
+--- check test | One chunk agrees with np.var
+(lambda x: abs(combined_stats([x])[2] - np.var(x)) < 1e-12)(np.array([2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]))
+
++++ question | One more than sixteen million
+--- ask
+What does this print?
+
+```python
+import numpy as np
+
+a = np.float32(16_777_216.0)
+print(a + np.float32(1.0) == a)
+```
+--- answer
+True
+--- why
+16,777,216 is 2 to the power 24. A `float32` keeps 24 significant binary digits, so from 2^24 up to 2^25 its neighbors are 2 apart: 16,777,217 cannot be stored. The sum lands exactly halfway between 16,777,216 and 16,777,218 and rounds to the even one, 16,777,216, so adding 1.0 changed nothing. A counter kept in `float32` stops counting here. In `float64` the same sum is exact.
+
+=== py03-l11 | Practice: Random numbers you can reproduce
+--- for
+l11-random-numbers
+
++++ practice | One generator per case
+--- task
+Write a function `case_streams(master, n)` that returns a list of `n` independent random generators for the `n` cases of a Monte Carlo study, all derived from the one recorded seed `master`.
+
+- Make them from the children of `np.random.SeedSequence(master)`.
+- Generator `k` must produce exactly the stream that `np.random.default_rng(np.random.SeedSequence(master, spawn_key=(k,)))` does, so any case can be rebuilt on its own later.
+- `n` can be 0.
+--- starter
+import numpy as np
+
+
+def case_streams(master, n):
+    pass
+--- solution
+import numpy as np
+
+
+def case_streams(master, n):
+    """n independent generators, one per case, all derived from the master seed."""
+    children = np.random.SeedSequence(master).spawn(n)
+    return [np.random.default_rng(child) for child in children]
+--- hint
+A SeedSequence's `spawn(n)` makes `n` child seeds, with spawn keys `(0,)`, `(1,)` and so on.
+--- hint
+Hand each child to `np.random.default_rng`.
+--- check test | Case 3 can be rebuilt on its own
+(lambda g: len(g) == 5 and np.array_equal(g[3].normal(size=4), np.random.default_rng(np.random.SeedSequence(777, spawn_key=(3,))).normal(size=4)))(case_streams(777, 5))
+--- check test | The streams differ, and drawing from one leaves the others alone
+(lambda g, h: (g[0].random(1000), g[1].random(3).tolist() == h[1].random(3).tolist() and g[1].random(3).tolist() != g[2].random(3).tolist())[1])(case_streams(9, 3), case_streams(9, 3))
+--- check case | No cases
+case_streams(1, 0)
+=> []
+
++++ practice | How often is the thrust misaligned too far?
+--- task
+A thruster's misalignment is two small angles, about the vehicle's y and z axes, each normal with mean 0 and standard deviation `sigma_deg` degrees. The total misalignment is `sqrt(ay**2 + az**2)`. Write a function `exceed_probability(n, seed, sigma_deg, limit_deg)` that estimates, by simulation, the probability that the total is strictly greater than `limit_deg`, and returns it as a plain float.
+
+- Make one generator with `np.random.default_rng(seed)`.
+- Draw all `n` y angles with one call, `rng.normal(0.0, sigma_deg, n)`, then all `n` z angles with a second.
+- No loops.
+
+For this model the exact answer is `exp(-limit**2 / (2 * sigma**2))`, which is about 0.135 when the limit is twice sigma: your estimate should land close to it for large `n`.
+--- starter
+import numpy as np
+
+
+def exceed_probability(n, seed, sigma_deg, limit_deg):
+    pass
+--- solution
+import numpy as np
+
+
+def exceed_probability(n, seed, sigma_deg, limit_deg):
+    """Monte Carlo estimate of P(total misalignment > limit), from one seeded generator."""
+    rng = np.random.default_rng(seed)
+    ay = rng.normal(0.0, sigma_deg, n)
+    az = rng.normal(0.0, sigma_deg, n)
+    total = np.sqrt(ay**2 + az**2)
+    return float((total > limit_deg).mean())
+--- hint
+Two array draws, one element-wise formula, one comparison: a mask with one True or False per case.
+--- hint
+The mean of a mask is the fraction of True values, which is the estimated probability.
+--- check test | Follows the drawing order exactly
+(lambda g: exceed_probability(1000, 5, 0.2, 0.3) == float((np.sqrt(g.normal(0.0, 0.2, 1000) ** 2 + g.normal(0.0, 0.2, 1000) ** 2) > 0.3).mean()))(np.random.default_rng(5))
+--- check test | The same seed gives the same estimate
+exceed_probability(5000, 12, 0.2, 0.3) == exceed_probability(5000, 12, 0.2, 0.3)
+--- check test | Close to the exact answer for many cases
+abs(exceed_probability(200_000, 3, 0.2, 0.4) - np.exp(-0.4**2 / (2 * 0.2**2))) < 0.005
+--- check case | A limit nobody reaches
+exceed_probability(1000, 1, 0.2, 100.0)
+=> 0.0
+
++++ practice | Any cases, in any order
+--- task
+In a dispersion study, the value of case `k` is `rng.normal(10.0, 2.0)`, one draw, where `rng` is built from the master seed and the case number: `np.random.default_rng(np.random.SeedSequence(master, spawn_key=(k,)))`.
+
+Write a function `run_cases(case_ids, master)` that returns a `float64` array with the value of each case named in `case_ids`, in that order.
+
+- The value of a case must not depend on which other cases are run, or in what order: `run_cases([5, 2], m)` equals elements 5 and 2 of `run_cases(range(10), m)`.
+- A case named twice appears twice, with the same value.
+- An empty list gives an empty array.
+--- starter
+import numpy as np
+
+
+def run_cases(case_ids, master):
+    pass
+--- solution
+import numpy as np
+
+
+def run_cases(case_ids, master):
+    """The value of each named case, each drawn from its own stream (master, k)."""
+    values = []
+    for k in case_ids:
+        rng = np.random.default_rng(np.random.SeedSequence(master, spawn_key=(k,)))
+        values.append(rng.normal(10.0, 2.0))
+    return np.array(values, dtype=np.float64)
+--- hint
+Build a fresh generator for every case from `(master, k)`. Nothing a case draws can then touch any other case.
+--- hint
+Collect the values in a list and turn it into an array once at the end, with `dtype=np.float64` so an empty list still gives a float array.
+--- check test | A subset matches the full run
+(lambda full: np.array_equal(run_cases([5, 2], 42), full[[5, 2]]))(run_cases(range(10), 42))
+--- check test | The order and repeats follow case_ids
+(lambda full: np.array_equal(run_cases([7, 0, 7], 42), full[[7, 0, 7]]))(run_cases(range(8), 42))
+--- check test | Case 3 is its own stream's first draw
+run_cases([3], 99)[0] == np.random.default_rng(np.random.SeedSequence(99, spawn_key=(3,))).normal(10.0, 2.0)
+--- check test | No cases
+(lambda r: r.shape == (0,) and r.dtype == np.float64)(run_cases([], 42))
+
++++ practice | Noise that repeats frame after frame
+--- task
+`noisy_frames(frames, sigma, seed)` takes a list of arrays and should return a new list in which each array has fresh normal noise, mean 0 and standard deviation `sigma`, added to it. The noise must be reproducible: the same seed gives the same output. It should come from one generator made with `np.random.default_rng(seed)`, drawing `rng.normal(0.0, sigma, frame.shape)` for each frame in turn.
+
+It is reproducible, but every frame of the same shape gets exactly the same noise. Fix it.
+--- starter
+import numpy as np
+
+
+def noisy_frames(frames, sigma, seed):
+    """Each frame plus fresh noise, all drawn in order from one seeded generator."""
+    out = []
+    for frame in frames:
+        rng = np.random.default_rng(seed)
+        out.append(frame + rng.normal(0.0, sigma, frame.shape))
+    return out
+--- solution
+import numpy as np
+
+
+def noisy_frames(frames, sigma, seed):
+    """Each frame plus fresh noise, all drawn in order from one seeded generator."""
+    rng = np.random.default_rng(seed)
+    out = []
+    for frame in frames:
+        out.append(frame + rng.normal(0.0, sigma, frame.shape))
+    return out
+--- hint
+Where is the generator made? What stream does a generator seeded with `seed` start with, every single time it is made?
+--- hint
+Make it once, before the loop, and let every frame take the next numbers from it.
+--- check test | Two identical frames get different noise
+(lambda out: not np.array_equal(out[0], out[1]))(noisy_frames([np.zeros(4), np.zeros(4)], 1.0, 7))
+--- check test | The noise is the generator's first draw, then its second
+(lambda g, out: np.array_equal(out[0], g.normal(0.0, 0.5, 3)) and np.array_equal(out[1], 10.0 + g.normal(0.0, 0.5, 3)))(np.random.default_rng(7), noisy_frames([np.zeros(3), np.full(3, 10.0)], 0.5, 7))
+--- check test | The same seed gives the same frames
+(lambda a, b: all(np.array_equal(x, y) for x, y in zip(a, b)))(noisy_frames([np.ones((2, 2)), np.ones(5)], 0.1, 3), noisy_frames([np.ones((2, 2)), np.ones(5)], 0.1, 3))
+
++++ practice | Find the worst landing, then fly it again
+--- task
+A lunar lander's touchdown miss depends on three dispersed inputs. For case `k` of a study with master seed `master`:
+
+- make `rng = np.random.default_rng(np.random.SeedSequence(master, spawn_key=(k,)))`;
+- draw, in this order, `vx = rng.normal(0.0, 0.3)`, `vy = rng.normal(0.0, 0.3)` (horizontal velocity errors, m/s) and `h = rng.normal(100.0, 2.0)` (the height at which the engine cuts off, m);
+- the fall takes `t = sqrt(2 * h / 1.62)` seconds, and the miss is `sqrt(vx**2 + vy**2) * t` meters.
+
+Write two functions:
+
+- `case_miss(master, k)` returns the miss of case `k` as a plain float;
+- `worst_case(master, n)` runs cases 0 to `n - 1` and returns a tuple `(k, miss)`: the case number, as a plain whole number, and the miss of the case with the largest miss.
+
+Running `case_miss(master, k)` on its own must give exactly the miss that `worst_case` reported.
+--- starter
+import math
+
+import numpy as np
+
+
+def case_miss(master, k):
+    pass
+
+
+def worst_case(master, n):
+    pass
+--- solution
+import math
+
+import numpy as np
+
+G_MOON = 1.62   # m/s^2
+
+
+def case_miss(master, k):
+    """Touchdown miss of case k; everything random comes from the case's own stream."""
+    rng = np.random.default_rng(np.random.SeedSequence(master, spawn_key=(k,)))
+    vx = rng.normal(0.0, 0.3)
+    vy = rng.normal(0.0, 0.3)
+    h = rng.normal(100.0, 2.0)
+    t = math.sqrt(2.0 * h / G_MOON)
+    return float(math.sqrt(vx**2 + vy**2) * t)
+
+
+def worst_case(master, n):
+    """The case with the largest miss among cases 0 .. n - 1, and that miss."""
+    misses = np.array([case_miss(master, k) for k in range(n)])
+    k = int(misses.argmax())
+    return k, float(misses[k])
+--- hint
+`case_miss` builds its own generator from `(master, k)` and draws the three inputs in the stated order. It never looks at any other case.
+--- hint
+`worst_case` collects the misses into an array and uses `argmax`. Convert the index with `int` and the miss with `float`.
+--- check test | The reported worst case flies the same again
+(lambda w: type(w[0]) is int and w[1] == case_miss(2026, w[0]))(worst_case(2026, 300))
+--- check test | It really is the largest
+(lambda w: w[1] == max(case_miss(2026, k) for k in range(300)))(worst_case(2026, 300))
+--- check test | case_miss follows the drawing order
+(lambda g: abs(case_miss(5, 17) - (lambda vx, vy, h: np.hypot(vx, vy) * np.sqrt(2 * h / 1.62))(g.normal(0.0, 0.3), g.normal(0.0, 0.3), g.normal(100.0, 2.0))) < 1e-12)(np.random.default_rng(np.random.SeedSequence(5, spawn_key=(17,))))
+--- check case | One case
+(lambda w: w[0])(worst_case(8, 1))
+=> 0
+
++++ question | A run nobody seeded
+--- ask
+A 1000-case study made one generator with `np.random.default_rng()`, with no seed, and drew every case from it. Case 880 crashed the lander. Nothing else about the run was logged. What can you do to watch case 880 crash again?
+--- choice
+Run the study again: generators are deterministic, so case 880 will get the same numbers.
+--- choice
+Make `np.random.default_rng(880)` and draw case 880's inputs from it.
+--- choice correct
+Nothing exact: with no seed, the generator took fresh entropy from the operating system, and it was not recorded. Next time, log `SeedSequence().entropy` or pass a recorded seed.
+--- choice
+Call `np.random.seed(0)` first and rerun, since that resets every generator.
+--- why
+`default_rng()` with no argument asks the operating system for fresh entropy, so every run starts somewhere new, and without a record of that entropy nobody can recreate the stream. Seed 880 is an unrelated stream, and `np.random.seed` only resets the legacy global state, which a Generator never uses. The habit that prevents this: always record the master seed, even for a run you wanted to be random, and give each case its own child stream.
+
+=== py03-l12 | Practice: Saving, loading and memory-mapping big telemetry
+--- for
+l12-saving-loading-and-memmap
+
++++ practice | How big will the file be?
+--- task
+Write a function `predicted_npy_bytes(shape, itemsize)` that returns the size in bytes of the `.npy` file `np.save` writes for an array of that shape whose elements take `itemsize` bytes each.
+
+- A simple array's `.npy` file is a 128-byte header followed by the raw data.
+- The data is the number of elements, the product of the lengths in `shape`, times `itemsize`.
+- The empty shape `()` is a single number: one element.
+
+So a `(1000, 3)` array of `float64` makes a file of 24,128 bytes.
+--- starter
+def predicted_npy_bytes(shape, itemsize):
+    pass
+--- solution
+def predicted_npy_bytes(shape, itemsize):
+    """Size of the .npy file of a simple array: a 128-byte header plus the raw data."""
+    count = 1
+    for length in shape:
+        count *= length
+    return 128 + count * itemsize
+--- hint
+Multiply the lengths together, starting from 1, so the empty shape gives one element.
+--- hint
+Then add the header to the data size.
+--- check case | A (1000, 3) float64 array
+predicted_npy_bytes((1000, 3), 8)
+=> 24128
+--- check case | A single number, and a day of 16 float32 channels at 10 Hz
+(predicted_npy_bytes((), 8), predicted_npy_bytes((864_000, 16), 4))
+=> (136, 55296128)
+--- check test | Agrees with what np.save really writes
+(lambda np, io: all(predicted_npy_bytes(a.shape, a.itemsize) == (lambda buf: (np.save(buf, a), len(buf.getvalue()))[1])(io.BytesIO()) for a in [np.zeros((7,)), np.zeros((2, 3, 4), dtype=np.float32), np.zeros((500, 6), dtype=np.int8), np.zeros(())]))(__import__("numpy"), __import__("io"))
+
++++ practice | Ragged passes without pickle
+--- task
+Ground passes have different lengths, so they do not fit in one rectangular array, and an object array would need `allow_pickle`. Store them the safe way: one flat array of every sample, plus an array of where each pass starts.
+
+Write two functions:
+
+- `pack_passes(passes)` takes a list of 1-D `float64` arrays and returns the bytes of an `.npz` holding exactly two arrays: `"samples"`, all the passes joined end to end, and `"starts"`, an `int64` array of length `len(passes) + 1` whose entry `k` is where pass `k` starts in `samples` and whose last entry is the total number of samples.
+- `unpack_pass(blob, k)` takes those bytes and returns pass `k`.
+
+Work in memory, not with a file: `np.savez` accepts an `io.BytesIO()` object in place of a file name, `buf.getvalue()` gives its bytes, and `np.load(io.BytesIO(blob))` reads them back. Loading must work with the default `allow_pickle=False`. An empty list of passes is allowed, and so is an empty pass.
+--- starter
+import io
+
+import numpy as np
+
+
+def pack_passes(passes):
+    pass
+
+
+def unpack_pass(blob, k):
+    pass
+--- solution
+import io
+
+import numpy as np
+
+
+def pack_passes(passes):
+    """Bytes of an .npz: every sample joined end to end, and where each pass starts."""
+    starts = np.zeros(len(passes) + 1, dtype=np.int64)
+    starts[1:] = np.cumsum([len(p) for p in passes])
+    samples = np.concatenate(passes) if passes else np.zeros(0)
+    buf = io.BytesIO()
+    np.savez(buf, samples=samples, starts=starts)
+    return buf.getvalue()
+
+
+def unpack_pass(blob, k):
+    """Pass k back out of the bytes pack_passes made."""
+    with np.load(io.BytesIO(blob)) as d:
+        starts = d["starts"]
+        return d["samples"][starts[k]:starts[k + 1]]
+--- hint
+The starts are a running total of the lengths, with a 0 in front: `np.cumsum` of the lengths gives every entry after the first.
+--- hint
+Pass `k` is the slice of `samples` from `starts[k]` up to `starts[k + 1]`. Read both arrays inside a `with` block so the archive is closed.
+--- check test | Three passes, one of them empty, come back exactly
+(lambda ps: (lambda blob: all(np.array_equal(unpack_pass(blob, k), ps[k]) for k in range(3)))(pack_passes(ps)))([np.array([1.0, 2.0, 3.0]), np.array([]), np.array([4.5, 5.5])])
+--- check test | Two plain arrays, readable without pickle
+(lambda d: sorted(d.files) == ["samples", "starts"] and d["starts"].tolist() == [0, 3, 3, 5] and d["starts"].dtype == np.int64 and d["samples"].tolist() == [1.0, 2.0, 3.0, 4.5, 5.5])(np.load(__import__("io").BytesIO(pack_passes([np.array([1.0, 2.0, 3.0]), np.array([]), np.array([4.5, 5.5])]))))
+--- check test | No passes at all
+(lambda d: d["starts"].tolist() == [0] and d["samples"].shape == (0,))(np.load(__import__("io").BytesIO(pack_passes([]))))
+--- check test | Many passes of random lengths
+(lambda rng: (lambda ps: (lambda blob: all(np.array_equal(unpack_pass(blob, k), ps[k]) for k in (0, 17, 39)))(pack_passes(ps)))([rng.normal(size=int(m)) for m in rng.integers(0, 50, 40)]))(np.random.default_rng(3))
+
++++ practice | Where the data starts
+--- task
+Write a function `npy_data_offset(blob)` that takes the bytes of a version 1.0 `.npy` file and returns the byte position at which the array's raw data begins.
+
+- The first six bytes must be the magic `b"\x93NUMPY"`. If they are not, or if `blob` is shorter than 10 bytes, raise `ValueError`.
+- Bytes 8 and 9 hold the length of the rest of the header, least significant byte first: the length is `blob[8] + 256 * blob[9]`.
+- The data starts right after the 10 fixed bytes and that much header.
+
+Do not assume the header is 128 bytes: read it.
+--- starter
+def npy_data_offset(blob):
+    pass
+--- solution
+MAGIC = b"\x93NUMPY"
+
+
+def npy_data_offset(blob):
+    """Byte position of the raw data in a version 1.0 .npy file, read from its header."""
+    if len(blob) < 10 or blob[:6] != MAGIC:
+        raise ValueError("not a .npy file")
+    header_len = blob[8] + 256 * blob[9]
+    return 10 + header_len
+--- hint
+Indexing a `bytes` object with one position gives a whole number from 0 to 255, and slicing it gives `bytes`.
+--- hint
+Check the length first, so a short blob raises `ValueError` rather than `IndexError`.
+--- check test | Matches the file size minus the data size
+(lambda np, io: all((lambda blob: npy_data_offset(blob) == len(blob) - a.nbytes)((lambda buf: (np.save(buf, a), buf.getvalue())[1])(io.BytesIO())) for a in [np.zeros((1000, 3)), np.zeros(5, dtype=np.float32), np.zeros((2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2), dtype=np.int8)]))(__import__("numpy"), __import__("io"))
+--- check case | A plain header
+npy_data_offset(b"\x93NUMPY\x01\x00v\x00" + b" " * 118)
+=> 128
+--- check test | Not a .npy file raises ValueError
+raises(ValueError, lambda: npy_data_offset(b"PK\x03\x04 this is a zip file")) and raises(ValueError, lambda: npy_data_offset(b"\x93NUMPY"))
+
++++ practice | A file that saves but will not load
+--- task
+`save_and_reload(a, folder)` should save the array `a` to the file `gyro.npy` inside `folder` (a `pathlib.Path`), then load that file back and return what was loaded. When it has run, the folder must hold exactly one file, `gyro.npy`.
+
+It stops with `FileNotFoundError`. Fix it.
+--- starter
+import numpy as np
+
+
+def save_and_reload(a, folder):
+    """Save a as folder/gyro.npy, load it back, and return what was loaded."""
+    np.save(folder / "gyro", a)
+    return np.load(folder / "gyro")
+--- solution
+import numpy as np
+
+
+def save_and_reload(a, folder):
+    """Save a as folder/gyro.npy, load it back, and return what was loaded."""
+    path = folder / "gyro.npy"
+    np.save(path, a)
+    return np.load(path)
+--- hint
+Look in the folder after the save. What is the file really called?
+--- hint
+`np.save` adds `.npy` to a name that lacks it, and `np.load` does not. Write the full name once and use it for both.
+--- check test | The array comes back exactly
+(lambda d: np.array_equal(save_and_reload(np.arange(12.0).reshape(4, 3), d), np.arange(12.0).reshape(4, 3)))(__import__("pathlib").Path(__import__("tempfile").mkdtemp()))
+--- check case | The folder holds exactly gyro.npy
+(lambda d: (save_and_reload(np.ones(3), d), sorted(p.name for p in d.iterdir()))[1])(__import__("pathlib").Path(__import__("tempfile").mkdtemp()))
+=> ["gyro.npy"]
+--- check test | dtype and shape survive
+(lambda d: (lambda r: r.dtype == np.float32 and r.shape == (2, 5))(save_and_reload(np.zeros((2, 5), dtype=np.float32), d)))(__import__("pathlib").Path(__import__("tempfile").mkdtemp()))
+
++++ practice | A channel's mean and peak, chunk by chunk
+--- task
+A year of telemetry is memory-mapped: `tel` behaves like a `float32` array of shape `(N, C)`, but every slice you touch is read from disk. Write a function `chunk_stats(tel, col, chunk)` that returns `(mean, peak)` for column `col` as plain floats, reading at most `chunk` rows at a time.
+
+- Never make an array of the whole column or the whole table: slice one block of rows at a time.
+- Add the block sums up in `float64`, not `float32`: summing millions of `float32` values in `float32` loses digits.
+- `chunk` may not divide `N`, and may be larger than `N`. `N` is at least 1.
+--- starter
+import numpy as np
+
+
+def chunk_stats(tel, col, chunk):
+    pass
+--- solution
+import numpy as np
+
+
+def chunk_stats(tel, col, chunk):
+    """Mean and peak of one column, reading `chunk` rows at a time, summing in float64."""
+    total = 0.0
+    peak = -np.inf
+    for start in range(0, tel.shape[0], chunk):
+        block = tel[start:start + chunk, col]
+        total += block.sum(dtype=np.float64)
+        peak = max(peak, float(block.max()))
+    return float(total / tel.shape[0]), peak
+--- hint
+Walk the start row from 0 to `N` in steps of `chunk`; `tel[start:start + chunk, col]` stops quietly at the end.
+--- hint
+`sum` takes a `dtype=` argument that sets the type it adds up in. Keep a running peak with `max`.
+--- check test | Three million float32 samples: the mean is exact to 12 digits
+(lambda tel: (lambda m, p: abs(m - tel[:, 1].astype(np.float64).mean()) / 20.0 < 1e-12 and p == float(tel[:, 1].max()))(*chunk_stats(tel, 1, 100_000)))((20.0 + np.random.default_rng(1).normal(0.0, 0.5, size=(3_000_000, 2))).astype(np.float32))
+--- check case | A chunk that does not divide the rows
+chunk_stats(np.arange(10.0, dtype=np.float32).reshape(5, 2), 0, 2)
+=> (4.0, 8.0)
+--- check case | A chunk longer than the table
+chunk_stats(np.array([[1.0], [5.0], [3.0]], dtype=np.float32), 0, 1000)
+=> (3.0, 5.0)
+
++++ question | An archive that will not open
+--- ask
+Another team sends `results.npz`. `np.load("results.npz")["miss"]` fails with `ValueError: Object arrays cannot be loaded when allow_pickle=False`. What should you do?
+--- choice
+Load it with `allow_pickle=True`: the error is only a missing option.
+--- choice correct
+Ask the team to resend it as plain numeric arrays, for ragged data a flat array plus an array of starts, because an object array is loaded by pickle, which can run any code its author chose.
+--- choice
+Rename it to `results.npy`, which is always loaded without pickle.
+--- choice
+Open it with `mmap_mode="r"`, which reads object arrays safely from disk.
+--- why
+An object array can only be stored with pickle, and rebuilding a pickled object can call any function the file names, so loading it is the same as running a program someone sent you. `allow_pickle` is off by default for exactly that reason. Renaming changes nothing, and memory mapping only works for plain numeric data. The safe fix is a file with no objects in it.
+
+=== py03-l13 | Practice: Vectorization as the default
+--- for
+l13-vectorisation
+
++++ practice | Horizontal speed, without the loop
+--- task
+This loop finds the horizontal speed of `N` vehicles: each velocity `v[i]` minus its part along the local unit "up" vector `up[i]`, then the length of what is left.
+
+```python
+import math
+
+def horizontal_speeds_loop(v, up):
+    out = []
+    for vi, ui in zip(v, up):
+        along = vi[0] * ui[0] + vi[1] * ui[1] + vi[2] * ui[2]
+        hx = vi[0] - along * ui[0]
+        hy = vi[1] - along * ui[1]
+        hz = vi[2] - along * ui[2]
+        out.append(math.sqrt(hx * hx + hy * hy + hz * hz))
+    return out
+```
+
+Write `horizontal_speeds(v, up)` that gives the same numbers as a `(N,)` `float64` array, for `(N, 3)` arrays `v` and `up`, with no Python loop at all. `N` can be 0.
+--- starter
+import numpy as np
+
+
+def horizontal_speeds(v, up):
+    pass
+--- solution
+import numpy as np
+
+
+def horizontal_speeds(v, up):
+    """Length of each velocity with its part along the matching unit up vector removed."""
+    along = np.einsum("ni,ni->n", v, up)           # (N,): one dot product per row
+    horizontal = v - along[:, None] * up           # one number per row scales that row
+    return np.linalg.norm(horizontal, axis=1)
+--- hint
+The dot product of matching rows is one number per row. How do you multiply each row of `up` by its own number?
+--- hint
+A `(N,)` array needs a length-1 axis to line up with the rows of an `(N, 3)` array. Finish with one length per row.
+--- check test | Matches the loop
+(lambda rng: (lambda v, u: np.allclose(horizontal_speeds(v, u), [__import__("math").sqrt(sum((vi[j] - (vi @ ui) * ui[j]) ** 2 for j in range(3))) for vi, ui in zip(v, u)]))(rng.normal(size=(200, 3)), (lambda x: x / np.linalg.norm(x, axis=1)[:, None])(rng.normal(size=(200, 3)))))(np.random.default_rng(1))
+--- check case | Straight up has no horizontal speed; sideways is all horizontal
+horizontal_speeds(np.array([[0.0, 0.0, 5.0], [3.0, 4.0, 0.0], [3.0, 4.0, 12.0]]), np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0]])).tolist()
+=> [0.0, 5.0, 5.0]
+--- check case | No vehicles
+horizontal_speeds(np.zeros((0, 3)), np.zeros((0, 3))).shape
+=> (0,)
+--- check source absent | No Python loop
+\bfor\s+\w+(\s*,\s*\w+)*\s+in\b
+
++++ practice | Stop at the first hit, a chunk at a time
+--- task
+Write a function `first_over(x, limit, chunk)` that returns the index of the first sample of the 1-D array `x` strictly greater than `limit`, as a plain whole number, or -1 if there is none.
+
+- Search `chunk` samples at a time with a vectorized mask, and stop at the first chunk that holds a hit, so a hit near the start is found without scanning the whole array.
+- The hit can sit anywhere in a chunk, including the last, shorter one. NaN samples never count.
+- `chunk` may be larger than `x`. An empty `x` gives -1.
+--- starter
+import numpy as np
+
+
+def first_over(x, limit, chunk):
+    pass
+--- solution
+import numpy as np
+
+
+def first_over(x, limit, chunk):
+    """Index of the first sample above limit, searched chunk by chunk; -1 if none."""
+    for start in range(0, len(x), chunk):
+        hits = np.flatnonzero(x[start:start + chunk] > limit)
+        if len(hits):
+            return start + int(hits[0])
+    return -1
+--- hint
+Loop over chunk starts, not over samples. Inside, one mask and `np.flatnonzero` find any hits in that chunk.
+--- hint
+A position inside the chunk is counted from the chunk's start: add the start back before returning.
+--- check case | A hit early on
+first_over(np.array([1.0, 2.0, 9.0, 3.0, 10.0]), 5.0, 2)
+=> 2
+--- check case | A hit in the last, shorter chunk
+first_over(np.array([1.0, 2.0, 3.0, 4.0, 7.0]), 5.0, 2)
+=> 4
+--- check case | No hit, no samples, and NaN
+(first_over(np.array([1.0, np.nan, 5.0]), 5.0, 2), first_over(np.array([]), 0.0, 10))
+=> (-1, -1)
+--- check case | A chunk longer than the array
+first_over(np.array([0.0, 6.0]), 5.0, 1000)
+=> 1
+--- check test | A million samples with a spike at 1500
+(lambda x: (x.__setitem__(1500, 95.0), first_over(x, 80.0, 10_000) == 1500)[1])(np.full(1_000_000, 20.0))
+
++++ practice | Means per time bin, with no loop
+--- task
+A sensor samples at uneven times. Write a function `per_bin_mean(t, x, width)` that returns the mean of `x` in each time bin of length `width`, with no loop:
+
+- `t` (all 0 or more) and `x` are 1-D arrays of the same length. Bin `k` covers times from `k * width` up to but not including `(k + 1) * width`.
+- The result has one entry per bin from bin 0 up to the bin of the latest sample.
+- A bin with no samples gets NaN, with no warning. Empty inputs give an empty result.
+- Use `np.floor` to find each sample's bin, and `np.add.at` to add up sums and counts.
+
+So `per_bin_mean(np.array([0.1, 0.4, 1.2, 3.5]), np.array([1.0, 3.0, 5.0, 7.0]), 1.0)` returns `[2.0, 5.0, nan, 7.0]`.
+--- starter
+import numpy as np
+
+
+def per_bin_mean(t, x, width):
+    pass
+--- solution
+import numpy as np
+
+
+def per_bin_mean(t, x, width):
+    """Mean of x in each time bin [k * width, (k + 1) * width); NaN for an empty bin."""
+    bins = np.floor(t / width).astype(np.int64)
+    n_bins = int(bins.max()) + 1 if len(bins) else 0
+    sums = np.zeros(n_bins)
+    counts = np.zeros(n_bins)
+    np.add.at(sums, bins, x)
+    np.add.at(counts, bins, 1.0)
+    means = np.full(n_bins, np.nan)
+    filled = counts > 0
+    means[filled] = sums[filled] / counts[filled]
+    return means
+--- hint
+`np.floor(t / width)` gives each sample's bin number as a float; make it an integer array. The number of bins is the largest bin number plus one.
+--- hint
+`sums[bins] += x` would keep only one sample per bin. `np.add.at` adds every one. Then divide only where the count is not zero.
+--- check test | Four samples, one empty bin
+(lambda r: r.shape == (4,) and r[[0, 1, 3]].tolist() == [2.0, 5.0, 7.0] and np.isnan(r[2]))(per_bin_mean(np.array([0.1, 0.4, 1.2, 3.5]), np.array([1.0, 3.0, 5.0, 7.0]), 1.0))
+--- check test | A sample exactly on a boundary belongs to the later bin, with no warnings
+(lambda old: (lambda r: (np.seterr(**old), r[0] == 1.0 and r[1] == 4.0 and np.isnan(r[2]) and r[3] == 6.0)[1])(per_bin_mean(np.array([0.25, 0.5, 0.75, 1.75]), np.array([1.0, 3.0, 5.0, 6.0]), 0.5)))(np.seterr(all="raise"))
+--- check test | Matches a masked mean for every bin
+(lambda rng: (lambda t, x: (lambda r: all(abs(r[k] - x[(t >= k * 0.5) & (t < (k + 1) * 0.5)].mean()) < 1e-12 for k in range(len(r))))(per_bin_mean(t, x, 0.5)))(np.sort(rng.uniform(0.0, 10.0, 500)), rng.normal(size=500)))(np.random.default_rng(2))
+--- check case | No samples
+per_bin_mean(np.array([]), np.array([]), 1.0).shape
+=> (0,)
+
++++ practice | Close pairs in blocks
+--- task
+Write a function `count_close_pairs(pos, radius, block)` that counts the pairs of objects closer than `radius` to each other, for `N` positions `pos`, shape `(N, 3)`, and returns the count as a plain whole number.
+
+- A pair is two different objects, counted once. Two objects at exactly the same position count, since their distance, 0, is less than `radius`.
+- Never build the full `(N, N, 3)` difference array: compare `block` objects at a time against all `N`, with broadcasting, so the temporary is at most `(block, N, 3)`.
+- `block` may be larger than `N`. No objects, or one, give 0.
+--- starter
+import numpy as np
+
+
+def count_close_pairs(pos, radius, block):
+    pass
+--- solution
+import numpy as np
+
+
+def count_close_pairs(pos, radius, block):
+    """How many pairs of objects are closer than radius, comparing `block` rows at a time."""
+    count = 0
+    cols = np.arange(len(pos))
+    for start in range(0, len(pos), block):
+        p = pos[start:start + block]
+        diff = p[:, None, :] - pos[None, :, :]            # (b, N, 3)
+        close = (diff * diff).sum(axis=2) < radius * radius
+        rows = start + np.arange(len(p))
+        later = cols[None, :] > rows[:, None]             # count pair (i, j) only when j > i
+        count += int((close & later).sum())
+    return count
+--- hint
+For a block of rows starting at `start`, row `r` of the block is object `start + r`. Keep only the columns after it, so each pair is counted once and no object meets itself.
+--- hint
+Compare squared distances with `radius * radius`: no square root is needed to decide "closer than".
+--- check case | Three objects, two close pairs
+count_close_pairs(np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.5, 0.0], [10.0, 0.0, 0.0]]), 1.6, 2)
+=> 2
+--- check test | Matches a pair-by-pair count for any block size
+(lambda p: (lambda want: all(count_close_pairs(p, 1.5, b) == want for b in (1, 7, 64, 1000)))(sum(1 for i in range(len(p)) for j in range(i + 1, len(p)) if np.linalg.norm(p[i] - p[j]) < 1.5)))(np.random.default_rng(3).uniform(0.0, 10.0, (150, 3)))
+--- check case | Objects at the same place
+count_close_pairs(np.zeros((4, 3)), 0.1, 3)
+=> 6
+--- check case | No objects, and one
+(count_close_pairs(np.zeros((0, 3)), 1.0, 10), count_close_pairs(np.zeros((1, 3)), 1.0, 10))
+=> (0, 0)
+
++++ practice | A smoother that vectorized its recurrence
+--- task
+`smooth(x, alpha)` should apply exponential smoothing to the 1-D array `x`: `y[0] = x[0]`, and each later `y[k] = y[k - 1] + alpha * (x[k] - y[k - 1])`, so every output needs the output before it. It returns a new array and leaves `x` unchanged. An empty `x` gives an empty result.
+
+Someone "vectorized" it. It is fast, and it gives the right answer when `alpha` is 1, but wrong numbers otherwise: for `x = [0, 10, 10, 10]` and `alpha = 0.5` it returns `[0, 5, 10, 10]` instead of `[0, 5, 7.5, 8.75]`. Fix it.
+--- starter
+import numpy as np
+
+
+def smooth(x, alpha):
+    """y[0] = x[0]; y[k] = y[k - 1] + alpha * (x[k] - y[k - 1])."""
+    y = x.copy()
+    y[1:] = y[:-1] + alpha * (x[1:] - y[:-1])
+    return y
+--- solution
+import numpy as np
+
+
+def smooth(x, alpha):
+    """y[0] = x[0]; y[k] = y[k - 1] + alpha * (x[k] - y[k - 1])."""
+    y = x.copy()
+    for k in range(1, len(x)):
+        y[k] = y[k - 1] + alpha * (x[k] - y[k - 1])
+    return y
+--- hint
+In the one-line version, `y[:-1]` on the right is read before anything is written, so every step uses the **raw** sample before it instead of the smoothed one.
+--- hint
+Each step needs the step before: that is a recurrence, and it needs a loop over the samples.
+--- check case | The example
+smooth(np.array([0.0, 10.0, 10.0, 10.0]), 0.5).tolist()
+=> [0.0, 5.0, 7.5, 8.75]
+--- check case | alpha = 0 holds the first value
+smooth(np.array([2.0, 8.0, -4.0]), 0.0).tolist()
+=> [2.0, 2.0, 2.0]
+--- check test | x is unchanged, and an empty x is fine
+(lambda x: (smooth(x, 0.3), x.tolist() == [1.0, 5.0])[1] and smooth(np.array([]), 0.5).shape == (0,))(np.array([1.0, 5.0]))
+
++++ practice | A thousand filters at once
+--- task
+A Monte Carlo study runs the same one-dimensional Kalman filter in `C` cases. `z` has shape `(steps, C)`: the measurement of each case at each step, with NaN where a measurement was lost. Case `c` has measurement variance `r[c]`; `r` has shape `(C,)`. All cases share the process noise `q` and start from the estimate `x0` with variance `p0`.
+
+Write a function `kalman_bank(z, r, q, x0, p0)` that returns a tuple `(x, p)`, both shape `(C,)`: every case's final estimate and variance. At each step, for every case:
+
+- predict: `p = p + q`;
+- if the measurement is not NaN: `K = p / (p + r)`, `x = x + K * (z - x)`, `p = (1 - K) * p`;
+- if it is NaN: skip the update, leaving `x` and `p` as predicted.
+
+Loop over the steps, which depend on each other, and do each step for all cases at once, with no loop over the cases.
+--- starter
+import numpy as np
+
+
+def kalman_bank(z, r, q, x0, p0):
+    pass
+--- solution
+import numpy as np
+
+
+def kalman_bank(z, r, q, x0, p0):
+    """Final estimate and variance of C scalar Kalman filters; NaN measurements are skipped."""
+    n_cases = z.shape[1]
+    x = np.full(n_cases, x0, dtype=np.float64)
+    p = np.full(n_cases, p0, dtype=np.float64)
+    for zk in z:                                     # time: each step needs the one before
+        p = p + q
+        seen = ~np.isnan(zk)
+        gain = np.where(seen, p / (p + r), 0.0)      # no measurement, no update
+        x = x + gain * np.where(seen, zk - x, 0.0)
+        p = (1.0 - gain) * p
+    return x, p
+--- hint
+Keep `x` and `p` as arrays of one entry per case, and let every line of the filter work on all cases together. The only loop walks the rows of `z`.
+--- hint
+A gain of 0 leaves `x` and `p` unchanged, so a lost measurement can be handled by setting its gain to 0 with `np.where`. Replace the NaN innovation with 0 too, or `0 * nan` would still be NaN.
+--- check test | Matches one scalar filter per case
+(lambda z, r: (lambda x, p: all(abs(x[c] - (lambda s: s[0])(__import__("functools").reduce(lambda s, zk: (lambda pp: (s[0] + pp / (pp + r[c]) * (zk - s[0]), (1 - pp / (pp + r[c])) * pp) if zk == zk else (s[0], pp))(s[1] + 1e-4), z[:, c], (0.0, 100.0)))) < 1e-9 for c in range(z.shape[1])))(*kalman_bank(z, r, 1e-4, 0.0, 100.0)))(np.where(np.random.default_rng(1).random((300, 5)) < 0.1, np.nan, 5.0 + np.random.default_rng(2).normal(0.0, 0.5, (300, 5))), np.array([0.25, 0.1, 1.0, 0.5, 0.04]))
+--- check test | Every estimate settles near the true 5.0
+(lambda x, p: x.shape == (200,) and np.all(np.abs(x - 5.0) < 0.2) and np.all(p < 0.01))(*kalman_bank(5.0 + np.random.default_rng(3).normal(0.0, 0.5, (2000, 200)), np.full(200, 0.25), 1e-6, 0.0, 100.0))
+--- check test | A case with no measurements only predicts
+(lambda x, p: x[1] == 3.0 and abs(p[1] - (10.0 + 4 * 0.5)) < 1e-12 and abs(x[0] - 3.0) > 0.1)(*kalman_bank(np.array([[5.0, np.nan], [5.0, np.nan], [5.0, np.nan], [5.0, np.nan]]), np.array([1.0, 1.0]), 0.5, 3.0, 10.0))
+
++++ question | The memory of one temporary
+--- ask
+A screening tool computes `pos[:, None, :] - pos[None, :, :]` for 30,000 tracked objects, `pos` being a `float64` array of shape `(30000, 3)`. About how much memory does that one temporary array need?
+--- choice
+About 720 kB: 30,000 × 3 numbers of 8 bytes.
+--- choice
+About 7.2 MB: broadcasting copies nothing, so it costs no more than a few copies of `pos`.
+--- choice correct
+About 21.6 GB: its shape is (30000, 30000, 3), and 30,000² × 3 × 8 bytes is 2.16 × 10¹⁰ bytes.
+--- choice
+About 2.7 GB: 30,000² numbers of 3 bytes each.
+--- why
+Broadcasting stretches the inputs for free, but the **result** is a real array with the broadcast shape, (30000, 30000, 3). Multiply out the shape and the item size: 9 × 10⁸ × 3 × 8 = 2.16 × 10¹⁰ bytes, more than most laptops have, before counting the squares and sums that follow. Processing in blocks of rows keeps the vectorization and bounds the temporary.
+
+=== py03-test | NumPy and array thinking: module test
+--- teach
+The test covers the whole module: dtypes and strides, views and copies, masks and fancy indexing, broadcasting, reductions along an axis, reshaping and stacking, matrix products and einsum, linear algebra without inverses, floating-point traps, reproducible random numbers, saving telemetry, and vectorization. Its ten problems are new, most of them combine several lessons, and there are no hints; twelve questions after them check that you can predict what array code does and say why. To get ready, redo the practice problems of the lessons that felt hardest without their hints, and for every array you create or slice, say its shape, its dtype and whether it is a view before you run the line.
+--- gate
+pass 7
+questions 10
+minutes 112
+
++++ problem | Audit an attitude history
+--- task
+An attitude filter logged `N` direction cosine matrices, `Cs`, shape `(N, 3, 3)`. Write a function `audit_dcms(Cs, tol)` that checks every matrix at once and returns a tuple `(ok, worst, worst_error)`:
+
+- the **error** of a matrix `C` is the largest size of any entry of `C @ C.T - I`, where `I` is the 3 by 3 identity;
+- `ok`: a `bool` array of shape `(N,)`, True for a matrix whose error is `tol` or less **and** whose determinant is positive (a mirror has determinant -1, even when its error is tiny);
+- `worst`: the index of the matrix with the largest error, first on a tie, as a plain whole number;
+- `worst_error`: that error, as a plain float.
+
+No Python loops.
+--- starter
+import numpy as np
+
+
+def audit_dcms(Cs, tol):
+    pass
+--- solution
+import numpy as np
+
+
+def audit_dcms(Cs, tol):
+    """Which DCMs are proper rotations within tol, and the one furthest from orthonormal."""
+    gram = Cs @ Cs.swapaxes(-1, -2)                        # (N, 3, 3): each C @ C.T
+    error = np.abs(gram - np.eye(3)).max(axis=(1, 2))       # (N,): worst entry of each
+    ok = (error <= tol) & (np.linalg.det(Cs) > 0)
+    worst = int(error.argmax())
+    return ok, worst, float(error[worst])
+--- check test | A scaled matrix and a mirror are caught; the worst is the scaled one
+(lambda Cs: (Cs.__setitem__(2, 1.001 * Cs[2]), Cs.__setitem__(4, np.diag([1.0, 1.0, -1.0]) @ Cs[4]), (lambda ok, w, e: ok.tolist() == [True, True, False, True, False] and w == 2 and type(w) is int and abs(e - 0.002001) < 1e-9)(*audit_dcms(Cs, 1e-9)))[2])(np.array([[[np.cos(x), np.sin(x), 0.0], [-np.sin(x), np.cos(x), 0.0], [0.0, 0.0, 1.0]] for x in np.linspace(0.0, 3.0, 5)]))
+--- check test | The tolerance decides
+(lambda Cs: (Cs.__setitem__(1, 1.001 * Cs[1]), audit_dcms(Cs, 1e-9)[0].tolist() == [True, False, True] and audit_dcms(Cs, 0.01)[0].tolist() == [True, True, True])[1])(np.array([[[np.cos(x), 0.0, -np.sin(x)], [0.0, 1.0, 0.0], [np.sin(x), 0.0, np.cos(x)]] for x in (0.1, 0.2, 0.3)]))
+--- check test | A thousand good rotations pass
+(lambda q: (lambda ok, w, e: ok.all() and e < 1e-14)(*audit_dcms(q, 1e-12)))(np.array([np.linalg.qr(m)[0] * np.sign(np.linalg.det(np.linalg.qr(m)[0])) for m in np.random.default_rng(1).normal(size=(1000, 3, 3))]))
+--- check source absent | No Python loop
+\bfor\s+\w+(\s*,\s*\w+)*\s+in\b
+
++++ problem | When is the Sun in the sensor's view?
+--- task
+A sun sensor looks along a fixed direction of the spacecraft body, the unit vector `boresight`, shape `(3,)`. At each of `N` samples, taken at the times `t`, shape `(N,)`, the attitude is the body-from-inertial DCM `Cs[k]`, shape `(N, 3, 3)`, and the direction to the Sun in the inertial frame is `sun_i`: either one unit vector of shape `(3,)`, the same at every sample, or one per sample, shape `(N, 3)`.
+
+Write a function `sun_in_view(Cs, sun_i, boresight, t, fov_deg)` that returns a tuple `(first, fraction)`:
+
+- the Sun is in view at a sample when the angle between the boresight and the Sun direction, both in body components, is `fov_deg` degrees or less;
+- `first`: the time of the first sample with the Sun in view, as a plain float, or `None` if it never is;
+- `fraction`: the fraction of samples with the Sun in view, as a plain float.
+
+Compute the angle as `arctan2(|a x b|, a . b)`, which stays accurate near 0. No loops.
+--- starter
+import numpy as np
+
+
+def sun_in_view(Cs, sun_i, boresight, t, fov_deg):
+    pass
+--- solution
+import numpy as np
+
+
+def sun_in_view(Cs, sun_i, boresight, t, fov_deg):
+    """First time, and fraction of samples, with the Sun within fov_deg of the boresight."""
+    sun_b = (Cs @ sun_i[..., None])[..., 0]                 # (N, 3): the Sun in body components
+    along = sun_b @ boresight                               # (N,)
+    across = np.linalg.norm(np.cross(sun_b, boresight), axis=1)
+    inside = np.arctan2(across, along) <= np.radians(fov_deg)
+    hits = np.flatnonzero(inside)
+    first = float(t[hits[0]]) if len(hits) else None
+    return first, float(inside.mean())
+--- check test | A yaw sweep past a sensor looking along body -y
+(lambda psi: (lambda Cs: sun_in_view(Cs, np.array([1.0, 0.0, 0.0]), np.array([0.0, -1.0, 0.0]), np.arange(181.0), 10.5) == (80.0, 21 / 181))(np.array([[[np.cos(p), np.sin(p), 0.0], [-np.sin(p), np.cos(p), 0.0], [0.0, 0.0, 1.0]] for p in psi])))(np.radians(np.arange(181.0)))
+--- check test | One Sun direction per sample
+(lambda Cs: sun_in_view(Cs, np.array([[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]]), np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.5, 1.0, 1.5]), 5.0) == (0.5, 0.5))(np.stack([np.eye(3)] * 4))
+--- check test | Never in view
+sun_in_view(np.stack([np.eye(3)] * 3), np.array([1.0, 0.0, 0.0]), np.array([0.0, 0.0, 1.0]), np.arange(3.0), 30.0) == (None, 0.0)
+--- check test | A Sun 20 microradians off the boresight is outside a 1e-3 degree field of view
+(lambda a: sun_in_view(np.stack([np.eye(3)]), np.array([np.cos(a), np.sin(a), 0.0]), np.array([1.0, 0.0, 0.0]), np.array([0.0]), 1e-3) == (None, 0.0) and sun_in_view(np.stack([np.eye(3)]), np.array([np.cos(a), np.sin(a), 0.0]), np.array([1.0, 0.0, 0.0]), np.array([0.0]), 2e-3) == (0.0, 1.0))(2e-5)
+
++++ problem | Calibrate a gyro log without touching it
+--- task
+A gyro log `raw` has shape `(N, 4)`: column 0 is time in seconds, and columns 1 to 3 are the x, y and z rates, with NaN where a sample was lost. Write a function `calibrate_log(raw, t0, t1, scale, limit)` that returns a tuple `(out, flagged)`:
+
+- the **bias** of each axis is the mean of that axis over the rows whose time is from `t0` up to but not including `t1`, ignoring NaN;
+- `out` is a **new** `(N, 4)` array: column 0 is the time, unchanged, and each rate column is `(rate - bias) / scale`, where `scale` has shape `(3,)`, one factor per axis;
+- any calibrated rate whose size is greater than `limit` is set to NaN in `out`; NaN samples stay NaN;
+- `flagged`, shape `(3,)`: how many samples of each axis were set to NaN by the limit (samples that were already NaN do not count);
+- raise `ValueError` if no row's time falls in the bias window.
+
+`raw` must not change, and `out` must share no memory with it. No loops.
+--- starter
+import numpy as np
+
+
+def calibrate_log(raw, t0, t1, scale, limit):
+    pass
+--- solution
+import numpy as np
+
+
+def calibrate_log(raw, t0, t1, scale, limit):
+    """New log: rates minus the window bias, over scale, wild values set to NaN; raw untouched."""
+    t = raw[:, 0]
+    window = (t >= t0) & (t < t1)
+    if not window.any():
+        raise ValueError("no samples in the bias window")
+    bias = np.nanmean(raw[window, 1:], axis=0)              # (3,)
+    out = raw.copy()
+    out[:, 1:] = (raw[:, 1:] - bias) / scale
+    wild = np.abs(out[:, 1:]) > limit                       # NaN compares False, so it is not counted
+    out[:, 1:][wild] = np.nan                               # a basic slice is a view: this stores into out
+    return out, wild.sum(axis=0)
+--- check test | Bias from the window, scaled, wild values flagged
+(lambda out, f: np.allclose(out, [[0.0, -0.01, -0.005, -0.02], [0.5, 0.01, np.nan, 0.02], [1.0, 0.0, 0.005, 0.0], [1.5, np.nan, 0.0, np.nan], [2.0, 0.02, -0.01, np.nan]], equal_nan=True) and f.tolist() == [1, 0, 2])(*calibrate_log(np.array([[0.0, 0.10, -0.20, 0.00], [0.5, 0.12, np.nan, 0.02], [1.0, 0.11, -0.18, 0.01], [1.5, 0.50, -0.19, 0.30], [2.0, 0.13, -0.21, -0.40]]), 0.0, 1.5, np.array([1.0, 2.0, 0.5]), 0.3))
+--- check test | The raw log is unchanged and nothing is shared
+(lambda raw: (lambda keep: (lambda out, f: np.array_equal(raw, keep, equal_nan=True) and not np.shares_memory(out, raw))(*calibrate_log(raw, 0.0, 1.5, np.ones(3), 0.05)))(raw.copy()))(np.array([[0.0, 0.10, -0.20, 0.00], [0.5, 0.12, np.nan, 0.02], [1.0, 0.11, -0.18, 0.01], [1.5, 0.50, -0.19, 0.30], [2.0, 0.13, -0.21, -0.40]]))
+--- check test | The window's end is excluded
+(lambda out, f: np.allclose(out[:, 1], [-1.0, 1.0, 11.0]) and f.tolist() == [0, 0, 0])(*calibrate_log(np.array([[0.0, 1.0, 0.0, 0.0], [1.0, 3.0, 0.0, 0.0], [2.0, 13.0, 0.0, 0.0]]), 0.0, 2.0, np.ones(3), 100.0))
+--- check test | An empty window raises ValueError
+raises(ValueError, lambda: calibrate_log(np.array([[0.0, 1.0, 2.0, 3.0], [1.0, 1.0, 2.0, 3.0]]), 5.0, 9.0, np.ones(3), 1.0))
+
++++ problem | Recover gravity from GPS-time telemetry
+--- task
+A radar tracks a coasting sounding rocket. Its time stamps `t` are seconds of the GPS week, around 500,000 s, not necessarily evenly spaced, and `h` holds the altitudes in meters. The height follows `h = c0 + c1 * (t - tr) + c2 * (t - tr)**2` for a reference time `tr` of your choosing.
+
+Write a function `fit_coast(t, h)` that fits the model by least squares with `np.linalg.lstsq` and returns a tuple of plain floats `(g, v0, rms)`:
+
+- `g = -2 * c2`, the gravity the fit implies;
+- `v0`: the climb rate at the first time stamp, `t[0]` (the derivative of the fitted curve there);
+- `rms`: the root mean square of the fit's residuals.
+
+With noise-free data the answers must be right to 1e-6. Raise `ValueError` for fewer than 3 samples.
+--- starter
+import numpy as np
+
+
+def fit_coast(t, h):
+    pass
+--- solution
+import numpy as np
+
+
+def fit_coast(t, h):
+    """Gravity, climb rate at t[0] and RMS residual of a quadratic fit, with centered time."""
+    if len(t) < 3:
+        raise ValueError("need at least three samples")
+    tr = t.mean()                     # raw week seconds would make the columns nearly parallel
+    s = t - tr
+    A = np.column_stack([np.ones_like(s), s, s**2])
+    c0, c1, c2 = np.linalg.lstsq(A, h)[0]
+    g = -2.0 * c2
+    v0 = c1 + 2.0 * c2 * (t[0] - tr)
+    rms = np.sqrt(np.mean((A @ np.array([c0, c1, c2]) - h) ** 2))
+    return float(g), float(v0), float(rms)
+--- check test | Noise-free data, twenty seconds late in the week
+(lambda t: (lambda g, v0, rms: abs(g - 9.81) < 1e-6 and abs(v0 - 150.0) < 1e-6 and rms < 1e-6)(*fit_coast(t, 1200.0 + 150.0 * (t - t[0]) - 4.905 * (t - t[0]) ** 2)))(500_000.0 + np.arange(0.0, 20.5, 0.5))
+--- check test | Uneven, noisy samples
+(lambda rng: (lambda t: (lambda g, v0, rms: abs(g - 9.81) < 0.3 and abs(v0 - 150.0) < 3.0 and 1.5 < rms < 2.6)(*fit_coast(t, 1200.0 + 150.0 * (t - t[0]) - 4.905 * (t - t[0]) ** 2 + rng.normal(0.0, 2.0, t.size))))(np.sort(583_210.0 + rng.uniform(0.0, 30.0, 60))))(np.random.default_rng(5))
+--- check test | Three samples fit exactly
+(lambda g, v0, rms: abs(g - 2.0) < 1e-6 and abs(v0 - 0.0) < 1e-6 and rms < 1e-6)(*fit_coast(np.array([400_000.0, 400_001.0, 400_002.0]), np.array([10.0, 9.0, 6.0])))
+--- check test | Two samples raise ValueError
+raises(ValueError, lambda: fit_coast(np.array([1.0, 2.0]), np.array([3.0, 4.0])))
+
++++ problem | Dead reckoning without a loop
+--- task
+A rover's gyro gives its yaw rate `rates`, shape `(N,)`, in rad/s, and its odometry gives its velocity in body components, `v_body`, shape `(N, 3)`, in m/s, both sampled every `dt` seconds. Write a function `dead_reckoning(rates, v_body, dt, psi0)` that returns a tuple `(psi, pos)`:
+
+- the heading: `psi[0] = psi0`, and `psi[k] = psi[k - 1] + dt * rates[k - 1]`;
+- at sample `k` the body-from-inertial DCM is the yaw rotation `[[cos psi, sin psi, 0], [-sin psi, cos psi, 0], [0, 0, 1]]` for `psi = psi[k]`, so the inertial velocity is its transpose times `v_body[k]`;
+- the position, shape `(N, 3)`: `pos[0]` is all zeros, and `pos[k] = pos[k - 1] + dt * v_inertial[k - 1]`.
+
+`N` is at least 1. No Python loops: both running sums are cumulative sums.
+--- starter
+import numpy as np
+
+
+def dead_reckoning(rates, v_body, dt, psi0):
+    pass
+--- solution
+import numpy as np
+
+
+def dead_reckoning(rates, v_body, dt, psi0):
+    """Heading and position from yaw rates and body velocities, as cumulative sums."""
+    psi = psi0 + dt * np.concatenate([[0.0], np.cumsum(rates[:-1])])
+    c, s = np.cos(psi), np.sin(psi)
+    v_inertial = np.column_stack([c * v_body[:, 0] - s * v_body[:, 1],    # C.T @ v, row by row
+                                  s * v_body[:, 0] + c * v_body[:, 1],
+                                  v_body[:, 2]])
+    pos = np.zeros_like(v_inertial)
+    pos[1:] = dt * np.cumsum(v_inertial[:-1], axis=0)
+    return psi, pos
+--- check test | Headings step by the rates
+(lambda psi, pos: np.allclose(psi, [0.3, 0.35, 0.45, 0.6]))(*dead_reckoning(np.array([0.1, 0.2, 0.3, 0.4]), np.zeros((4, 3)), 0.5, 0.3))
+--- check test | Facing inertial +y and driving forward
+(lambda psi, pos: np.allclose(pos, [[0.0, 0.0, 0.0], [0.0, 0.2, 0.0], [0.0, 0.4, 0.0], [0.0, 0.6, 0.0]]))(*dead_reckoning(np.zeros(4), np.tile([2.0, 0.0, 0.0], (4, 1)), 0.1, np.pi / 2))
+--- check test | Matches a stack of DCMs on random data
+(lambda rng: (lambda r, v: (lambda psi, pos: (lambda Cs: np.allclose(pos[1:], 0.05 * np.cumsum(np.einsum("nji,nj->ni", Cs, v)[:-1], axis=0)) and np.allclose(pos[0], 0.0))(np.array([[[np.cos(p), np.sin(p), 0.0], [-np.sin(p), np.cos(p), 0.0], [0.0, 0.0, 1.0]] for p in psi])))(*dead_reckoning(r, v, 0.05, -1.0)))(rng.normal(0.0, 0.2, 500), rng.normal(0.0, 1.0, (500, 3))))(np.random.default_rng(6))
+--- check test | One sample
+(lambda psi, pos: psi.tolist() == [1.5] and pos.tolist() == [[0.0, 0.0, 0.0]])(*dead_reckoning(np.array([0.7]), np.array([[1.0, 2.0, 3.0]]), 0.1, 1.5))
+--- check source absent | No Python loop
+\bfor\s+\w+(\s*,\s*\w+)*\s+in\b
+
++++ problem | Screen two catalogs for close approaches
+--- task
+Write a function `close_approaches(a, b, limit, block)` that finds every pair of an object of catalog `a`, shape `(Na, 3)`, and an object of catalog `b`, shape `(Nb, 3)`, closer than `limit`, positions in kilometers.
+
+- Return a list of tuples `(i, j, d)`: `i` indexes `a`, `j` indexes `b` (plain whole numbers), and `d` is their distance (a plain float). Sort the list by distance, then by `i`, then by `j`.
+- Never build the full `(Na, Nb, 3)` difference array: take `block` objects of `a` at a time against all of `b`, with broadcasting, so no temporary is bigger than `(block, Nb, 3)`.
+- `block` may be larger than `Na`. An empty catalog gives `[]`.
+--- starter
+import numpy as np
+
+
+def close_approaches(a, b, limit, block):
+    pass
+--- solution
+import numpy as np
+
+
+def close_approaches(a, b, limit, block):
+    """Every (i, j, distance) with a[i] and b[j] closer than limit, nearest first, in blocks of a."""
+    found = []
+    for start in range(0, len(a), block):
+        diff = a[start:start + block, None, :] - b[None, :, :]     # (block, Nb, 3)
+        dist = np.sqrt((diff * diff).sum(axis=2))
+        rows, cols = np.nonzero(dist < limit)
+        for i, j in zip(rows, cols):
+            found.append((start + int(i), int(j), float(dist[i, j])))
+    return sorted(found, key=lambda pair: (pair[2], pair[0], pair[1]))
+--- check case | Three close pairs, nearest first
+close_approaches(np.array([[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [50.0, 0.0, 0.0]]), np.array([[0.0, 3.0, 4.0], [10.0, 1.0, 0.0], [0.0, 0.0, 2.0]]), 6.0, 2)
+=> [(1, 1, 1.0), (0, 2, 2.0), (0, 0, 5.0)]
+--- check test | Matches a pair-by-pair search for any block size
+(lambda rng: (lambda a, b: (lambda want: all([(i, j) for i, j, d in close_approaches(a, b, 1.2, blk)] == want for blk in (1, 9, 500)))([(i, j) for d, i, j in sorted((float(np.linalg.norm(a[i] - b[j])), i, j) for i in range(len(a)) for j in range(len(b)) if np.linalg.norm(a[i] - b[j]) < 1.2)]))(rng.uniform(0.0, 10.0, (120, 3)), rng.uniform(0.0, 10.0, (80, 3))))(np.random.default_rng(7))
+--- check test | The indexes are plain ints and the distances plain floats
+(lambda r: len(r) == 1 and all(type(x) is int for x in r[0][:2]) and type(r[0][2]) is float)(close_approaches(np.array([[0.0, 0.0, 0.0]]), np.array([[0.0, 0.0, 0.5]]), 1.0, 4))
+--- check case | Empty catalogs
+(close_approaches(np.zeros((0, 3)), np.ones((4, 3)), 1.0, 10), close_approaches(np.ones((4, 3)), np.zeros((0, 3)), 1.0, 10))
+=> ([], [])
+
++++ problem | A per-channel report from dirty float32 telemetry
+--- task
+A ground archive stores a table `tel` of shape `(N, C)` in `float32`: one row per sample, one column per channel. A lost sample is stored either as NaN or as the sentinel value `sentinel`. Write a function `channel_report(tel, sentinel)` that returns a dictionary of four arrays, each of shape `(C,)`:
+
+- `"count"`: how many real readings each channel has;
+- `"mean"`: the mean of its real readings, as `float64`, or NaN if it has none;
+- `"std"`: their standard deviation with `ddof=1`, as `float64`, or NaN if it has fewer than two;
+- `"farthest"`: the sample index of the real reading farthest from the channel's mean, first on a tie, or -1 if it has none.
+
+Work in `float64`: the channels hold values around 7,000,000 with centimeter-level differences, and statistics accumulated in `float32` lose them. Do not change `tel`. No loops.
+--- starter
+import numpy as np
+
+
+def channel_report(tel, sentinel):
+    pass
+--- solution
+import numpy as np
+
+
+def channel_report(tel, sentinel):
+    """Count, float64 mean and ddof=1 std of each channel's real readings, and its farthest reading."""
+    x = tel.astype(np.float64)                        # a new float64 array: tel is untouched
+    x[x == sentinel] = np.nan
+    real = ~np.isnan(x)
+    count = real.sum(axis=0)
+    mean = np.full(x.shape[1], np.nan)
+    has = count > 0
+    mean[has] = np.where(real, x, 0.0).sum(axis=0)[has] / count[has]
+    dev = np.where(real, x - mean, 0.0)
+    std = np.full(x.shape[1], np.nan)
+    two = count > 1
+    std[two] = np.sqrt((dev**2).sum(axis=0)[two] / (count[two] - 1))
+    farthest = np.where(real, np.abs(dev), -1.0).argmax(axis=0)
+    farthest[~has] = -1
+    return {"count": count, "mean": mean, "std": std, "farthest": farthest}
+--- check test | Sentinels and NaN are skipped; an empty channel and a lonely one
+(lambda r: r["count"].tolist() == [3, 0, 1] and np.allclose(r["mean"], [2.0, np.nan, 5.0], equal_nan=True) and np.isnan(r["std"][1]) and np.isnan(r["std"][2]) and abs(r["std"][0] - 1.0) < 1e-12 and r["farthest"].tolist() == [0, -1, 2])(channel_report(np.array([[1.0, np.nan, -999.0], [-999.0, -999.0, np.nan], [3.0, np.nan, 5.0], [2.0, -999.0, np.nan]], dtype=np.float32), -999.0))
+--- check test | Values near 7e6 keep their centimeters
+(lambda tel: (lambda r, x: abs(r["mean"][0] - x.mean()) < 1e-6 and abs(r["std"][0] - x.std(ddof=1)) / x.std(ddof=1) < 1e-9 and r["mean"].dtype == np.float64)(channel_report(tel, -999.0), tel[:, 0].astype(np.float64)))((7_000_000.0 + np.random.default_rng(8).normal(0.0, 2.0, (200_000, 1))).astype(np.float32))
+--- check test | The table is not changed
+(lambda tel: (channel_report(tel, -999.0), tel[0, 0] == -999.0 and np.isnan(tel[1, 0]))[1])(np.array([[-999.0], [np.nan], [4.0]], dtype=np.float32))
+--- check test | Matches NumPy's nan-aware reductions on random gaps
+(lambda tel: (lambda r, x: np.allclose(r["mean"], np.nanmean(x, axis=0)) and np.allclose(r["std"], np.nanstd(x, axis=0, ddof=1)) and r["count"].tolist() == (~np.isnan(x)).sum(axis=0).tolist())(channel_report(tel, -1.0e4), np.where(tel == -1.0e4, np.nan, tel.astype(np.float64))))(np.where(np.random.default_rng(9).random((300, 4)) < 0.2, np.float32(-1.0e4), np.random.default_rng(10).normal(20.0, 3.0, (300, 4)).astype(np.float32)))
+
++++ problem | A reproducible gyro dispersion study
+--- task
+Each case of a dispersion study simulates a gyro at rest. For case `k` of a study with master seed `master`:
+
+- make `rng = np.random.default_rng(np.random.SeedSequence(master, spawn_key=(k,)))`;
+- draw the three-axis bias with `rng.normal(0.0, 0.01, 3)`, then the noise with `rng.normal(0.0, 0.002, (n_samples, 3))`, in that order;
+- the measurements are bias plus noise, one row per sample, and the case's result is the root mean square length of the measurement rows: the square root of the mean, over the samples, of each row's squared length.
+
+Write two functions:
+
+- `case_rms(master, k, n_samples)`: the result of case `k`, as a plain float, with no loop over the samples;
+- `study(master, n_cases, n_samples)`: a tuple `(results, worst, p95)`: the `(n_cases,)` array of the results of cases 0 to `n_cases - 1`, the case number with the largest result as a plain whole number, and the 95th percentile of the results from `np.percentile`, as a plain float.
+
+Rerunning `case_rms` for any case must reproduce its entry of `results` exactly.
+--- starter
+import numpy as np
+
+
+def case_rms(master, k, n_samples):
+    pass
+
+
+def study(master, n_cases, n_samples):
+    pass
+--- solution
+import numpy as np
+
+
+def case_rms(master, k, n_samples):
+    """RMS length of case k's simulated gyro readings, from the case's own random stream."""
+    rng = np.random.default_rng(np.random.SeedSequence(master, spawn_key=(k,)))
+    bias = rng.normal(0.0, 0.01, 3)
+    noise = rng.normal(0.0, 0.002, (n_samples, 3))
+    meas = bias + noise                              # (3,) broadcast against (n_samples, 3)
+    return float(np.sqrt((meas**2).sum(axis=1).mean()))
+
+
+def study(master, n_cases, n_samples):
+    """Every case's result, the worst case and the 95th percentile."""
+    results = np.array([case_rms(master, k, n_samples) for k in range(n_cases)])
+    return results, int(results.argmax()), float(np.percentile(results, 95))
+--- check test | Any case reruns exactly, and the worst is the largest
+(lambda res, w, p: np.array_equal(res, [case_rms(31, k, 400) for k in range(50)]) and res[w] == res.max() and type(w) is int and abs(p - np.percentile(res, 95)) < 1e-15)(*study(31, 50, 400))
+--- check test | case_rms follows the drawing order
+(lambda g: abs(case_rms(4, 9, 100) - (lambda b, n: np.sqrt(((b + n) ** 2).sum(axis=1).mean()))(g.normal(0.0, 0.01, 3), g.normal(0.0, 0.002, (100, 3)))) < 1e-15)(np.random.default_rng(np.random.SeedSequence(4, spawn_key=(9,))))
+--- check test | The size of the results makes sense
+(lambda res, w, p: res.shape == (200,) and 0.002 < np.median(res) < 0.03 and p < res.max())(*study(77, 200, 1000))
+
++++ problem | Pack a track small, without losing precision
+--- task
+A tracking station logs `N` samples (at least 1) of time `t`, in seconds of the GPS week around 500,000 s, and position `r`, shape `(N, 3)`, in meters around 7,000,000 m. Every time is `t[0]` plus a whole number of 0.01 s steps (there may be gaps), and every position is within 5 km of `r[0]`. Plain `float32` would round the times to about 0.03 s and the positions to about 0.5 m, so store them in a smarter layout.
+
+Write two functions:
+
+- `pack_track(t, r)` returns the bytes of an `.npz` holding exactly four arrays: `"t0"`, the first time, `float64`, shape `()`; `"k"`, `int32`, shape `(N,)`, the number of 0.01 s steps from `t0` to each time; `"r0"`, the first position, `float64`, shape `(3,)`; and `"dr"`, `float32`, shape `(N, 3)`, each position minus `r0`.
+- `unpack_track(blob)` returns `(t, r)` as `float64` arrays: `t0 + k * 0.01` and `r0 + dr`.
+
+The times must come back within 1e-9 s and the positions within 1 mm, and the archive must be far smaller than the raw `float64` data. Work in memory: `np.savez` accepts an `io.BytesIO()` object, `buf.getvalue()` gives its bytes, and `np.load(io.BytesIO(blob))` reads them.
+--- starter
+import io
+
+import numpy as np
+
+
+def pack_track(t, r):
+    pass
+
+
+def unpack_track(blob):
+    pass
+--- solution
+import io
+
+import numpy as np
+
+STEP = 0.01   # s
+
+
+def pack_track(t, r):
+    """Bytes of an .npz: float64 anchors, int32 step counts and float32 offsets."""
+    t0 = t[0]
+    k = np.round((t - t0) / STEP).astype(np.int32)
+    r0 = r[0].copy()
+    dr = (r - r0).astype(np.float32)          # offsets of a few km keep sub-mm steps in float32
+    buf = io.BytesIO()
+    np.savez(buf, t0=np.float64(t0), k=k, r0=r0, dr=dr)
+    return buf.getvalue()
+
+
+def unpack_track(blob):
+    """Times and positions back as float64."""
+    with np.load(io.BytesIO(blob)) as d:
+        t = d["t0"] + d["k"] * STEP
+        r = d["r0"] + d["dr"].astype(np.float64)
+    return t, r
+--- check test | Round trip within 1e-9 s and 1 mm
+(lambda rng: (lambda k, r: (lambda t: (lambda tt, rr: np.max(np.abs(tt - t)) < 1e-9 and np.max(np.abs(rr - r)) < 1e-3 and tt.dtype == np.float64 and rr.dtype == np.float64)(*unpack_track(pack_track(t, r))))(512_345.67 + k * 0.01))(np.cumsum(rng.integers(1, 4, 5000)), np.array([6_878_000.0, -1_200_000.0, 250_000.0]) + rng.uniform(-3000.0, 3000.0, (5000, 3))))(np.random.default_rng(11))
+--- check test | Exactly the four arrays, with the right dtypes and shapes
+(lambda d: sorted(d.files) == ["dr", "k", "r0", "t0"] and d["t0"].dtype == np.float64 and d["t0"].shape == () and d["k"].dtype == np.int32 and d["r0"].dtype == np.float64 and d["r0"].shape == (3,) and d["dr"].dtype == np.float32 and d["dr"].shape == (4, 3) and d["k"].tolist() == [0, 1, 2, 7])(np.load(__import__("io").BytesIO(pack_track(500_000.0 + np.array([0.0, 0.01, 0.02, 0.07]), 7_000_000.0 + np.arange(12.0).reshape(4, 3)))))
+--- check test | Far smaller than float64
+(lambda n: len(pack_track(500_000.0 + np.arange(n) * 0.01, 7_000_000.0 + np.random.default_rng(12).uniform(-1000.0, 1000.0, (n, 3)))) < 0.6 * n * 4 * 8)(10_000)
+--- check test | One sample
+(lambda tt, rr: tt.tolist() == [500_000.5] and rr.tolist() == [[7_000_000.25, 1.0, -2.0]])(*unpack_track(pack_track(np.array([500_000.5]), np.array([[7_000_000.25, 1.0, -2.0]]))))
+
++++ problem | How fast does averaging beat the noise?
+--- task
+Averaging `m` consecutive samples of white noise should shrink its spread by the square root of `m`. Write a function `averaged_noise(x, sizes)` that measures it for a 1-D record `x` and a list of block sizes. For each size `m` in `sizes`:
+
+- cut `x` into consecutive blocks of `m` samples, dropping the samples left over at the end, and take the mean of each block;
+- the entry for `m` is the standard deviation, with `ddof=1`, of those block means;
+- if there are fewer than two blocks, the entry is NaN.
+
+Return a `float64` array with one entry per size, in order. Inside each size, no loop over the blocks or the samples: regroup, then reduce.
+--- starter
+import numpy as np
+
+
+def averaged_noise(x, sizes):
+    pass
+--- solution
+import numpy as np
+
+
+def averaged_noise(x, sizes):
+    """ddof=1 spread of the means of consecutive blocks of m samples, for each m in sizes."""
+    out = np.full(len(sizes), np.nan)
+    for i, m in enumerate(sizes):
+        n_blocks = len(x) // m
+        if n_blocks >= 2:
+            out[i] = x[:n_blocks * m].reshape(n_blocks, m).mean(axis=1).std(ddof=1)
+    return out
+--- check test | A small record, worked by hand
+(lambda r: np.allclose(r[:3], [np.std([1.0, 3.0, 5.0, 7.0, 2.0, 4.0], ddof=1), np.std([2.0, 6.0, 3.0], ddof=1), np.std([3.0, 13.0 / 3.0], ddof=1)]) and np.isnan(r[3]))(averaged_noise(np.array([1.0, 3.0, 5.0, 7.0, 2.0, 4.0]), [1, 2, 3, 4]))
+--- check test | White noise shrinks as one over the square root of m
+(lambda r: r.dtype == np.float64 and np.allclose(r, [1.0, 1.0 / np.sqrt(10.0), 0.1], rtol=0.1))(averaged_noise(np.random.default_rng(13).normal(0.0, 1.0, 200_000), [1, 10, 100]))
+--- check test | Leftover samples are dropped
+(lambda r: abs(r[0] - np.std([0.5, 2.5], ddof=1)) < 1e-12)(averaged_noise(np.array([0.0, 1.0, 2.0, 3.0, 100.0]), [2]))
+--- check case | No sizes
+averaged_noise(np.arange(10.0), []).shape
+=> (0,)
+
++++ question | A view of a view, and a copy
+--- ask
+What does this print?
+
+```python
+import numpy as np
+
+a = np.arange(10.0)
+b = a[2:8]
+c = b[[0, 2]]
+c[:] = -1.0
+b[1:3] = 0.0
+print(a[2:6])
+```
+--- answer
+[2. 0. 0. 5.]
+[2, 0, 0, 5]
+2 0 0 5
+[2.0, 0.0, 0.0, 5.0]
+--- why
+`b = a[2:8]` is a basic slice, a view of elements 2 to 7 of `a`. `c = b[[0, 2]]` uses a list of positions, fancy indexing, so `c` is a new array: writing -1 into it changes nothing else. `b[1:3] = 0.0` writes through the view into `a[3]` and `a[4]`. So `a[2:6]` is 2, 0, 0, 5.
+
++++ question | In place, into a smaller array
+--- ask
+What happens when this runs?
+
+```python
+import numpy as np
+
+s = np.zeros((4, 1))
+s += np.ones(3)
+```
+--- choice
+`s` becomes a `(4, 3)` array of ones.
+--- choice correct
+It raises an error: the broadcast result has shape `(4, 3)`, and an in-place operation cannot change `s`'s shape `(4, 1)`.
+--- choice
+Only the first element of each row gets 1 added; the other two ones are dropped.
+--- choice
+`s` stays `(4, 1)` and each entry becomes 3.0, the sum of the ones.
+--- why
+`(4, 1)` and `(3,)` broadcast to `(4, 3)`, so `s + np.ones(3)` would be a new `(4, 3)` array. But `+=` writes the result back into `s`, which has room for only `(4, 1)`. NumPy raises "non-broadcastable output operand". The right-hand side may stretch; the left-hand side cannot grow.
+
++++ question | The price of an inverse
+--- ask
+For a dense 3000 by 3000 system, roughly how many times the floating-point work of `np.linalg.solve(A, b)` does `np.linalg.inv(A) @ b` do?
+--- choice
+About the same: both factorize `A` once.
+--- choice correct
+About three times: the LU factorization costs about (2/3)n³ either way, and building all n columns of the inverse adds about (4/3)n³ more.
+--- choice
+About 3000 times: the inverse solves one system per column.
+--- choice
+About nine times, because it is a matrix times a matrix instead of a matrix times a vector.
+--- why
+Solving by LU costs about (2/3)n³ flops, plus about 2n² for the two triangle walks. Forming the inverse starts with the same factorization and then solves for all n columns of the identity, about (4/3)n³ more, for about 2n³ in total: three times the work. The columns share one factorization, so it is not n times. And the inverse route is also less accurate, because it rounds more and then multiplies by a matrix that already carries rounding error.
+
++++ question | Every case drew the same wind
+--- ask
+Which line makes every case of this study get the same wind?
+
+```python
+def run_case(k, seed=42):                    # line 1
+    rng = np.random.default_rng(seed)        # line 2
+    wind = rng.normal(0.0, 3.0)              # line 3
+    return simulate(k, wind)                 # line 4
+```
+--- choice
+Line 1: a default argument is evaluated only once, so `seed` is shared.
+--- choice correct
+Line 2: every case builds a generator from the same seed, so every case starts the same stream. It should depend on `k`, for example `np.random.SeedSequence(seed, spawn_key=(k,))`.
+--- choice
+Line 3: `rng.normal` needs a `size=` argument, or it returns the same number each time.
+--- choice
+Line 4: `simulate` must be given the generator, not the wind.
+--- why
+A generator's stream is fixed by its seed, so `default_rng(42)` gives the same first normal number every time it is made, and every case gets the same wind. The default value 42 is an immutable number, so sharing it does no harm, and `normal` with no size returns one number drawn from the stream. Deriving each case's stream from the master seed and the case number gives independent winds that can still be rerun one case at a time.
+
++++ question | A reshape that copies
+--- ask
+`v` is a C-order `float64` array of shape `(4, 3)`. `v.reshape(12)` is a view, but `v.T.reshape(12)` is a copy. Why?
+--- choice
+Transposing always copies the data, so any reshape of `v.T` works on a copy.
+--- choice correct
+Reading `v.T` row by row visits `v`'s memory at bytes 0, 24, 48, 72, then back at 8: no single stride walks that path, so NumPy must copy.
+--- choice
+Reshaping to one axis always copies; `v.reshape(12)` only looks like a view.
+--- choice
+`v.T` is read-only, and a read-only array cannot be reshaped in place.
+--- why
+`v.T` is itself a view with strides `(8, 24)`: it swaps the header, not the data. A reshape can be a view only if the new shape can be walked with fixed strides over the old memory. `v.reshape(12)` walks forward 8 bytes at a time. Reading `v.T` in row order goes 0, 24, 48, 72, then 8, which jumps back: that needs a copy, and writing into the copy never changes `v`.
+
++++ question | Adding 1 to a hundred million
+--- ask
+What does this print?
+
+```python
+import numpy as np
+
+big = np.float32(1e8)
+print(big + np.float32(1.0) - big)
+```
+--- answer
+0.0
+0
+--- why
+100,000,000 lies between 2^26 and 2^27, where neighboring `float32` values are 8 apart (24 significant bits). 100,000,001 is not a `float32`, so the sum rounds back to 100,000,000, and subtracting `big` leaves 0.0. The subtraction itself was exact; the 1 was lost in the addition. In `float64` the answer would be 1.0.
+
++++ question | Singular values and the condition number
+--- ask
+The singular values of a 3 by 3 matrix `A` are 50, 5 and 0.05. What does `np.linalg.cond(A)` return, roughly? Type the number.
+--- answer
+1000
+1000.0
+1e3
+1e+03
+1,000
+--- why
+The condition number is the largest stretch over the smallest, the first singular value over the last: 50 / 0.05 = 1000. The middle one does not enter. It warns that relative errors in `b` can grow up to a thousand times in the solution of `A x = b`, so about 3 of a `float64`'s 16 digits are at risk. The largest singular value, 50, is `np.linalg.norm(A, 2)`.
+
++++ question | A year of telemetry on a laptop
+--- ask
+`tel = np.load("year.npy", mmap_mode="r")` opens a 202 GB `float32` file of shape `(3_153_600_000, 16)` on a laptop with 16 GB of memory. Which next line works and reads only a small part of the file?
+--- choice
+`data = np.array(tel)`, then work on `data`.
+--- choice correct
+`tel[3_600_000:3_960_000, 2].mean()`: the mean of one channel over one hour.
+--- choice
+`tel[100:103] = 0.0`, to blank out a bad stretch.
+--- choice
+`tel.astype(np.float64)`, so the arithmetic is done in double precision.
+--- why
+A memory map reads pages from disk only when they are touched, so slicing one hour of one channel reads about that hour's pages. `np.array(tel)` and `astype` both build a full copy in memory, 202 GB and 404 GB, which cannot fit. And a map opened with `mode "r"` is read-only, so the assignment raises `ValueError: assignment destination is read-only`.
+
++++ question | The size of a .npy file
+--- ask
+How many bytes long is the file written by `np.save("imu.npy", a)`, where `a` is a `float32` array of shape `(5000, 3)`? Type the number.
+--- answer
+60128
+60,128
+60128 bytes
+--- why
+The data is 5000 × 3 = 15,000 numbers of 4 bytes each, 60,000 bytes. A simple array's `.npy` file puts a 128-byte header in front: the magic `\x93NUMPY`, the version, the header length and a small dictionary giving the dtype, the order and the shape. 60,000 + 128 = 60,128.
+
++++ question | A fast, wrong answer
+--- ask
+Which of these "vectorized" versions gives a fast but **wrong** answer?
+--- choice
+Converting a million positions from kilometers to meters with `pos * 1000.0`.
+--- choice correct
+Integrating `x[k + 1] = x[k] + dt * f(x[k])` for a nonlinear `f` by computing `f` of the initial state once and multiplying it by the step numbers.
+--- choice
+Running 10,000 independent orbits for 100 steps, looping over the steps and updating all orbits as arrays at each step.
+--- choice
+Finding the first over-limit sample by scanning chunks of 100,000 with a mask and stopping at the first chunk with a hit.
+--- why
+Each step of a recurrence needs the state the step before produced, and for a nonlinear `f` no reshuffling of array operations removes that dependence: using the initial state for every step computes a different, wrong trajectory. The unit conversion is element by element, the orbits are independent of each other so looping over time while vectorizing over orbits is exactly right, and the chunked search gives the same index as a full scan.
+
++++ question | Strides after a slice
+--- ask
+`a = np.zeros((5, 4), dtype=np.float32)` and `b = a[::2, ::-1]`. What is `b.strides`?
+--- answer
+(32, -4)
+(32,-4)
+32, -4
+32,-4
+--- why
+A `float32` element is 4 bytes, so `a` has strides `(16, 4)`: 16 bytes to the next row of four, 4 to the next column. `::2` on the rows steps over two rows, 32 bytes. `::-1` on the columns walks backwards, -4 bytes, starting from the last column. `b` is a view of shape `(3, 4)` with strides `(32, -4)`.
+
++++ question | Two letters kept, none summed
+--- ask
+`a` and `b` both have shape `(N, 3)`. What does `np.einsum("ni,nj->nij", a, b)` compute?
+--- choice
+The `(N,)` dot products of matching rows.
+--- choice
+The `(N, 3)` cross products of matching rows.
+--- choice correct
+An `(N, 3, 3)` stack of outer products: entry `[n, i, j]` is `a[n, i] * b[n, j]`.
+--- choice
+One `(3, 3)` matrix: the sum over all rows of the outer products.
+--- why
+Every letter of the inputs appears in the output, so nothing is summed away: the product is taken for every `n`, `i` and `j`, and `n` pairs row `n` of `a` with row `n` of `b`. That is one outer product per row, shape `(N, 3, 3)`. The sum over rows, one `(3, 3)` matrix, would be `"ni,nj->ij"`, and the dot products `"ni,ni->n"`.

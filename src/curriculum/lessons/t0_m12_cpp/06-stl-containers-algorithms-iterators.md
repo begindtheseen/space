@@ -44,7 +44,7 @@ Its size is a template parameter, so `std::array<double, 6>` is $6 \times 8 = 48
 **`std::span`** (new in C++20) is the recipe card that says "look at those eggs". It is a **view**: a pointer plus a length, 16 bytes, referring to items that something else owns. A function taking a `std::span` of `const double` accepts a `std::array`, a `std::vector`, a plain C array, or **[[part of any of them|span-picture]]** — without copying, and without being a template. It replaces the old C habit of passing a pointer and a count as two separate arguments that could disagree. And it carries the same rule as a reference: the span must not outlive the storage it looks at.
 
 ::: example One function for every side-by-side container
-```cpp
+```cpp laptop
 #include <array>
 #include <iostream>
 #include <numeric>

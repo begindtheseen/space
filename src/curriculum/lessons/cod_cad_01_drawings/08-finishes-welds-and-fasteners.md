@@ -56,7 +56,7 @@ So Ra is $1.1\,\mu\mathrm{m}$, under the $1.6$ limit, and the shaft passes. **Sa
 The finish symbol is a check mark with a short left leg and a long right leg, its point touching the surface (or an extension line from it). Three versions say three things:
 
 - the **basic symbol** — any process is allowed;
-- with a **bar** closing the top of the short leg — material must be removed by machining;
+- with a **bar** joining the tops of the two legs, closing the V into a triangle — material must be removed by machining;
 - with a **circle** inside the V — material removal is *prohibited*; leave the surface as cast, forged or rolled.
 
 The roughness value sits on or above the symbol. Next to its lower right, a small letter may give the **[[lay|lay]]** — the direction of the tool marks: $=$ parallel to the edge the symbol touches, $\perp$ perpendicular to it, $\mathrm{X}$ crossed at an angle, $\mathrm{M}$ multidirectional, $\mathrm{C}$ circular, $\mathrm{R}$ radial, $\mathrm{P}$ pitted or non-directional. Lay matters because a seal can leak along tool marks that run across it but not along marks that run around it.

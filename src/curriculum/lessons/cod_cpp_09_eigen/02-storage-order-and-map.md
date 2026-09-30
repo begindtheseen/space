@@ -74,7 +74,7 @@ Four things to notice.
 4. `B = A` copied between the two orders, and Eigen rearranged the numbers so that every entry kept its meaning. Mixing orders in ordinary Eigen code is safe; Eigen does the bookkeeping.
 :::
 
-The third template parameter spot, after the rows and columns, holds options. `Eigen::RowMajor` asks for row-major storage. You can give the type a name so it is short to use:
+The fourth template parameter spot, after the scalar type, the rows and the columns, holds options. `Eigen::RowMajor` asks for row-major storage. You can give the type a name so it is short to use:
 
 ```cpp
 using RowMajor3d = Eigen::Matrix<double, 3, 3, Eigen::RowMajor>;

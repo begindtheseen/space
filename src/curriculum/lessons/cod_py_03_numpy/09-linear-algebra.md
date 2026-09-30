@@ -61,7 +61,7 @@ Always do that second print. Putting the answer back in and seeing $\mathbf{b}$ 
 Done carefully, elimination splits $\mathbf{A}$ into two triangle-shaped matrices, $\mathbf{A} = \mathbf{L}\mathbf{U}$ — a **[[LU factorization|lu-picture]]**. $\mathbf{L}$ ("lower") holds the recipe for the eliminations. $\mathbf{U}$ ("upper") is the staircase you are left with. Once you have them, solving is two quick walks: down through $\mathbf{L}$, then up through $\mathbf{U}$. NumPy does not do this in Python. It calls **[[LAPACK|lapack]]**, a library of fast, carefully tested routines that nearly every engineering tool uses.
 
 ::: key np.linalg.solve
-`x = np.linalg.solve(A, b)` solves $\mathbf{A}\mathbf{x} = \mathbf{b}$ for a square $\mathbf{A}$ by LU factorization and back-substitution. Check the **residual** `A @ x - b`; it should be tiny. If $\mathbf{A}$ is singular (has no inverse), `solve` raises `LinAlgError`.
+`x = np.linalg.solve(A, b)` solves $\mathbf{A}\mathbf{x} = \mathbf{b}$ for a square $\mathbf{A}$ by LU factorization and back-substitution. Check the **residual** `A @ x - b`; it should be tiny. If $\mathbf{A}$ is singular (has no inverse), `solve` raises `LinAlgError` on a laptop. The browser's NumPy, on WebAssembly, gets no floating-point error signal and returns `nan` instead, so test `np.isfinite(x)` if the code must work in both.
 :::
 
 ## Why not inv
@@ -356,7 +356,7 @@ print(np.linalg.svd(B, compute_uv=False))
 print(np.linalg.matrix_rank(B))
 # 2
 np.linalg.solve(B, np.array([1.0, 2.0, 3.0]))
-# LinAlgError: Singular matrix
+# LinAlgError: Singular matrix   (in the browser: [nan nan nan])
 ```
 
 The second column is exactly twice the first, so one direction is lost: the third singular value is zero up to rounding, and `matrix_rank` counts 2. In estimation this happens when two unknowns always move together — two thrusters that always fire at once — so the data pin down their sum but never tell them apart.

@@ -226,7 +226,7 @@ The report names the source line: line 7, `first = 0.0;`. (Real output starts ea
 
 The square-bracket index, `operator[]`, never checks on any of the three. `.at(i)` on `std::array` or `std::vector` does, and throws `std::out_of_range` when `i` is too big:
 
-```cpp
+```cpp laptop
 #include <array>
 #include <cstdio>
 #include <stdexcept>

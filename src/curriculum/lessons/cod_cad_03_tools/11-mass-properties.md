@@ -42,7 +42,7 @@ $$
 
 Here $\mathbf{r}_i$ (read "r sub i", bold because it is a vector with x, y and z parts) is where part $i$'s own center sits, and $\mathbf{r}_{cg}$ is the assembly's CG. You compute it one direction at a time: add up mass times x for every part and divide by the total mass; then the same for y and z.
 
-::: key Centre of gravity
+::: key Center of gravity
 Mass $m = \rho V$ for each part, $M = \sum m_i$ for the assembly, and the CG is the mass-weighted average position: $\mathbf{r}_{cg} = \sum m_i \mathbf{r}_i / M$.
 :::
 

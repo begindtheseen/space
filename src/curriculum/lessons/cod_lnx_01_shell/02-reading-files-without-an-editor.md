@@ -385,7 +385,7 @@ tail -c 1 bad.csv | od -c
 0000001
 ```
 
-The first file ends in a newline; the second ends in the character `2`. `od -c` shows the actual byte, where `cat -A` would show nothing unusual for the second case.
+The first file ends in a newline; the second ends in the character `2`. `od -c` shows the actual byte. `cat -A` gives only a quiet clue: the last line appears without its closing `$`, which is easy to miss.
 :::
 
 ::: check
