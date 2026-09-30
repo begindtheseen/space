@@ -6,12 +6,15 @@
    the page, so the one being spoken can be lit up and scrolled back to.
 
    What is spoken and what is shown are not the same text: code blocks and
-   equations are left out of the reading, headings and list markers are
-   reshaped, and the reading has its own full stops. So spoken words are
-   matched to the page's words in order, each to the next page word that reads
-   the same within a short window; a spoken word with no match on the page
-   (a number read out, a symbol spelled) simply lights nothing, and the next
-   one picks up where the page is.
+   equations are left out of the reading ("Code block." is said instead),
+   headings and list markers are reshaped, numbers are read out, and the
+   reading has its own full stops. So each spoken sentence is lined up with
+   the page as a whole (alignNorms): as many of its words matched, in order, as
+   can be without skipping far ahead on the page to do it. Matching each word
+   greedily to the next page word that read the same once let one common word
+   with no partner on the page ("code", "the") jump the light dozens of words
+   ahead, where it stayed lost. A spoken word with no match simply lights
+   nothing, and a sentence that cannot be placed leaves the place unchanged.
 
    The light is a CSS Custom Highlight (CSS.highlights): a Range painted by the
    browser, with no change to the lesson's markup at all — nothing to undo,
@@ -21,8 +24,11 @@
    ========================================================================== */
 import { textWords } from './kokoro'
 
-/** Elements whose text is never read aloud. */
-const SKIP = 'pre, code, .katex, .katex-display, math, script, style, button, [aria-hidden="true"], .raloud, .runnable, .embed'
+/**
+ * Elements whose text is never read aloud. Code blocks (pre) and code windows are announced, not read,
+ * but inline code is read out (lib/speech.ts codeToWords), so its words can be lit too.
+ */
+const SKIP = 'pre, .katex, .katex-display, math, script, style, button, [aria-hidden="true"], .raloud, .runnable, .embed'
 
 /** A word as the matcher sees it: letters and digits only, lower case. */
 export const normWord = (s: string): string => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')
@@ -34,8 +40,115 @@ interface PageWord {
   end: number
 }
 
-/** How far ahead on the page a spoken word may find its match. */
-const WINDOW = 40
+/** Score for each spoken word matched to a page word. */
+const MATCH = 1
+/** Cost of each page word skipped between two matched words of a sentence. */
+const GAP = 0.2
+/** Cost of each page word skipped before a sentence's first matched word (text not read, such as a label). */
+const LEAD = 0.03
+
+/**
+ * Lines up a spoken sentence (`spoken`, as normWord gives) with the page's words
+ * (`page`) from `from` on: the page word each spoken word lands on, or -1. It is
+ * the in-order matching that scores best, a point per match less the page words
+ * it skips to get them, so a lone word matching far ahead is never worth the jump.
+ * A sentence it can place only on one word after skipping ahead lands nowhere.
+ */
+export function alignNorms(page: readonly string[], spoken: readonly string[], from: number): Int32Array {
+  const n = spoken.length
+  const out = new Int32Array(n).fill(-1)
+  const width = Math.min(page.length - from, Math.max(80, n * 3 + 40))
+  if (n === 0 || width <= 0) return out
+  // score[j]: the best score so far with the last match at page word from + j.
+  let score = new Float64Array(width).fill(-Infinity)
+  // prev[k][j]: where the match before it was (-1: none) if spoken word k matched page word j, else -2.
+  const prev: Int32Array[] = []
+  for (let k = 0; k < n; k++) {
+    const mark = new Int32Array(width).fill(-2)
+    prev.push(mark)
+    const norm = spoken[k]
+    if (!norm) continue
+    const next = score.slice() // not matching this word keeps every place reached so far
+    // The best earlier match to come from, as page word j moves on: score + GAP·i, so the gap cost is one subtraction.
+    let run = -Infinity
+    let runAt = -1
+    for (let j = 0; j < width; j++) {
+      if (page[from + j] === norm) {
+        let best = -LEAD * j
+        let at = -1
+        if (runAt >= 0 && run - GAP * (j - 1) > best) {
+          best = run - GAP * (j - 1)
+          at = runAt
+        }
+        if (best + MATCH > next[j]!) {
+          next[j] = best + MATCH
+          mark[j] = at
+        }
+      }
+      if (score[j]! + GAP * j > run) {
+        run = score[j]! + GAP * j
+        runAt = j
+      }
+    }
+    score = next
+  }
+  let j = -1
+  let top = 0
+  for (let i = 0; i < width; i++) if (score[i]! > top) (top = score[i]!), (j = i)
+  let matched = 0
+  for (let k = n - 1; k >= 0 && j >= 0; k--) {
+    const m = prev[k]![j]!
+    if (m === -2) continue
+    out[k] = from + j
+    matched++
+    j = m
+  }
+  // One word found only after skipping ahead is a guess, not a place.
+  const first = out.find((i) => i >= 0) ?? -1
+  if (matched === 1 && first - from > 3) out.fill(-1)
+  return out
+}
+
+/**
+ * Where a run of spoken words begins on the page, searching from `from`: the
+ * first place where most of its first few words match in order.
+ */
+export function seekNorms(page: readonly string[], spoken: readonly string[], from = 0): number {
+  const probe = spoken.filter(Boolean).slice(0, 4)
+  if (!probe.length) return from
+  let best = from
+  let bestScore = 0
+  for (let i = from; i < page.length; i++) {
+    if (page[i] !== probe[0]) continue
+    let score = 1
+    let j = i + 1
+    for (let k = 1; k < probe.length && j < page.length; k++) {
+      const hit = page.slice(j, j + 3).findIndex((w) => w === probe[k])
+      if (hit >= 0) {
+        score++
+        j += hit + 1
+      }
+    }
+    if (score > bestScore) {
+      best = i
+      bestScore = score
+      if (score === probe.length) break
+    }
+  }
+  return best
+}
+
+/**
+ * Places a spoken sentence on the page after `from`, the way the reader goes: aligned from
+ * where the last one ended, or, when it cannot be placed there (a long stretch of text that is
+ * not read came between), from where its opening words are found further on.
+ */
+export function placeNorms(page: readonly string[], spoken: readonly string[], from: number): Int32Array {
+  const here = alignNorms(page, spoken, from)
+  if (here.some((i) => i >= 0) || spoken.filter(Boolean).length < 3) return here
+  const found = seekNorms(page, spoken, from)
+  return found > from ? alignNorms(page, spoken, found) : here
+}
 
 export class PageWords {
   readonly words: PageWord[] = []
@@ -52,51 +165,30 @@ export class PageWords {
     }
   }
 
-  /**
-   * Where a run of spoken words begins on the page, searching from `from`:
-   * the first place where most of its first few words match in order.
-   */
+  /** The page's words as the matcher compares them. */
+  get norms(): string[] {
+    return (this._norms ??= this.words.map((w) => w.norm))
+  }
+  private _norms: string[] | null = null
+
+  /** Where a run of spoken words begins on the page, searching from `from` (seekNorms). */
   seek(norms: readonly string[], from = 0): number {
-    const probe = norms.filter(Boolean).slice(0, 4)
-    if (!probe.length) return from
-    let best = from
-    let bestScore = 0
-    for (let i = from; i < this.words.length; i++) {
-      if (this.words[i]!.norm !== probe[0]) continue
-      let score = 1
-      let j = i + 1
-      for (let k = 1; k < probe.length && j < this.words.length; k++) {
-        const hit = this.words.slice(j, j + 3).findIndex((w) => w.norm === probe[k])
-        if (hit >= 0) {
-          score++
-          j += hit + 1
-        }
-      }
-      if (score > bestScore) {
-        best = i
-        bestScore = score
-        if (score === probe.length) break
-      }
-    }
-    return best
+    return seekNorms(this.norms, norms, from)
   }
 
-  /** The page word each spoken word lands on (-1 for none), matching in order from `from`. */
+  /** The page word each spoken word lands on (-1 for none), from `from` on (alignNorms). */
   align(norms: readonly string[], from: number): Int32Array {
-    const out = new Int32Array(norms.length).fill(-1)
-    let at = from
-    norms.forEach((norm, k) => {
-      if (!norm) return
-      const end = Math.min(this.words.length, at + WINDOW)
-      for (let i = at; i < end; i++) {
-        if (this.words[i]!.norm === norm) {
-          out[k] = i
-          at = i + 1
-          return
-        }
-      }
-    })
-    return out
+    return alignNorms(this.norms, norms, from)
+  }
+
+  /** A spoken sentence placed after `from`, re-finding the place if it was lost (placeNorms). */
+  place(norms: readonly string[], from: number): Int32Array {
+    return placeNorms(this.norms, norms, from)
+  }
+
+  /** Whether page word `i` is still in the page: a part of the lesson drawn again leaves the old text behind. */
+  alive(i: number): boolean {
+    return !!this.words[i]?.node.isConnected
   }
 
   range(i: number, j = i): Range | null {
