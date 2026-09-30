@@ -39,6 +39,11 @@ export function importsBefore(body: string, code: string): string {
   return lines.join('; ')
 }
 
+/** The id read-aloud runs an example window by (lib/guide.ts): the same for the same code on a page. */
+export function exampleGuideId(code: string): string {
+  return `example:${hash(code)}`
+}
+
 /** The code renderer for one lesson; edits are kept per lesson and snippet. */
 export function useLessonCode(saveBase: string, body: string | null, schema?: string): CodeRenderer {
   return useMemo(
@@ -58,6 +63,7 @@ export function useLessonCode(saveBase: string, body: string | null, schema?: st
           // A transcript echoes every expression, as the REPL it came from did.
           transform={(c) => echoExpressions(lang, c, typed !== code)}
           minHeight={90}
+          guideId={exampleGuideId(code)}
         />
       )
     },
