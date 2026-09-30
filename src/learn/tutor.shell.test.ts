@@ -1,3 +1,4 @@
+import { appendFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { TRACKS } from './full'
 import { gradeRun } from './grade'
@@ -66,7 +67,7 @@ describe('the terminal tutor names the mistake that was made', () => {
 
   it('> where >> was needed', () => {
     const u = lesson('', 'echo "buy fuel" > todo.txt\necho "check engines" >> todo.txt', ['file todo.txt == buy fuel\\ncheck engines'])
-    expect(say(u, ['echo "buy fuel" > todo.txt', 'echo "check engines" > todo.txt'])!.text).toMatch(/only has its last line.*Two arrows, `>>`, add to the end/s)
+    expect(say(u, ['echo "buy fuel" > todo.txt', 'echo "check engines" > todo.txt'])!.text).toMatch(/one arrow empties `todo\.txt` before it writes\. So the line that was already in it, “buy fuel”, was wiped out\. Two arrows, `>>`, add to the end/s)
   })
 
   it('printed on the screen instead of into the file', () => {
@@ -105,16 +106,17 @@ describe('the terminal tutor names the mistake that was made', () => {
 
 describe('across every Terminal and Git lesson', () => {
   // Every lesson and practice problem, with each realistic mistake made in its solution and run on the
-  // practice shell: the share of runs where the tutor calls it what it is. A floor for each kind of mistake,
-  // a little under what it does now, so it can only get better.
+  // practice shell: the share of runs where the tutor calls it what it is. Every kind of mistake is named
+  // every time, and this keeps it that way.
   const FLOOR: Record<string, number> = {
-    'typo-command': 0.95, 'case-command': 0.95, 'typo-name': 0.88, 'case-name': 0.88, swap: 0.92, 'wrong-folder': 0.8,
-    'wrong-file': 0.85, overwrite: 0.8, 'no-add': 0.93, 'cp-not-mv': 0.85, 'leading-slash': 0.95, 'typo-branch': 0.9, 'drop-last': 0.95,
+    'typo-command': 1, 'case-command': 1, 'typo-name': 1, 'case-name': 1, swap: 1, 'wrong-folder': 1,
+    'wrong-file': 1, overwrite: 1, 'no-add': 1, 'cp-not-mv': 1, 'leading-slash': 1, 'typo-branch': 1, 'drop-last': 1,
   }
 
   it('names the mistake that was made, nearly every time', () => {
     const units = TRACKS.filter((t) => t.lang === 'bash' || t.lang === 'git').flatMap((t) => t.lessons.flatMap(gradedUnits))
     const stats = new Map<string, { n: number; ok: number }>()
+    const misses: string[] = []
     for (const u of units)
       for (const m of mistakesFor(u)) {
         const s = typed(u, m.lines)
@@ -124,8 +126,12 @@ describe('across every Terminal and Git lesson', () => {
         const st = stats.get(m.name) ?? { n: 0, ok: 0 }
         st.n++
         if (t && m.expect.includes(t.memory.kind) && (!m.mention || t.text.includes(m.mention))) st.ok++
+        else misses.push(`[${m.name}] ${u.id} kind=${t?.memory.kind}\n  typed: ${m.lines.join(' ⏎ ')}\n  said: ${t?.text ?? '(nothing)'}`)
         stats.set(m.name, st)
       }
+    // TUTOR_REPORT=file writes every kind's score and every miss there.
+    if (process.env.TUTOR_REPORT)
+      appendFileSync(process.env.TUTOR_REPORT, `${[...stats].sort().map(([k, s]) => `${k.padEnd(14)} ${String(s.n).padStart(5)}  ${((100 * s.ok) / s.n).toFixed(1)}%`).join('\n')}\n\n${misses.join('\n')}\n`)
     const below = Object.entries(FLOOR)
       .filter(([k, floor]) => (stats.get(k)?.n ?? 0) > 0 && stats.get(k)!.ok / stats.get(k)!.n < floor)
       .map(([k, floor]) => `${k}: ${((100 * stats.get(k)!.ok) / stats.get(k)!.n).toFixed(1)}% (floor ${floor * 100}%)`)

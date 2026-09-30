@@ -93,10 +93,11 @@ export function mistakesFor(lesson: LearnLesson): Mistake[] {
     }
     if (/>>/.test(line) && lines.slice(0, i).some((l) => l.includes(`> ${madeNames(line)[0]}`) || l.includes(`>> ${madeNames(line)[0]}`)))
       out.push({ name: 'overwrite', lines: at(i, line.replace('>>', '>')), expect: ['content'] })
-    const target = madeNames(line)[0]
-    if (/>/.test(line) && target) {
+    // The file after the line's last arrow, never an arrow inside a quoted script line (`>&2`).
+    const target = /(?:^|[^>&\d])>>?\s*([\w./-]+)\s*$/.exec(line)?.[1]
+    if (target) {
       const other = lines.flatMap(madeNames).find((n) => n !== target && /^[\w.-]+$/.test(n))
-      if (other) out.push({ name: 'wrong-file', lines: at(i, replaceName(line, target, other)), expect: ['wrong-file', 'content', 'missing', 'error', 'spelling'] })
+      if (other) out.push({ name: 'wrong-file', lines: at(i, line.replace(/(>>?\s*)[\w./-]+(\s*)$/, `$1${other}$2`)), expect: ['wrong-file', 'content', 'missing', 'error', 'spelling'] })
     }
     if (/^mv\s/.test(line)) out.push({ name: 'cp-not-mv', lines: at(i, line.replace(/^mv/, 'cp')), expect: ['check', 'wrong-file'] })
     const cdArg = /^cd\s+([\w.-][\w./-]*)$/.exec(line)?.[1]

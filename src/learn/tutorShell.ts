@@ -23,7 +23,7 @@
    ========================================================================== */
 import { COMMANDS, GIT_SUBS, HOME, START, gitInfo, lookup, pretty, resolve, run as runShell, type Node, type ShellState } from '@/lib/shell'
 import { checkFact, lessonShell } from './grade'
-import { closestSlip, code, describeSlip, distance, quote, slipOf, type Diagnosis } from './tutorText'
+import { clip, closestSlip, code, describeSlip, distance, quote, slipOf, type Diagnosis } from './tutorText'
 import type { LearnCheck } from './types'
 
 /* ── Replaying ───────────────────────────────────────────────────────────── */
@@ -136,6 +136,7 @@ const HARD = /command not found|No such file or directory|not a git command|synt
 function hiddenSlip(line: string): string | null {
   for (const seg of line.split(/\||&&|\|\||;/)) {
     const w = seg.trim().split(/\s+/)[0] ?? ''
+    if (/^[A-Z]{2,}$/.test(w) && COMMANDS.includes(w.toLowerCase())) return w
     if (!/^[a-z]{2,}$/.test(w) || COMMANDS.includes(w) || ['for', 'do', 'done', 'if', 'then', 'fi', 'else', 'while', 'in', 'case', 'esac'].includes(w)) continue
     if (closestSlip(w, COMMANDS)) return w
   }
@@ -144,7 +145,7 @@ function hiddenSlip(line: string): string | null {
 
 function isError(step: Step): boolean {
   // 127 is "command not found", even when 2> sent the message away.
-  return (step.status !== 0 && ERROR.test(step.out)) || HARD.test(step.out) || step.status === 127 || (!step.out.trim() && !!hiddenSlip(step.line))
+  return (step.status !== 0 && ERROR.test(step.out)) || HARD.test(step.out) || step.status === 127 || ((!step.out.trim() || /\|/.test(step.line)) && !!hiddenSlip(step.line))
 }
 
 /** The command's name for matching one run against another: `git commit`, `touch`. */
@@ -161,10 +162,19 @@ const namesOf = (line: string) => line.match(/"[^"]*"|'[^']*'|\S+/g) ?? []
  * or with one name, or the command itself, corrected. Another command of the same kind on other
  * files is not a retry: "mv shot2.png images/" does not fix "mv shot1.png images/".
  */
-function resolvedLater(steps: Step[], i: number): boolean {
+function resolvedLater(steps: Step[], i: number, ref: Step[] = []): boolean {
   const a = namesOf(steps[i]!.line)
-  return steps.slice(i + 1).some((t) => {
+  const norm = (l: string) => l.trim().replace(/\s+/g, ' ')
+  // Only the next time she runs that command (or the one it was a slip for) can be the retry: in a
+  // sequence like `git bisect bad` … `git bisect bad`, the later one is a different step.
+  const same = (x: string, y: string) => x === y || x.toLowerCase() === y.toLowerCase() || !!slipOf(y, x) || y === x.slice(1)
+  const next = steps.slice(i + 1).find((t) => same(words(steps[i]!.line)[0] ?? '', words(t.line)[0] ?? ''))
+  return [next].filter((t): t is Step => !!t).some((t) => {
     if (t.status !== 0) return false
+    // A line the solution runs more often than she ran it right is one she still owes, not a retry:
+    // `bash hello.sh` before and after fixing the script, each `git bisect bad` of a bisect.
+    const owed = ref.filter((r) => norm(r.line) === norm(t.line)).length
+    if (owed > steps.filter((x) => x.status === 0 && norm(x.line) === norm(t.line)).length) return false
     const b = namesOf(t.line)
     if (a.join(' ') === b.join(' ')) return true
     if (a.length !== b.length) return false
@@ -308,7 +318,7 @@ function readError(ctx: Ctx): Diagnosis | null {
   let m: RegExpMatchArray | null
 
   // A command the terminal does not know (127: even when its message went into a file).
-  const hidden = !out.trim() ? hiddenSlip(step.line) : null
+  const hidden = !out.trim() || /\|/.test(step.line) ? hiddenSlip(step.line) : null
   if ((m = out.match(/^(?:[\w./-]+: )?(\S+): command not found/m)) || (hidden && (m = ['', hidden] as unknown as RegExpMatchArray)) || (step.status === 127 && !COMMANDS.includes(cmd) && !cmd.includes('/') && (m = ['', cmd] as unknown as RegExpMatchArray))) {
     const name = m[1]!
     if (w[1] === '=' || /^[A-Za-z_]\w*\s+=/.test(step.line) || /^[A-Za-z_]\w*=\s/.test(step.line))
@@ -325,7 +335,12 @@ function readError(ctx: Ctx): Diagnosis | null {
         ? { kind: 'error', key: `script:${name}`, say: `To run a script in this folder, start its name with ${code('./')}. On its own, the terminal looks for a command called ${code(name)}.`, more: `Type ${code(`./${name}`)}, or ${code(`bash ${name}`)}.`, now: true }
         : { kind: 'error', key: `file-as-cmd:${name}`, say: `${code(name)} is a file, not a command, so typing its name doesn't do anything with it.`, more: `To see what's inside, type ${code(`cat ${name}`)}.`, now: true }
     const taskCmds = ctx.ref.map((t) => words(t.line)[0] ?? '').filter(Boolean)
-    const near = closestSlip(name, taskCmds) ?? closestSlip(name, COMMANDS.filter((c) => c.startsWith(name))) ?? closestSlip(name, [...COMMANDS, 'clear', 'less', 'more', 'man'])
+    // The solution's command that is the same line apart from this word settles it (`ca pilot.txt` is
+    // `cat pilot.txt`, not `cd`); then one she was part-way through typing.
+    const rest = w.slice(1).join(' ')
+    const sameLine = ctx.ref.map((t) => words(t.line)).find((r) => r[0] && r[0] !== name && slipOf(r[0], name) && r.slice(1).join(' ') === rest)?.[0]
+    const typing = taskCmds.find((c) => c.startsWith(name) && c.length === name.length + 1)
+    const near = sameLine ?? typing ?? closestSlip(name, taskCmds) ?? closestSlip(name, COMMANDS.filter((c) => c.startsWith(name))) ?? closestSlip(name, [...COMMANDS, 'clear', 'less', 'more', 'man'])
     if (near) return { kind: 'spelling', key: `cmd:${name}`, say: `There's no command called ${code(name)}. You meant ${code(near)}: ${describeSlip(near, name)}.`, now: true }
     return { kind: 'error', key: `cmd:${name}`, say: `The terminal doesn't know a command called ${code(name)}.`, more: `Check the spelling against the lesson, or type ${code('help')} to see every command this terminal knows.` }
   }
@@ -1001,6 +1016,161 @@ export function shellDiagnosis(lesson: ShellLesson, typed: readonly string[]): D
   }
   if (!fact) return null
 
+  // 0. A file she made by misspelling one the solution writes to: whatever went wrong after it (a script
+  // missing a line, a folder never made, the wrong text somewhere) comes from that one slip.
+  const written = new Set(ref.flatMap((t) => t.changes.filter((c) => c.kind !== 'deleted' && !c.dir).map((c) => c.path)))
+  for (const t of steps)
+    for (const c of t.changes) {
+      if (c.kind !== 'created' || c.dir || fc.wantSnap.has(c.path) || written.has(c.path) || !herSnap.has(c.path) || lesson.solution.includes(base(c.path))) continue
+      const meant = closestSlip(base(c.path), [...written].filter((p) => parent(p) === parent(c.path)).map(base))
+      if (!meant) continue
+      const right = herSnap.get(`${parent(c.path)}/${meant}`)
+      // A conflict fixed in a near name: the real file still has the markers.
+      if (right?.content?.includes('<<<<<<<'))
+        return {
+          kind: 'spelling',
+          key: `stray:${base(c.path)}`,
+          say: `The fixed version went into ${code(base(c.path))}, not ${code(meant)}: ${describeSlip(meant, base(c.path))}. So ${code(meant)} still has the conflict markers in it.`,
+          more: `Write the fixed version into ${code(meant)} itself, then ${code(`git add ${meant}`)}, and remove the stray file: ${code(`rm ${base(c.path)}`)}.`,
+          now: true,
+        }
+      const into = />/.test(t.line.replace(/2>>?\s*\S+/g, ''))
+      if (!right)
+        return {
+          kind: 'spelling',
+          key: `stray:${base(c.path)}`,
+          say: `The task wants a file called ${code(meant)}, and you made it as ${code(base(c.path))}: ${describeSlip(meant, base(c.path))}. ${code(clip(t.line, 50))} made it.`,
+          more: `Rename it: ${code(`mv ${base(c.path)} ${meant}`)}.`,
+          now: true,
+        }
+      return {
+        kind: 'spelling',
+        key: `stray:${base(c.path)}`,
+        say: `${code(clip(t.line, 50))} made a new file called ${code(base(c.path))}, when the file is ${code(meant)}: ${describeSlip(meant, base(c.path))}.${into ? ` So what it wrote went into ${code(base(c.path))}, and ${code(meant)} never got it.` : ''}`,
+        more: `Run that line again with the name spelled ${code(meant)}, and remove the stray file: ${code(`rm ${base(c.path)}`)}.`,
+        now: true,
+      }
+    }
+
+  // 0b. One `>` where the solution's same line has `>>`, into a file that already had lines: they were
+  // wiped, and everything after (a script missing its first lines, a merge gone wrong) follows from it.
+  const refLines = new Set(ref.map((t) => t.line.trim().replace(/\s+/g, ' ')))
+  for (const t of steps) {
+    const m = /(?:^|[^>&\d])>\s*(["']?)([^\s"'|;&<>]+)\1\s*$/.exec(t.line)
+    if (!m || /\d>/.test(m[0])) continue
+    const doubled = `${t.line.slice(0, m.index + m[0].indexOf('>'))}>${t.line.slice(m.index + m[0].indexOf('>'))}`.trim().replace(/\s+/g, ' ')
+    const had = snapshot(t.before).get(resolve(t.cwd, m[2]!))
+    if (!refLines.has(doubled) || refLines.has(t.line.trim().replace(/\s+/g, ' ')) || !had?.content?.trim()) continue
+    const lost = had.content.trim().split('\n')
+    return {
+      kind: 'content',
+      key: `overwrote:${m[2]}`,
+      say: `${code(clip(t.line, 50))} has one ${code('>')}, and one arrow empties ${code(m[2]!)} before it writes. So the ${lost.length === 1 ? `line that was already in it, ${quote(lost[0]!)}, was` : `${lost.length} lines already in it were`} wiped out.`,
+      more: `Two arrows, ${code('>>')}, add to the end instead: ${code(clip(doubled, 60))}. Then write the lost ${lost.length === 1 ? 'line' : 'lines'} back.`,
+      now: true,
+    }
+  }
+
+  const lines = (xs: Step[]) => xs.map((x) => x.line.trim().replace(/\s+/g, ' '))
+  const hers = lines(steps)
+  const theirs = lines(ref)
+  // 0c. Exactly the solution's lines, in another order: the first one out of place, and what it needed first.
+  if (hers.length === theirs.length && hers.join('\n') !== theirs.join('\n') && [...hers].sort().join('\n') === [...theirs].sort().join('\n')) {
+    // The error it caused may already say why the order matters ("before the folder existed"): that first.
+    for (const [n, x] of steps.entries()) {
+      if (!isError(x) || resolvedLater(steps, n, ref)) continue
+      const own = readError({ steps, i: n, step: x, then: new Map([...snapshot(x.before), ...snapshot(x.after)]), now: herSnap, ref, want: fc.wantSnap, solution: lesson.solution })
+      if (own?.kind === 'order' || own?.kind === 'git') return own
+      break
+    }
+    const i = hers.findIndex((l, n) => l !== theirs[n])
+    const first = theirs[i]!
+    return {
+      kind: 'order',
+      key: `order:${first}`,
+      say: `Every command is right, but two are in the wrong order: ${code(clip(first, 50))} has to come before ${code(clip(hers[i]!, 50))}, and you ran it after.`,
+      more: `Run them again in this order: ${code(clip(first, 40))}, then ${code(clip(hers[i]!, 40))}.`,
+      now: true,
+    }
+  }
+  // 0d. `cp` where the solution has `mv` on the same line: a copy leaves the original behind.
+  for (const l of hers) {
+    if (!/^cp\s/.test(l) || theirs.includes(l)) continue
+    const mv = l.replace(/^cp(?:\s+-[rR])?\s/, 'mv ')
+    if (theirs.includes(mv))
+      return { kind: 'check', key: `cp-mv:${l}`, say: `${code(clip(l, 50))} makes a copy and leaves the original where it was, and the task wants it moved.`, more: `${code('cp')} makes a copy and leaves the original; ${code('mv')} moves it. Use ${code(clip(mv, 50))}${/^cp\s+-[rR]/.test(l) ? '' : ', which moves folders too, no -r needed'}, and remove the copy.`, now: true }
+  }
+  // 0e. A `git add` the solution runs that she never did, when nothing else went wrong first (a commit that
+  // then fails for having nothing added is what it caused).
+  const beforeCommit = steps.some((x, n) => !/^git commit\b/.test(x.line.trim()) && isError(x) && !resolvedLater(steps, n, ref) && !ref.some((y) => isError(y) && y.line === x.line))
+  if (!beforeCommit)
+    for (const l of theirs) {
+      const m = /^git add\s+(.+)$/.exec(l)
+      if (!m) continue
+      const covered = (p: string) => hers.some((h) => new RegExp(`^git add\\b.*(?:\\s|^)(?:\\.|-A|--all|${p.replace(/[.*+?^$()|[\]\\{}]/g, '\\$&')})(?:\\s|$)`).test(h) ) || /\s-a/.test(hers.findLast((h) => /^git commit\b/.test(h)) ?? '')
+      const missed = m[1]!.split(/\s+/).filter((p) => !p.startsWith('-') && !covered(p))
+      if (missed.length && hers.some((h) => /^git commit\b/.test(h)))
+        return { kind: 'git', key: `no-add:${missed.join(',')}`, say: `You never ran ${code(`git add ${missed.join(' ')}`)}, so the commit left ${missed.length > 1 ? 'those changes' : `the change to ${code(missed[0]!)}`} out: a commit only takes what's been added.`, more: `Run ${code(`git add ${missed.join(' ')}`)} before ${code('git commit')}.`, now: true }
+    }
+
+  // 0f. The solution's own line, run from another folder, or with its output sent into another file.
+  const norm = (l: string) => l.trim().replace(/\s+/g, ' ')
+  const used = new Set<number>()
+  const target = (l: string) => /(?:^|[^>&\d])>>?\s*(["']?)([^\s"'|;&<>]+)\1\s*$/.exec(l)
+  for (const [k, t] of steps.entries()) {
+    const j = ref.findIndex((r, n) => !used.has(n) && norm(r.line) === norm(t.line))
+    if (j >= 0) {
+      used.add(j)
+      const r = ref[j]!
+      const where = (x: Step) => x.changes.filter((c) => c.kind !== 'deleted').map((c) => relative(x.cwd, c.path)).join()
+      const went = t.status !== 0 || t.changes.map((c) => c.path).join() !== r.changes.map((c) => c.path).join()
+      // Only when nothing before it had already gone wrong: then that is the cause, and it has its own reading.
+      const earlier = steps.slice(0, k).some((x, n) => isError(x) && !resolvedLater(steps, n, ref) && !ref.some((y) => isError(y) && y.line === x.line))
+      if (!earlier && t.cwd !== r.cwd && went && (t.status !== r.status || where(t) === where(r))) {
+        // When the error itself already says it (already inside, outside the repository, a leading
+        // slash), its own reading is the clearer one.
+        if (t.status !== 0) {
+          const own = readError({ steps, i: k, step: t, then: new Map([...snapshot(t.before), ...snapshot(t.after)]), now: herSnap, ref, want: fc.wantSnap, solution: lesson.solution })
+          if (own && /^(?:abs|inside|outside)[:-]/.test(own.key)) return own
+        }
+        const moved = steps.slice(0, k).findLast((x) => /^cd\b/.test(x.line) && x.status === 0 && x.cwd !== x.cwdAfter && x.cwdAfter === t.cwd)
+        return {
+          kind: 'folder',
+          key: `ran-in:${t.line}`,
+          say: `You ran ${code(clip(t.line, 50))} while you were in ${here(t.cwd)}, and the task runs it in ${here(r.cwd)}${t.status !== 0 ? ', which is why it failed' : ', so it worked on the wrong files'}.${moved ? ` The ${code(moved.line)} before it moved you there.` : ''}`,
+          more: `Go back with ${code(`cd ${relative(t.cwd, r.cwd) || '~'}`)} first, then run it again.`,
+          now: true,
+        }
+      }
+      continue
+    }
+    // Her line is a solution line with a different file after the arrow.
+    const mine = target(t.line)
+    if (!mine) continue
+    const theirs = ref.find((r) => {
+      const m = target(r.line)
+      return m && m[2] !== mine[2] && norm(r.line.slice(0, m.index)) === norm(t.line.slice(0, mine.index)) && r.cwd === t.cwd
+    })
+    if (!theirs) continue
+    const meant = target(theirs.line)![2]!
+    const text = /^\s*echo\s+(["']?)(.*)\1\s*$/.exec(t.line.slice(0, mine.index))?.[2]
+    if (slipOf(meant, mine[2]!))
+      return {
+        kind: 'spelling',
+        key: `into:${mine[2]}`,
+        say: `${text ? quote(text) : 'What it wrote'} went into ${code(mine[2]!)}, and the file is ${code(meant)}: ${describeSlip(meant, mine[2]!)}.`,
+        more: `Run it again into ${code(meant)}: ${code(clip(theirs.line, 60))}.`,
+        now: true,
+      }
+    return {
+      kind: 'wrong-file',
+      key: `into:${mine[2]}`,
+      say: `${text ? quote(text) : `What ${code(clip(t.line.slice(0, mine.index).trim(), 40))} wrote`} went into ${code(mine[2]!)}, not into ${code(meant)}: ${code(clip(t.line, 50))} names the wrong file after the arrow.`,
+      more: `Run it again into ${code(meant)}: ${code(clip(theirs.line, 60))}.${slipOf(meant, mine[2]!) ? '' : ` And check ${code(mine[2]!)}: it got a line it shouldn't have.`}`,
+      now: true,
+    }
+  }
+
   // 1. The first error she has not got past: later errors are usually what it caused.
   const solutionProgs = new Set(ref.map((t) => prog(t.line)))
   const solution = lesson.solution
@@ -1008,7 +1178,7 @@ export function shellDiagnosis(lesson: ShellLesson, typed: readonly string[]): D
   const expected = new Set(ref.filter(isError).map((t) => t.line))
   for (let i = 0; i < steps.length; i++) {
     const s = steps[i]!
-    if (!isError(s) || resolvedLater(steps, i) || expected.has(s.line)) continue
+    if (!isError(s) || resolvedLater(steps, i, ref) || expected.has(s.line)) continue
     const d = readError({ steps, i, step: s, then: new Map([...snapshot(s.before), ...snapshot(s.after)]), now: herSnap, ref, want: fc.wantSnap, solution })
     if (d) errors.push({ i, d })
   }

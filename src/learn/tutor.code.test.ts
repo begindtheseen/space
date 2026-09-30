@@ -52,7 +52,7 @@ describe('the code tutor names the mistake that was made, on real runs', () => {
     it(`${lang}`, async () => {
       const r = await measure(lang, every)
       if (process.env.CODE_TUTOR_REPORT)
-        appendFileSync(process.env.CODE_TUTOR_REPORT, `== ${lang}\n` + [...r.stats].sort().map(([k, s]) => `${k.padEnd(20)} ${String(s.n).padStart(4)}  ${((100 * s.ok) / s.n).toFixed(0)}%`).join('\n') + `\n${r.misses.slice(0, 40).join('\n')}\n`)
+        appendFileSync(process.env.CODE_TUTOR_REPORT, `== ${lang}\n` + [...r.stats].sort().map(([k, s]) => `${k.padEnd(20)} ${String(s.n).padStart(4)}  ${((100 * s.ok) / s.n).toFixed(0)}%`).join('\n') + `\n${r.misses.join('\n')}\n`)
       expect(r.below).toEqual([])
       expect(r.runs).toBeGreaterThan(least)
     }, 600_000)
