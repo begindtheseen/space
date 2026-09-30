@@ -8,6 +8,16 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.3.3
+
+The voice starts sooner on a Mac.
+
+- **One less wait before the first word.** On a Mac the voice runs on the graphics chip. Every time it
+  started, it read a whole test sentence to time the chip before reading anything to you, even though
+  it already knew the answer from last time. Now it only does that the first time, and afterwards goes
+  straight to your lesson. It still keeps an eye on its speed while it reads, and moves to the
+  processor if the graphics chip ever falls behind.
+
 ## 1.3.2
 
 A faster voice, hints out loud, and no skipping the practice.

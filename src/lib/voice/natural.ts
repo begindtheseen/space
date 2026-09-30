@@ -377,6 +377,9 @@ class NaturalVoice {
         fullPrecision: !isPhone(),
         threads: device === 'wasm' ? workerPlan().threads : 1,
       }
+      // A GPU timed on an earlier start, and fast enough then, is not timed again before it can speak.
+      const known = Number(stored(`${RTF_KEY}webgpu`))
+      if (device === 'webgpu' && Number.isFinite(known) && known > 0 && known <= GPU_MAX_RTF) init.knownRtf = known
       worker.postMessage(init)
     })
   }

@@ -58,7 +58,7 @@ type Phonemize = (text: string, lang: string) => Promise<string[]>
 export type VoiceDevice = 'wasm' | 'webgpu'
 
 export type VoiceRequest =
-  | { cmd: 'init'; modelUrl: string; cacheName: string; voiceBase: string; device: VoiceDevice; fullPrecision?: boolean; threads?: number }
+  | { cmd: 'init'; modelUrl: string; cacheName: string; voiceBase: string; device: VoiceDevice; fullPrecision?: boolean; threads?: number; knownRtf?: number }
   | { cmd: 'speak'; id: number; text: string; voice: string; lang: 'en-us' | 'en'; speed: number }
 
 export type VoiceReply =
@@ -171,6 +171,9 @@ async function init(req: Extract<VoiceRequest, { cmd: 'init' }>): Promise<number
     // A GPU that takes most of a minute over one word will not keep up.
     const warm = speakNow({ text: 'Hello.', voice: 'af_heart', lang: 'en-us', speed: 1 }).then(() => true)
     if (!(await within(warm, 45_000, false))) return TOO_SLOW
+    // This GPU has been timed before and kept up: no need to time it again before the first sentence. The
+    // page still watches its speed while it reads, and moves to the CPU if it falls behind.
+    if (req.knownRtf !== undefined && req.knownRtf > 0) return req.knownRtf
     // Then a real sentence, timed: some GPUs (a phone's, or one emulated in
     // software) are slower than the CPU at this, and the page should know
     // now, before anyone is left waiting on them.
