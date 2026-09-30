@@ -201,9 +201,30 @@ self.onmessage = async (e: MessageEvent<Incoming>) => {
     }
   } catch (err) {
     const message = err instanceof Error ? (err.message || String(err)) : String(err)
-    if (msg.cmd === 'run') post({ type: 'error', id: msg.id, message })
+    if (isFatal(err)) post({ type: 'fatal', message: CRASHED })
+    else if (msg.cmd === 'run') post({ type: 'error', id: msg.id, message })
     else post({ type: 'fatal', message })
   }
 }
+
+/* Pyodide cannot go on after a fatal error, and some (a JavaScript stack overflow) surface as an
+   unhandled rejection rather than through the run's own promise, so the run would never answer.
+   Either way the page is told at once, and the next run starts a fresh interpreter. */
+const CRASHED =
+  "Python's runtime ran out of stack and had to stop. In the browser this happens when a very long " +
+  'chain of objects is freed at once, such as a linked list of a few thousand nodes: take it apart ' +
+  'one node at a time (set each next to None as you walk it) before it goes. On a laptop the same ' +
+  'program runs. The next run starts Python again.'
+
+function isFatal(err: unknown): boolean {
+  return (err as { pyodide_fatal_error?: boolean } | null)?.pyodide_fatal_error === true || (err instanceof RangeError && /call stack/i.test(err.message))
+}
+
+self.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) => {
+  if (isFatal(e.reason)) {
+    e.preventDefault()
+    post({ type: 'fatal', message: CRASHED })
+  }
+})
 
 export {}

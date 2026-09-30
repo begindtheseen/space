@@ -74,7 +74,10 @@ const queue: ((i: Interpreter) => void)[] = []
 let interpreters = 0
 
 function startInterpreter(): Interpreter {
-  const proc = spawn('node', ['--no-warnings', join(HERE, 'pyodiderun.mjs')], { stdio: ['pipe', 'pipe', 'pipe'], env: process.env })
+  // A browser worker's JavaScript stack is smaller than Node's default: freeing a chain of 4,000 objects
+  // overflows it in Chromium, 6,000 in Node. 700 KB makes Node fail first (at 3,000), so a problem that
+  // passes here does not crash the tab.
+  const proc = spawn('node', ['--no-warnings', '--stack-size=700', join(HERE, 'pyodiderun.mjs')], { stdio: ['pipe', 'pipe', 'pipe'], env: process.env })
   const it: Interpreter = { proc, reply: null, log: '' }
   createInterface({ input: proc.stdout }).on('line', (line) => {
     if (!line.startsWith('{')) return
