@@ -14,6 +14,7 @@
    ========================================================================== */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PlaygroundEmbed, type Graded } from '@/components/ide/Embed'
+import { sayHint } from '@/components/Tutor'
 import { LangMark } from '@/components/ide'
 import { IconArrowRight, IconCheck, IconChevronLeft, IconClock } from '@/components/icons'
 import { markPracticed, recordRetest, updateGate } from '@/engine/apply'
@@ -396,7 +397,10 @@ export function PracticeSection({ lesson, optional = false }: { lesson: LearnLes
           ))}
           <div className="lm-help__row">
             {hints < unit.hints.length ? (
-              <button type="button" className="lm-link" onClick={() => setHints((n) => n + 1)}>
+              <button type="button" className="lm-link" onClick={() => {
+                  sayHint(hints + 1, unit.hints[hints]!)
+                  setHints((n) => n + 1)
+                }}>
                 {hints === 0 ? 'Show a hint' : 'Another hint'}
               </button>
             ) : null}

@@ -7,6 +7,10 @@
    on a sentence at a tap; held down, they scan, faster the longer they are
    held, the light racing along the line, and letting go reads from there.
 
+   Going forward stops at practice she has not done yet: the line past it is
+   shaded, a mark shows where the practice is, and dragging or scanning comes
+   to rest there. Going back is always open.
+
    The reading is made of sentences, so that is what the line counts in. The
    times are worked out from how long each sentence is and the speed she reads
    at: close to what the voice takes, and good for "about a minute left".
@@ -47,9 +51,14 @@ export interface ScrubberProps {
   /** Elapsed and remaining times either side of the line. */
   times?: boolean
   className?: string
+  /** The furthest sentence she can go to (the next practice not done); defaults to the last. */
+  limit?: number
+  /** Where the practice still to do is, marked on the line. */
+  marks?: number[]
 }
 
-export function Scrubber({ at, total, texts, rate, onSeek, scanning = null, times = false, className = '' }: ScrubberProps) {
+export function Scrubber({ at, total, texts, rate, onSeek, scanning = null, times = false, className = '', limit, marks = [] }: ScrubberProps) {
+  const last = Math.max(0, Math.min(total - 1, limit ?? total - 1))
   const track = useRef<HTMLSpanElement>(null)
   const [hover, setHover] = useState<{ i: number; x: number } | null>(null)
   const [drag, setDrag] = useState<number | null>(null)
@@ -70,20 +79,20 @@ export function Scrubber({ at, total, texts, rate, onSeek, scanning = null, time
     e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
     const h = indexAt(e.clientX)
-    setDrag(h.i)
+    setDrag(Math.min(h.i, last))
     setHover(h)
   }
   const move = (e: ReactPointerEvent<HTMLSpanElement>) => {
     if (!total || !track.current) return
     const h = indexAt(e.clientX)
     setHover(h)
-    if (drag !== null) setDrag(h.i)
+    if (drag !== null) setDrag(Math.min(h.i, last))
   }
   const up = (e: ReactPointerEvent<HTMLSpanElement>) => {
     if (drag === null) return
     const h = indexAt(e.clientX)
     setDrag(null)
-    onSeek(h.i)
+    onSeek(Math.min(h.i, last))
   }
 
   const shown = drag ?? scanning ?? at
@@ -91,7 +100,12 @@ export function Scrubber({ at, total, texts, rate, onSeek, scanning = null, time
   // The card: the sentence under the pointer, or where a drag or a scan has got to.
   const peek = drag ?? scanning ?? hover?.i ?? null
   const peekX = drag !== null || hover ? (hover?.x ?? 0) : scanning !== null ? share * (track.current?.getBoundingClientRect().width ?? 0) : 0
-  const peekText = peek !== null ? texts[peek] || 'A stop in the lesson: it waits for you here.' : ''
+  const beyond = hover !== null && drag === null && hover.i > last
+  const peekText = beyond
+    ? 'Finish the practice first: the reading goes on past here once it passes.'
+    : peek !== null
+      ? texts[peek] || 'A stop in the lesson: it waits for you here.'
+      : ''
   const now = starts[Math.max(0, shown)] ?? 0
 
   return (
@@ -106,7 +120,7 @@ export function Scrubber({ at, total, texts, rate, onSeek, scanning = null, time
         aria-valuemin={1}
         aria-valuemax={Math.max(1, total)}
         aria-valuenow={Math.max(1, shown + 1)}
-        aria-valuetext={`Sentence ${Math.max(1, shown + 1)} of ${total}, ${clock(now)} of about ${clock(length)}`}
+        aria-valuetext={`Sentence ${Math.max(1, shown + 1)} of ${total}, ${clock(now)} of about ${clock(length)}${last < total - 1 ? `; practice at sentence ${last + 1} comes first` : ''}`}
         onPointerDown={down}
         onPointerMove={move}
         onPointerUp={up}
@@ -118,18 +132,22 @@ export function Scrubber({ at, total, texts, rate, onSeek, scanning = null, time
           if (to === null) return
           e.preventDefault()
           e.stopPropagation()
-          onSeek(Math.max(0, Math.min(total - 1, to)))
+          onSeek(Math.max(0, Math.min(last, to)))
         }}
       >
         <span className="scrub__rail">
           <span className="scrub__fill" style={{ width: `${(share * 100).toFixed(2)}%` }} />
-          {hover && drag === null ? <span className="scrub__ghost" style={{ width: `${(((hover.i + 1) / total) * 100).toFixed(2)}%` }} /> : null}
+          {hover && drag === null ? <span className="scrub__ghost" style={{ width: `${(((Math.min(hover.i, last) + 1) / total) * 100).toFixed(2)}%` }} /> : null}
+          {last < total - 1 ? <span className="scrub__locked" style={{ left: `${(((last + 1) / total) * 100).toFixed(2)}%` }} /> : null}
         </span>
+        {marks.map((k) => (
+          <span key={k} className="scrub__mark" data-next={k === last} style={{ left: `${(((k + 0.5) / total) * 100).toFixed(2)}%` }} title="Practice" />
+        ))}
         <span className="scrub__thumb" style={{ left: `${(share * 100).toFixed(2)}%` }} />
         {peek !== null ? (
           <span className="scrub__peek" style={{ left: `${peekX}px` }} role="presentation">
             <span className="scrub__peek-where num">
-              {clock(starts[peek] ?? 0)} · sentence {peek + 1} of {total}
+              {beyond ? 'Practice first' : `${clock(starts[peek] ?? 0)} · sentence ${peek + 1} of ${total}`}
             </span>
             <span className="scrub__peek-text">{peekText}</span>
           </span>
@@ -148,6 +166,7 @@ export function SkipButton({
   dir,
   at,
   total,
+  limit,
   onSkip,
   onSeek,
   scanTo,
@@ -157,6 +176,8 @@ export function SkipButton({
   dir: -1 | 1
   at: number
   total: number
+  /** The furthest it can scan forward to. */
+  limit?: number
   onSkip: (delta: number) => void
   onSeek: (index: number) => void
   scanTo: (index: number | null) => void
@@ -166,8 +187,8 @@ export function SkipButton({
   const timer = useRef(0)
   const held = useRef<{ to: number; since: number } | null>(null)
   const pressed = useRef(false)
-  const live = useRef({ at, total })
-  live.current = { at, total }
+  const live = useRef({ at, total, last: limit ?? total - 1 })
+  live.current = { at, total, last: Math.min(total - 1, limit ?? total - 1) }
 
   const end = useCallback(
     (commit: boolean) => {
@@ -189,11 +210,11 @@ export function SkipButton({
   const tick = () => {
     const h = held.current
     if (!h) return
-    const { total } = live.current
+    const { last } = live.current
     const heldFor = performance.now() - h.since
     // One sentence at a time for the first second, then two, then four.
     const step = heldFor > 2600 ? 4 : heldFor > 1300 ? 2 : 1
-    h.to = Math.max(0, Math.min(total - 1, h.to + dir * step))
+    h.to = Math.max(0, Math.min(last, h.to + dir * step))
     scanTo(h.to)
     timer.current = window.setTimeout(tick, 180)
   }
@@ -211,8 +232,8 @@ export function SkipButton({
         e.currentTarget.setPointerCapture(e.pointerId)
         clearTimeout(timer.current)
         timer.current = window.setTimeout(() => {
-          const { at, total } = live.current
-          held.current = { to: Math.max(0, Math.min(total - 1, Math.max(0, at) + dir)), since: performance.now() }
+          const { at, last } = live.current
+          held.current = { to: Math.max(0, Math.min(last, Math.max(0, at) + dir)), since: performance.now() }
           scanTo(held.current.to)
           timer.current = window.setTimeout(tick, 180)
         }, 380)

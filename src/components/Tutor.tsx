@@ -30,6 +30,14 @@ export function tutorSpeak(text: string): void {
   for (const l of listeners) l(text)
 }
 
+/**
+ * Says a hint she asked for, on the card, the way the tutor says everything: shown and read aloud, each word
+ * lit as it is heard. Asked for, so it is said whether or not the tutor talks her through failed runs.
+ */
+export function sayHint(n: number, markdown: string): void {
+  tutorSpeak(`Hint ${n}. ${markdown}`)
+}
+
 /** Puts the card away and stops the voice. */
 export function tutorDismiss(): void {
   for (const l of listeners) l(null)

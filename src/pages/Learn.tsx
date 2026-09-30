@@ -21,6 +21,7 @@
    ========================================================================== */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { PlaygroundEmbed, type Graded } from '@/components/ide/Embed'
+import { sayHint } from '@/components/Tutor'
 import { exampleGuideId, useLessonCode } from '@/components/ide/lessonCode'
 import { ReadAloud, type ReadAloudProps } from '@/components/ReadAloud'
 import { ExplainPanel } from '@/components/ExplainPanel'
@@ -700,7 +701,10 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
                   </a>
                 ) : null}
                 {hints < lesson.hints.length ? (
-                  <button type="button" className="lm-link" onClick={() => setHints((n) => n + 1)}>
+                  <button type="button" className="lm-link" onClick={() => {
+                    sayHint(hints + 1, lesson.hints[hints]!)
+                    setHints((n) => n + 1)
+                  }}>
                     Show the next hint
                   </button>
                 ) : null}
@@ -724,7 +728,10 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
           ))}
           <div className="lm-help__row">
             {hints < lesson.hints.length ? (
-              <button type="button" className="lm-link" onClick={() => setHints((n) => n + 1)}>
+              <button type="button" className="lm-link" onClick={() => {
+                    sayHint(hints + 1, lesson.hints[hints]!)
+                    setHints((n) => n + 1)
+                  }}>
                 {hints === 0 ? 'Show a hint' : 'Another hint'}
               </button>
             ) : null}
@@ -824,7 +831,18 @@ function useLessonReading(lesson: LearnLesson, terminal: boolean): Pick<ReadAlou
     [reading, terminal],
   )
 
-  const pauses = useMemo(() => ({ run, label }), [run, label])
+  // Practice still to do holds the reading: fast forward and the scrubber stop at it.
+  const holds = useCallback(
+    (id: string) => {
+      const stop = reading.stops[id]
+      if (stop?.kind === 'task') return !learned.current[lesson.id]
+      if (stop?.kind === 'item') return !learned.current[stop.id]
+      return false
+    },
+    [reading, lesson.id],
+  )
+
+  const pauses = useMemo(() => ({ run, label, holds }), [run, label, holds])
   return { markdown: reading.markdown, contentSelector: '.lm-flow', pauses }
 }
 

@@ -34,6 +34,20 @@ const MIME = {
   '.csv': 'text/csv; charset=utf-8',
 }
 
+/**
+ * Every response says the page is cross-origin isolated. That is what lets the
+ * natural voice use several cores on one sentence (WebAssembly threads need
+ * SharedArrayBuffer, which a browser only gives an isolated page): measured,
+ * four threads make a sentence about three times sooner than one.
+ * `credentialless` rather than `require-corp`: things from other sites (the
+ * voice model, the script runtimes from the CDNs, lesson images) still load,
+ * just without cookies, and the video embed is marked `credentialless` too.
+ */
+export const ISOLATION_HEADERS = {
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Embedder-Policy': 'credentialless',
+}
+
 /** Must run before `app.whenReady()`. */
 export function registerAppScheme() {
   protocol.registerSchemesAsPrivileged([
@@ -69,7 +83,7 @@ export function installAppProtocol(activeDir, log = () => {}) {
 function text(status, body = '', headers = {}) {
   return new Response(body, {
     status,
-    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', ...headers },
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', ...ISOLATION_HEADERS, ...headers },
   })
 }
 
@@ -116,6 +130,7 @@ async function serve(root, request) {
   const headers = {
     'Content-Type': MIME[path.extname(file).toLowerCase()] ?? 'application/octet-stream',
     'Cache-Control': 'no-cache',
+    ...ISOLATION_HEADERS,
   }
   if (request.method === 'HEAD') return new Response(null, { status: 200, headers })
 

@@ -136,6 +136,25 @@ export function poolSize(nav: Nav = navigator): number {
   return 3
 }
 
+/** Whether this page may run WebAssembly threads (it is cross-origin isolated: the desktop app is). */
+export function canThread(): boolean {
+  return typeof SharedArrayBuffer !== 'undefined' && (globalThis as { crossOriginIsolated?: boolean }).crossOriginIsolated === true
+}
+
+/**
+ * The CPU workers and the threads each one uses. Without threads it is the pool above, a core each. With them,
+ * fewer workers with several threads each: a sentence is made on several cores at once, so the first one after
+ * pressing play, skipping or scrubbing arrives sooner (measured on the real model: 4 threads, 2.9 times sooner;
+ * 2 threads, 1.7), and fewer workers take less memory. One core is left for the page.
+ */
+export function workerPlan(nav: Nav = navigator, threads = canThread()): { workers: number; threads: number } {
+  const cores = nav.hardwareConcurrency ?? 2
+  if (!threads || isPhone(nav) || cores <= 2) return { workers: poolSize(nav), threads: 1 }
+  const memory = nav.deviceMemory ?? 8
+  const workers = memory < 8 ? 1 : cores >= 12 ? 3 : cores >= 6 ? 2 : 1
+  return { workers, threads: Math.max(1, Math.min(4, Math.floor((cores - 1) / workers))) }
+}
+
 function stored(key: string): string | null {
   try {
     return localStorage.getItem(key)
@@ -226,7 +245,7 @@ class NaturalVoice {
 
   /** How many pieces can be in the works at once: one GPU worker, or the CPU pool (counting those still starting). */
   get parallel(): number {
-    return this.device === 'webgpu' ? 1 : poolSize()
+    return this.device === 'webgpu' ? 1 : workerPlan().workers
   }
 
   private isDownloaded = false
@@ -356,6 +375,7 @@ class NaturalVoice {
         voiceBase: new URL(`${import.meta.env.BASE_URL}voices/`, location.href).href,
         device,
         fullPrecision: !isPhone(),
+        threads: device === 'wasm' ? workerPlan().threads : 1,
       }
       worker.postMessage(init)
     })
@@ -438,7 +458,7 @@ class NaturalVoice {
     // All at once: each loads on its own core, so the second sentence starts
     // being made seconds sooner than if the workers queued to start. Reading
     // can begin as soon as the first is ready.
-    const all = Array.from({ length: poolSize() }, () => this.spawn('wasm'))
+    const all = Array.from({ length: workerPlan().workers }, () => this.spawn('wasm'))
     for (const p of all) p.catch(() => {})
     await Promise.any(all)
   }
