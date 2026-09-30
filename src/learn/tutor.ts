@@ -19,6 +19,7 @@
    every line it can say is testable.
    ========================================================================== */
 import type { CheckResult, LearnCheck, LearnLang } from './types'
+import { logicDiagnosis } from './tutorCode'
 import { shellDiagnosis } from './tutorShell'
 import { clip, code, distance, lowerFirst, nth, pick, quote, sentence, upperFirst, type Diagnosis, type DiagnosisKind } from './tutorText'
 
@@ -52,6 +53,8 @@ export interface TutorInput {
   run: TutorRun
   /** The problem's checks, in the order of `run.results`, so each result is read as the kind of check it is. */
   checks?: readonly LearnCheck[]
+  /** SQL: the tables the problem starts with, to tell a text value from a column name. */
+  schema?: string
   /** Which failed run on this problem this is, from 1. */
   attempt: number
   /** What was said after earlier runs on this problem, oldest first. */
@@ -167,6 +170,8 @@ function pythonError(input: TutorInput, all: string, last: string): Diagnosis | 
   }
   if (/can only concatenate str|unsupported operand type\(s\) for \+: '(int|float)' and 'str'|unsupported operand type\(s\) for \+: 'str' and '(int|float)'/.test(last))
     return { kind: 'error', key: `concat:${line}`, say: `You're adding text and a number together${where}, and Python won't guess which you meant.`, more: `Turn the number into text first with ${code('str()')}, or put both inside an f-string.` }
+  if (/'[<>]=?' not supported between instances of '(str|int|float)' and '(str|int|float)'/.test(last) && /\binput\(/.test(input.code) && !/\b(int|float)\(\s*input\(/.test(input.code))
+    return { kind: 'error', key: `input-compare:${line}`, say: `Python can't compare text with a number${where}. What ${code('input()')} gives back is always text, even when it's digits.`, more: `Turn it into a number first: ${code('int(input())')}.`, now: true }
   if ((m = last.match(/'(\w+)' object is not callable/)))
     return { kind: 'error', key: `callable:${m[1]}`, say: `Something${where} is being called like a function, but it's a ${m[1]}.`, more: 'Check for a name you used for a value and then called with brackets.' }
   if ((m = last.match(/(\w+)\(\) missing (\d+) required positional argument/)))
@@ -232,6 +237,8 @@ function cppError(input: TutorInput, all: string): Diagnosis | null {
   const where = at(line)
   let m: RegExpMatchArray | null
   const suggest = msg.match(/did you mean '([\w:]+)'/)?.[1]
+  if ((m = msg.match(/no member named '(cout|cin|endl)' in namespace 'std'/)) && !input.code.includes('#include <iostream>'))
+    return { kind: 'error', key: `include:${m[1]}`, say: `The compiler doesn't know ${code(`std::${m[1]}`)}${where}, because ${code('iostream')}, the file it comes from, isn't included.`, more: `Put ${code('#include <iostream>')} at the very top of the program.`, now: true }
   if ((m = msg.match(/no member named '(\w+)' in namespace 'std'/)))
     return { kind: 'error', key: `std-member:${m[1]}`, say: `There's nothing called ${code(m[1]!)} in the standard library${where}.${suggest ? ` Did you mean ${code(suggest)}?` : ''}` }
   if ((m = msg.match(/unknown type name '(\w+)'/)))
@@ -240,8 +247,11 @@ function cppError(input: TutorInput, all: string): Diagnosis | null {
     return { kind: 'error', key: `semicolon:${line}`, say: `A semicolon is missing${line ? ` at the end of line ${Math.max(1, line - (/before/.test(msg) ? 1 : 0))}` : ''}.`, more: 'In C++ every statement ends with a semicolon.' }
   if ((m = msg.match(/(?:use of undeclared identifier|'?(\w+)'? was not declared in this scope)\s*'?(\w+)?'?/))) {
     const wrong = m[1] ?? m[2] ?? ''
-    if (/^(cout|cin|endl|string|vector)$/.test(wrong))
-      return { kind: 'error', key: `std:${wrong}`, say: `The compiler doesn't recognise ${code(wrong)}${where}.`, more: `It lives in the standard library: write ${code(`std::${wrong}`)}, and include the header it comes from.` }
+    const header: Record<string, string> = { cout: 'iostream', cin: 'iostream', endl: 'iostream', string: 'string', vector: 'vector' }
+    if (header[wrong] && !input.code.includes(`#include <${header[wrong]}>`) && (header[wrong] !== 'string' || !input.code.includes('#include <iostream>')))
+      return { kind: 'error', key: `include:${wrong}`, say: `The compiler doesn't know ${code(wrong)}${where}, because the file it comes from isn't included.`, more: `Put ${code(`#include <${header[wrong]}>`)} at the very top of the program.`, now: true }
+    if (header[wrong])
+      return { kind: 'error', key: `std:${wrong}`, say: `The compiler doesn't recognise ${code(wrong)}${where} on its own: it lives in the standard library, ${code('std')}.`, more: `Write ${code(`std::${wrong}`)}.`, now: true }
     const near = suggest ?? (wrong ? closestName(wrong, input) : null)
     return { kind: 'error', key: `name:${wrong}`, say: `The compiler doesn't know ${code(wrong)}${where}.${near ? ` Did you mean ${code(near)}?` : ''}`, more: near ? undefined : 'Declare it, with its type, before the line that uses it.' }
   }
@@ -261,6 +271,9 @@ function sqlError(input: TutorInput, all: string): Diagnosis | null {
   let m: RegExpMatchArray | null
   if ((m = all.match(/no such column: ([\w.]+)/))) {
     const wrong = m[1]!.split('.').pop()!
+    const asValue = new RegExp(`'${wrong}'`, 'i').test(`${input.schema ?? ''}\n${input.solution}`)
+    if (asValue)
+      return { kind: 'logic', key: `unquoted:${wrong}`, say: `${code(wrong)} is meant to be text, but without quote marks SQL took it for the name of a column.`, more: `Put text in single quotes: ${code(`'${wrong}'`)}.`, now: true }
     const near = closestName(wrong, { ...input, solution: `${input.solution}` })
     return { kind: 'error', key: `column:${wrong}`, say: `There's no column called ${code(wrong)}.${near ? ` Did you mean ${code(near)}?` : ''}`, more: near ? undefined : 'Check the table: the column names are listed above the task.' }
   }
@@ -535,6 +548,10 @@ export function tutorLine(input: TutorInput): TutorLine | null {
   const repeat = !d && !!input.before && trimmed(input.before.code) === trimmed(input.code)
   if (terminal && !d) d = shellDiagnosis({ starter: input.starter, solution: input.solution, checks: input.checks ?? [] }, input.code.split('\n'))
   d ??= errorDiagnosis(input)
+  if (!d && !terminal) {
+    const i = failed ? run.results.indexOf(failed) : -1
+    d = logicDiagnosis({ lang: input.lang, code: input.code, solution: input.solution, output: run.output, failed, check: i >= 0 ? input.checks?.[i] : undefined, schema: input.schema })
+  }
   d ??= failed ? checkDiagnosis(failed, input.checks?.[run.results.indexOf(failed)], input) : { kind: 'check', key: 'unknown', say: "It didn't pass yet." }
 
   const before = input.before

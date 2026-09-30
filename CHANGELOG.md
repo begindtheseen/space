@@ -10,15 +10,30 @@ it.
 
 ## 1.2.3
 
-- A voice that helps you through your code. In Learn to code, when you run your code and it doesn't
-  pass, a small card rises at the bottom of the screen and the voice tells you what it sees in that
-  run. That might be the error and the line it's on, the line of your output that's off, or the call your
-  function got wrong. For example: "Nice try, but line 3 is missing the colon at the end," or "Your
-  function prints the answer, but it doesn't give it back." Each time you try again, it guides you a
-  little further: first where the problem is, then what should be there, then the lesson's own hints.
-  After several tries it suggests reading the solution. It notices when you've fixed the error or when
-  more checks pass, and when you run the same code again. When your code passes, it says nothing and
-  the card goes away. It stays quiet in course exams and re-tests. You can turn it off in Settings.
+- A voice that helps you through your code, and understands what you actually did. In Learn to code,
+  when a run doesn't pass, a small card rises at the bottom of the screen and the voice tells you
+  what went wrong in that run, the way a person watching over your shoulder would.
+  - In the Terminal and Git, it replays every command you typed, so it knows which folder you were
+    in and what each command made, changed or removed. So it can tell you that you misspelled a
+    file name ("you made it as `erorrs.txt`: two letters are swapped"), or made a file while
+    standing in the wrong folder. It also catches two steps in the wrong order ("the commit never
+    happened: you ran `git commit` before adding"), text sent into the wrong file, `>` where `>>`
+    was needed, `cp` where you meant `mv`, a command typed with capitals, and a branch spelled
+    differently from how you made it. It looks for the first thing that went wrong, not the last
+    thing that failed because of it.
+  - In Python, SQL and C++, it reads the error and the line it's on, with a fix that fits (a missing
+    colon, a misspelled name with the one you meant, a missing `#include`, text without quotes in
+    SQL). When there's no error but the answer is wrong, it recognises what happened: the `f` left
+    off an f-string, `None` printed by a function that prints instead of returning, `55` where
+    `10` was wanted because `input()` gives text, a print outside the loop, a `return` inside it, a
+    missing `GROUP BY`, `= NULL` instead of `IS NULL`, rows in reverse order, whole-number division
+    in C++.
+  - Each time you try again, it helps a little more: first where the problem is, then what should be
+    there, then the lesson's own hints. After several tries, it suggests reading the solution.
+  - It notices when you've fixed the error or when more checks pass, and when you run the same
+    thing again.
+  - When your code passes, it says nothing and the card goes away. It stays quiet in course exams
+    and re-tests, and you can turn it off in Settings.
 - Read aloud is one quiet button at the top of each lesson, with the speed beside it. While it reads,
   the same capsule shows pause, back, a thin progress line, forward and stop.
 - Choosing the voice has moved to Settings, next to the reading speed, with a Preview button to hear

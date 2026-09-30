@@ -166,3 +166,77 @@ describe('the tutor on real runs of real lessons', () => {
     expect(await said(lesson, lesson.solution.replace(m[0], m[1]!))).toMatch(/semicolon is missing/)
   }, 60_000)
 })
+
+/* ── Code that runs but is wrong ─────────────────────────────────────────── */
+
+describe('the tutor recognises a mistake by what the run printed and how the code is written', () => {
+  const out = (expect: string, output: string, code: string, solution = '', lang: LearnLang = 'python') =>
+    tutorLine(
+      input({
+        lang,
+        code,
+        solution,
+        checks: [{ kind: 'output', name: 'prints it', expect }],
+        run: runOf({ results: [fail('prints it', { expected: expect, actual: output })], output }),
+      }),
+    )!.text
+  const rows = (want: string, got: string, code: string, ordered = true, solution = code) =>
+    tutorLine(
+      input({
+        lang: 'sql',
+        code,
+        solution,
+        checks: [{ kind: 'result', name: 'the rows', rows: [], ordered }],
+        run: runOf({ results: [fail('the rows', { expected: want, actual: got })] }),
+      }),
+    )!.text
+
+  it('Python: the f left off, a name in quotes, None printed, a function never called or not called', () => {
+    expect(out('Hello, Ava', 'Hello, {name}', 'name = "Ava"\nprint("Hello, {name}")')).toMatch(/`f` before the quote is missing/)
+    expect(out('42', 'total', 'total = 42\nprint("total")')).toMatch(/printed the word `total`, not the value/)
+    expect(out('5', '5\nNone', 'def add(a, b):\n    print(a + b)\nprint(add(2, 3))')).toMatch(/prints its answer itself and gives back nothing/)
+    expect(out('5', '', 'def add(a, b):\n    return a + b', 'def add(a, b):\n    return a + b\nprint(add(2, 3))')).toMatch(/nothing ever calls it/)
+    expect(out('5', '<function add at 0x7f>', 'def add():\n    return 5\nprint(add)')).toMatch(/printed the function `add` itself/)
+  })
+
+  it('Python: text from input(), decimals, a list printed whole, and the print or return in the wrong place', () => {
+    expect(out('10', '55', 'a = input()\nb = input()\nprint(a + b)')).toMatch(/two numbers stuck together.*input\(\)/s)
+    expect(out('5', '5.0', 'print(10 / 2)')).toMatch(/`\/` always gives a decimal/)
+    expect(out('a\nb', "['a', 'b']", 'items = ["a", "b"]\nprint(items)')).toMatch(/whole list at once, brackets and all/)
+    expect(out('1\n2\n3', '3', 'for n in [1, 2, 3]:\n    x = n\nprint(x)')).toMatch(/print is outside the loop/)
+    expect(out('6', '1\n3\n6', 'total = 0\nfor n in [1, 2, 3]:\n    total += n\n    print(total)')).toMatch(/inside the loop, so it runs every time round/)
+    const ret = tutorLine(
+      input({
+        code: 'def total(xs):\n    s = 0\n    for x in xs:\n        s += x\n        return s',
+        solution: 'def total(xs):\n    s = 0\n    for x in xs:\n        s += x\n    return s',
+        checks: [{ kind: 'case', name: 'total([1, 2])', call: 'total([1, 2])', expect: '3' }],
+        run: runOf({ results: [fail('total([1, 2])', { input: 'total([1, 2])', expected: '3', actual: '1' })] }),
+      }),
+    )!
+    expect(ret.text).toMatch(/`return` is inside the loop/)
+  })
+
+  it('SQL: = NULL, a missing GROUP BY, columns out of order, a missing LIMIT, reversed rows, a join without ON', () => {
+    expect(rows('Ada', '(no rows)', 'SELECT name FROM crew WHERE ship = NULL')).toMatch(/`= NULL` is never true/)
+    expect(rows('Mars | 3\nMoon | 2', '5', 'SELECT dest, COUNT(*) FROM trips')).toMatch(/squeezed every row into one answer.*GROUP BY/s)
+    expect(rows('Ada | 3\nLin | 2', '3 | Ada\n2 | Lin', 'SELECT trips, name FROM crew')).toMatch(/columns are in a different order/)
+    expect(rows('Ada | 3', 'Ada | 3\nLin | 2', 'SELECT name, trips FROM crew ORDER BY trips DESC', true, 'SELECT name, trips FROM crew ORDER BY trips DESC LIMIT 1')).toMatch(/first 1 rows are exactly right.*LIMIT 1/s)
+    expect(rows('Ada | 3\nLin | 2', 'Lin | 2\nAda | 3', 'SELECT name, trips FROM crew ORDER BY trips')).toMatch(/reverse order.*Add `DESC`/s)
+    expect(rows('Ada | Mars', 'Ada | Mars\nAda | Moon\nLin | Mars\nLin | Moon', 'SELECT c.name, t.dest FROM crew c JOIN trips t')).toMatch(/[Ww]ithout `ON`/)
+  })
+
+  it('C++: an assignment in an if, everything on one line, whole-number division', () => {
+    expect(out('big', 'big', 'int x = 3;\nif (x = 5) { std::cout << "big"; }', '', 'cpp')).toMatch(/sets `x` instead of comparing/)
+    expect(out('1\n2', '12', 'std::cout << 1;\nstd::cout << 2;', '', 'cpp')).toMatch(/all on one line|on one line/)
+    expect(out('2.5', '2', 'std::cout << 5 / 2;', '', 'cpp')).toMatch(/divides like whole numbers/)
+  })
+
+  it('errors that have a better reading: a missing include, comparing input() text, text without quotes in SQL', () => {
+    const inc = tutorLine(input({ lang: 'cpp', code: 'int main() {\n  std::cout << 1;\n}', run: runOf({ error: 'x', stderr: "main.cpp:2:8: error: no member named 'cout' in namespace 'std'" }) }))!
+    expect(inc.text).toMatch(/#include <iostream>/)
+    const cmp = tutorLine(input({ code: 'age = input()\nif age > 12:\n    print("teen")', run: runOf({ error: "TypeError: '>' not supported between instances of 'str' and 'int'", stderr: 'File "main.py", line 2' }) }))!
+    expect(cmp.text).toMatch(/can't compare text with a number.*int\(input\(\)\)/s)
+    const q = tutorLine(input({ lang: 'sql', code: "SELECT * FROM crew WHERE name = Ada", solution: "SELECT * FROM crew WHERE name = 'Ada'", run: runOf({ error: 'no such column: Ada' }) }))!
+    expect(q.text).toMatch(/meant to be text.*'Ada'/s)
+  })
+})

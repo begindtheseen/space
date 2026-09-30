@@ -58,6 +58,7 @@ export function useTutor(): (id: string, unit: LearnLesson, run: HeardRun) => vo
         program: run.program,
         run: run.grade,
         checks: unit.checks,
+        schema: unit.schema,
         attempt: m.attempts,
         said: m.said,
         before: m.before,

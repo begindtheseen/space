@@ -123,3 +123,95 @@ export function typed(lesson: LearnLesson, lines: string[]): ShellState {
   for (const l of lines) s = runShell(s, l).state
   return s
 }
+
+/* ── Code: Python, SQL and C++ ───────────────────────────────────────────── */
+
+export interface CodeMistake {
+  name: string
+  code: string
+  expect: DiagnosisKind[]
+  mention?: RegExp
+}
+
+const lineIdx = (src: string, re: RegExp): number => src.split('\n').findIndex((l) => re.test(l))
+const withLine = (src: string, i: number, f: (l: string) => string) => src.split('\n').map((l, k) => (k === i ? f(l) : l)).join('\n')
+
+/** Identifiers assigned in the code, and used again later: good ones to misspell at a use. */
+function usedNames(src: string): string[] {
+  const assigned = [...src.matchAll(/^\s*([a-z_][a-z0-9_]{3,})\s*=(?!=)/gm)].map((m) => m[1]!)
+  return [...new Set(assigned)].filter((n) => src.split(new RegExp(`\\b${n}\\b`)).length > 2)
+}
+
+export function codeMistakesFor(unit: LearnLesson): CodeMistake[] {
+  const src = unit.solution.replace(/\s+$/, '')
+  const out: CodeMistake[] = []
+  const add = (name: string, code: string | null, expect: DiagnosisKind[], mention?: RegExp) => {
+    if (code && code !== src) out.push({ name, code, expect, ...(mention ? { mention } : {}) })
+  }
+  if (unit.lang === 'python') {
+    const colon = lineIdx(src, /^\s*(if|for|while|def|elif)\b.*:\s*$/)
+    if (colon >= 0) add('py-colon', withLine(src, colon, (l) => l.replace(/:\s*$/, '')), ['error'], /colon/)
+    const body = src.split('\n').findIndex((l, k, all) => k > 0 && /:\s*$/.test(all[k - 1]!) && /^\s{4,}\S/.test(l) && (all[k + 1] ?? '').match(/^\s*/)![0].length >= l.match(/^\s*/)![0].length)
+    if (body >= 0) add('py-indent', withLine(src, body, (l) => l.replace(/^ {4}/, '')), ['error'], /spac|push/)
+    const n = usedNames(src)[0]
+    if (n) {
+      const lines = src.split('\n')
+      const use = lines.findIndex((l) => new RegExp(`\\b${n}\\b`).test(l) && !new RegExp(`^\\s*${n}\\s*=(?!=)`).test(l))
+      if (use >= 0) add('py-name', withLine(src, use, (l) => l.replace(new RegExp(`\\b${n}\\b`), n.slice(0, -1))), ['error', 'case'], new RegExp(`\`${n}\``))
+    }
+    if (/\bprint\(/.test(src)) add('py-print-case', src.replace(/\bprint\(/, 'Print('), ['error'], /`print`/)
+    const q = lineIdx(src, /print\("[^"]+"\)/)
+    if (q >= 0) add('py-quote', withLine(src, q, (l) => l.replace(/"\)/, ')')), ['error'], /quote|never closes/)
+    const f = lineIdx(src, /\bf"[^"]*\{[^}]+\}[^"]*"/)
+    if (f >= 0) add('py-fstring', withLine(src, f, (l) => l.replace(/\bf"/, '"')), ['logic'], /`f`/)
+    const ret = lineIdx(src, /^\s{4}return\s+\S/)
+    if (ret >= 0 && unit.checks.some((c) => c.kind === 'case')) add('py-return-print', withLine(src, ret, (l) => l.replace(/return\s+(.+)$/, 'print($1)')), ['case', 'logic'], /return|give/)
+    const loopRet = src.split('\n').findIndex((l, k, all) => /^ {4}return\b/.test(l) && all.slice(0, k).some((p) => /^ {4}for\b.*:\s*$/.test(p)) && /^ {8}\S/.test(all[k - 1] ?? ''))
+    if (loopRet >= 0) add('py-return-in-loop', withLine(src, loopRet, (l) => `    ${l}`), ['logic', 'case', 'output'], /loop/)
+    if (/int\(input\(\)\)/.test(src)) add('py-int-input', src.replace(/int\(input\(\)\)/, 'input()'), ['logic', 'error'], /int|text/)
+    const qv = src.split('\n').findIndex((l) => { const m = /^\s*print\(([a-z_][a-z0-9_]*)\)\s*$/.exec(l); return !!m && usedNames(src).includes(m[1]!) })
+    if (qv >= 0) add('py-quoted-var', withLine(src, qv, (l) => l.replace(/print\((\w+)\)/, 'print("$1")')), ['logic'], /quote/)
+    const loopPrint = src.split('\n').findIndex((l, k, all) => /^ {4}print\(/.test(l) && /^for\b.*:\s*$/.test(all[k - 1] ?? '') && !/^ {4}/.test(all[k + 1] ?? ''))
+    if (loopPrint >= 0) add('py-print-outside', withLine(src, loopPrint, (l) => l.replace(/^ {4}/, '')), ['logic', 'output'], /loop/)
+    const eq = lineIdx(src, /^\s*(if|elif|while)\b.*==/)
+    if (eq >= 0) add('py-eq', withLine(src, eq, (l) => l.replace('==', '=')), ['error'], /equals|==/)
+    const div = lineIdx(src, /[^/]\/\/[^/]/)
+    if (div >= 0) add('py-div', withLine(src, div, (l) => l.replace('//', '/')), ['logic', 'output', 'case'])
+    const call = src.split('\n').findIndex((l) => /^print\([a-z_]\w*\(.*\)\)\s*$/.test(l))
+    if (call >= 0 && /^def /m.test(src)) add('py-no-call', src.split('\n').filter((l) => !/^print\([a-z_]\w*\(.*\)\)\s*$/.test(l)).join('\n'), ['logic', 'empty', 'output'], /call/)
+  }
+  if (unit.lang === 'sql') {
+    const col = /SELECT\s+([a-z_]{4,})/i.exec(src)?.[1]
+    if (col) add('sql-column', src.replace(col, col.slice(0, -1)), ['error', 'spelling'], new RegExp(`\`${col}\``))
+    const table = /FROM\s+([a-z_]{4,})/i.exec(src)?.[1]
+    if (table) add('sql-table', src.replace(new RegExp(`FROM\\s+${table}\\b`, 'i'), `FROM ${table.slice(0, -1)}`), ['error', 'spelling'], new RegExp(`\`${table}\``))
+    if (/\bIS NULL\b/i.test(src)) add('sql-null', src.replace(/\bIS NULL\b/i, '= NULL'), ['logic'], /IS NULL/)
+    const str = /(=|IN\s*\(|LIKE)\s*'([A-Za-z]+)'/.exec(src)
+    if (str) add('sql-quotes', src.replace(`'${str[2]}'`, str[2]!), ['logic', 'error'], /single quote/)
+    if (/\bGROUP BY\b[^;]*?(?=\bHAVING\b|\bORDER\b|;|$)/i.test(src) && /\b(COUNT|SUM|AVG|MIN|MAX)\(/i.test(src)) add('sql-group', src.replace(/\s*\bGROUP BY\s+[\w., ]+?(?=\s*(?:\bHAVING\b|\bORDER\b|;|$))/i, ''), ['logic', 'rows'], /GROUP BY/)
+    if (/\bLIMIT\s+\d+/i.test(src)) add('sql-limit', src.replace(/\s*\bLIMIT\s+\d+/i, ''), ['logic', 'rows'], /LIMIT/)
+    const sel = /SELECT\s+([\w.]+)\s*,\s*([\w.]+)\s+FROM/i.exec(src)
+    if (sel) add('sql-columns', src.replace(`${sel[1]}, ${sel[2]}`, `${sel[2]}, ${sel[1]}`).replace(`${sel[1]},${sel[2]}`, `${sel[2]},${sel[1]}`), ['logic', 'rows'], /order|columns/)
+    if (/\bWHERE\b/i.test(src)) add('sql-where', src.replace(/\s*\bWHERE\b[^;]*?(?=\bGROUP\b|\bORDER\b|\bLIMIT\b|;|$)/i, ' '), ['rows', 'logic'])
+    if (/\bDESC\b/i.test(src)) add('sql-desc', src.replace(/\s*\bDESC\b/i, ''), ['rows', 'logic'], /order|DESC/i)
+    if (/\bJOIN\s+\w+(?:\s+\w+)?\s+ON\s+[\w.]+\s*=\s*[\w.]+/i.test(src)) add('sql-join-on', src.replace(/(\bJOIN\s+\w+(?:\s+\w+)?)\s+ON\s+[\w.]+\s*=\s*[\w.]+/i, '$1'), ['logic', 'rows', 'error'], /ON|join/i)
+  }
+  if (unit.lang === 'cpp') {
+    const semi = lineIdx(src, /^\s*(int|double|auto|std::cout|cout|return)\b[^;{]*;\s*$/)
+    if (semi >= 0) add('cpp-semicolon', withLine(src, semi, (l) => l.replace(/;\s*$/, '')), ['error'], /semicolon/)
+    const decl = /\b(?:int|double|auto|long)\s+([a-z_]\w{3,})\s*=/.exec(src)?.[1]
+    if (decl) {
+      const lines = src.split('\n')
+      const use = lines.findIndex((l) => new RegExp(`\\b${decl}\\b`).test(l) && !new RegExp(`\\b(?:int|double|auto|long)\\s+${decl}\\b`).test(l))
+      if (use >= 0) add('cpp-name', withLine(src, use, (l) => l.replace(new RegExp(`\\b${decl}\\b`), decl.slice(0, -1))), ['error'], new RegExp(`\`${decl}\``))
+    }
+    if (/std::cout/.test(src) && !/using namespace std/.test(src)) add('cpp-std', src.replace(/std::cout/, 'cout'), ['error'], /std::/)
+    if (/#include <iostream>/.test(src)) add('cpp-include', src.replace(/#include <iostream>\n?/, ''), ['error'], /include|iostream/)
+    const ifEq = lineIdx(src, /if\s*\([^)]*==/)
+    if (ifEq >= 0) add('cpp-assign-if', withLine(src, ifEq, (l) => l.replace('==', '=')), ['logic', 'output', 'case', 'error'], /==|equals/)
+    if (/<<\s*(?:'\\n'|"\\n"|std::endl|endl)/.test(src)) add('cpp-newline', src.replace(/\s*<<\s*(?:'\\n'|"\\n"|std::endl|endl)/g, ''), ['logic', 'output'], /line|\\n|endl/)
+    const lt = lineIdx(src, /for\s*\([^;]*;\s*\w+\s*<\s*[\w.()]+\s*;/)
+    if (lt >= 0) add('cpp-bound', withLine(src, lt, (l) => l.replace(/(;\s*\w+\s*)<(\s*)/, '$1<=$2')), ['logic', 'output', 'case', 'error'])
+  }
+  return out
+}
