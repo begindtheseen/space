@@ -17575,6 +17575,8 @@ To **insert**, do the same walk, but remember on every level the last node you s
 
 Insert and remove are a search plus O(height) link changes, so they are O(log n) expected too. The worst case is O(n), if the coins make every node the same height, but that needs astronomically bad luck, and no order of inserts can cause it, because the coins do not depend on the keys.
 
+Level 0 is one long chain, so the browser cannot free a big skip list in one go, just like the linked list in DSA I lesson 9. Give it a `clear()` that walks level 0 and drops each node's links before moving on.
+
 ### Where it is used
 
 - **Databases.** [[Redis|redis]] keeps its sorted sets in skip lists. LevelDB and RocksDB keep recent writes in one.
@@ -17612,6 +17614,7 @@ Write a class `SkipList`: a sorted set of keys (numbers or strings), built from 
 - `remove(key)` removes `key` and returns `True`, or returns `False` if it was not there.
 - `len(s)` is the number of keys: write `__len__`.
 - `keys()` returns a list of all the keys in increasing order.
+- `clear()` empties the list by taking it apart one node at a time: walk level 0, and set each node's list of links to `None` before you move on. The long checks call it when they are done, so the browser can free the nodes.
 - Every time a search in `insert`, `contains` or `remove` moves forward from one node to the next on the same level, add 1 to `self.steps`.
 
 Build the levels yourself: do not use `sorted`, `.sort`, `bisect`, a `dict` of keys or a `set`. A check makes 40,000 operations and requires fewer than 60 forward moves per operation on average; a plain sorted linked list would need thousands.
@@ -17640,6 +17643,9 @@ class SkipList:
 
     def keys(self):
         return []
+
+    def clear(self):
+        pass
 --- solution
 import random
 
@@ -17721,6 +17727,16 @@ class SkipList:
             out.append(at.key)
             at = at.next[0]
         return out
+
+    def clear(self):
+        at = self.head.next[0]
+        self.head = Node(None, MAX_LEVEL)
+        self.levels = 1
+        self.size = 0
+        while at is not None:
+            after = at.next[0]
+            at.next = None           # cut this node loose
+            at = after
 --- hint
 Give each node a key and a list of forward links, one per level it is on. The head is a node with 32 links and no key. Write one helper that walks from the head, top level down, and returns the last node before `key` on every level: `insert`, `contains` and `remove` all start with it.
 --- hint
@@ -17743,17 +17759,20 @@ To remove, on each level the node is on, set `last[lv].next[lv] = node.next[lv]`
 (lambda s: ([s.insert(w) for w in ["vega", "altair", "deneb", "rigel", "altair"]], s.keys()))(SkipList(5))[1]
 => ["altair", "deneb", "rigel", "vega"]
 --- check case | Removing from every level: 2,000 keys in, every other key out, then back in
-(lambda s: ([s.insert(k) for k in range(2000)], all(s.remove(k) for k in range(0, 2000, 2)), s.keys() == list(range(1, 2000, 2)), all(not s.contains(k) for k in range(0, 2000, 2)), all(s.insert(k) for k in range(0, 2000, 2)), s.keys() == list(range(2000)), len(s)))(SkipList(6))[1:]
-=> (True, True, True, True, True, 2000)
+(lambda s, out: (raises(Exception, lambda: out.append(([s.insert(k) for k in range(2000)], all(s.remove(k) for k in range(0, 2000, 2)), s.keys() == list(range(1, 2000, 2)), all(not s.contains(k) for k in range(0, 2000, 2)), all(s.insert(k) for k in range(0, 2000, 2)), s.keys() == list(range(2000)), len(s))[1:])), s.clear(), out)[-1])(SkipList(6), [])
+=> [(True, True, True, True, True, 2000)]
 --- check case | 40,000 operations need fewer than 60 forward moves each, on average
-(lambda s: ([s.insert((k * 7919) % 20011) for k in range(20000)], sum(s.contains((k * 104729) % 20011) for k in range(20000)), len(s), s.steps < 60 * 40000))(SkipList(7))[1:]
-=> (19989, 20000, True)
+(lambda s, out: (raises(Exception, lambda: out.append(([s.insert((k * 7919) % 20011) for k in range(20000)], sum(s.contains((k * 104729) % 20011) for k in range(20000)), len(s), s.steps < 60 * 40000)[1:])), s.clear(), out)[-1])(SkipList(7), [])
+=> [(19989, 20000, True)]
 ?? A search that only walks level 0 moves forward about n/2 times. Ride the higher levels first, and count one step per forward move.
 --- check case | 60,000 keys inserted in increasing order, the worst order for a plain search tree
-(lambda s: ([s.insert(k) for k in range(60000)], len(s), s.contains(59999), s.contains(60000), s.keys()[-3:], s.steps < 60 * 60000))(SkipList(8))[1:]
-=> (60000, True, False, [59997, 59998, 59999], True)
+(lambda s, out: (raises(Exception, lambda: out.append(([s.insert(k) for k in range(60000)], len(s), s.contains(59999), s.contains(60000), s.keys()[-3:], s.steps < 60 * 60000)[1:])), s.clear(), out)[-1])(SkipList(8), [])
+=> [(60000, True, False, [59997, 59998, 59999], True)]
 --- check source absent | Built from linked nodes, not sorted or bisect
 \bsorted\(|\.sort\(|bisect|\bset\(|\bdict\(
+--- check case | clear empties the list, and it works again afterwards
+(lambda s: ([s.insert(k) for k in range(50)], s.clear(), len(s), s.keys(), s.contains(3), s.insert(3), s.keys())[2:])(SkipList(9))
+=> (0, [], False, True, [3])
 
 +++ practice | One packet from a stream
 --- task
@@ -17992,7 +18011,8 @@ A leaderboard keeps scores in a skip list and must answer "what is the score at 
 - `RankedSkipList(seed=0)`, with `self.rng = random.Random(seed)`, at most 32 levels, and node heights chosen exactly as in the lesson's task (1, plus 1 for each `self.rng.random() < 0.5` in a row);
 - `insert(key)`: add a key that is not already there (the checks never insert a key twice);
 - `kth(r)`: the key at rank `r`, counting from 0 for the smallest; raise `IndexError` if `r` is negative or not less than the number of keys;
-- `__len__`.
+- `__len__`;
+- `clear()`: empty the list, taking it apart one node at a time as in the lesson's task, so the browser can free it.
 
 Each forward link also stores its **width**: how many level-0 steps it jumps. A search for rank `r` rides the levels as usual, moving forward while the position after the jump is at most `r + 1`, where the head is at position 0 and the smallest key at position 1. On insert, the widths of the links the new node splits, and of the links above its height that now jump over it, must be updated. The checks make 30,000 inserts and 30,000 rank queries; walking level 0 for each query is far too slow.
 --- starter
@@ -18012,6 +18032,9 @@ class RankedSkipList:
 
     def kth(self, r):
         return self.keys[r]
+
+    def clear(self):
+        pass
 --- solution
 import random
 
@@ -18079,6 +18102,16 @@ class RankedSkipList:
                 p += at.width[lv]
                 at = at.next[lv]
         return at.key
+
+    def clear(self):
+        at = self.head.next[0]
+        self.head = Node(None, MAX_LEVEL)
+        self.levels = 1
+        self.size = 0
+        while at is not None:
+            after = at.next[0]
+            at.next = None
+            at = after
 --- hint
 While walking down during insert, remember on every level both the last node before the key and its position (the sum of the widths you rode). The new node's position is the level-0 position plus 1.
 --- hint
@@ -18098,10 +18131,13 @@ For `kth(r)`, look for position `r + 1`. On each level, ride forward while `p + 
 (lambda s: ([s.insert(k) for k in range(300, 0, -1)], [s.kth(r) for r in (0, 1, 150, 298, 299)])[1])(RankedSkipList(4))
 => [1, 2, 151, 299, 300]
 --- check case | 30,000 inserts and 30,000 rank queries
-(lambda s: ([s.insert((k * 7919) % 30011) for k in range(30000)], sum(s.kth(r) for r in range(0, 30000)), s.kth(0), s.kth(29999)))(RankedSkipList(5))[1:]
-=> (450147456, 0, 30010)
+(lambda s, out: (raises(Exception, lambda: out.append(([s.insert((k * 7919) % 30011) for k in range(30000)], sum(s.kth(r) for r in range(0, 30000)), s.kth(0), s.kth(29999))[1:])), s.clear(), out)[-1])(RankedSkipList(5), [])
+=> [(450147456, 0, 30010)]
 --- check source absent | Ranks come from the widths, not from a sorted list
 bisect|\.sort\(|sorted\(
+--- check case | clear empties the list, and it works again afterwards
+(lambda s: ([s.insert(k) for k in [5, 1, 3]], s.clear(), len(s), raises(IndexError, lambda: s.kth(0)), s.insert(2), s.kth(0))[2:])(RankedSkipList(6))
+=> (0, True, None, 2)
 === dsa2-30 | Bit manipulation: masks, popcount, subsets and XOR
 --- teach
 Last lesson you let coin flips balance a skip list. This lesson goes down to the level of single bits. You already stored sets as integers in the bitmask DP of lesson 17. Now you will learn why those tricks work: how to test, set and clear one bit, why `x & (x - 1)` removes the lowest 1, how to walk every subset of a set, and why XOR makes pairs cancel out. These are the tools of compilers, network code, chess engines and flight software, where one integer often carries a dozen yes-or-no facts.

@@ -3351,6 +3351,8 @@ For n tokens, the parser takes **Θ(n) time**. Each token is consumed once. Betw
 
 The **space** is the depth of the recursion, which grows with nesting. Each pair of parentheses costs about ten Python frames, one per level from `expr` down to `primary`, and Python stops at a [[recursion limit|recursion-limit]] of about 1,000 frames. So about 100 nested parentheses crash a recursive-descent parser in Python. Real compilers set a nesting limit on purpose, and a long flat chain like `1 + 1 + … + 1` costs nothing extra, because it is a loop, not recursion.
 
+One catch in the browser: the tree for that long chain is itself a chain of nodes thousands deep, and freeing it in one go overflows the browser's stack, as with the linked list in DSA I. So the long checks here take their trees apart node by node before letting them go.
+
 ### Where it is used
 
 - GCC's C and C++ front ends, Clang, the Go compiler, rustc and V8 all parse with hand-written recursive descent. It is fast, and its error messages can be tuned by hand for every situation.
@@ -3878,7 +3880,7 @@ parse("-f(x) * 2 < y")
 --- check test | 30 nested parentheses
 parse("(" * 30 + "1" + ")" * 30) == Num(1)
 --- check test | A chain of 5,000 additions is a left-leaning tree, built by a loop
-(lambda t: __import__("functools").reduce(lambda node, _: node.left, range(4999), t) == Num(1) and t.right == Num(5000))(parse(" + ".join(str(i) for i in range(1, 5001))))
+(lambda t, out, cut: (raises(Exception, lambda: out.append(__import__("functools").reduce(lambda node, _: node.left, range(4999), t) == Num(1) and t.right == Num(5000))), cut(t), out == [True])[-1])(parse(" + ".join(str(i) for i in range(1, 5001))), [], lambda root: [(s.extend(v for v in vars(x).values() if hasattr(v, "__dict__")), vars(x).clear()) for s in [[root]] for x in iter(lambda: s.pop() if s else None, None) if hasattr(x, "__dict__")])
 ?? Each loop pass makes the tree so far the left child of the new node. A recursive call per operator would run out of stack here.
 
 +++ practice | A JSON parser
@@ -5716,7 +5718,7 @@ parse_flat(tokenize("-a * (b - c)"))
 parse_flat(tokenize("(" * 100000 + "x" + ")" * 100000)) == Var("x")
 ?? Recursion would need a Python frame per level here. Keep the open parentheses on your own stack.
 --- check test | A 100,000-term chain and 50,000 negations
-(lambda f: (lambda t: f(lambda n, _: n.left, range(99999), t) == Num(1))(parse_flat(tokenize("-".join(["1"] * 100000)))) and (lambda u: f(lambda n, _: n.expr, range(50000), u) == Var("x"))(parse_flat(tokenize("-" * 50000 + "x"))))(__import__("functools").reduce)
+(lambda f, cut: (lambda t, out: (raises(Exception, lambda: out.append(f(lambda n, _: n.left, range(99999), t) == Num(1))), cut(t), out == [True])[-1])(parse_flat(tokenize("-".join(["1"] * 100000))), []) and (lambda u, out: (raises(Exception, lambda: out.append(f(lambda n, _: n.expr, range(50000), u) == Var("x"))), cut(u), out == [True])[-1])(parse_flat(tokenize("-" * 50000 + "x")), []))(__import__("functools").reduce, lambda root: [(s.extend(v for v in vars(x).values() if hasattr(v, "__dict__")), vars(x).clear()) for s in [[root]] for x in iter(lambda: s.pop() if s else None, None) if hasattr(x, "__dict__")])
 
 +++ question | if instead of while
 --- ask
@@ -53448,6 +53450,8 @@ For persistent Cons lists of length n:
 
 Sharing makes immutability cheap: keeping every old version costs only the new cells. Where a persistent structure needs to change something deep inside, it copies the path from the root to that place and shares the rest, **path copying**, which costs O(depth).
 
+One practical note for the browser: a Cons list is a linked list, and dropping one of more than a few thousand cells in one go overflows the browser's stack, as DSA I showed for linked lists. So the long checks here take their big lists apart cell by cell when they are done. On a laptop this is never needed.
+
 ### Where it is used
 
 - Haskell, OCaml and F# are built on these ideas; Clojure, Scala, Elixir and Erlang make immutable data the default. Rust's pattern matching on enums is `match` on algebraic data types, with exhaustiveness checked.
@@ -53624,7 +53628,7 @@ to_list(reverse(from_list([1, 2, 3]))) == [3, 2, 1] and to_list(map_list(lambda 
 --- check test | Nothing is changed
 (lambda a: (reverse(a), map_list(str, a), append(a, a), to_list(a) == [1, 2, 3])[-1])(from_list([1, 2, 3]))
 --- check test | 100,000 items without running out of stack
-(lambda big: foldr(lambda x, acc: acc + x, 0, big) == 4999950000 and len(to_list(map_list(lambda x: x * 2, big))) == 100000 and to_list(append(big, from_list([-1])))[-2:] == [99999, -1] and foldl(lambda a, x: x, None, reverse(big)) == 0)(from_list(list(range(100000))))
+(lambda big, out: (raises(Exception, lambda: out.append(foldr(lambda x, acc: acc + x, 0, big) == 4999950000 and len(to_list(map_list(lambda x: x * 2, big))) == 100000 and to_list(append(big, from_list([-1])))[-2:] == [99999, -1] and foldl(lambda a, x: x, None, reverse(big)) == 0)), [big := (big.tail, object.__setattr__(big, "tail", None))[0] for _ in iter(lambda: big if isinstance(big, Cons) else None, None)], out == [True])[-1])(from_list(list(range(100000))), [])
 
 +++ practice | Pattern matching on telemetry
 --- task
@@ -56267,7 +56271,7 @@ to_list(take(2, from_list([1, 2, 3]))) == [1, 2] and to_list(take(9, from_list([
 --- check test | Nothing is changed
 (lambda a: (scanl(lambda s, x: s + x, 0, a), zip_with(min, a, a), take(1, a), to_list(a) == [3, 1, 2])[-1])(from_list([3, 1, 2]))
 --- check test | 50,000 items
-(lambda big: to_list(scanl(lambda a, x: a + x, 0, big))[-1] == 1249975000 and len(to_list(zip_with(lambda a, b: a * b, big, big))) == 50000 and len(to_list(take(49999, big))) == 49999)(from_list(list(range(50000))))
+(lambda big, out: (raises(Exception, lambda: out.append(to_list(scanl(lambda a, x: a + x, 0, big))[-1] == 1249975000 and len(to_list(zip_with(lambda a, b: a * b, big, big))) == 50000 and len(to_list(take(49999, big))) == 49999)), [big := (big.tail, object.__setattr__(big, "tail", None))[0] for _ in iter(lambda: big if isinstance(big, Cons) else None, None)], out == [True])[-1])(from_list(list(range(50000))), [])
 
 +++ practice | Debug: an undo history that rewrites the past
 --- task
@@ -91098,6 +91102,7 @@ print(sys.getrefcount(probe) - before)    # 1: the name alias is one more refere
 The good parts: memory is freed as soon as the last reference goes, so pauses are short and predictable, and the cost is spread over the program. The bad parts:
 
 - every copy of a reference costs a count update, even for short-lived temporaries;
+- a cascade can be long. CPython frees a chain one call deeper per link, so in the browser, dropping a chain of more than a few thousand objects at once overflows the stack (DSA I showed it for linked lists), and this lesson's checks keep their chains short;
 - **cycles leak**. In the heap above, 12 points to itself, so its count is 1 forever, although no root reaches it. Two objects pointing at each other, a doubly linked list, or a recursive closure stored in its own environment, never reach 0.
 
 **Why a cycle can never be freed:** every object on a cycle has at least one reference from the object before it on the cycle. That reference is only destroyed when that object is freed, which needs its own count to reach 0, which needs the object before it to be freed first, all the way round. No object on the cycle can be the first to reach 0.
@@ -92069,7 +92074,7 @@ count_live([globals_after([('CONST', FunctionCode('loop', ['n'], [('LOAD', 'loop
 --- check test | Environments are told apart by identity, and parents are followed
 (lambda g: count_live([Environment(Environment(g)), Environment(g), g, g]) == (4, 0))(Environment())
 --- check test | A long chain of environments
-(lambda e: count_live([e]) == (3001, 0))((lambda: [env := Environment()] and [env := Environment(env) for _ in range(3000)][-1])())
+(lambda e: count_live([e]) == (1201, 0))((lambda: [env := Environment()] and [env := Environment(env) for _ in range(1200)][-1])())
 
 +++ practice | A fixed-size heap that collects when full
 --- task

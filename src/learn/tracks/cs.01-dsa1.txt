@@ -4641,6 +4641,26 @@ When the untouched part is empty (`cur` is `None`), the invariant says `prev` he
 
 Neither wins everywhere. A linked list shines when you insert and delete at places you already hold, and never need index `i`.
 
+### Letting go of a long list in the browser
+
+When nothing refers to the head any more, Python frees it. Freeing a node lets go of its `next`, so the node after it is freed too, and so on down the chain. Each of those frees starts before the one before it has finished, so a chain of n nodes is freed n calls deep, one call per link. On a laptop that is fine. In the browser, where ORBIT runs your Python, the room for those nested calls is small: freeing a chain of more than a few thousand nodes in one go stops the whole program with "Maximum call stack size exceeded".
+
+The cure is to take the chain apart one node at a time before you let it go. Cut each link as you walk, so that freeing any one node frees nothing else:
+
+```python fragment
+def clear(self):
+    node = self.head
+    self.head = None
+    self.tail = None
+    self._size = 0
+    while node is not None:
+        after = node.next   # save the rest of the chain
+        node.next = None    # cut this node loose
+        node = after        # the loose node is freed here, on its own
+```
+
+That is O(n), like any walk. On a laptop you never need it. In the browser, call it on any list longer than a few thousand nodes when you are done with it. The long check in this lesson does exactly that.
+
 ### Where it is used
 
 Hash tables with chaining (lesson 20) keep a short linked list in each bucket. Memory allocators keep a [[free list|free-list]] of unused blocks, linked through the blocks themselves. [[Lisp|lisp]], one of the oldest programming languages still in use, is built on linked-list cells. And a log that grows at the front, such as the most recent commands sent to a spacecraft, fits a linked list well.
@@ -4704,7 +4724,7 @@ Keep these attributes: `head` and `tail` (both `None` when the list is empty) an
 - `reverse()` reverses the list in place: relink the existing nodes, make no new ones, and use neither recursion nor a Python list. Afterwards `head` is the old last node, and `tail` is the old first node.
 - `to_list()` returns a Python list of the values, from head to tail.
 
-The checks append 200,000 values and reverse a list that long.
+The checks append 200,000 values and reverse a list that long. Keep `clear()`: it is already written, and the long check calls it at the end so the browser can free the list (the lesson explains why).
 --- starter
 class Node:
     def __init__(self, value, next=None):
@@ -4738,6 +4758,17 @@ class LinkedList:
 
     def to_list(self):
         return []
+
+    def clear(self):
+        # Given: takes the chain apart one node at a time (see the lesson).
+        node = self.head
+        self.head = None
+        self.tail = None
+        self._size = 0
+        while node is not None:
+            after = node.next
+            node.next = None
+            node = after
 --- solution
 class Node:
     def __init__(self, value, next=None):
@@ -4817,6 +4848,17 @@ class LinkedList:
             values.append(node.value)
             node = node.next
         return values
+
+    def clear(self):
+        # Given: takes the chain apart one node at a time (see the lesson).
+        node = self.head
+        self.head = None
+        self.tail = None
+        self._size = 0
+        while node is not None:
+            after = node.next
+            node.next = None
+            node = after
 --- hint
 `push_front` makes the new node point at the old head, then makes it the head. `append` links the old tail to the new node and moves `tail`. In both, an empty list is special: the new node is then the head *and* the tail.
 --- hint
@@ -4869,8 +4911,8 @@ LinkedList().delete(3)
 (lambda e, one: (e.reverse(), e.to_list(), e.tail, one.append(7), one.reverse(), one.to_list(), one.head is one.tail)[1:])(LinkedList(), LinkedList())
 => ([], None, None, None, [7], True)
 --- check case | 200,000 appends, then a reverse, finish quickly
-(lambda l: ([l.append(i) for i in range(200000)], l.reverse(), len(l), l.head.value, l.tail.value, l.find(0))[2:])(LinkedList())
-=> (200000, 199999, 0, 199999)
+(lambda l, out: (raises(Exception, lambda: out.append(([l.append(i) for i in range(200000)], l.reverse(), len(l), l.head.value, l.tail.value, l.find(0))[2:])), l.clear(), out)[-1])(LinkedList(), [])
+=> [(200000, 199999, 0, 199999)]
 ?? append must use the tail: walking to the end each time is O(n) per append. And reverse must loop, not recurse.
 
 +++ practice | Count the high readings
@@ -5003,8 +5045,8 @@ nth_from_end(build([10, 20, 30, 40]), 4)
 (nth_from_end(build([10, 20]), 3), nth_from_end(build([10, 20]), 0), nth_from_end(None, 1))
 => (None, None, None)
 --- check case | A long chain
-nth_from_end(build(list(range(100000))), 25)
-=> 99975
+nth_from_end(build(list(range(1000))), 25)
+=> 975
 
 +++ practice | Merge two sorted logs
 --- task
@@ -5393,7 +5435,7 @@ is_palindrome(build([4, 7, 7, 4]))
 => (False, [1, 2, 3, 1], True, [8, 1, 8])
 ?? Reverse the second half back and link it on again before you return.
 --- check test | A frame of 200,001 values
-(lambda h: is_palindrome(h) and to_values(h)[100000] == 100000 and to_values(h)[-1] == 0)(build(list(range(100000)) + [100000] + list(range(99999, -1, -1))))
+(lambda h, out: (raises(Exception, lambda: out.append(is_palindrome(h) and to_values(h)[100000] == 100000 and to_values(h)[-1] == 0)), [h := (h.next, setattr(h, "next", None))[0] for _ in iter(lambda: h, None)], out == [True])[-1])(build(list(range(100000)) + [100000] + list(range(99999, -1, -1))), [])
 
 === dsa1-10 | Doubly linked lists and sentinel nodes
 --- teach
@@ -14265,6 +14307,8 @@ def total(root):
 print(total(root))    # 53
 ```
 
+A tree that deep is also a chain for the browser to free. As with the linked list in lesson 9, the checks take such a tree apart one node at a time before they let it go.
+
 To get a *particular* order, you choose carefully what to push and when.
 
 - **Preorder.** Pop a node and visit it at once. A stack gives back the last thing pushed, so to handle the left subtree first, push the right child *before* the left one.
@@ -14485,7 +14529,7 @@ level_order(Node(1, Node(2, Node(4), Node(5, Node(7))), Node(3, None, Node(6))))
 (lambda t: (preorder(t), inorder(t), postorder(t)))(Node(5, Node(3, None, Node(4, Node(9)))))
 => ([5, 3, 4, 9], [3, 9, 4, 5], [9, 4, 3, 5])
 --- check test | A tree 100,000 levels deep, leaning right, then leaning left
-(lambda n: (lambda r: preorder(r) == list(range(n)) and inorder(r) == list(range(n)) and postorder(r) == list(range(n - 1, -1, -1)) and len(level_order(r)) == n)((lambda: (t := None, [t := Node(v, None, t) for v in range(n - 1, -1, -1)], t)[-1])()) and (lambda l: preorder(l) == list(range(n - 1, -1, -1)) and inorder(l) == list(range(n)) and postorder(l) == list(range(n)))((lambda: (t := None, [t := Node(v, t) for v in range(n)], t)[-1])()))(100000)
+(lambda n, cut: (lambda r, out: (raises(Exception, lambda: out.append(preorder(r) == list(range(n)) and inorder(r) == list(range(n)) and postorder(r) == list(range(n - 1, -1, -1)) and len(level_order(r)) == n)), cut(r), out == [True])[-1])((lambda: (t := None, [t := Node(v, None, t) for v in range(n - 1, -1, -1)], t)[-1])(), []) and (lambda l, out: (raises(Exception, lambda: out.append(preorder(l) == list(range(n - 1, -1, -1)) and inorder(l) == list(range(n)) and postorder(l) == list(range(n)))), cut(l), out == [True])[-1])((lambda: (t := None, [t := Node(v, t) for v in range(n)], t)[-1])(), []))(100000, lambda root: [(s.extend(c for c in (x.left, x.right) if c is not None), setattr(x, "left", None), setattr(x, "right", None)) for s in [[root]] for x in iter(lambda: s.pop() if s else None, None)])
 ?? Recursion stops at about 1,000 levels. Keep your own stack in a list.
 
 +++ practice | Height and leaves
@@ -15702,6 +15746,8 @@ print(insert_comparisons(mixed))       # 11275: shuffled, about 1.39 n log2 n
 
 Sorted input is not rare. Timestamps, sequence numbers and database ids all arrive in increasing order, and reverse-sorted or zig-zag orders (smallest, largest, next smallest, …) are just as bad. So a search tree that must be fast on real data [[cannot trust the input order|adversary]].
 
+A degenerate tree is a long chain in the browser too: like the linked list in lesson 9, one with more than a few thousand nodes must be taken apart node by node before it is freed. The checks here do that for you.
+
 ### What "balanced" means
 
 A tree is **balanced** when its height stays O(log n), whatever order the keys came in. There are several ways to make that precise. The one you will use next lesson is height balance:
@@ -15935,7 +15981,7 @@ Update the height of the node that moved **down** first, then the node that move
 --- check test | 300 random rotations at the root and its children keep the keys in order and every height right
 (lambda ino, chk, ins, rng: (lambda box: all((lambda t, a: (box.__setitem__(0, rotate_right(t) if a == 0 and t.left else rotate_left(t) if a == 1 and t.right else (setattr(t, "left", rotate_right(t.left)), update_height(t), t)[-1] if a == 2 and t.left and t.left.left else (setattr(t, "right", rotate_left(t.right)), update_height(t), t)[-1] if a == 3 and t.right and t.right.right else t), ino(box[0]) == list(range(60)) and chk(box[0]))[-1])(box[0], rng.randrange(4)) for _ in range(300)))([(lambda: (t := None, [t := ins(t, k) for k in rng.sample(range(60), 60)], t)[-1])()]))((ino := lambda n: [] if n is None else ino(n.left) + [n.key] + ino(n.right)), (chk := lambda n: n is None or (n.height == 1 + max(height(n.left), height(n.right)) and chk(n.left) and chk(n.right))), (ins := lambda n, k: Node(k) if n is None else (Node(n.key, ins(n.left, k), n.right) if k < n.key else Node(n.key, n.left, ins(n.right, k)))), __import__("random").Random(11))
 --- check test | 100,000 rotations on a 100,000-node path are fast, and the heights stay right
-(lambda n: (lambda: (t := None, [t := Node(k, None, t) for k in range(n - 1, -1, -1)], [t := rotate_left(t) for _ in range(n - 1)], (t.key, t.height, t.left.key, t.left.height, height(t.right)) == (n - 1, n - 1, n - 2, n - 2, -1))[-1])())(100000)
+(lambda n, box, out, cut: ([box.__setitem__(0, Node(k, None, box[0])) for k in range(n - 1, -1, -1)], raises(Exception, lambda: out.append(([box.__setitem__(0, rotate_left(box[0])) for _ in range(n - 1)], (lambda t: (t.key, t.height, t.left.key, t.left.height, height(t.right)))(box[0]))[-1])), cut(box[0]), out == [(n - 1, n - 1, n - 2, n - 2, -1)])[-1])(100000, [None], [], lambda root: [(s.extend(c for c in (x.left, x.right) if c is not None), setattr(x, "left", None), setattr(x, "right", None)) for s in [[root]] for x in iter(lambda: s.pop() if s else None, None)])
 ?? A rotation changes two nodes' children. Update just those two heights, from the heights stored in their children.
 
 +++ practice | The shortest and tallest possible trees

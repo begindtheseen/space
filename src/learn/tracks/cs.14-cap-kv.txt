@@ -6700,6 +6700,8 @@ One edge case needs care: the last possible character, U+10FFFF, has no next cha
 
 For n keys, `get`, `put` and `delete` take O(log n) expected time, and a scan returning m keys takes O(log n + m). Space is O(n) expected: each node has on average two pointers. The worst case is O(n), if the coin flips are all tails, and it is so unlikely that you will never see it at this size. The list counts the nodes its searches step onto in `visits`, and the checks use it: 4,096 inserts into a skip list make about ten visits each, where a plain linked list would make about a thousand.
 
+One more thing for the browser: level 0 is a single chain through every node, and freeing a chain of more than a few thousand nodes in one go overflows the browser's stack. So the list gets a `clear()` that walks level 0 and cuts each node loose before moving on, and the long checks call it when they are done.
+
 ### Where it is used
 
 LevelDB's and RocksDB's memtables are skip lists. Redis implements its sorted sets (`ZADD`, `ZRANGE`) with a skip list plus a hash table. Java's standard library has `ConcurrentSkipListMap`, a sorted map that many threads can use at once. William Pugh invented skip lists in 1989, as a [[simpler alternative|pugh]] to balanced trees.
@@ -6756,7 +6758,8 @@ The starter keeps milestones 1 to 5 and adds stubs. Add `import random` at the t
 - `put(key, value)`: insert, or replace the value of an existing key (no new node, no coin flip);
 - `delete(key)`: unlink the node from every level it is on, lower `level` while the top level is empty, and return `True`; or return `False` if the key is not there;
 - `items(lo=None, hi=None)`: a generator of `(key, value)` pairs with `lo <= key < hi`, in key order (`None` means no bound);
-- `check()`: a list of text lines, one per broken invariant (a level not strictly sorted, a level with a key that the level below lacks, level 0 not holding `size` nodes); an empty list when all is well.
+- `check()`: a list of text lines, one per broken invariant (a level not strictly sorted, a level with a key that the level below lacks, level 0 not holding `size` nodes); an empty list when all is well;
+- `clear()`: remove every key, leaving an empty list with one level. Take the nodes apart one at a time: walk level 0 and set each node's `next` to `None` before moving on. The long checks call it when they are done.
 
 `prefix_end(prefix)`: the smallest string bigger than every string starting with `prefix`: replace the last character with the next one; if it is `"\U0010FFFF"`, drop it and do the same with the character before; return `None` if no character is left.
 
@@ -8152,6 +8155,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -8399,10 +8415,10 @@ In `put`, after choosing the height, set `self.level = max(self.level, height)`,
 --- check test | 20,000 random operations agree with a dict, and the invariants hold
 (lambda rng, sl, model: all((lambda op, k: (sl.put(k, str(op)), model.__setitem__(k, str(op))) if op < 6 else (sl.delete(k) == (model.pop(k, None) is not None)))(rng.randrange(10), f"key{rng.randrange(400):03d}") is not False for _ in range(20000)) and list(sl.items()) == sorted(model.items()) and len(sl) == len(model) and sl.check() == [])(__import__("random").Random(11), SkipList(seed=5), {})
 --- check test | It is a real skip list: level 0 links every key in order, and about half the nodes reach level 1
-(lambda sl: ([sl.put(f"k{(i * 7919) % 4096:04d}", i) for i in range(4096)], (lambda walk: [n.key for n in walk(0)] == [f"k{i:04d}" for i in range(4096)] and 1024 <= len(walk(1)) <= 3072 and sl.level > 4)(lambda lv: (lambda cur: [cur.__setitem__(0, cur[0].next[lv]) or cur[0] for _ in iter(lambda: cur[0].next[lv], None)])([sl.head])))[-1])(SkipList(seed=1))
+(lambda sl, out: (raises(Exception, lambda: out.append(([sl.put(f"k{(i * 7919) % 4096:04d}", i) for i in range(4096)], (lambda walk: [n.key for n in walk(0)] == [f"k{i:04d}" for i in range(4096)] and 1024 <= len(walk(1)) <= 3072 and sl.level > 4)(lambda lv: (lambda cur: [cur.__setitem__(0, cur[0].next[lv]) or cur[0] for _ in iter(lambda: cur[0].next[lv], None)])([sl.head])))[-1])), sl.clear(), out == [True])[-1])(SkipList(seed=1), [])
 ?? Node heights come from coin flips with rng.random() < 0.5, so about half the nodes reach level 1.
 --- check test | 4,096 inserts and lookups make about log n visits each, not n
-(lambda sl: ([sl.put(f"k{(i * 7919) % 4096:04d}", i) for i in range(4096)], sl.visits <= 4096 * 30, sl.__setattr__("visits", 0), [sl.get(f"k{i:04d}") for i in range(4096)], 4096 * 2 <= sl.visits <= 4096 * 30)[1::3] == (True, True))(SkipList(seed=2))
+(lambda sl, out: (raises(Exception, lambda: out.append(([sl.put(f"k{(i * 7919) % 4096:04d}", i) for i in range(4096)], sl.visits <= 4096 * 30, sl.__setattr__("visits", 0), [sl.get(f"k{i:04d}") for i in range(4096)], 4096 * 2 <= sl.visits <= 4096 * 30)[1::3] == (True, True))), sl.clear(), out == [True])[-1])(SkipList(seed=2), [])
 ?? Count a visit each time a search moves forward onto a node. Searches should ride the upper levels.
 --- check test | The same seed builds the same list; the visits match exactly
 (lambda build: build(7) == build(7))(lambda seed: (lambda sl: ([sl.put(str(i * 37 % 1000), i) for i in range(1000)], sl.visits, sl.level)[1:])(SkipList(seed)))
@@ -8425,6 +8441,9 @@ In `put`, after choosing the height, set `self.level = max(self.level, height)`,
 (lambda fs: (lambda s: (s.put("b", "1"), s.put("a", "2"), s.checkpoint(), s.put("c", "3"), s.delete("b"), (lambda r: r.scan() == [("a", "2"), ("c", "3")] and isinstance(r.mem, SkipList) and r.count() == 2)(KVStore(fs)))[-1])(KVStore(fs)))(MemFS())
 --- check test | Earlier milestones still work: crash at every step of a small workload
 (lambda ops, states: all((lambda fs, done: (fs.attempt(lambda: (lambda s: [(op(s), done.append(1)) for op in ops])(KVStore(fs, wal_limit=60))), (lambda disk: (lambda s: dict(s.scan()) in states[len(done):len(done) + 2] and (s.put("zz", "after"), dict(KVStore(disk.crash(), wal_limit=60).scan()) == dict(s.scan()))[-1])(KVStore(disk, wal_limit=60)))(fs.crash(power)))[-1])(MemFS(k), []) for k in range(300) for power in (False, True)))([lambda s: s.put("a", "1"), lambda s: s.put("b", "2"), lambda s: s.delete("a"), lambda s: s.put("c", "3"), lambda s: s.put("b", "4")], [{}, {"a": "1"}, {"a": "1", "b": "2"}, {"b": "2"}, {"b": "2", "c": "3"}, {"b": "4", "c": "3"}])
+--- check case | clear empties the list, and it works again afterwards
+(lambda sl: ([sl.put(k, 1) for k in "skiplist"], sl.clear(), len(sl), list(sl), sl.level, "s" in sl, sl.check(), sl.put("a", 2), list(sl.items()))[2:])(SkipList(seed=4))
+=> (0, [], 1, False, [], None, [("a", 2)])
 
 +++ practice | A sorted linked list first
 --- task
@@ -9697,6 +9716,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -10552,6 +10584,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -11997,6 +12042,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -13031,6 +13089,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -14588,6 +14659,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -15725,6 +15809,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -17643,6 +17740,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -19036,6 +19146,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -20983,6 +21106,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -22506,6 +22642,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -24768,6 +24917,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -26533,6 +26695,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -31142,6 +31317,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -32447,6 +32635,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -33761,6 +33962,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -34870,6 +35084,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -37455,6 +37682,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -39144,6 +39384,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -40879,6 +41132,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -42951,6 +43217,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -45044,6 +45323,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -46155,6 +46447,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -47268,6 +47573,19 @@ class SkipList:
             yield node.key, node.value
             node = node.next[0]
 
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
+
 
 def prefix_end(prefix):
     """The smallest string greater than every string that starts with prefix,
@@ -48142,6 +48460,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -49059,6 +49390,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
@@ -51131,6 +51475,19 @@ class SkipList:
         while node is not None and (hi is None or node.key < hi):
             yield node.key, node.value
             node = node.next[0]
+
+    def clear(self):
+        """Remove every key. The nodes are taken apart one at a time: in the
+        browser, freeing a chain of thousands of nodes in one go overflows
+        the stack."""
+        node = self.head.next[0]
+        self.head = _Node(None, None, self.MAX_LEVEL)
+        self.level = 1
+        self.size = 0
+        while node is not None:
+            after = node.next[0]
+            node.next = None             # cut this node loose
+            node = after
 
 
 def prefix_end(prefix):
