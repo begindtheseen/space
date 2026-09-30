@@ -8,6 +8,25 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.3.3
+
+The voice starts sooner on a Mac, flows past its first sentence, and the page keeps up with it.
+
+- **No more stopping after the first sentence.** When the voice has only just started, or the first
+  sentence is short, it now has the second one ready before it says the first. A voice that has just
+  woken up is slower on its first few sentences, and the lesson used to stop dead after sentence one
+  while it caught up. It costs a moment at the start instead.
+- **The page follows the voice again in the modules.** It used to stop following for good the moment it
+  saw any scroll: fingers resting on the trackpad, the glide after a swipe, or scrolling a wide
+  equation or table sideways. Now only a real scroll of the lesson up or down counts, and once you
+  scroll back to where the voice is, it follows again by itself.
+
+- **One less wait before the first word.** On a Mac the voice runs on the graphics chip. Every time it
+  started, it read a whole test sentence to time the chip before reading anything to you, even though
+  it already knew the answer from last time. Now it only does that the first time, and afterwards goes
+  straight to your lesson. It still keeps an eye on its speed while it reads, and moves to the
+  processor if the graphics chip ever falls behind.
+
 ## 1.3.2
 
 A faster voice, hints out loud, and no skipping the practice.

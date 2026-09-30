@@ -248,6 +248,15 @@ class NaturalVoice {
     return this.device === 'webgpu' ? 1 : workerPlan().workers
   }
 
+  /**
+   * Whether the workers have made a couple of pieces since they started. Fresh ones are slower on the first
+   * pieces they make (a GPU prepares itself for each new length of sentence), so the reader gives itself a
+   * little more head start until then.
+   */
+  get warmed(): boolean {
+    return this.slots.reduce((n, s) => n + s.done, 0) >= 2
+  }
+
   private isDownloaded = false
 
   /** Whether the model is already on this device, so starting needs no download. Once it is, that is remembered. */
@@ -377,6 +386,9 @@ class NaturalVoice {
         fullPrecision: !isPhone(),
         threads: device === 'wasm' ? workerPlan().threads : 1,
       }
+      // A GPU timed on an earlier start, and fast enough then, is not timed again before it can speak.
+      const known = Number(stored(`${RTF_KEY}webgpu`))
+      if (device === 'webgpu' && Number.isFinite(known) && known > 0 && known <= GPU_MAX_RTF) init.knownRtf = known
       worker.postMessage(init)
     })
   }
