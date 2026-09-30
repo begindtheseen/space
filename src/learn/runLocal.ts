@@ -4,7 +4,9 @@
    spawns processes.
 
    With LEARN_CPP_WASM set to an installed @yowasp/clang, C++ is built by the app's own compiler for
-   wasm32 and run under WASI instead, exactly as in the browser (slow: for a final sweep). */
+   wasm32 and run under WASI instead, exactly as in the browser (slow: for a final sweep).
+   With LEARN_PYODIDE set to an installed pyodide, Python runs on Pyodide instead, one interpreter per
+   worker as in the app (standard library only: the extra packages come from a CDN). */
 import { type ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { cpus, tmpdir } from 'node:os'
@@ -63,6 +65,62 @@ async function runWasm(id: string, program: string, stdin: string): Promise<Lear
   return { stdout: r.stdout, stderr: r.stderr, error: r.code === 0 ? null : r.stderr.trim().split('\n').pop() || `exit ${r.code}`, ms: 0 }
 }
 
+// ---- Python on Pyodide (LEARN_PYODIDE) ---------------------------------------------------------
+const PYODIDE = process.env.LEARN_PYODIDE
+type PyAnswer = { stdout: string; stderr: string; error: string | null }
+type Interpreter = { proc: ChildProcessWithoutNullStreams; reply: ((r: PyAnswer) => void) | null }
+const idle: Interpreter[] = []
+const queue: ((i: Interpreter) => void)[] = []
+let interpreters = 0
+
+function startInterpreter(): Interpreter {
+  const proc = spawn('node', ['--no-warnings', join(HERE, 'pyodiderun.mjs')], { stdio: ['pipe', 'pipe', 'pipe'], env: process.env })
+  const it: Interpreter = { proc, reply: null }
+  createInterface({ input: proc.stdout }).on('line', (line) => {
+    if (!line.startsWith('{')) return
+    it.reply?.(JSON.parse(line) as PyAnswer)
+  })
+  proc.stderr.on('data', () => {})
+  compilers.push({ proc, waiting: new Map(), busy: 0 }) // so cleanUp kills it
+  return it
+}
+
+function interpreter(): Promise<Interpreter> {
+  const free = idle.pop()
+  if (free) return Promise.resolve(free)
+  if (interpreters < Math.max(1, Number(process.env.LEARN_PYODIDE_JOBS) || Math.min(4, cpus().length))) {
+    interpreters++
+    return Promise.resolve(startInterpreter())
+  }
+  return new Promise((resolve) => queue.push(resolve))
+}
+
+function release(it: Interpreter): void {
+  const next = queue.shift()
+  if (next) next(it)
+  else idle.push(it)
+}
+
+/** A run that goes past 30 seconds is stopped the only way a busy interpreter can be: a new one. */
+async function runPyodide(id: string, code: string, stdin: string): Promise<LearnRun> {
+  let it = await interpreter()
+  const r = await new Promise<PyAnswer>((resolve) => {
+    const timer = setTimeout(() => {
+      it.proc.kill('SIGKILL')
+      it = startInterpreter()
+      resolve({ stdout: '', stderr: 'timed out', error: 'timed out after 30 s' })
+    }, 30_000 + 20_000) // the first run on an interpreter also loads Pyodide
+    it.reply = (answer) => {
+      clearTimeout(timer)
+      resolve(answer)
+    }
+    it.proc.stdin.write(`${JSON.stringify({ id, code, stdin })}\n`)
+  })
+  it.reply = null
+  release(it)
+  return { stdout: r.stdout, stderr: r.stderr, error: r.error, ms: 0 }
+}
+
 function exec(cmd: string, args: string[], stdin: string, ms: number, cwd?: string): Promise<{ code: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve) => {
     const p = spawn(cmd, args, { stdio: ['pipe', 'pipe', 'pipe'], ...(cwd ? { cwd } : {}) })
@@ -118,6 +176,7 @@ let n = 0
 export async function run(lesson: LearnLesson, code: string): Promise<LearnRun> {
   const program = buildProgram(lesson, code)
   const id = `${n++}`
+  if (lesson.lang === 'python' && PYODIDE) return runPyodide(id, program, lesson.stdin ?? '')
   if (lesson.lang === 'python') {
     const file = join(dir, `p${id}.py`)
     writeFileSync(file, program)
@@ -171,8 +230,8 @@ export async function unsolvable(tracks: LearnTrack[]): Promise<string[]> {
     const failing = solved.results.filter((r) => r.status === 'fail').map((r) => `${r.name}: ${r.detail ?? r.actual ?? ''}`.slice(0, 200))
     const out: string[] = []
     if (failing.length) out.push(`${u.id}: the solution fails ${failing.join(' | ')}${solved.error ? ` (error: ${solved.error.slice(0, 200)})` : ''}`)
-    // The browser-build sweep proves solutions; starters were already proved on the native build.
-    if (WASM && u.lang === 'cpp') return out
+    // The browser-runtime sweeps prove solutions; starters were already proved on the native build.
+    if ((WASM && u.lang === 'cpp') || (PYODIDE && u.lang === 'python')) return out
     const started = gradeRun(u, u.starter, await run(u, u.starter))
     if (started.passed) out.push(`${u.id}: the starter already passes`)
     return out
