@@ -2392,7 +2392,9 @@ Printing turns a matrix into text. Now go the other way. The starter holds a `Ma
 - Blank lines, and lines of only spaces, are skipped.
 - Return `std::nullopt` if there are no numbers at all, if the rows are not all the same length, or if anything on a line is not a number (`"3 x"`, `"2x"`).
 
-So `parse_matrix("1 2 3\n4 5 6")` is `Matrix{{1, 2, 3}, {4, 5, 6}}`, and `parse_matrix("\n 1.5  -2 \n\n3 4\n")` is `Matrix{{1.5, -2}, {3, 4}}`. Include `<optional>` and `<sstream>`.
+So `parse_matrix("1 2 3\n4 5 6")` is `Matrix{{1, 2, 3}, {4, 5, 6}}`, and `parse_matrix("\n 1.5  -2 \n\n3 4\n")` is `Matrix{{1.5, -2}, {3, 4}}`. Include `<optional>`, `<sstream>` and `<cstdlib>`.
+
+Read each line word by word as strings and convert each word with `std::strtod`, checking that it used the whole word. Reading straight into a `double` with `>>` and then asking `eof()` looks shorter, but standard libraries disagree on `"2x"`: GNU's stops before the `x`, while the one ORBIT's browser C++ uses swallows `2x` as a failed number and reports the end of the line, so the mistake slips through.
 --- starter
 #include <cstddef>
 #include <initializer_list>
@@ -2433,6 +2435,7 @@ bool operator==(const Matrix& a, const Matrix& b) {
 }
 --- solution
 #include <cstddef>
+#include <cstdlib>
 #include <initializer_list>
 #include <optional>
 #include <sstream>
@@ -2479,9 +2482,14 @@ std::optional<Matrix> parse_matrix(const std::string& text) {
     while (std::getline(lines, line)) {
         std::istringstream in(line);
         std::vector<double> row;
-        double x;
-        while (in >> x) row.push_back(x);
-        if (!in.eof()) return std::nullopt;   // stopped at something that is not a number
+        std::string word;
+        while (in >> word) {
+            // A number only if strtod used every character of the word: "2x" stops at the x.
+            char* end = nullptr;
+            double x = std::strtod(word.c_str(), &end);
+            if (end != word.c_str() + word.size()) return std::nullopt;
+            row.push_back(x);
+        }
         if (row.empty()) continue;            // a blank line
         if (!rows.empty() && row.size() != rows[0].size()) return std::nullopt;
         rows.push_back(row);
@@ -2495,7 +2503,7 @@ std::optional<Matrix> parse_matrix(const std::string& text) {
 --- hint
 Two string streams, one inside the other: an `std::istringstream` over the whole text for `std::getline`, and a fresh one over each line for `>>` into a `double`.
 --- hint
-`while (in >> x)` stops either at the end of the line or at something that is not a number. Tell them apart afterwards with `in.eof()`: it is only true when the whole line was read.
+`while (in >> word)` gives the words of a line one at a time. `std::strtod(word.c_str(), &end)` converts one and sets `end` to the first character it did not use: the word is a number only if `end` is at `word.c_str() + word.size()`.
 --- hint
 Collect the rows in a `std::vector<std::vector<double>>`, comparing each new row's length with the first. At the end, build `Matrix m(rows.size(), rows[0].size())` and copy the numbers in.
 --- check test | Two rows of three
