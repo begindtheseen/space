@@ -8,6 +8,22 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.2.2
+
+- Read aloud follows along properly now. The highlight stays on the word being read instead of jumping
+  ahead to random words. It used to lose its place after a code block, a number read out, or an
+  equation, and then stay lost. Now it lines each sentence up with the lesson as a whole, and finds its
+  place again if it slips. Code written in the middle of a sentence is highlighted too, since it is read
+  out.
+- The lesson scrolls with the reading, in every lesson and with every voice. When the word being read
+  moves below the screen, the page scrolls to keep it in view. If you scroll somewhere else yourself,
+  it leaves you there and shows "Back to the word being read", which also turns the scrolling back on.
+- This device's own voice now follows along too. It highlights each word as it says it and scrolls the
+  page with it. A voice that doesn't say which word it is on still scrolls the page, one sentence at a
+  time.
+- The highlight no longer goes out when part of the lesson changes while it is being read, such as a
+  code window running or a note opening. It finds the words again and carries on.
+
 ## 1.2.1
 
 - Read aloud now works in every Learn to code lesson, and it reads the lesson the way a tutor would:
