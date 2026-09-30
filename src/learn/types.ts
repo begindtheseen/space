@@ -189,6 +189,59 @@ export interface LearnTrack {
   module?: string
 }
 
+/* ── The catalog ───────────────────────────────────────────────────────────
+   What the app needs of every course before any course is opened: ids,
+   titles and the shape of each lesson's practice and gate, never the text.
+   Progress, mastery, locks, credit, re-tests and roadmaps run on this alone;
+   a course's full text loads when it is opened (see load.ts). A full
+   LearnTrack / LearnLesson fits each of these shapes, so the functions that
+   take them work on either. */
+
+/** A lesson's gate, without its problems' and questions' text. */
+export interface GateMeta {
+  pass: number
+  questionPass: number
+  minutes: number
+  problems: { id: string }[]
+  questions: { id: string }[]
+}
+
+/** A lesson, without its text: what progress and mastery are counted over. */
+export interface LessonMeta {
+  id: string
+  title: string
+  practice: { id: string }[]
+  quiz?: { id: string }[]
+  gate?: GateMeta
+  forLesson?: string
+}
+
+/** A course, without its text. */
+export interface TrackMeta {
+  id: string
+  lang: LearnLang
+  level: LearnLevel
+  title: string
+  name: string
+  blurb: string
+  lessons: LessonMeta[]
+  plainVoice?: boolean
+  subject?: string
+  requires?: string[]
+  module?: string
+}
+
+/** A course (or module file) in the build-time catalog: its metadata, and the file its text is in. */
+export interface CatalogTrack extends TrackMeta {
+  file: string
+}
+
+/** Every course and every module practice file, as the catalog holds them. */
+export interface LearnCatalog {
+  tracks: CatalogTrack[]
+  modules: CatalogTrack[]
+}
+
 /** A goal, and the courses that reach it in the order a mentor would teach them. */
 export interface Roadmap {
   id: string

@@ -33,13 +33,14 @@ import { buildProgram, gradeRun } from '@/learn/grade'
 import { stuckHelp } from '@/learn/stuck'
 import { MASTERY, ROADMAPS, SHELVES, currentTrack, findLesson, ladderOf, langName, nextLesson, passedCount, streak, trackFor } from '@/learn/index'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
-import { LEVEL_LABEL, type CheckResult, type LearnLesson, type LearnTrack, type Roadmap } from '@/learn/types'
+import { useTrack } from '@/learn/load'
+import { LEVEL_LABEL, type CatalogTrack, type CheckResult, type LearnLesson, type LearnTrack, type LessonMeta, type Roadmap, type TrackMeta } from '@/learn/types'
 import { onExplainRequested } from '@/lib/ctxBus'
 import type { ExplainSeed, LibraryLesson } from '@/lib/explain'
 import { Markdown } from '@/lib/markdown'
 import { navigate, useRoute } from '@/lib/router'
 import { TerminalChallenge } from './LearnTerminal'
-import { GateView, PracticeSection, RetestBanner, RetestView } from './LearnMastery'
+import { GateView, PracticeSection, RetestBanner, RetestView, TrackLoading } from './LearnMastery'
 import { courseMastered, gateOf, lessonMastered, practiceDone, practiceTotal } from '@/learn/practice'
 import { courseLock } from '@/learn/credit'
 import './learn.css'
@@ -58,12 +59,22 @@ export function Learn({ lessonId }: { lessonId?: string }) {
 }
 
 /** A lesson or gate, unless its course is still locked behind an earlier course's gate. */
-function Guarded({ found }: { found: { track: LearnTrack; lesson: LearnLesson; index: number } }) {
+function Guarded({ found }: { found: { track: CatalogTrack; lesson: LessonMeta; index: number } }) {
   const { state } = useLearner()
   const lock = courseLock(found.track, state.learn)
   if (lock) return <LockedCourse track={found.track} lock={lock} />
-  if (found.lesson.gate) return <GateView key={found.lesson.id} track={found.track} lesson={found.lesson} />
-  return <LessonView key={found.lesson.id} track={found.track} lesson={found.lesson} index={found.index} />
+  return <Opened found={found} />
+}
+
+/** The lesson or gate itself, once its course's text has loaded (the catalog knows only its outline). */
+function Opened({ found }: { found: { track: CatalogTrack; lesson: LessonMeta; index: number } }) {
+  const { track, error } = useTrack(found.track.id)
+  const index = track ? track.lessons.findIndex((l) => l.id === found.lesson.id) : -1
+  const lesson = track?.lessons[index]
+  if (track && !lesson) return <LearnHome missing={found.lesson.id} />
+  if (!track || !lesson) return <TrackLoading back={{ href: `#/learn/${found.track.id}`, label: found.track.title }} title={found.lesson.title} error={error} />
+  if (lesson.gate) return <GateView key={lesson.id} track={track} lesson={lesson} />
+  return <LessonView key={lesson.id} track={track} lesson={lesson} index={index} />
 }
 
 function Streak() {
@@ -207,7 +218,7 @@ function useColumns(ref: React.RefObject<HTMLElement | null>): number {
 
 /** Where she is on a roadmap: each course's progress, and the step she is on. */
 function progressOn(roadmap: Roadmap, passed: Record<string, string>) {
-  const tracks = roadmap.steps.map((l) => trackFor(l)).filter((t): t is LearnTrack => !!t)
+  const tracks = roadmap.steps.map((l) => trackFor(l)).filter((t): t is CatalogTrack => !!t)
   const done = tracks.map((t) => passedCount(t, passed) === t.lessons.length)
   const current = done.indexOf(false)
   return { tracks, done, current, allDone: current < 0 }
@@ -289,7 +300,7 @@ function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
   const { state } = useLearner()
   const { tracks, done, current, allDone } = progressOn(roadmap, state.learn)
   const finished = done.filter(Boolean).length
-  const go = (t: LearnTrack) => navigate(`/learn/${nextLesson(t, state.learn).id}`)
+  const go = (t: TrackMeta) => navigate(`/learn/${nextLesson(t, state.learn).id}`)
   return (
     <div className="page page--padtop ide-wrap">
       <a className="lm-back" href={`#/learn?goal=${roadmap.id}`}>
@@ -364,7 +375,7 @@ function RoadmapView({ roadmap }: { roadmap: Roadmap }) {
 /* ── One course ──────────────────────────────────────────────────────────── */
 
 /** Shown instead of a locked course's lessons: which gate opens it, and the way there. */
-function LockedCourse({ track, lock }: { track: LearnTrack; lock: { track: LearnTrack; gate: LearnLesson } }) {
+function LockedCourse({ track, lock }: { track: TrackMeta; lock: { track: TrackMeta; gate: LessonMeta } }) {
   return (
     <div className="page page--padtop ide-wrap">
       <a className="lm-back" href={`#/learn/${track.id}`}>
@@ -394,7 +405,7 @@ function LockedCourse({ track, lock }: { track: LearnTrack; lock: { track: Learn
   )
 }
 
-function CourseView({ track }: { track: LearnTrack }) {
+function CourseView({ track }: { track: TrackMeta }) {
   const { state } = useLearner()
   const lock = courseLock(track, state.learn)
   const done = passedCount(track, state.learn)
@@ -744,7 +755,7 @@ function fence(lang: LearnLesson['lang']): string {
 }
 
 /** The first unpassed lesson for a language, for links from elsewhere. */
-export function useNextLesson(lang: string): { lesson: LearnLesson; done: number; total: number } | null {
+export function useNextLesson(lang: string): { lesson: LessonMeta; done: number; total: number } | null {
   const { state } = useLearner()
   return useMemo(() => {
     const track = currentTrack(lang, state.learn)

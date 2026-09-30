@@ -14,7 +14,7 @@
      5. the day's counters tick
    ========================================================================== */
 import type { Module } from '@/curriculum/types'
-import type { LearnLesson } from '@/learn/types'
+import type { LessonMeta } from '@/learn/types'
 import { afterRetest, lessonMastered, scheduleFirst, sittingPassed, type GateRecord } from '@/learn/practice'
 import { parseItemId } from '@/curriculum/types'
 import {
@@ -280,7 +280,7 @@ export function setOnboarded(state: LearnerState, now: Date = new Date()): Learn
  * A lesson's main task or one of its practice problems passed. When that
  * makes the whole lesson mastered, its first re-test is booked.
  */
-export function markPracticed(state: LearnerState, lesson: LearnLesson, unitId: string, now: Date = new Date()): LearnerState {
+export function markPracticed(state: LearnerState, lesson: LessonMeta, unitId: string, now: Date = new Date()): LearnerState {
   const s = markLearned(state, unitId, now)
   if (s.learnRetests[lesson.id] || !lesson.practice.length || !lessonMastered(lesson, s.learn)) return s
   return { ...s, learnRetests: { ...s.learnRetests, [lesson.id]: scheduleFirst(now) } }
@@ -294,7 +294,7 @@ export function recordRetest(state: LearnerState, lessonId: string, passed: bool
 }
 
 /** Changes a gate's record; when its latest sitting has reached the pass mark, the gate counts as passed. */
-export function updateGate(state: LearnerState, gate: LearnLesson, f: (r: GateRecord | undefined) => GateRecord, now: Date = new Date()): LearnerState {
+export function updateGate(state: LearnerState, gate: LessonMeta, f: (r: GateRecord | undefined) => GateRecord, now: Date = new Date()): LearnerState {
   const record = f(state.learnGates[gate.id])
   const s = { ...state, learnGates: { ...state.learnGates, [gate.id]: record }, updatedAt: now.toISOString() }
   const last = record.sittings[record.sittings.length - 1]

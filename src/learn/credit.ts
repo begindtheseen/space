@@ -23,7 +23,7 @@ import { findLesson, prerequisitesOf, trackFor } from './index'
 import { lessonsFor } from '@/curriculum'
 import { MODULE_TRACKS, moduleTest, testLocks } from './modules'
 import { courseMastered, gateOf, lessonMastered, lockedBy } from './practice'
-import type { LearnLesson, LearnTrack } from './types'
+import type { LessonMeta, TrackMeta } from './types'
 
 export interface CreditMap {
   /** `cod_py_01_basics::l06-functions` → the Learn lessons that together teach it. */
@@ -41,12 +41,12 @@ export interface CreditMap {
 }
 
 /** The Learn lessons that give a module lesson its credit, when she has mastered all of them. */
-export function lessonCredit(moduleId: string, lessonId: string, passed: Record<string, string>, map: CreditMap = CREDIT): LearnLesson[] | null {
+export function lessonCredit(moduleId: string, lessonId: string, passed: Record<string, string>, map: CreditMap = CREDIT): LessonMeta[] | null {
   const ids = map.lessons[`${moduleId}::${lessonId}`]
   if (!ids?.length) return null
   const lessons = ids.map((id) => findLesson(id)?.lesson)
   if (lessons.some((l) => !l || !lessonMastered(l, passed))) return null
-  return lessons as LearnLesson[]
+  return lessons as LessonMeta[]
 }
 
 /** Every module lesson (`module::lesson`) that counts as read: mastered in Learn to code, or in a module whose test she passed. */
@@ -73,12 +73,12 @@ export function lessonCounted(moduleId: string, lessonId: string, passed: Record
 }
 
 /** What she already knows of a module lesson from Learn to code, and what it adds, once the overlapping lessons are mastered. */
-export function lessonOverlap(moduleId: string, lessonId: string, passed: Record<string, string>, map: CreditMap = CREDIT): { lessons: LearnLesson[]; newHere: string } | null {
+export function lessonOverlap(moduleId: string, lessonId: string, passed: Record<string, string>, map: CreditMap = CREDIT): { lessons: LessonMeta[]; newHere: string } | null {
   const o = map.overlap?.[`${moduleId}::${lessonId}`]
   if (!o?.learn.length) return null
   const lessons = o.learn.map((id) => findLesson(id)?.lesson)
   if (lessons.some((l) => !l || !lessonMastered(l, passed))) return null
-  return { lessons: lessons as LearnLesson[], newHere: o.newHere }
+  return { lessons: lessons as LessonMeta[], newHere: o.newHere }
 }
 
 /** How much of a module she already knows from Learn to code: lessons covered whole or mostly, of all its lessons. */
@@ -89,12 +89,12 @@ export function moduleReadiness(moduleId: string, passed: Record<string, string>
 }
 
 /** The Learn courses that pass a module's test for her, when she has mastered all of them. */
-export function moduleCredit(moduleId: string, passed: Record<string, string>, map: CreditMap = CREDIT): LearnTrack[] | null {
+export function moduleCredit(moduleId: string, passed: Record<string, string>, map: CreditMap = CREDIT): TrackMeta[] | null {
   const ids = map.modules[moduleId]
   if (!ids?.length) return null
   const tracks = ids.map((id) => trackFor(id))
   if (tracks.some((t) => !t || !courseMastered(t, passed))) return null
-  return tracks as LearnTrack[]
+  return tracks as TrackMeta[]
 }
 
 /** Whether a module's test counts as passed: sat and passed, or earned in Learn to code. */
@@ -116,7 +116,7 @@ export function courseCredit(courseId: string, passed: Record<string, string>, m
 }
 
 /** Whether a Learn course's gate counts as passed: sat and passed, or earned in the modules. */
-export function gatePassed(track: LearnTrack, passed: Record<string, string>, map: CreditMap = CREDIT): boolean {
+export function gatePassed(track: TrackMeta, passed: Record<string, string>, map: CreditMap = CREDIT): boolean {
   const gate = gateOf(track)
   return (!!gate && !!passed[gate.id]) || !!courseCredit(track.id, passed, map)
 }
@@ -127,6 +127,6 @@ export function moduleLocks(module: { prereqs: string[] }, passed: Record<string
 }
 
 /** What keeps a Learn course locked, with credit from the modules counted. */
-export function courseLock(track: LearnTrack, passed: Record<string, string>, map: CreditMap = CREDIT) {
+export function courseLock(track: TrackMeta, passed: Record<string, string>, map: CreditMap = CREDIT) {
   return lockedBy(track, prerequisitesOf(track), passed, (t) => !!courseCredit(t.id, passed, map))
 }

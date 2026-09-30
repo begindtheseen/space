@@ -16,7 +16,7 @@
    Everything here is plain functions over the learner state; the page draws
    them and the grader runs a problem exactly as it runs a lesson.
    ========================================================================== */
-import type { LearnExercise, LearnLesson, LearnQuestion, LearnTrack } from './types'
+import type { LearnExercise, LearnLesson, LearnQuestion, LessonMeta, TrackMeta } from './types'
 
 /** A practice or gate problem as a lesson of its own, so the runner and the grader need nothing new. */
 export function asLesson(lesson: LearnLesson, ex: LearnExercise): LearnLesson {
@@ -45,28 +45,28 @@ export function gradedUnits(lesson: LearnLesson): LearnLesson[] {
 }
 
 /** A lesson is mastered when its task and every practice problem have passed; a gate, when it has. */
-export function lessonMastered(lesson: LearnLesson, passed: Record<string, string>): boolean {
+export function lessonMastered(lesson: LessonMeta, passed: Record<string, string>): boolean {
   // A module's practice set has no task of its own: its practice is all there is.
   if (!lesson.forLesson && !passed[lesson.id]) return false
   return lesson.practice.every((p) => !!passed[p.id]) && (lesson.quiz ?? []).every((q) => !!passed[q.id])
 }
 
-export function practiceDone(lesson: LearnLesson, passed: Record<string, string>): number {
+export function practiceDone(lesson: LessonMeta, passed: Record<string, string>): number {
   return lesson.practice.filter((p) => passed[p.id]).length + (lesson.quiz ?? []).filter((q) => passed[q.id]).length
 }
 
 /** Practice problems and questions together: what "Practice 3/8" counts. */
-export function practiceTotal(lesson: LearnLesson): number {
+export function practiceTotal(lesson: LessonMeta): number {
   return lesson.practice.length + (lesson.quiz?.length ?? 0)
 }
 
 /** The course's mastery gate, if it has one (the last lesson, by convention). */
-export function gateOf(track: LearnTrack): LearnLesson | undefined {
+export function gateOf<L extends LessonMeta>(track: { lessons: L[] }): L | undefined {
   return track.lessons.find((l) => l.gate)
 }
 
 /** A course is mastered when every lesson is mastered and its gate is passed. */
-export function courseMastered(track: LearnTrack, passed: Record<string, string>): boolean {
+export function courseMastered(track: { lessons: LessonMeta[] }, passed: Record<string, string>): boolean {
   return track.lessons.every((l) => (l.gate ? !!passed[l.id] : lessonMastered(l, passed)))
 }
 
@@ -106,7 +106,7 @@ export function shuffled<T>(items: T[], seed: number): T[] {
   return out
 }
 
-export function startSitting(gate: LearnLesson, record: GateRecord | undefined, now: Date = new Date()): GateRecord {
+export function startSitting(gate: LessonMeta, record: GateRecord | undefined, now: Date = new Date()): GateRecord {
   const problems = gate.gate?.problems ?? []
   const seed = now.getTime() ^ ((record?.sittings.length ?? 0) * 2654435761)
   const questions = gate.gate?.questions ?? []
@@ -120,13 +120,13 @@ export function startSitting(gate: LearnLesson, record: GateRecord | undefined, 
 }
 
 /** The sitting still running, if any: started, not handed in, and inside its time. */
-export function openSitting(gate: LearnLesson, record: GateRecord | undefined, now: Date = new Date()): GateSitting | undefined {
+export function openSitting(gate: LessonMeta, record: GateRecord | undefined, now: Date = new Date()): GateSitting | undefined {
   const last = record?.sittings[record.sittings.length - 1]
   if (!last || last.endedAt || !gate.gate) return undefined
   return now.getTime() < Date.parse(last.startedAt) + gate.gate.minutes * 60_000 ? last : undefined
 }
 
-export function msLeft(gate: LearnLesson, sitting: GateSitting, now: Date = new Date()): number {
+export function msLeft(gate: LessonMeta, sitting: GateSitting, now: Date = new Date()): number {
   return Math.max(0, Date.parse(sitting.startedAt) + (gate.gate?.minutes ?? 0) * 60_000 - now.getTime())
 }
 
@@ -157,7 +157,7 @@ export function endSitting(record: GateRecord, now: Date = new Date()): GateReco
 }
 
 /** Whether a sitting reached the pass mark. Problems passed after the time ran out do not count. */
-export function sittingPassed(gate: LearnLesson, sitting: GateSitting): boolean {
+export function sittingPassed(gate: LessonMeta, sitting: GateSitting): boolean {
   if (!gate.gate) return false
   const end = Date.parse(sitting.startedAt) + gate.gate.minutes * 60_000
   const inTime = Object.values(sitting.passed).filter((at) => Date.parse(at) <= end).length
@@ -171,7 +171,7 @@ export function sittingScore(sitting: GateSitting): { problems: number; question
 }
 
 /** When she may start another sitting (null: now). */
-export function nextSittingAt(gate: LearnLesson, record: GateRecord | undefined, now: Date = new Date()): Date | null {
+export function nextSittingAt(gate: LessonMeta, record: GateRecord | undefined, now: Date = new Date()): Date | null {
   const last = record?.sittings[record.sittings.length - 1]
   if (!last || !gate.gate) return null
   if (openSitting(gate, record, now)) return null
@@ -274,12 +274,12 @@ export function coerceRetests(raw: unknown): Record<string, Retest> {
  * its ladder, that has not been passed. Nothing when it is open. The gate of
  * the course she is on is always open, so she can test out of what she knows.
  */
-export function lockedBy(
-  track: LearnTrack,
-  ladder: LearnTrack[],
+export function lockedBy<T extends TrackMeta>(
+  track: { id: string },
+  ladder: T[],
   passed: Record<string, string>,
-  credited: (t: LearnTrack) => boolean = () => false,
-): { track: LearnTrack; gate: LearnLesson } | undefined {
+  credited: (t: T) => boolean = () => false,
+): { track: T; gate: LessonMeta } | undefined {
   for (const t of ladder) {
     if (t.id === track.id) return undefined
     const gate = gateOf(t)

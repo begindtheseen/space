@@ -3,7 +3,8 @@
    test. Whether every problem can be solved is checked with the courses, in solutions.test.ts. */
 import { describe, expect, it } from 'vitest'
 import { MODULES, lessonsFor } from '@/curriculum'
-import { MODULE_TRACKS, moduleTest, testLocks } from './modules'
+import { moduleTest, testLocks } from './modules'
+import { MODULE_TRACKS } from './full'
 import { courseProblems } from './validate'
 
 describe('module practice and tests', () => {

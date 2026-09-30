@@ -20,8 +20,9 @@
 import { PLACEMENT_SKILLS } from '@/curriculum/placement'
 import { moduleTest, practiceFor } from '@/learn/modules'
 import { creditedLessonKeys, lessonCounted, lessonCredit, lessonOverlap, moduleCredit, moduleLocks, moduleReadiness } from '@/learn/credit'
-import type { LearnLesson } from '@/learn/types'
-import { GateScreen, PracticeSection } from './LearnMastery'
+import { useModuleTrack } from '@/learn/load'
+import type { LessonMeta as LearnLessonMeta } from '@/learn/types'
+import { GateScreen, PracticeSection, TrackLoading } from './LearnMastery'
 import { testedOutKeys } from '@/engine/placement'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -180,17 +181,7 @@ function ModuleView({ module }: { module: Module }) {
   if (testLock.length) return <TestLocked module={module} locks={testLock} />
 
   const test = moduleTest(module.id)
-  if (test && route.query.test) {
-    return (
-      <GateScreen
-        lesson={test}
-        kicker="Module test"
-        back={{ href: `#/module/${module.id}`, label: module.title }}
-        markLang={test.lang}
-        passedText="Passed: what builds on this module is open now."
-      />
-    )
-  }
+  if (test && route.query.test) return <ModuleTestScreen module={module} />
 
   const openLesson = route.query.lesson
     ? (module.lessons ?? []).find((l) => l.id === route.query.lesson)
@@ -317,8 +308,26 @@ function ModuleView({ module }: { module: Module }) {
 
 /* ── The module test ─────────────────────────────────────────────────────── */
 
+/** The test itself, once the module's practice file has loaded (the catalog knows only its outline). */
+function ModuleTestScreen({ module }: { module: Module }) {
+  const { track, error } = useModuleTrack(module.id)
+  const test = track?.lessons.find((l) => l.gate)
+  const back = { href: `#/module/${module.id}`, label: module.title }
+  if (!test) return <TrackLoading back={back} title="Module test" error={error ?? (track ? new Error('The module test is missing from its file.') : undefined)} />
+  return <GateScreen lesson={test} kicker="Module test" back={back} markLang={test.lang} passedText="Passed: what builds on this module is open now." />
+}
+
+/** A module lesson's practice set, once the module's practice file has loaded. */
+function ModulePractice({ moduleId, practiceId, optional }: { moduleId: string; practiceId: string; optional: boolean }) {
+  const { track, error } = useModuleTrack(moduleId)
+  const set = track?.lessons.find((l) => l.id === practiceId)
+  if (track && !set) return null
+  if (!set) return <p className="lm-practice__why" role="status">{error ? `The practice could not be loaded: ${error.message}` : 'Loading the practice…'}</p>
+  return <PracticeSection key={set.id} lesson={set} optional={optional} />
+}
+
 /** The module's last step: its test, and what passing it opens. */
-function ModuleTestCard({ module, test, passed }: { module: Module; test: LearnLesson; passed: boolean }) {
+function ModuleTestCard({ module, test, passed }: { module: Module; test: LearnLessonMeta; passed: boolean }) {
   const { dag, state } = useLearner()
   const opens = dag.childrenOf(module.id)
   const g = test.gate!
@@ -364,7 +373,7 @@ function ModuleTestCard({ module, test, passed }: { module: Module; test: LearnL
 }
 
 /** Shown instead of a module whose prerequisite's test has not been passed. */
-function TestLocked({ module, locks }: { module: Module; locks: { moduleId: string; test: LearnLesson }[] }) {
+function TestLocked({ module, locks }: { module: Module; locks: { moduleId: string; test: LearnLessonMeta }[] }) {
   const { dag } = useLearner()
   return (
     <div className="page page--padtop">
@@ -1275,7 +1284,7 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
 
       {body !== null && practiceLangs(module).length ? <TryItHere langs={practiceLangs(module)} saveKey={`try:${module.id}`} /> : null}
 
-      {body !== null && practiceSet ? <PracticeSection key={practiceSet.id} lesson={practiceSet} optional={!!fromLearn || testedOutOfModule} /> : null}
+      {body !== null && practiceSet ? <ModulePractice key={practiceSet.id} moduleId={module.id} practiceId={practiceSet.id} optional={!!fromLearn || testedOutOfModule} /> : null}
 
       <div className="reader__nav">
         <Button variant="ghost" size="md" onClick={() => go(prev)} disabled={!prev}>

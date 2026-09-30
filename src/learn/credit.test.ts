@@ -8,12 +8,12 @@ import { CREDIT } from './credit-map'
 import { TRACKS, findLesson, trackFor } from './index'
 import { moduleTest } from './modules'
 import { gateOf } from './practice'
-import type { LearnLesson, LearnTrack } from './types'
+import type { LessonMeta, TrackMeta } from './types'
 
 const WHEN = '2026-01-01T00:00:00.000Z'
 
 /** Everything a lesson needs to count as mastered: its task, each practice problem and each question. */
-function master(lesson: LearnLesson, passed: Record<string, string> = {}): Record<string, string> {
+function master(lesson: LessonMeta, passed: Record<string, string> = {}): Record<string, string> {
   if (lesson.gate) return { ...passed, [lesson.id]: WHEN }
   const out = { ...passed }
   if (!lesson.forLesson) out[lesson.id] = WHEN
@@ -23,17 +23,17 @@ function master(lesson: LearnLesson, passed: Record<string, string> = {}): Recor
 }
 
 /** Every lesson of a course mastered and its gate passed. */
-function masterCourse(track: LearnTrack, passed: Record<string, string> = {}): Record<string, string> {
+function masterCourse(track: TrackMeta, passed: Record<string, string> = {}): Record<string, string> {
   return track.lessons.reduce((acc, l) => master(l, acc), passed)
 }
 
-function lesson(id: string): LearnLesson {
+function lesson(id: string): LessonMeta {
   const found = findLesson(id)
   if (!found) throw new Error(`no Learn lesson ${id}`)
   return found.lesson
 }
 
-function course(id: string): LearnTrack {
+function course(id: string): TrackMeta {
   const t = TRACKS.find((x) => x.id === id)
   if (!t) throw new Error(`no Learn course ${id}`)
   return t

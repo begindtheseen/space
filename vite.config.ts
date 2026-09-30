@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath, URL } from 'node:url'
+import { fileURLToPath, pathToFileURL, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vite'
 import { learnNotesOf, notesOf } from './src/curriculum/lessons/notesIndex.ts'
@@ -45,13 +45,75 @@ function contextNotes(): Plugin {
   }
 }
 
+const CATALOG_OF = fileURLToPath(new URL('./src/learn/catalogOf.ts', import.meta.url))
+
+/**
+ * `virtual:learn-catalog`: every Learn to code course (src/learn/tracks) and
+ * every module practice file (src/learn/modules), parsed at build time and cut
+ * down to ids, titles and the shape of each lesson's practice and gate (see
+ * src/learn/catalogOf.ts). It is all the app needs at startup; a course's text
+ * loads when it is opened. Whatever .txt files are in the folders are read, so
+ * a new course is picked up with no list to keep. Exported so Vitest serves the
+ * same module (vitest.config.ts).
+ */
+export function learnCatalog(): Plugin {
+  const ID = 'virtual:learn-catalog'
+  const dirs = {
+    tracks: fileURLToPath(new URL('./src/learn/tracks', import.meta.url)),
+    modules: fileURLToPath(new URL('./src/learn/modules', import.meta.url)),
+  }
+  const ours = (file: string) => file.endsWith('.txt') && Object.values(dirs).some((d) => path.dirname(file) === d)
+  let building = false
+  return {
+    name: 'orbit-learn-catalog',
+    configResolved(config) {
+      building = config.command === 'build'
+    },
+    resolveId: (id) => (id === ID ? `\0${ID}` : undefined),
+    async load(id) {
+      if (id !== `\0${ID}`) return undefined
+      /*
+       * Loaded by Node itself rather than imported above: the parser's types
+       * reach into the app (src/lib/shell.ts), which this config's own
+       * type-check (tsconfig.node.json) cannot follow. Node strips the types.
+       */
+      const { catalogOf } = (await import(pathToFileURL(CATALOG_OF).href)) as {
+        catalogOf: (files: { tracks: [string, string][]; modules: [string, string][] }, broken?: (file: string, err: unknown) => void) => unknown
+      }
+      const read = (dir: string): [string, string][] =>
+        readdirSync(dir)
+          .filter((f) => f.endsWith('.txt'))
+          .sort()
+          .map((f) => {
+            const file = path.join(dir, f)
+            this.addWatchFile(file)
+            return [f, readFileSync(file, 'utf8')]
+          })
+      // A malformed course fails the build. Under the dev server and the tests it is left out with a warning,
+      // so a course half-saved by one writer does not stop everyone else; the full-course tests still fail on it.
+      const broken = building ? undefined : (file: string, err: unknown) => this.warn(`${file} left out of the Learn catalog: ${err instanceof Error ? err.message : String(err)}`)
+      return `export default ${JSON.stringify(catalogOf({ tracks: read(dirs.tracks), modules: read(dirs.modules) }, broken))}`
+    },
+    // A course added or removed under the dev server rebuilds the catalog too (an edit is caught by addWatchFile).
+    configureServer(server) {
+      const refresh = (file: string) => {
+        if (!ours(file)) return
+        const mod = server.moduleGraph.getModuleById(`\0${ID}`)
+        if (mod) server.reloadModule(mod)
+      }
+      server.watcher.on('add', refresh)
+      server.watcher.on('unlink', refresh)
+    },
+  }
+}
+
 // Static, dependency-light build: the whole platform is client-side, so the
 // output of `vite build` can be dropped on any static host (GitHub Pages,
 // Vercel, Cloudflare Pages) with no server behind it.
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(version) },
   base: process.env.BASE_PATH ?? '/',
-  plugins: [react(), contextNotes()],
+  plugins: [react(), contextNotes(), learnCatalog()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

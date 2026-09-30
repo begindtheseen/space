@@ -21,35 +21,36 @@
    module's last step, and a module that builds on this one stays locked until
    it is passed.
    ========================================================================== */
-import { parseTrack } from './parse'
+import CATALOG from 'virtual:learn-catalog'
 import { gateOf } from './practice'
-import type { LearnLesson, LearnTrack } from './types'
+import type { CatalogTrack, LessonMeta } from './types'
 
-const FILES = import.meta.glob('./modules/*.txt', { query: '?raw', import: 'default', eager: true }) as Record<string, string>
-
-export const MODULE_TRACKS: LearnTrack[] = Object.entries(FILES)
-  .sort(([a], [b]) => a.localeCompare(b))
-  .map(([path, text]) => parseTrack(text, path.split('/').pop()!))
+/**
+ * Every module file, from the catalog (catalogOf.ts): ids, titles and the
+ * shape of each practice set and test, without their text. The text loads
+ * when a practice set or a test is opened (loadModuleTrack in load.ts).
+ */
+export const MODULE_TRACKS: CatalogTrack[] = CATALOG.modules
 
 const BY_MODULE = new Map(MODULE_TRACKS.map((t) => [t.module ?? '', t]))
 
-export function moduleFile(moduleId: string): LearnTrack | undefined {
+export function moduleFile(moduleId: string): CatalogTrack | undefined {
   return BY_MODULE.get(moduleId)
 }
 
 /** A module's test, if it has one. */
-export function moduleTest(moduleId: string): LearnLesson | undefined {
+export function moduleTest(moduleId: string): LessonMeta | undefined {
   const t = BY_MODULE.get(moduleId)
   return t ? gateOf(t) : undefined
 }
 
 /** The practice set under one lesson of a module. */
-export function practiceFor(moduleId: string, lessonId: string): LearnLesson | undefined {
+export function practiceFor(moduleId: string, lessonId: string): LessonMeta | undefined {
   return BY_MODULE.get(moduleId)?.lessons.find((l) => l.forLesson === lessonId)
 }
 
 /** A practice set or test by its own id (re-tests and links find them this way). */
-export function findModuleLesson(id: string): { track: LearnTrack; lesson: LearnLesson; index: number } | undefined {
+export function findModuleLesson(id: string): { track: CatalogTrack; lesson: LessonMeta; index: number } | undefined {
   for (const track of MODULE_TRACKS) {
     const index = track.lessons.findIndex((l) => l.id === id)
     if (index >= 0) return { track, lesson: track.lessons[index]!, index }
@@ -62,7 +63,7 @@ export function testLocks(
   module: { prereqs: string[] },
   passed: Record<string, string>,
   credited: (moduleId: string) => boolean = () => false,
-): { moduleId: string; test: LearnLesson }[] {
+): { moduleId: string; test: LessonMeta }[] {
   return module.prereqs.flatMap((moduleId) => {
     const test = moduleTest(moduleId)
     return test && !passed[test.id] && !credited(moduleId) ? [{ moduleId, test }] : []

@@ -7,7 +7,7 @@
    lesson ids must not clash with the shipped courses. Without LEARN_DRAFT there is nothing to check. */
 import { readFileSync } from 'node:fs'
 import { afterAll, describe, expect, it } from 'vitest'
-import { TRACKS } from './index'
+import { TRACKS } from './full'
 import { parseTrack } from './parse'
 import { cleanUp, unitCount, unsolvable } from './runLocal'
 import { courseProblems } from './validate'

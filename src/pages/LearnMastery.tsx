@@ -22,6 +22,7 @@ import { buildProgram, gradeRun } from '@/learn/grade'
 import { findLesson as findCourseLesson } from '@/learn/index'
 import { findModuleLesson } from '@/learn/modules'
 import { courseCredit } from '@/learn/credit'
+import { useModuleTrack, useTrack } from '@/learn/load'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
 import {
   RETEST_DAYS,
@@ -44,7 +45,7 @@ import {
   startSitting,
   type Retest,
 } from '@/learn/practice'
-import type { CheckResult, LearnExercise, LearnLesson, LearnQuestion, LearnTrack } from '@/learn/types'
+import type { CatalogTrack, CheckResult, LearnExercise, LearnLesson, LearnQuestion, LearnTrack } from '@/learn/types'
 import { answerMatches } from '@/learn/parse'
 import { Markdown } from '@/lib/markdown'
 import { navigate } from '@/lib/router'
@@ -52,6 +53,39 @@ import { TerminalChallenge } from './LearnTerminal'
 
 /** A lesson of a course, or a module's practice set: re-tests come from both. */
 const findLesson = (id: string) => findCourseLesson(id) ?? findModuleLesson(id)
+
+/**
+ * The full text of a lesson the catalog found (a course's lesson, or a module's practice set or test),
+ * loaded with its file; undefined while it loads.
+ */
+export function useFullLesson(found: { track: CatalogTrack; lesson: { id: string } } | undefined): { track?: LearnTrack; lesson?: LearnLesson; error?: Error } {
+  const course = useTrack(found && !found.track.module ? found.track.id : undefined)
+  const mod = useModuleTrack(found?.track.module)
+  if (!found) return {}
+  const { track, error } = found.track.module ? mod : course
+  const lesson = track?.lessons.find((l) => l.id === found.lesson.id)
+  return { ...(track ? { track } : {}), ...(lesson ? { lesson } : {}), ...(error ? { error } : {}) }
+}
+
+/** Shown while a course's text loads (the first time it is opened), or if it could not be loaded. */
+export function TrackLoading({ back, title, error }: { back?: { href: string; label: string }; title?: string; error?: Error | undefined }) {
+  return (
+    <div className="page page--padtop ide-wrap">
+      {back ? (
+        <a className="lm-back" href={back.href}>
+          <IconChevronLeft size={13} />
+          {back.label}
+        </a>
+      ) : null}
+      <article className="lm-flow" aria-busy={!error}>
+        {title ? <h1 className="lm-text__title">{title}</h1> : null}
+        <p className="lm-practice__why" role="status">
+          {error ? `This could not be loaded: ${error.message} Check the connection and reload the page.` : 'Loading…'}
+        </p>
+      </article>
+    </div>
+  )
+}
 
 /* ── One graded problem ─────────────────────────────────────────────────── */
 
@@ -648,9 +682,12 @@ export function RetestView() {
   }, [pin, head, state.learnRetests])
   const lessonId = pin?.id
   const found = lessonId ? findLesson(lessonId) : undefined
+  // The catalog found it; the problem itself is in the lesson's text, loaded with its course.
+  const full = useFullLesson(found)
+  const lesson = full.lesson
   const r = pin?.r
-  const ex = found && r ? retestProblem(found.lesson, r, Math.floor(Date.parse(r.due) / 86_400_000)) : undefined
-  const unit = useMemo(() => (found && ex ? asLesson(found.lesson, ex) : null), [found, ex])
+  const ex = lesson && r ? retestProblem(lesson, r, Math.floor(Date.parse(r.due) / 86_400_000)) : undefined
+  const unit = useMemo(() => (lesson && ex ? asLesson(lesson, ex) : null), [lesson, ex])
 
   const onGraded = useCallback(
     (passed: boolean) => {
@@ -674,6 +711,8 @@ export function RetestView() {
     setOutcome(null)
     setPin(null)
   }
+
+  if (found && r && !full.track) return <TrackLoading back={{ href: '#/learn', label: 'Learn to code' }} title={found.lesson.title} error={full.error} />
 
   if (!found || !unit || !r) {
     return (

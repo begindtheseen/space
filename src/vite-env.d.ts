@@ -19,3 +19,9 @@ declare module 'virtual:context-notes' {
   const notes: import('./curriculum/lessons/notesIndex').IndexedNote[]
   export default notes
 }
+
+/** Every Learn to code course and module practice file, without its text, built by vite.config.ts (see learn/catalogOf.ts). */
+declare module 'virtual:learn-catalog' {
+  const catalog: import('./learn/types').LearnCatalog
+  export default catalog
+}
