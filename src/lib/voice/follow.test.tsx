@@ -74,7 +74,7 @@ function lessons(): { id: string; md: string }[] {
 describe('following along: the word lit is the word being said', () => {
   it('a word said but not shown (a code block, a number read out) does not throw the light ahead', () => {
     const page = 'print shows text on the screen here is an example of the code in a window you can run it then carry on reading'.split(' ')
-    // The reading says "Code block." where the page shows the example; the page's own "code" is further on.
+    // Words said with no partner on the page (as the old spoken "Code block." had); the page's own "code" is further on.
     const spoken = ['print', 'shows', 'text', 'on', 'the', 'screen', 'code', 'block', 'here', 'is', 'an', 'example']
     const at = alignNorms(page, spoken, 0)
     expect([...at]).toEqual([0, 1, 2, 3, 4, 5, -1, -1, 6, 7, 8, 9])

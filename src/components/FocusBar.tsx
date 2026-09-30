@@ -18,6 +18,10 @@
    "Staying in the block"): a link, the search box or the back button that
    would take her elsewhere puts her straight back, and the strip says why and
    how to leave — pause it (once five minutes have run) or end it.
+
+   On a lesson that can be read aloud, the voice's controls sit on the strip
+   too (lib/voice/slot.ts): she is looking down here anyway, and it is one bar
+   rather than two stacked at the bottom of the screen.
    ========================================================================== */
 import { useEffect, useRef, useState } from 'react'
 import { IconCheck, IconPause, IconPlay, IconPlus, IconX } from '@/components/icons'
@@ -33,6 +37,7 @@ import {
 } from '@/engine/focus'
 import { useLearner } from '@/hooks/useLearner'
 import { navigate, useRoute } from '@/lib/router'
+import { setVoiceSlot } from '@/lib/voice/slot'
 import { useWakeLock } from '@/lib/wakeLock'
 import './focus-bar.css'
 
@@ -167,6 +172,9 @@ function Strip({
           <span className="fbar__task-title truncate">{run.pick.title}</span>
           <span className="fbar__task-go">Open</span>
         </button>
+
+        {/* Filled by the read-aloud player when the page has one; empty (and hidden) otherwise. */}
+        <div className="fbar__voice" ref={setVoiceSlot} />
 
         {parking ? (
           <form

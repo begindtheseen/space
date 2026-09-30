@@ -1188,7 +1188,7 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
     <div className="page page--padtop reader">
       <ReadingProgress active={body !== null} />
       <div className="reader__aloud">
-        <ReadAloud markdown={body} />
+        <ReadAloud markdown={body} title={lesson.title} />
       </div>
       <div className="reader__top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
         <button

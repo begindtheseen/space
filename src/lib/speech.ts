@@ -12,7 +12,7 @@
    actually say out loud:
 
      - maths becomes English — "H squared over two I sub three", not symbols
-     - code blocks and tables are named and skipped rather than spelled out
+     - code blocks are passed over in silence, and tables named and skipped, rather than spelled out
      - callouts announce themselves, so "Key point." lands before the point
      - headings get a full stop, so the voice drops and pauses like a reader
      - the result is split on sentence boundaries, never on a character count
@@ -1032,17 +1032,19 @@ const CALLOUT_NAME: Record<string, string> = {
 /**
  * Turns a lesson body into speech-ready prose.
  *
- * Structure that cannot be spoken usefully is named and skipped rather than
- * read out. "Code block." is a second of audio and tells her to look; reading
- * forty lines of C++ aloud is a minute of noise she has to sit through.
+ * Structure that cannot be spoken usefully is skipped rather than read out:
+ * forty lines of C++ read aloud is a minute of noise she has to sit through.
+ * A code block is passed over in silence (the lesson's own words already say
+ * "here is the code"), and a table is named, so she knows to look.
  */
 export function speakableFromMarkdown(md: string): string {
   // Context notes are for looking up, not for listening to: the notes go, and
   // a marked phrase is read as its plain words (see lib/contextNotes.ts).
   let s = stripNoteRefs(splitNotes(md).body)
 
-  // Fenced code: named, not read.
-  s = s.replace(/```[\s\S]*?```/g, '\nCode block.\n')
+  // Fenced code: not read, and not announced either. The paragraph break keeps
+  // the sentence before it and the one after it apart.
+  s = s.replace(/```[\s\S]*?```/g, '\n\n')
 
   // Units after numbers, while maths and inline code can still be told apart.
   s = unitsToWords(s)

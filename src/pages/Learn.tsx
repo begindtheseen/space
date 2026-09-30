@@ -616,7 +616,7 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
           ) : null}
         </div>
         <h1 className="lm-text__title">{lesson.title}</h1>
-        <ReadAloud {...pauses} />
+        <ReadAloud {...pauses} title={lesson.title} />
 
         {/* The explanation, with its examples runnable where they stand. */}
         <div className="lm-teach">

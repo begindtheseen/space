@@ -76,10 +76,11 @@ describe('maths becomes English', () => {
 })
 
 describe('markdown becomes prose', () => {
-  it('names a code block instead of reading it', () => {
+  it('passes over a code block without reading or announcing it', () => {
     const out = speakableFromMarkdown('before\n\n```python\nfor i in range(9):\n    print(i)\n```\n\nafter')
-    expect(out).toContain('Code block.')
+    expect(out).not.toMatch(/code block/i)
     expect(out).not.toContain('print')
+    expect(prepare('Try this:\n\n```python\nprint(1)\n```\n\nIt prints one.').utterances.join(' | ')).not.toMatch(/code/i)
   })
 
   it('names a table instead of reading it linearly', () => {
