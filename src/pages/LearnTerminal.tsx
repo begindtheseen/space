@@ -6,6 +6,7 @@ import { IconRefresh } from '@/components/icons'
 import { gradeRun, lessonShell } from '@/learn/grade'
 import { runLearn } from '@/learn/platform'
 import type { CheckResult, LearnGrade, LearnLesson } from '@/learn/types'
+import type { HeardRun } from '@/hooks/useTutor'
 import type { ShellState } from '@/lib/shell'
 
 /** A Terminal or Git challenge: the practice shell, a Check button, and the checks as test cases. */
@@ -16,7 +17,7 @@ export function TerminalChallenge({
 }: {
   lesson: LearnLesson
   onPass: () => void
-  onGraded: (passed: boolean, results: CheckResult[]) => void
+  onGraded: (passed: boolean, results: CheckResult[], run?: HeardRun) => void
 }) {
   const [shell, setShell] = useState<ShellState>(() => lessonShell(lesson))
   const [key, setKey] = useState(0)
@@ -30,7 +31,8 @@ export function TerminalChallenge({
       const result = await runLearn(lesson, '', { shell })
       const g = gradeRun(lesson, '', result)
       setGrade(g)
-      onGraded(g.passed, g.results)
+      // What she typed stands in for code, so the tutor can see what was run.
+      onGraded(g.passed, g.results, { code: shell.history.join('\n'), grade: g })
       if (g.passed) onPass()
     } finally {
       setRunning(false)

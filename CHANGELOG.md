@@ -8,6 +8,62 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.2.3
+
+- A voice that helps you through your code, and understands what you actually did. In Learn to code,
+  when a run doesn't pass, a small card rises at the bottom of the screen and the voice tells you
+  what went wrong in that run, the way a person watching over your shoulder would.
+  - In the Terminal and Git, it replays every command you typed, so it knows which folder you were
+    in and what each command made, changed or removed. So it can tell you that you misspelled a
+    file name ("you made it as `erorrs.txt`: two letters are swapped"), or made a file while
+    standing in the wrong folder. It also catches two steps in the wrong order ("the commit never
+    happened: you ran `git commit` before adding"), text sent into the wrong file, `>` where `>>`
+    was needed, `cp` where you meant `mv`, a command typed with capitals, and a branch spelled
+    differently from how you made it. It looks for the first thing that went wrong, not the last
+    thing that failed because of it.
+  - In Python, SQL and C++, it reads the error and the line it's on, with a fix that fits (a missing
+    colon, a misspelled name with the one you meant, a missing `#include`, text without quotes in
+    SQL). When there's no error but the answer is wrong, it recognises what happened: the `f` left
+    off an f-string, `None` printed by a function that prints instead of returning, `55` where
+    `10` was wanted because `input()` gives text, a print outside the loop, a `return` inside it, a
+    missing `GROUP BY`, `= NULL` instead of `IS NULL`, rows in reverse order, whole-number division
+    in C++.
+  - It compares your code with the lesson's solution to find the cause behind an unhelpful error.
+    A crash on `None` is traced to the function that prints instead of returning, or to a last
+    `return` pushed inside an `if` ("whenever that doesn't happen, the function gives back
+    `None`"). A C++ error like "expression is not assignable" is read as the `=` that should be
+    `==`. A failed constraint is read as `INSERT` columns listed in a different order from the
+    values. A `JOIN` with no `ON` is named, and so is a loop that runs one step past the end
+    (`<=` where it should be `<`).
+  - Measured, not guessed. Every Terminal, Git, Python, SQL and C++ problem was tried with the
+    mistakes people really make, about 13,000 runs on real interpreters and compilers. The tutor
+    names the actual mistake in every one of them, for every kind of mistake, and the tests keep it
+    that way.
+  - It also compares each of your lines with the solution's. When a line matches except for one
+    thing (a name one letter off, `=` for `==`, `/` for `//`, a missing `f`, colon or semicolon,
+    `print` where the answer should be returned, a missing `<< '\n'`), it names that line and that
+    one thing, even when the error it caused shows up somewhere else.
+  - Each time you try again, it helps a little more: first where the problem is, then what should be
+    there, then the lesson's own hints. After several tries, it suggests reading the solution.
+  - It notices when you've fixed the error or when more checks pass, and when you run the same
+    thing again.
+  - When your code passes, it says nothing and the card goes away. It stays quiet in course exams
+    and re-tests, and you can turn it off in Settings.
+- Read aloud is one quiet button at the top of each lesson, with the speed beside it. While it reads,
+  the same capsule shows pause, back, a thin progress line, forward and stop.
+- Choosing the voice has moved to Settings, next to the reading speed, with a Preview button to hear
+  it first.
+- Pronunciation, fixed across every lesson. Every word the voice reads was checked, and it no longer
+  reads maths commands aloud by their code names. It used to say things like "mathbb", "leftarrow",
+  "otimes" and "lceil" hundreds of times. They now come out as "the expected value of", "gets",
+  "times" and "the ceiling of". Code words are said the way programmers say them: `str` is "string"
+  (not "S T R"), `succ` is "successor", `sizeof` is "size of", `enum` is "ee-num", `Eigen` is
+  "eye-gen", and `async` is "ay-sink". Terminal flags are read as flags ("ls dash L A"), `HEAD~1` is
+  "HEAD tilde one", 1e-9 keeps its minus sign, and names like `ii` and `xx` are no longer read as
+  Roman numerals.
+- Fixed an equation in the ZEM/ZEV guidance lesson that was broken on screen and read aloud as raw
+  code.
+
 ## 1.2.2
 
 - Read aloud follows along properly now. The highlight stays on the word being read instead of jumping

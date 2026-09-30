@@ -1,0 +1,276 @@
+import { afterAll, describe, expect, it } from 'vitest'
+import { TRACKS } from './full'
+import { buildProgram, gradeRun } from './grade'
+import { cleanUp, run } from './runLocal'
+import { tutorLine, type TutorInput, type TutorMemory, type TutorRun } from './tutor'
+import type { LearnCheck, LearnLang, LearnLesson } from './types'
+
+afterAll(cleanUp)
+
+const fail = (name: string, view: Record<string, string> = {}) => ({ name, status: 'fail' as const, ...view })
+const pass = (name: string) => ({ name, status: 'pass' as const })
+const runOf = (over: Partial<TutorRun>): TutorRun => ({ results: [], output: '', stderr: '', error: null, ...over })
+
+function input(over: Partial<TutorInput> & { run: TutorRun }): TutorInput {
+  return {
+    lang: 'python' as LearnLang,
+    task: 'Print a greeting.',
+    hints: ['Use `print("...")` with the text inside quotes.', 'The text is exactly `Hello, world!`.'],
+    solution: 'print("Hello, world!")',
+    starter: '# write your code here',
+    code: 'print("hello, world")',
+    attempt: 1,
+    said: [],
+    ...over,
+  }
+}
+
+describe('the tutor says something about this run', () => {
+  it('says nothing when the run passed', () => {
+    expect(tutorLine(input({ run: runOf({ results: [pass('prints the greeting')] }) }))).toBeNull()
+  })
+
+  it('points at the capital letters, then says what they should be', () => {
+    const checks: LearnCheck[] = [{ kind: 'output', name: 'prints the greeting', expect: 'Hello, world!' }]
+    const r = runOf({ results: [fail('prints the greeting', { expected: 'Hello, world!', actual: 'hello, world!' })], output: 'hello, world!' })
+    const first = tutorLine(input({ run: r, checks, code: 'print("hello, world!")' }))!
+    expect(first.text).toMatch(/capital letters/)
+    expect(first.text).not.toMatch(/Hello, world!/)
+    const second = tutorLine(input({ run: r, checks, code: 'print("hello, world!") ', attempt: 2, said: [first.text], before: first.memory }))!
+    expect(second.text).toMatch(/“Hello, world!”/)
+    expect(second.text).not.toBe(first.text)
+  })
+
+  it('notices nothing was printed', () => {
+    const checks: LearnCheck[] = [{ kind: 'output', name: 'prints', expect: '42' }]
+    const r = runOf({ results: [fail('prints', { expected: '42', actual: '(nothing printed)' })] })
+    expect(tutorLine(input({ run: r, checks, code: 'x = 42' }))!.text).toMatch(/[Nn]othing was printed/)
+  })
+
+  it('notices an answer that is off by one', () => {
+    const checks: LearnCheck[] = [{ kind: 'output', name: 'the total', expect: '15' }]
+    const r = runOf({ results: [fail('the total', { expected: '15', actual: '14' })], output: '14' })
+    expect(tutorLine(input({ run: r, checks, code: 'print(sum(range(5)))' }))!.text).toMatch(/off by one/)
+  })
+
+  it('tells printing from returning', () => {
+    const checks: LearnCheck[] = [{ kind: 'case', name: 'add(2, 3)', call: 'add(2, 3)', expect: '5' }]
+    const r = runOf({ results: [fail('add(2, 3)', { input: 'add(2, 3)', expected: '5', actual: 'None' })], output: '5' })
+    const t = tutorLine(input({ run: r, checks, code: 'def add(a, b):\n    print(a + b)', solution: 'def add(a, b):\n    return a + b' }))!
+    expect(t.text).toMatch(/prints (?:the|its) answer(?:, but it doesn't give it back| instead of giving it back)/)
+    expect(t.text).toMatch(/`add\(2, 3\)`/)
+  })
+
+  it('finds the misspelt name and suggests the right one, on her line', () => {
+    const r = runOf({ error: "NameError: name 'totl' is not defined", stderr: 'Traceback (most recent call last):\n  File "main.py", line 3, in <module>\nNameError: name \'totl\' is not defined' })
+    const t = tutorLine(input({ run: r, code: 'total = 0\ntotal += 5\nprint(totl)' }))!
+    expect(t.text).toMatch(/`totl` on line 3\. Did you mean `total`\?/)
+  })
+
+  it('reads a missing colon, and maps the line back past any checker lines before hers', () => {
+    const code = 'x = 3\nif x > 2\n    print("big")'
+    const r = runOf({ error: "SyntaxError: expected ':'", stderr: `  File "main.py", line 12\n    if x > 2\n            ^\nSyntaxError: expected ':'` })
+    const t = tutorLine(input({ run: r, code, program: `${'# checker\n'.repeat(10)}${code}` }))!
+    expect(t.text).toMatch(/[Ll]ine 2 is missing the colon/)
+  })
+
+  it('explains adding text to a number', () => {
+    const r = runOf({ error: 'TypeError: can only concatenate str (not "int") to str', stderr: 'File "main.py", line 2\nTypeError: can only concatenate str (not "int") to str' })
+    expect(tutorLine(input({ run: r, code: 'age = 12\nprint("I am " + age)' }))!.text).toMatch(/adding text and a number/)
+  })
+
+  it('reads C++, SQL and JavaScript errors too', () => {
+    const cpp = tutorLine(input({ lang: 'cpp', code: 'int main() {\n  int x = 1\n  return x;\n}', run: runOf({ error: 'compile error', stderr: "main.cpp:3:3: error: expected ';' after expression" }) }))!
+    expect(cpp.text).toMatch(/semicolon is missing at the end of line/)
+    const sql = tutorLine(input({ lang: 'sql', code: 'SELECT nme FROM people;', solution: 'SELECT name FROM people;', run: runOf({ error: 'no such column: nme' }) }))!
+    expect(sql.text).toMatch(/no column called `nme`\. Did you mean `name`\?/)
+    const js = tutorLine(input({ lang: 'javascript', code: 'const total = 1\nconsole.log(totl)', run: runOf({ error: 'ReferenceError: totl is not defined' }) }))!
+    expect(js.text).toMatch(/Did you mean `total`\?/)
+  })
+
+  it('says when the code has not changed, and when the same code runs again', () => {
+    const r = runOf({ results: [fail('prints')] })
+    expect(tutorLine(input({ run: r, code: '# write your code here' }))!.text).toMatch(/hasn't changed/)
+    const first = tutorLine(input({ run: r }))!
+    const again = tutorLine(input({ run: r, attempt: 2, said: [first.text], before: first.memory }))!
+    expect(again.text).toMatch(/same code as last time/)
+  })
+
+  it('notices progress: the error gone, or more checks passing', () => {
+    const errored = tutorLine(input({ run: runOf({ error: "NameError: name 'x' is not defined" }), code: 'print(x)' }))!
+    const checks: LearnCheck[] = [{ kind: 'output', name: 'prints', expect: '3' }]
+    const now = tutorLine(input({ run: runOf({ results: [fail('prints', { expected: '3', actual: '2' })], output: '2' }), checks, code: 'x = 2\nprint(x)', attempt: 2, said: [errored.text], before: errored.memory }))!
+    expect(now.text).toMatch(/error's gone|runs now|no more error/)
+    const two = runOf({ results: [pass('a'), fail('b'), fail('c')] })
+    const three = runOf({ results: [pass('a'), pass('b'), fail('c')] })
+    const a = tutorLine(input({ run: two }))!
+    expect(tutorLine(input({ run: three, code: 'print(1)', attempt: 2, said: [a.text], before: a.memory }))!.text).toMatch(/2 of 3 checks pass now/)
+  })
+
+  it('brings in the lesson hints, then the solution, as the tries go on', () => {
+    const r = runOf({ results: [fail('prints')] })
+    const said: string[] = []
+    let before: TutorMemory | null = null
+    const lines: string[] = []
+    for (let attempt = 1; attempt <= 6; attempt++) {
+      const t: { text: string; memory: TutorMemory } = tutorLine(input({ run: r, code: `print("hi") # ${attempt}`, attempt, said, before }))!
+      lines.push(t.text)
+      said.push(t.text)
+      before = t.memory
+    }
+    expect(lines[2]).toMatch(/Here's a hint: Use `print\("..."\)`/)
+    expect(lines[3]).toMatch(/Here's a hint: The text is exactly/)
+    expect(lines[4]).toMatch(/open the solution/)
+    expect(lines.slice(1).every((l, i) => l !== lines[i])).toBe(true)
+  })
+
+  it('uses her name now and then', () => {
+    const t = tutorLine(input({ run: runOf({ results: [fail('prints')] }), name: 'Ava' }))!
+    expect(t.text).toMatch(/Ava/)
+  })
+})
+
+/* ── On real lessons, run for real ───────────────────────────────────────── */
+
+describe('the tutor on real runs of real lessons', () => {
+  const lessonOf = (lang: string, has: RegExp) =>
+    TRACKS.filter((t) => t.lang === lang).flatMap((t) => t.lessons).find((l) => !l.gate && has.test(l.solution)) as LearnLesson
+  async function said(lesson: LearnLesson, code: string, attempt = 1) {
+    const g = gradeRun(lesson, code, await run(lesson, code))
+    expect(g.passed).toBe(false)
+    return tutorLine({ lang: lesson.lang, task: lesson.task, hints: lesson.hints, solution: lesson.solution, starter: lesson.starter, code, program: buildProgram(lesson, code), run: g, checks: lesson.checks, attempt, said: [] })!.text
+  }
+
+  it('Python: a missing colon, on the line it is missing from', async () => {
+    const lesson = lessonOf('python', /^\s*(if|for|def)\b.*:\s*$/m)
+    const m = lesson.solution.match(/^(\s*(?:if|for|def)\b[^\n]*):\s*$/m)!
+    const line = lesson.solution.slice(0, m.index).split('\n').length
+    expect(await said(lesson, lesson.solution.replace(m[0], m[1]!))).toMatch(new RegExp(`[Ll]ine ${line} is missing the colon`))
+  }, 60_000)
+
+  it('Python: a function that prints instead of returning', async () => {
+    const lesson = TRACKS.filter((t) => t.lang === 'python').flatMap((t) => t.lessons).find((l) => !l.gate && l.checks.some((c) => c.kind === 'case') && /^\s{4}return [a-z_]+\s*$/m.test(l.solution)) as LearnLesson
+    const code = lesson.solution.replace(/^(\s{4})return ([a-z_]+)\s*$/m, '$1print($2)')
+    expect(await said(lesson, code)).toMatch(/give(?:s)? (?:it )?(?:anything )?back|doesn't give|instead of giving it back/)
+  }, 60_000)
+
+  it('SQL: a misspelt column, with the right name suggested', async () => {
+    const lesson = lessonOf('sql', /SELECT\s+[a-z_]{4,}/i)
+    const col = lesson.solution.match(/SELECT\s+([a-z_]{4,})/i)![1]!
+    expect(await said(lesson, lesson.solution.replace(col, col.slice(0, -1)))).toMatch(new RegExp(`(Did you mean|You meant) \`${col}\``))
+  }, 60_000)
+
+  it('C++: a missing semicolon, with its line', async () => {
+    const lesson = lessonOf('cpp', /^\s*int \w+ = [^;\n]+;\s*$/m)
+    const m = lesson.solution.match(/^(\s*int \w+ = [^;\n]+);\s*$/m)!
+    expect(await said(lesson, lesson.solution.replace(m[0], m[1]!))).toMatch(/semicolon is missing/)
+  }, 60_000)
+})
+
+/* ── Code that runs but is wrong ─────────────────────────────────────────── */
+
+describe('the tutor recognises a mistake by what the run printed and how the code is written', () => {
+  const out = (expect: string, output: string, code: string, solution = '', lang: LearnLang = 'python') =>
+    tutorLine(
+      input({
+        lang,
+        code,
+        solution,
+        checks: [{ kind: 'output', name: 'prints it', expect }],
+        run: runOf({ results: [fail('prints it', { expected: expect, actual: output })], output }),
+      }),
+    )!.text
+  const rows = (want: string, got: string, code: string, ordered = true, solution = code) =>
+    tutorLine(
+      input({
+        lang: 'sql',
+        code,
+        solution,
+        checks: [{ kind: 'result', name: 'the rows', rows: [], ordered }],
+        run: runOf({ results: [fail('the rows', { expected: want, actual: got })] }),
+      }),
+    )!.text
+
+  it('Python: the f left off, a name in quotes, None printed, a function never called or not called', () => {
+    expect(out('Hello, Ava', 'Hello, {name}', 'name = "Ava"\nprint("Hello, {name}")')).toMatch(/`f` before the quote is missing/)
+    expect(out('42', 'total', 'total = 42\nprint("total")')).toMatch(/printed the word `total`, not the value/)
+    expect(out('5', '5\nNone', 'def add(a, b):\n    print(a + b)\nprint(add(2, 3))')).toMatch(/prints its answer itself and gives back nothing/)
+    expect(out('5', '', 'def add(a, b):\n    return a + b', 'def add(a, b):\n    return a + b\nprint(add(2, 3))')).toMatch(/nothing ever calls it/)
+    expect(out('5', '<function add at 0x7f>', 'def add():\n    return 5\nprint(add)')).toMatch(/printed the function `add` itself/)
+  })
+
+  it('Python: text from input(), decimals, a list printed whole, and the print or return in the wrong place', () => {
+    expect(out('10', '55', 'a = input()\nb = input()\nprint(a + b)')).toMatch(/two numbers stuck together.*input\(\)/s)
+    expect(out('5', '5.0', 'print(10 / 2)')).toMatch(/`\/` always gives a decimal/)
+    expect(out('a\nb', "['a', 'b']", 'items = ["a", "b"]\nprint(items)')).toMatch(/whole list at once, brackets and all/)
+    expect(out('1\n2\n3', '3', 'for n in [1, 2, 3]:\n    x = n\nprint(x)')).toMatch(/print is outside the loop/)
+    expect(out('6', '1\n3\n6', 'total = 0\nfor n in [1, 2, 3]:\n    total += n\n    print(total)')).toMatch(/inside the loop, so it runs every time round/)
+    const ret = tutorLine(
+      input({
+        code: 'def total(xs):\n    s = 0\n    for x in xs:\n        s += x\n        return s',
+        solution: 'def total(xs):\n    s = 0\n    for x in xs:\n        s += x\n    return s',
+        checks: [{ kind: 'case', name: 'total([1, 2])', call: 'total([1, 2])', expect: '3' }],
+        run: runOf({ results: [fail('total([1, 2])', { input: 'total([1, 2])', expected: '3', actual: '1' })] }),
+      }),
+    )!
+    expect(ret.text).toMatch(/`return` is inside the loop/)
+  })
+
+  it('SQL: = NULL, a missing GROUP BY, columns out of order, a missing LIMIT, reversed rows, a join without ON', () => {
+    expect(rows('Ada', '(no rows)', 'SELECT name FROM crew WHERE ship = NULL', true, 'SELECT name FROM crew WHERE ship IS NULL')).toMatch(/`= NULL` is never true/)
+    expect(rows('Mars | 3\nMoon | 2', '5', 'SELECT dest, COUNT(*) FROM trips', true, 'SELECT dest, COUNT(*) FROM trips GROUP BY dest')).toMatch(/squeezed every row into one answer.*GROUP BY/s)
+    expect(rows('Ada | 3\nLin | 2', '3 | Ada\n2 | Lin', 'SELECT trips, name FROM crew')).toMatch(/columns are in a different order/)
+    expect(rows('Ada | 3', 'Ada | 3\nLin | 2', 'SELECT name, trips FROM crew ORDER BY trips DESC', true, 'SELECT name, trips FROM crew ORDER BY trips DESC LIMIT 1')).toMatch(/first 1 rows are exactly right.*LIMIT 1/s)
+    expect(rows('Ada | 3\nLin | 2', 'Lin | 2\nAda | 3', 'SELECT name, trips FROM crew ORDER BY trips')).toMatch(/reverse order.*Add `DESC`/s)
+    expect(rows('Ada | Mars', 'Ada | Mars\nAda | Moon\nLin | Mars\nLin | Moon', 'SELECT c.name, t.dest FROM crew c JOIN trips t', true, 'SELECT c.name, t.dest FROM crew c JOIN trips t ON t.crew_id = c.id')).toMatch(/your `JOIN trips` has no `ON`.*so many rows/s)
+  })
+
+  it('C++: an assignment in an if, everything on one line, whole-number division', () => {
+    expect(out('big', 'big', 'int x = 3;\nif (x = 5) { std::cout << "big"; }', '', 'cpp')).toMatch(/stores a value into `x` instead of comparing it\. To compare, use two: `\(x == 5\)`/)
+    expect(out('1\n2', '12', 'std::cout << 1;\nstd::cout << 2;', '', 'cpp')).toMatch(/all on one line|on one line/)
+    expect(out('2.5', '2', 'std::cout << 5 / 2;', '', 'cpp')).toMatch(/divides like whole numbers/)
+  })
+
+  it('Python: a function compared with the solution, when the run only shows None or False', () => {
+    const fn = (code: string, solution: string, actual: string, input = 'grade(50)') =>
+      tutorLine(input_({ code, solution, checks: [{ kind: 'case', name: 'it', call: input, expect: '"F"' } as never], run: runOf({ results: [fail('it', { input, expected: '"F"', actual })] }) }))!.text
+    const input_ = input
+    const sol = 'def grade(n):\n    if n >= 90:\n        return "A"\n    return "F"'
+    expect(fn(sol.replace('    return "F"', '        return "F"'), sol, 'None')).toMatch(/the last `return` is inside `if n >= 90:`.*as it did for `grade\(50\)`.*one step to the left/s)
+    const deco = 'def twice(f):\n    def run(x):\n        return f(f(x))\n    return run'
+    expect(fn(deco.replace('    return run', '    print(run)'), deco, "TypeError: 'NoneType' object is not callable", 'twice(abs)(3)')).toMatch(/`twice` prints its answer instead of giving it back/)
+    const f = 'def label(n):\n    return f"#{n}"'
+    expect(fn(f.replace('f"', '"'), f, 'False', 'label(1)')).toMatch(/has no `f` in front/)
+  })
+
+  it('SQL: INSERT columns listed in another order from the values', () => {
+    const t = tutorLine(input({ lang: 'sql', code: "INSERT INTO crew (name, id) VALUES (1, 'Ada');", solution: "INSERT INTO crew (id, name) VALUES (1, 'Ada');", run: runOf({ error: 'x', stderr: 'UNIQUE constraint failed: crew.name' }) }))!.text
+    expect(t).toMatch(/columns are in a different order from the values.*the first value went into `name`.*`\(id, name\)`/s)
+  })
+
+  it('C++: what the compiler says, turned into what she did', () => {
+    const cpp = (code: string, stderr: string, solution: string) => tutorLine(input({ lang: 'cpp', code, solution, run: runOf({ error: 'x', stderr }) }))!.text
+    // No include at all: the compiler only says it doesn't know std.
+    expect(cpp('int main() {\n  std::cout << 1;\n}', "main.cpp:2:3: error: use of undeclared identifier 'std'", '#include <iostream>\nint main() {\n  std::cout << 1;\n}')).toMatch(/header it comes from isn't included\. Put `#include <iostream>` at the very top/)
+    // if (a = b && …) doesn't compile: what the compiler says about it is no help.
+    const sol = 'bool f(int* a, int* b) {\n  if (a == b && b) return true;\n  return false;\n}'
+    expect(cpp(sol.replace('a == b', 'a = b'), "main.cpp:2:9: error: incompatible integer to pointer conversion assigning to 'int *' from 'bool'", sol)).toMatch(/uses one equals sign, which stores a value into `a`/)
+    // A misspelt member, and a misspelt name the compiler mistakes for a keyword.
+    expect(cpp('struct P { int size; };\nint g(P p) { return p.siz; }', "main.cpp:2:24: error: no member named 'siz' in 'P'; did you mean 'size'?", 'struct P { int size; };\nint g(P p) { return p.size; }')).toMatch(/`P` has nothing called `siz` on line 2\. You meant `size`: it is missing an `e`/)
+    expect(cpp('int f(int next) {\n  return nex;\n}', "main.cpp:2:10: error: use of undeclared identifier 'nex'; did you mean 'new'?", 'int f(int next) {\n  return next + new int(0) - new int(0);\n}')).toMatch(/Did you mean `next`\?/)
+  })
+
+  it('C++: a loop that runs one step past the end, judged against the solution', () => {
+    const t = tutorLine(input({ lang: 'cpp', code: 'for (int i = 0; i <= v.size(); ++i) s += v[i];', solution: 'for (int i = 0; i < v.size(); ++i) s += v[i];', run: runOf({ results: [fail('adds them')], error: null }) }))!.text
+    expect(t).toMatch(/`i <= v\.size\(\)` runs one step too far/)
+  })
+
+  it('errors that have a better reading: a missing include, comparing input() text, text without quotes in SQL', () => {
+    const inc = tutorLine(input({ lang: 'cpp', code: 'int main() {\n  std::cout << 1;\n}', run: runOf({ error: 'x', stderr: "main.cpp:2:8: error: no member named 'cout' in namespace 'std'" }) }))!
+    expect(inc.text).toMatch(/#include <iostream>/)
+    const cmp = tutorLine(input({ code: 'age = input()\nif age > 12:\n    print("teen")', run: runOf({ error: "TypeError: '>' not supported between instances of 'str' and 'int'", stderr: 'File "main.py", line 2' }) }))!
+    expect(cmp.text).toMatch(/can't compare text with a number.*int\(input\(\)\)/s)
+    const q = tutorLine(input({ lang: 'sql', code: "SELECT * FROM crew WHERE name = Ada", solution: "SELECT * FROM crew WHERE name = 'Ada'", run: runOf({ error: 'no such column: Ada' }) }))!
+    expect(q.text).toMatch(/meant to be text.*'Ada'/s)
+  })
+})

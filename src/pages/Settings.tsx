@@ -36,7 +36,10 @@ import { isDesktop } from '@/lib/desktop'
 import { CHANGELOG, notesForVersion } from '@/lib/changelog'
 import { formatBytes } from '@/lib/format'
 import { Markdown } from '@/lib/markdown'
-import { DEFAULT_SPEECH_RATE, speechRateOptions } from '@/lib/speech'
+import { DEFAULT_SPEECH_RATE, speechRateOptions, usableVoices, type VoiceLike } from '@/lib/speech'
+import { NATURAL_PREFIX, NATURAL_VOICES, naturalVoiceFor } from '@/lib/voice/kokoro'
+import { naturalSupported, naturalVoice } from '@/lib/voice/natural'
+import { say } from '@/lib/voice/say'
 import './pages.css'
 
 export function Settings() {
@@ -275,37 +278,7 @@ export function Settings() {
               }
             />
 
-            <div className="setting">
-              <div className="grow">
-                <div className="setting__label">
-                  Reading speed — {state.settings.speechRate ?? DEFAULT_SPEECH_RATE}×
-                </div>
-                <p className="setting__help">
-                  How fast a lesson is read aloud. The same picker sits above any lesson that can
-                  be read, and whichever you set last is the one you keep — it is remembered
-                  between sessions rather than starting over at normal speed each time.
-                </p>
-              </div>
-              <div className="setting__control">
-                <select
-                  className="select"
-                  value={String(state.settings.speechRate ?? DEFAULT_SPEECH_RATE)}
-                  aria-label="Reading speed"
-                  onChange={(e) =>
-                    setState((s) => ({
-                      ...s,
-                      settings: { ...s.settings, speechRate: Number(e.target.value) },
-                    }))
-                  }
-                >
-                  {speechRateOptions(state.settings.speechRate ?? DEFAULT_SPEECH_RATE).map((r) => (
-                    <option key={r} value={String(r)}>
-                      {r}×
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <VoiceSettings />
 
             {custom ? (
               <div className="setting">
@@ -558,6 +531,125 @@ export function Settings() {
 }
 
 /* ── Bits ────────────────────────────────────────────────────────────────── */
+
+/**
+ * The voice: which one reads her lessons and talks her through a run, how fast, and whether it
+ * speaks up when a run does not pass. Kept here rather than above every lesson, so a lesson
+ * carries only Read aloud and the speed.
+ */
+function VoiceSettings() {
+  const { state, setState } = useLearner()
+  const [voices, setVoices] = useState<VoiceLike[]>([])
+  const [trying, setTrying] = useState(false)
+  const [status, setStatus] = useState(naturalVoice.status)
+  const natural = naturalSupported()
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+    const read = () => setVoices(usableVoices(window.speechSynthesis.getVoices()))
+    read()
+    window.speechSynthesis.addEventListener('voiceschanged', read)
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', read)
+  }, [])
+  useEffect(() => naturalVoice.subscribe(() => setStatus(naturalVoice.status)), [])
+
+  const setting = state.settings.voiceName ?? ''
+  const rate = state.settings.speechRate ?? DEFAULT_SPEECH_RATE
+  // The natural voice actually in use, so '' (the default) shows as its name.
+  const shown = natural && naturalVoiceFor(setting) ? `${NATURAL_PREFIX}${naturalVoiceFor(setting)!.id}` : setting
+  const isNatural = natural && !!naturalVoiceFor(setting)
+  const firstName = state.settings.displayName.trim().split(/\s+/)[0]
+
+  const preview = () => {
+    setTrying(true)
+    const hello = firstName && firstName !== 'Future' ? `Hi ${firstName}.` : 'Hi.'
+    void say(`${hello} This is how I'll sound reading your lessons, and when I help you through a problem.`, {
+      voiceName: state.settings.voiceName,
+      rate,
+      download: true,
+    }).done.finally(() => setTrying(false))
+  }
+
+  return (
+    <>
+      <div className="setting">
+        <div className="grow">
+          <div className="setting__label">Voice</div>
+          <p className="setting__help">
+            The voice that reads lessons aloud and talks you through a run that does not pass.
+            {isNatural
+              ? ' Natural voices are made on this device and sound like a person. The first time, one downloads once (about 92 MB).'
+              : ''}
+          </p>
+        </div>
+        <div className="setting__control setting__control--row">
+          <select
+            className="select"
+            value={shown}
+            aria-label="Voice"
+            onChange={(e) => {
+              const name = e.target.value || undefined
+              setState((s) => ({ ...s, settings: { ...s.settings, voiceName: name } }))
+            }}
+          >
+            {natural ? (
+              <optgroup label="Natural voices">
+                {NATURAL_VOICES.map((v) => (
+                  <option key={v.id} value={`${NATURAL_PREFIX}${v.id}`}>
+                    {v.name} · {v.describe}
+                  </option>
+                ))}
+              </optgroup>
+            ) : (
+              <option value="">Best available</option>
+            )}
+            {voices.length ? (
+              <optgroup label="This device's voices">
+                {voices.map((v) => (
+                  <option key={v.name} value={v.name}>
+                    {v.name}
+                  </option>
+                ))}
+              </optgroup>
+            ) : null}
+          </select>
+          <Button variant="ghost" size="md" onClick={preview} disabled={trying}>
+            {trying ? (status === 'downloading' ? 'Getting it ready…' : 'Speaking…') : 'Preview'}
+          </Button>
+        </div>
+      </div>
+
+      <div className="setting">
+        <div className="grow">
+          <div className="setting__label">Reading speed — {rate}×</div>
+          <p className="setting__help">
+            How fast the voice speaks. The same choice sits beside Read aloud in every lesson, and whichever you set last is kept.
+          </p>
+        </div>
+        <div className="setting__control">
+          <select
+            className="select"
+            value={String(rate)}
+            aria-label="Reading speed"
+            onChange={(e) => setState((s) => ({ ...s, settings: { ...s.settings, speechRate: Number(e.target.value) } }))}
+          >
+            {speechRateOptions(rate).map((r) => (
+              <option key={r} value={String(r)}>
+                {r}×
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <Toggle
+        label="Talk me through a run that does not pass"
+        help="In Learn to code, when your code does not pass, the voice tells you what it sees in that run (the error and the line it is on, or the part of your output that is off) and guides you a little further each time you try. When your code passes, it says nothing. It stays quiet in course exams and re-tests."
+        value={state.settings.spokenHints !== false}
+        onChange={(v) => setState((s) => ({ ...s, settings: { ...s.settings, spokenHints: v } }))}
+      />
+    </>
+  )
+}
 
 function Toggle({
   label,

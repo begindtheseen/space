@@ -32,6 +32,7 @@ import { markPracticed } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
 import { buildProgram, gradeRun } from '@/learn/grade'
 import { stuckHelp } from '@/learn/stuck'
+import { useTutor, type HeardRun } from '@/hooks/useTutor'
 import { MASTERY, ROADMAPS, SHELVES, currentTrack, findLesson, ladderOf, langName, nextLesson, passedCount, streak, trackFor } from '@/learn/index'
 import { editorLang, runLearn, warmUp } from '@/learn/platform'
 import { useTrack } from '@/learn/load'
@@ -555,17 +556,23 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
 
   const pauses = useLessonReading(lesson, terminal)
 
-  const onGraded = useCallback((passed: boolean, results: CheckResult[]) => {
-    setLastResults(results)
-    if (!passed) setFails((n) => n + 1)
-  }, [])
+  const tutor = useTutor()
+  const onGraded = useCallback(
+    (passed: boolean, results: CheckResult[], run?: HeardRun) => {
+      setLastResults(results)
+      if (!passed) setFails((n) => n + 1)
+      if (run) tutor(lesson.id, lesson, run)
+    },
+    [tutor, lesson],
+  )
 
   /** Runs her code with the lesson's checks and shows every check as a test case. */
   const grade = useCallback(
     async (code: string, _stdin: string, onStatus: (s: string) => void): Promise<Graded> => {
-      const result = await runLearn(lesson, buildProgram(lesson, code), { onStatus })
+      const program = buildProgram(lesson, code)
+      const result = await runLearn(lesson, program, { onStatus })
       const g = gradeRun(lesson, code, result)
-      onGraded(g.passed, g.results)
+      onGraded(g.passed, g.results, { code, program, grade: g })
       return {
         run: { stdout: g.output, stderr: g.stderr, error: g.error, plots: [], result: null, tables: g.tables, ms: g.ms },
         tests: g.results,
