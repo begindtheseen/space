@@ -1744,7 +1744,7 @@ l09-linear-algebra
 Write a function `solve_checked(A, b)` that solves `A x = b` for a square matrix `A` and returns a tuple `(x, residual)`, where `residual` is the norm of `A @ x - b` as a plain float.
 
 - `b` is either one right-hand side, shape `(n,)`, or several, as the columns of an `(n, k)` array; `x` then has the same shape as `b`, and the residual is the norm of the whole `(n, k)` difference.
-- If `A` is singular, let NumPy's `LinAlgError` reach the caller.
+- If `A` is singular, raise `np.linalg.LinAlgError`. On a laptop `np.linalg.solve` raises it by itself. The browser's NumPy runs on WebAssembly, which gives LAPACK no floating-point error signal, so there it quietly returns `nan` instead. Check that `x` is finite and raise the error yourself if it is not, and the function behaves the same in both places.
 - Never form the inverse.
 --- starter
 import numpy as np
@@ -1758,11 +1758,13 @@ import numpy as np
 
 def solve_checked(A, b):
     """x with A x = b, and the norm of the residual A x - b."""
-    x = np.linalg.solve(A, b)
+    x = np.linalg.solve(A, b)             # a laptop's NumPy raises LinAlgError here if A is singular
+    if not np.all(np.isfinite(x)):        # the browser's NumPy returns nan instead
+        raise np.linalg.LinAlgError("Singular matrix")
     residual = float(np.linalg.norm(A @ x - b))
     return x, residual
 --- hint
-`np.linalg.solve` handles one right-hand side or many columns with one factorization, and raises `LinAlgError` by itself on a singular matrix.
+`np.linalg.solve` handles one right-hand side or many columns with one factorization. On a singular matrix it raises `LinAlgError` on a laptop but returns `nan` in the browser, so test `np.all(np.isfinite(x))` and `raise np.linalg.LinAlgError("Singular matrix")` when it fails.
 --- hint
 Put the answer back in: `A @ x - b` is what is left over. `np.linalg.norm` with no `axis` measures the whole array as one size.
 --- check test | A 3 by 3 system
@@ -1838,7 +1840,7 @@ def safe_solve(A, b, max_cond):
         return None
     return np.linalg.solve(A, b)
 --- hint
-Check the condition number before solving, not after: a singular matrix would make `solve` raise.
+Check the condition number before solving, not after: a singular matrix would make `solve` raise (on a laptop) or return `nan` (in the browser).
 --- hint
 `np.linalg.cond` of an all-zero matrix is `inf`, and of a singular one about `1e16` or more. Write the test so that anything not clearly below the limit is refused.
 --- check test | A good matrix is solved

@@ -68,6 +68,8 @@ Write a function `expect_raises(exc_type, fn, match=None)` that does the job of 
 - If `fn` returns normally, raise `AssertionError("DID NOT RAISE ValueError")`, with the name of `exc_type` in place of `ValueError`.
 
 So `expect_raises(ZeroDivisionError, lambda: 1 / 0)` returns the `ZeroDivisionError`, and `expect_raises(ValueError, lambda: 42)` raises `AssertionError("DID NOT RAISE ValueError")`.
+
+Messages you did not write can change between Python versions. `math.sqrt(-1.0)` says `math domain error` up to Python 3.13, but `expected a nonnegative input, got -1.0` from 3.14, which is what the browser runs. The checks match it with `"domain|nonnegative"`, where `|` means either, so the same test passes on both.
 --- starter
 import re
 
@@ -94,9 +96,9 @@ If the `try` block finishes without an exception, the line after the whole `try`
 --- check case | Returns the exception it caught
 type(expect_raises(ValueError, lambda: int("x"))).__name__
 => "ValueError"
---- check case | The pattern may sit anywhere in the message
-str(expect_raises(ValueError, lambda: __import__("math").sqrt(-1.0), match="domain"))
-=> "math domain error"
+--- check test | The pattern may sit anywhere in the message
+str(expect_raises(ValueError, lambda: __import__("math").sqrt(-1.0), match="domain|nonnegative")) in ("math domain error", "expected a nonnegative input, got -1.0")
+?? Use `re.search`, not `re.match`: neither message starts with the pattern.
 --- check case | Nothing raised: the message names the expected type
 str(expect_raises(AssertionError, lambda: expect_raises(KeyError, lambda: 42)))
 => "DID NOT RAISE KeyError"

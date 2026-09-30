@@ -233,7 +233,7 @@ After the $a$-sensor alone in the zero-information example, $\mathbf{Y}=\operato
 :::
 
 ::: answer
-For this exactly singular matrix, `np.linalg.inv` raises a `LinAlgError`. But if round-off had left a tiny nonzero number where the $0$ is, it would *not* raise anything. It would silently return a matrix with enormous entries, and a solve would return crisp-looking nonsense, like the $-0.94\,\mathrm{m/s}$ velocity in the warning above.
+For this exactly singular matrix, `np.linalg.inv` raises a `LinAlgError` on a laptop; the browser's NumPy, on WebAssembly, returns a matrix of `nan` instead. But if round-off had left a tiny nonzero number where the $0$ is, it would *not* raise anything. It would silently return a matrix with enormous entries, and a solve would return crisp-looking nonsense, like the $-0.94\,\mathrm{m/s}$ velocity in the warning above.
 
 Checking the rank of $\mathbf{Y}$ first (or, more robustly, its smallest eigenvalue or its condition number) separates two different situations: "there is genuinely no information about some direction yet, so handle that case on purpose" and "the matrix is technically invertible but so badly conditioned that its inverse is noise". An error handler cannot tell them apart, because the second case usually raises no error at all.
 :::

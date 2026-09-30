@@ -12936,6 +12936,27 @@ Remember key 8, dragged into the run of 13, 21, 7 and 29? That is **primary clus
 
 Other probe sequences fight clustering. **Quadratic probing** tries home + 1, home + 4, home + 9, and so on. **Double hashing** steps by a second hash of the key, so keys with the same home still take different paths. Linear probing survives anyway, because walking neighbouring slots is very [[friendly to the memory hardware|cache-lines]].
 
+### Mixing the hash first
+
+Clustering gets far worse when the hash itself is not spread out. `hash(key) % m` keeps only the low bits of the hash and trusts them to look random. A laptop's Python hashes strings with SipHash, whose bits all look random, so there it works. The browser's Python runs on 32-bit WebAssembly and hashes strings with a simpler function, FNV (`sys.hash_info.algorithm` is `'fnv'`). There the low bits of `hash("0")`, `hash("1")`, ..., `hash("19999")` bunch together, and a linear-probing table of those 20,000 keys needs hundreds of probes per lookup instead of about 1.2.
+
+The fix is to **mix** the hash before taking the slot. **[[Fibonacci hashing|fibonacci-hashing]]** multiplies the hash by a large odd constant, keeps the low 64 bits of the product, and reads the slot from the top bits:
+
+```python
+GOLDEN = 0x9E3779B97F4A7C15               # 2**64 divided by the golden ratio, made odd
+
+
+def home(key, capacity):
+    mixed = hash(key) * GOLDEN % 2**64      # every bit of the hash stirs the top bits
+    return mixed * capacity >> 64           # the top bits, scaled to a slot from 0 to capacity - 1
+
+
+print([home(k, 8) for k in [13, 21, 7, 29, 8]])
+# [0, 7, 2, 7, 7]
+```
+
+A multiplication carries every bit of the hash upwards, so two hashes that differ only in their low bits get products whose top bits differ a lot. `mixed * capacity >> 64` turns a 64-bit number into a slot from 0 to `capacity - 1`, like `%` but reading the top bits instead of the bottom ones. The price is that you can no longer work out homes in your head, which is why the table in the task below can switch mixing off to be traced by hand.
+
 ### What it costs
 
 - **Time:** expected O(1) per operation while α stays at most a constant below 1 and the hash spreads keys evenly. Worst case O(n): if every key has the same home, every operation walks one run of length n.
@@ -13006,6 +13027,10 @@ A run of full slots attracts every key whose home is inside it, and the key alwa
 ```
 :::
 
+::: context fibonacci-hashing Why the golden ratio
+Donald Knuth described multiplicative hashing in *The Art of Computer Programming*: multiply the key by a constant A and keep the top bits of the product. He showed that A close to 2^64 divided by the golden ratio (about 1.618) spreads consecutive keys most evenly: each new key lands in one of the largest gaps left by the ones before. With that constant it is called Fibonacci hashing. It costs one multiplication, and the Linux kernel picks slots in its own hash tables exactly this way (`hash_64` in `linux/hash.h`), with a constant from the same golden-ratio family.
+:::
+
 ::: context cache-lines Neighbours are cheap
 A processor does not fetch one number from memory at a time. It fetches a whole cache line, usually 64 bytes, and keeps it in a small fast memory called the cache. When linear probing steps to the next slot, that slot is usually already in the cache, so the step costs almost nothing. Chaining follows pointers to lists scattered around memory, and each jump can miss the cache and wait a hundred times longer. On real machines this often matters more than the probe count.
 :::
@@ -13014,9 +13039,9 @@ A processor does not fetch one number from memory at a time. It fetches a whole 
 Flight software often forbids allocating memory once the system is running. Rule 3 of Gerard Holzmann's "Power of Ten" rules, written at NASA's Jet Propulsion Laboratory, says exactly that, because an allocation that fails or fragments memory mid-mission is a failure nobody can fix. An open-addressing table with a fixed capacity, set at start-up, fits that rule: every insert writes into memory that already exists. It just has to refuse inserts, rather than grow, when it reaches its maximum load.
 :::
 --- task
-Write a class `ProbingMap`: a hash map with open addressing, linear probing and tombstones. Use `hash(key) % self.capacity` for a key's home slot, and step with wrap-around.
+Write a class `ProbingMap`: a hash map with open addressing, linear probing and tombstones. A key's home slot is its mixed hash, Fibonacci hashing as above: `(hash(key) * 0x9E3779B97F4A7C15 % 2**64) * self.capacity >> 64`. With `mix=False` it is the plain `hash(key) % self.capacity` instead, so the checks can make small whole numbers collide on purpose. Step from the home slot with wrap-around.
 
-- `ProbingMap(capacity=8)` starts with that many slots, all empty. It has the attributes `capacity` (the current number of slots) and `probes` (starts at 0).
+- `ProbingMap(capacity=8, mix=True)` starts with that many slots, all empty. It has the attributes `capacity` (the current number of slots) and `probes` (starts at 0).
 - `put(key, value)` stores the value under the key, replacing the old value if the key is already there.
 - `get(key, default=None)` returns the key's value, or `default` if the key is not there.
 - `remove(key)` deletes the key, leaving a tombstone. It raises `KeyError` if the key is not there.
@@ -13028,8 +13053,9 @@ Any value can be a key or a value, including `None`, so use `object()` sentinels
 The rebuild rule: just before a **new** key is placed, if `(live keys + tombstones + 1) * 2 > capacity`, rebuild. The new capacity is `capacity * 2` if `(live keys + 1) * 4 > capacity`, and otherwise stays the same. Rebuilding inserts every live key into a fresh table of the new capacity and drops every tombstone.
 --- starter
 class ProbingMap:
-    def __init__(self, capacity=8):
+    def __init__(self, capacity=8, mix=True):
         self.capacity = capacity
+        self.mix = mix
         self.probes = 0
 
     def put(self, key, value):
@@ -13049,20 +13075,27 @@ class ProbingMap:
 --- solution
 _EMPTY = object()
 _TOMB = object()
+GOLDEN = 0x9E3779B97F4A7C15
 
 
 class ProbingMap:
-    def __init__(self, capacity=8):
+    def __init__(self, capacity=8, mix=True):
         self.capacity = capacity
+        self.mix = mix
         self.probes = 0
         self._keys = [_EMPTY] * capacity
         self._values = [None] * capacity
         self._size = 0
         self._tombs = 0
 
+    def _home(self, key):
+        if not self.mix:
+            return hash(key) % self.capacity
+        return (hash(key) * GOLDEN % 2**64) * self.capacity >> 64
+
     def _find(self, key):
         """Walk the probe sequence. Return (slot of key or None, slot to insert into)."""
-        i = hash(key) % self.capacity
+        i = self._home(key)
         reuse = None
         for _ in range(self.capacity):
             self.probes += 1
@@ -13121,7 +13154,7 @@ class ProbingMap:
     def __contains__(self, key):
         return self._find(key)[0] is not None
 --- hint
-Write one private helper, say `_find(key)`, that walks the probe sequence from `hash(key) % self.capacity`. Let it return two things: the slot where the key is (or `None`), and the slot a new key should go into (the first tombstone passed, or else the empty slot where the walk stopped). Then `put`, `get`, `remove` and `__contains__` are a few lines each.
+Write a small helper `_home(key)` for the home slot, mixed or plain as `self.mix` says, and one more, say `_find(key)`, that walks the probe sequence from there. Let it return two things: the slot where the key is (or `None`), and the slot a new key should go into (the first tombstone passed, or else the empty slot where the walk stopped). Then `put`, `get`, `remove` and `__contains__` are a few lines each.
 --- hint
 In the walk, check `is _EMPTY` first (stop: a miss), then `is _TOMB` (remember the first one, keep walking), and only then compare with `==`. Step with `i = (i + 1) % self.capacity`, and never take more than `capacity` steps. `remove` writes the tombstone sentinel into the key slot and moves one from the live count to the tombstone count.
 --- hint
@@ -13133,16 +13166,16 @@ In `put`, if the key was found, overwrite its value and return. Otherwise check 
 (lambda m: (m.put("x", 1), m.put("x", 5), (m.get("x"), len(m)))[-1])(ProbingMap())
 => (5, 1)
 --- check case | Keys 3, 11 and 19 share home slot 3 and are all found
-(lambda m: ([m.put(k, k * 10) for k in (3, 11, 19)], [m.get(k) for k in (3, 11, 19, 27)])[-1])(ProbingMap(8))
+(lambda m: ([m.put(k, k * 10) for k in (3, 11, 19)], [m.get(k) for k in (3, 11, 19, 27)])[-1])(ProbingMap(8, mix=False))
 => [30, 110, 190, None]
 --- check case | After removing 11, the key 19 behind it is still found
-(lambda m: ([m.put(k, k * 10) for k in (3, 11, 19)], m.remove(11), (m.get(11), m.get(19), 11 in m, 19 in m, len(m)))[-1])(ProbingMap(8))
+(lambda m: ([m.put(k, k * 10) for k in (3, 11, 19)], m.remove(11), (m.get(11), m.get(19), 11 in m, 19 in m, len(m)))[-1])(ProbingMap(8, mix=False))
 => (None, 190, False, True, 2)
 ?? Removing must leave a tombstone, not an empty slot, or the search for 19 stops too early.
 --- check test | remove raises KeyError for a missing key, even after a removal
 raises(KeyError, lambda: ProbingMap().remove("x")) and (lambda m: (m.put(1, 1), m.remove(1), raises(KeyError, lambda: m.remove(1)))[-1])(ProbingMap())
 --- check case | Putting a key that sits behind a tombstone does not store it twice
-(lambda m: ([m.put(k, 0) for k in (3, 11, 19)], m.remove(11), m.put(19, 7), (len(m), m.get(19)), m.remove(19), (19 in m, m.get(19)))[3:])(ProbingMap(8))
+(lambda m: ([m.put(k, 0) for k in (3, 11, 19)], m.remove(11), m.put(19, 7), (len(m), m.get(19)), m.remove(19), (19 in m, m.get(19)))[3:])(ProbingMap(8, mix=False))
 => ((2, 7), None, (False, None))
 ?? Finish the search before you reuse a tombstone: the key may be further along.
 --- check case | None works as a key and as a value
@@ -13157,7 +13190,10 @@ raises(KeyError, lambda: ProbingMap().remove("x")) and (lambda m: (m.put(1, 1), 
 ?? Tombstones count toward the load. When most of the used slots are tombstones, rebuild at the same size.
 --- check test | 20,000 string keys: under 2 probes per successful lookup and under 3 per missing one, on average
 (lambda m, n: (lambda r: (r[3], r[6], r[7]) == (True, True, True))(([m.put(str(i), i) for i in range(n)], setattr(m, "probes", 0), [m.get(str(i)) for i in range(n)], m.probes / n < 2, setattr(m, "probes", 0), [m.get("x" + str(i)) for i in range(n)], m.probes / n < 3, all(m.get(str(i)) == i for i in range(n)))))(ProbingMap(), 20000)
-?? Count one probe per slot you look at, and keep the load factor at most one half.
+?? Count one probe per slot you look at, keep the load factor at most one half, and mix the hash before taking the slot: the browser's string hash bunches up in its low bits.
+--- check test | Mixing spreads keys that plain % would pile up: 1,000 multiples of 1,024, under 2 probes per lookup
+(lambda m, keys: ([m.put(k, 1) for k in keys], setattr(m, "probes", 0), [m.get(k) for k in keys], m.probes / len(keys) < 2)[-1])(ProbingMap(), [1024 * i for i in range(1000)])
+?? With `hash(key) % capacity` these keys have only a handful of different homes. Use the Fibonacci home unless `mix` is `False`.
 
 +++ practice | Lay out a linear-probing table
 --- task

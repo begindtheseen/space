@@ -2639,7 +2639,7 @@ Put numbers on it. With c = 600,000 (the 2023 OWASP guidance for PBKDF2-HMAC-SHA
 
 ### Memory-hard functions
 
-PBKDF2 has one weakness: it needs almost no memory, so a graphics card or custom chip runs thousands of guesses side by side cheaply. **[[Memory-hard functions|memoryhard]]** such as **scrypt** and **Argon2id** force each guess to fill and reread a large block of memory, which is expensive to copy thousands of times. Argon2id is today's first choice for new systems, with bcrypt and scrypt still widely used and PBKDF2 used where a standard demands it. Python ships `hashlib.scrypt` and `hashlib.pbkdf2_hmac`; real applications usually call a library such as `argon2-cffi`. You build PBKDF2 yourself here because it shows the whole idea in a few lines.
+PBKDF2 has one weakness: it needs almost no memory, so a graphics card or custom chip runs thousands of guesses side by side cheaply. **[[Memory-hard functions|memoryhard]]** such as **scrypt** and **Argon2id** force each guess to fill and reread a large block of memory, which is expensive to copy thousands of times. Argon2id is today's first choice for new systems, with bcrypt and scrypt still widely used and PBKDF2 used where a standard demands it. Python on a laptop ships `hashlib.scrypt` and `hashlib.pbkdf2_hmac` (the browser's Python is built without OpenSSL and has neither); real applications usually call a library such as `argon2-cffi`. You build PBKDF2 yourself here because it shows the whole idea in a few lines.
 
 ### Storing it, and checking a login
 
@@ -5557,13 +5557,24 @@ all(len(render_and_hash(s)) == 64 for s in ["", "plain", "a\"b'c&d<e>f"])
 
 +++ problem | Verify a password record in constant time
 --- task
-A record is `"pbkdf2_sha256$<iterations>$<salt hex>$<key hex>"`, where the key is `hashlib.pbkdf2_hmac("sha256", password_utf8, salt, iterations)` with the default 32-byte length. Write `verify(password, record)` that returns `True` only if `password` (a `str`) reproduces the stored key, comparing with `hmac.compare_digest`, and `False` on any wrong password or malformed record (not four `$`-fields, a non-integer or non-positive iteration count, or bad hex). It must never raise.
+A record is `"pbkdf2_sha256$<iterations>$<salt hex>$<key hex>"`, where the key is the 32-byte PBKDF2-HMAC-SHA256 of the UTF-8 password, the salt and the iteration count, exactly as you built it in the password-storage lesson. Build it again from `hmac` and `hashlib.sha256`: on a laptop `hashlib.pbkdf2_hmac("sha256", password_utf8, salt, iterations)` gives the same bytes, but the browser's Python is built without OpenSSL and has no `pbkdf2_hmac`. Write `verify(password, record)` that returns `True` only if `password` (a `str`) reproduces the stored key, comparing with `hmac.compare_digest`, and `False` on any wrong password or malformed record (not four `$`-fields, a non-integer or non-positive iteration count, or bad hex). It must never raise.
 --- starter
 def verify(password, record):
     raise NotImplementedError
 --- solution
 import hashlib
 import hmac
+
+
+def pbkdf2_sha256(password, salt, iterations):
+    # One 32-byte block (block number 1): U1 = HMAC(password, salt + INT(1)), then each U is the
+    # HMAC of the one before, and the key is the exclusive-or of all of them.
+    u = hmac.new(password, salt + (1).to_bytes(4, "big"), hashlib.sha256).digest()
+    t = u
+    for _ in range(iterations - 1):
+        u = hmac.new(password, u, hashlib.sha256).digest()
+        t = bytes(x ^ y for x, y in zip(t, u))
+    return t
 
 
 def verify(password, record):
@@ -5578,7 +5589,7 @@ def verify(password, record):
         key = bytes.fromhex(key_hex)
     except ValueError:
         return False
-    computed = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, int(count))
+    computed = pbkdf2_sha256(password.encode("utf-8"), salt, int(count))
     return hmac.compare_digest(computed, key)
 --- check test | The right password verifies
 (lambda r: verify("launch", r))("pbkdf2_sha256$1000$4e61436c$834459a0640e282c869b0ab389799b17e2bb808bba4914ffc279715744ea742d")
@@ -5587,9 +5598,12 @@ def verify(password, record):
 --- check test | Malformed records never raise and return False
 [verify("x", r) for r in ["", "$$$", "pbkdf2_sha256$0$4e61436c$00", "pbkdf2_sha256$ten$4e61436c$00", "pbkdf2_sha256$1000$zz$00", "md5$1000$4e61436c$00"]] == [False] * 6
 --- check test | UTF-8 passwords work
-(lambda salt, pw: verify(pw, "pbkdf2_sha256$500$" + salt.hex() + "$" + __import__("hashlib").pbkdf2_hmac("sha256", pw.encode("utf-8"), salt, 500).hex()))(b"saltsalt", "café-9")
+verify("café-9", "pbkdf2_sha256$500$" + b"saltsalt".hex() + "$0e61d1c5c264ba20c54ddbe17a3f766b31d793cb4fbd9f68110dc021f1052d5f")
+?? The key here was made with `hashlib.pbkdf2_hmac` on a laptop: encode the password as UTF-8 before the HMAC.
 --- check source | Uses constant-time comparison
 compare_digest
+--- check source absent | Builds PBKDF2 from hmac, which the browser has
+pbkdf2_hmac
 
 +++ problem | A safe SQL WHERE clause
 --- task

@@ -68,19 +68,23 @@ async function runWasm(id: string, program: string, stdin: string): Promise<Lear
 // ---- Python on Pyodide (LEARN_PYODIDE) ---------------------------------------------------------
 const PYODIDE = process.env.LEARN_PYODIDE
 type PyAnswer = { stdout: string; stderr: string; error: string | null }
-type Interpreter = { proc: ChildProcessWithoutNullStreams; reply: ((r: PyAnswer) => void) | null }
+type Interpreter = { proc: ChildProcessWithoutNullStreams; reply: ((r: PyAnswer) => void) | null; log: string }
 const idle: Interpreter[] = []
 const queue: ((i: Interpreter) => void)[] = []
 let interpreters = 0
 
 function startInterpreter(): Interpreter {
   const proc = spawn('node', ['--no-warnings', join(HERE, 'pyodiderun.mjs')], { stdio: ['pipe', 'pipe', 'pipe'], env: process.env })
-  const it: Interpreter = { proc, reply: null }
+  const it: Interpreter = { proc, reply: null, log: '' }
   createInterface({ input: proc.stdout }).on('line', (line) => {
     if (!line.startsWith('{')) return
     it.reply?.(JSON.parse(line) as PyAnswer)
   })
-  proc.stderr.on('data', () => {})
+  proc.stderr.on('data', (d) => (it.log = (it.log + d).slice(-2000)))
+  // An interpreter that dies mid-run (Pyodide out of stack or memory) answers with what it last said.
+  proc.on('exit', (code, signal) => {
+    if (signal !== 'SIGKILL') it.reply?.({ stdout: '', stderr: it.log, error: `Pyodide crashed (${signal ?? `exit ${code}`}): ${it.log.trim().split('\n').pop() ?? ''}` })
+  })
   compilers.push({ proc, waiting: new Map(), busy: 0 }) // so cleanUp kills it
   return it
 }
@@ -117,6 +121,7 @@ async function runPyodide(id: string, code: string, stdin: string): Promise<Lear
     it.proc.stdin.write(`${JSON.stringify({ id, code, stdin })}\n`)
   })
   it.reply = null
+  if (it.proc.exitCode !== null || it.proc.signalCode !== null) it = startInterpreter()
   release(it)
   return { stdout: r.stdout, stderr: r.stderr, error: r.error, ms: 0 }
 }

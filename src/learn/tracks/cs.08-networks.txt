@@ -1686,7 +1686,7 @@ correct_2d([[1, 1, 0], [0, 1, 1]], [0, 0], [1, 0, 1])
 --- check test | Two flipped bits in one row cannot be located
 raises(ValueError, lambda: correct_2d([[0, 0, 0], [0, 0, 0]], [0, 0], [1, 1, 0]))
 --- check test | Every single flip in a 5 by 7 grid is corrected, and the input is not changed
-(lambda g: all((lambda h: correct_2d(h, [sum(r) % 2 for r in g], [sum(r[j] for r in g) % 2 for j in range(7)]) == g and h[i][j] != g[i][j])([[g[a][b] ^ (a == i and b == j) for b in range(7)] for a in range(5)]) for i in range(5) for j in range(7)))([[(3 * a + 5 * b) % 3 % 2 for b in range(7)] for a in range(5)])
+(lambda g: all((lambda h, x, y: correct_2d(h, [sum(r) % 2 for r in g], [sum(r[c] for r in g) % 2 for c in range(7)]) == g and h[x][y] != g[x][y])([[g[a][b] ^ (a == i and b == j) for b in range(7)] for a in range(5)], i, j) for i in range(5) for j in range(7)))([[(3 * a + 5 * b) % 3 % 2 for b in range(7)] for a in range(5)])
 --- check test | A parity bit hit by noise (one bad row, no bad column) is not "corrected"
 raises(ValueError, lambda: correct_2d([[1, 0], [0, 0]], [1, 1], [1, 0]))
 
