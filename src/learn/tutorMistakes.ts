@@ -194,18 +194,18 @@ export function codeMistakesFor(unit: LearnLesson): CodeMistake[] {
     const table = /FROM\s+([a-z_]{4,})/i.exec(src)?.[1]
     if (table) add('sql-table', src.replace(new RegExp(`FROM\\s+${table}\\b`, 'i'), `FROM ${table.slice(0, -1)}`), ['error', 'spelling'], new RegExp(`\`${table}\``))
     if (/\bIS NULL\b/i.test(src)) add('sql-null', src.replace(/\bIS NULL\b/i, '= NULL'), ['logic'], /IS NULL/)
-    const str = /(=|IN\s*\(|LIKE)\s*'([A-Za-z]+)'/.exec(src)
+    const str = [...src.matchAll(/(=|IN\s*\(|LIKE)\s*'([A-Za-z]+)'/g)].find((m) => !/^(?:null|true|false|table|select|from|where|order|group|and|or|not|in|is|as|on|by|limit|values|set|case|when|then|else|end)$/i.test(m[2]!))
     if (str) add('sql-quotes', src.replace(`'${str[2]}'`, str[2]!), ['logic', 'error'], /single quote/)
-    if (/\bGROUP BY\b[^;]*?(?=\bHAVING\b|\bORDER\b|;|$)/i.test(src) && /\b(COUNT|SUM|AVG|MIN|MAX)\(/i.test(src)) add('sql-group', src.replace(/\s*\bGROUP BY\s+[\w., ]+?(?=\s*(?:\bHAVING\b|\bORDER\b|;|$))/i, ''), ['logic', 'rows'], /GROUP BY/)
-    if (/\bLIMIT\s+\d+/i.test(src)) add('sql-limit', src.replace(/\s*\bLIMIT\s+\d+/i, ''), ['logic', 'rows'], /LIMIT/)
+    if (/\bGROUP BY\b[^;]*?(?=\bHAVING\b|\bORDER\b|;|$)/i.test(src) && /\b(COUNT|SUM|AVG|MIN|MAX)\(/i.test(src)) add('sql-group', src.replace(/\s*\bGROUP BY\s+[\w., ]+?(?=\s*(?:\bHAVING\b|\bORDER\b|;|$))/i, ''), ['logic', 'rows', 'error'], /GROUP BY/)
+    if (/\bLIMIT\s+\d+/i.test(src)) add('sql-limit', src.replace(/\s*\bLIMIT\s+\d+/i, ''), ['logic', 'rows', 'error'], /LIMIT/)
     const sel = /SELECT\s+([\w.]+)\s*,\s*([\w.]+)\s+FROM/i.exec(src)
     if (sel) add('sql-columns', src.replace(`${sel[1]}, ${sel[2]}`, `${sel[2]}, ${sel[1]}`).replace(`${sel[1]},${sel[2]}`, `${sel[2]},${sel[1]}`), ['logic', 'rows', 'error'], /order|columns/)
     // Only a WHERE of the main query, and only what belongs to it: never across a bracket.
     const where = [...src.matchAll(/\s*\bWHERE\b[^;()]*?(?=\bGROUP\b|\bORDER\b|\bLIMIT\b|;|$)/gi)].find((m) => {
       const before = src.slice(0, m.index)
-      return (before.match(/\(/g) ?? []).length === (before.match(/\)/g) ?? []).length
+      return (before.match(/\(/g) ?? []).length === (before.match(/\)/g) ?? []).length && (m[0].match(/'/g) ?? []).length % 2 === 0 && (before.match(/'/g) ?? []).length % 2 === 0
     })
-    if (where) add('sql-where', src.slice(0, where.index) + ' ' + src.slice(where.index! + where[0].length), ['rows', 'logic'])
+    if (where) add('sql-where', src.slice(0, where.index) + ' ' + src.slice(where.index! + where[0].length), ['rows', 'logic', 'error'], /WHERE/)
     if (/\bDESC\b/i.test(src)) add('sql-desc', src.replace(/\s*\bDESC\b/i, ''), ['rows', 'logic'], /order|DESC/i)
     if (/\bJOIN\s+\w+(?:\s+\w+)?\s+ON\s+[\w.]+\s*=\s*[\w.]+/i.test(src)) add('sql-join-on', src.replace(/(\bJOIN\s+\w+(?:\s+\w+)?)\s+ON\s+[\w.]+\s*=\s*[\w.]+/i, '$1'), ['logic', 'rows', 'error'], /ON|join/i)
   }

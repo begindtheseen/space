@@ -16,7 +16,7 @@
    than saying nothing.
    ========================================================================== */
 import type { CheckResult, LearnCheck, LearnLang } from './types'
-import { code, nth, quote, type Diagnosis } from './tutorText'
+import { clip, code, nth, quote, type Diagnosis } from './tutorText'
 
 export interface LogicInput {
   lang: LearnLang
@@ -257,12 +257,14 @@ export function insertOrder(src: string, solution: string): Diagnosis | null {
 
 /** A JOIN left without its ON, where the solution has one for every join: every row paired with every row. */
 export function joinWithoutOn(src: string, solution: string): Diagnosis | null {
-  const count = (re: RegExp, t: string) => (t.match(re) ?? []).length
-  const joins = (t: string) => count(/\bJOIN\b/gi, t) - count(/\b(?:CROSS|NATURAL)\s+JOIN\b/gi, t)
-  const ons = (t: string) => count(/\bON\b|\bUSING\b/gi, t)
-  if (!joins(src) || ons(src) >= joins(src) || ons(solution) < joins(solution) || ons(src) >= ons(solution)) return null
-  // The join that has none: its table, and what follows it up to the next clause.
-  const table = [...src.matchAll(/\bJOIN\s+(\w+)([\s\S]*?)(?=\b(?:LEFT|RIGHT|INNER|FULL|CROSS|JOIN|WHERE|GROUP|ORDER|LIMIT|UNION)\b|;|$)/gi)].find((m) => !/\b(?:ON|USING)\b/i.test(m[2]!))?.[1]
+  // Each JOIN on its own: its table, and whether ON or USING follows before the next clause.
+  const joins = (t: string) =>
+    [...t.matchAll(/\bJOIN\s+(\w+)([\s\S]*?)(?=\b(?:LEFT|RIGHT|INNER|FULL|CROSS|NATURAL|JOIN|WHERE|GROUP|ORDER|LIMIT|UNION|HAVING|WINDOW)\b|;|\)|$)/gi)]
+      .filter((m) => !/\b(?:CROSS|NATURAL)\s+$/i.test(t.slice(Math.max(0, m.index! - 9), m.index)))
+      .map((m) => ({ table: m[1]!.toLowerCase(), on: /\b(?:ON|USING)\b/i.test(m[2]!) }))
+  const theirs = joins(solution)
+  const table = joins(src).find((j) => !j.on && theirs.some((r) => r.table === j.table && r.on))?.table
+  if (!table) return null
   return {
     kind: 'logic',
     key: 'join-no-on',
@@ -272,15 +274,71 @@ export function joinWithoutOn(src: string, solution: string): Diagnosis | null {
   }
 }
 
+const SQL_WORDS = /^(?:null|true|false|table|select|from|where|order|group|and|or|not|in|is|as|on|by|limit|values|set|case|when|then|else|end|like|between|join|into|default)$/i
+
+/** A word the solution writes as text, `'shipped'`, that she wrote bare: SQL reads it as a column or alias. */
+export function unquotedText(src: string, solution: string): Diagnosis | null {
+  const quoted = new Set([...solution.matchAll(/'([A-Za-z][\w-]*)'/g)].map((m) => m[1]!).filter((w) => !SQL_WORDS.test(w)))
+  const mine = new Set([...src.matchAll(/'([^']*)'/g)].map((m) => m[1]!))
+  for (const w of quoted) {
+    if (mine.has(w)) continue
+    const bare = new RegExp(`(?:=|<>|!=|\\bIN\\s*\\([^)]*|\\bLIKE|,|\\bTHEN|\\bELSE|\\bVALUES\\s*\\([^)]*)\\s*${w}\\b(?!\\s*\\()`, 'i')
+    if (bare.test(src.replace(/'[^']*'/g, "''")))
+      return { kind: 'logic', key: `unquoted:${w}`, say: `${code(w)} is meant to be text, but without single quotes SQL took it for the name of a column.`, more: `Put text in single quotes: ${code(`'${w}'`)}.`, now: true }
+  }
+  return null
+}
+
+/** Each ORDER BY list in the query, in order, including the ones inside OVER (…). */
+const orderLists = (t: string) => [...t.matchAll(/\bORDER\s+BY\s+((?:[^()]|\([^()]*\))*?)(?=\)|\bLIMIT\b|\bOFFSET\b|\bROWS\b|\bRANGE\b|;|$)/gi)].map((m) => m[1]!.trim().replace(/\s+/g, ' '))
+
+/** The column lists of each SELECT, in order. */
+const selectLists = (t: string) => [...t.matchAll(/\bSELECT\s+(?:DISTINCT\s+)?([\s\S]*?)\s+FROM\b/gi)].map((m) => m[1]!.split(/,(?![^(]*\))/).map((c) => c.trim().replace(/\s+/g, ' ')))
+
+/** Columns listed in another order than the solution's, anywhere a result can't show it (a view, an INSERT … SELECT). */
+export function columnOrder(src: string, solution: string): Diagnosis | null {
+  // A pair or tuple of columns in brackets, `(sensor, day)`, written the other way round.
+  const tuples = (t: string) => [...t.matchAll(/\(\s*([A-Za-z_][\w.]*(?:\s*,\s*[A-Za-z_][\w.]*)+)\s*\)/g)].map((m) => m[1]!.split(/\s*,\s*/))
+  const mt = tuples(src)
+  const tt = tuples(solution)
+  if (mt.length === tt.length) {
+    const k = mt.findIndex((l, n) => l.join() !== tt[n]!.join() && [...l].sort().join() === [...tt[n]!].sort().join())
+    if (k >= 0)
+      return { kind: 'logic', key: `tuple-order:${k}`, say: `${code(`(${mt[k]!.join(', ')})`)} lists the columns in a different order from what the task needs, so each one is matched against the wrong value.`, more: `Write them in this order: ${code(`(${tt[k]!.join(', ')})`)}.`, now: true }
+  }
+  const ms = selectLists(src)
+  const ts = selectLists(solution)
+  if (ms.length !== ts.length) return null
+  const j = ms.findIndex((l, n) => l.join() !== ts[n]!.join() && l.length === ts[n]!.length && [...l].sort().join() === [...ts[n]!].sort().join())
+  if (j < 0) return null
+  return { kind: 'logic', key: `column-order:${j}`, say: `${code(`SELECT ${clip(ms[j]!.join(', '), 40)}`)} lists the columns in a different order from what the task needs, so ${/\bINSERT\b/i.test(src) ? 'each value went into the wrong column' : 'they come out in the wrong places'}.`, more: `List them in this order: ${code(clip(ts[j]!.join(', '), 60))}.`, now: true }
+}
+
 function sql(inp: LogicInput): Diagnosis | null {
   const src = inp.code
   const f = inp.failed
   // A comparison with NULL anywhere but an UPDATE's SET, where `= NULL` is how a value is emptied.
-  const eqNull = (t: string) => /(?:[^<>!=]=|!=|<>)\s*NULL\b/i.test(t.replace(/\bSET\b[\s\S]*?(?=\bWHERE\b|;|$)/gi, ''))
+  const eqNull = (t: string) => /(?:[^<>!=]=|!=|<>)\s*NULL\b/i.test(t.replace(/(\bSET\s+|,\s*)[\w.]+\s*=\s*NULL\b/gi, '$1'))
   if (eqNull(src) && !eqNull(inp.solution))
     return { kind: 'logic', key: 'eq-null', say: `${code('= NULL')} is never true, not even for an empty value, because NULL means "unknown", and nothing equals unknown.`, more: `To find missing values, write ${code('IS NULL')}. To skip them, ${code('IS NOT NULL')}.`, now: true }
   const order = insertOrder(src, inp.solution)
   if (order && f) return order
+  const bare = f ? unquotedText(src, inp.solution) : null
+  if (bare) return bare
+  // A sort the wrong way round, found list by list (an OVER (ORDER BY …) too).
+  if (f) {
+    const mine = orderLists(src)
+    const theirs = orderLists(inp.solution)
+    const plain = (l: string) => l.replace(/\s+(?:ASC|DESC)\b/gi, '')
+    const k = mine.findIndex((l, n) => theirs[n] !== undefined && l !== theirs[n] && plain(l) === plain(theirs[n]!))
+    if (k >= 0 && mine.length === theirs.length) {
+      const want = theirs[k]!
+      const desc = /\bDESC\b/i.test(want) && !/\bDESC\b/i.test(mine[k]!)
+      return { kind: 'logic', key: `direction:${want}`, say: `${code(`ORDER BY ${mine[k]}`)} sorts ${desc ? 'from low to high' : 'the other way'}, and the task wants ${code(`ORDER BY ${want}`)}${desc ? ': high to low' : ''}.`, more: desc ? `Add ${code('DESC')} after the column that should go from high to low.` : `Match the direction of each column to the task: ${code(want)}.`, now: true }
+    }
+    const cols = columnOrder(src, inp.solution)
+    if (cols) return cols
+  }
   if (!f || (inp.check?.kind !== 'result' && inp.check?.kind !== 'query')) return null
   const want = (f.expected ?? '').replace(/\n\(in this order\)$/, '').split('\n').filter((l) => !/^… \d+ more$/.test(l))
   const got = (f.actual ?? '').split('\n').filter((l) => !/^… \d+ more$/.test(l) && l !== '(no rows)')

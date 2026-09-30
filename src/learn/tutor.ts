@@ -19,7 +19,7 @@
    every line it can say is testable.
    ========================================================================== */
 import type { CheckResult, LearnCheck, LearnLang } from './types'
-import { assignInCondition, assignSaid, functionDiagnosis, insertOrder, joinWithoutOn, logicDiagnosis } from './tutorCode'
+import { assignInCondition, assignSaid, columnOrder, functionDiagnosis, insertOrder, joinWithoutOn, logicDiagnosis, unquotedText } from './tutorCode'
 import { shellDiagnosis } from './tutorShell'
 import { clip, closestSlip, code, describeSlip, distance, lowerFirst, nth, pick, quote, sentence, upperFirst, type Diagnosis, type DiagnosisKind } from './tutorText'
 
@@ -304,9 +304,27 @@ function cppError(input: TutorInput, all: string): Diagnosis | null {
 
 function sqlError(input: TutorInput, all: string): Diagnosis | null {
   let m: RegExpMatchArray | null
+  // Text the solution quotes and she didn't: SQL took it for a column or an alias, whatever it then says.
+  const bare = unquotedText(input.code, input.solution)
+  if (bare) return { ...bare, kind: 'error' }
+  // Rows copied in with no WHERE: the ones the task leaves out break a rule of the table on the way in.
+  if (/constraint failed/i.test(all) && /\bINSERT\b[\s\S]*\bSELECT\b/i.test(input.code) && (input.code.match(/\bWHERE\b/gi) ?? []).length < (input.solution.match(/\bWHERE\b/gi) ?? []).length)
+    return { kind: 'error', key: 'insert-no-where', say: `Your ${code('INSERT … SELECT')} has no ${code('WHERE')}, so it copied every row, including the ones the task leaves out, and one of them broke a rule of the table: ${clip(all.match(/(\w+ constraint failed[^\n]*)/i)?.[1] ?? 'a constraint', 70)}.`, more: `Add the ${code('WHERE')} that keeps only the rows the task asks for.`, now: true }
   // A constraint that fails because the INSERT's columns are listed in another order from its values.
   const order = insertOrder(input.code, input.solution)
   if (order && /constraint failed|datatype mismatch|cannot store/i.test(all)) return { ...order, kind: 'error' }
+  // A partial unique index that lost its WHERE: it now covers every row.
+  if (/UNIQUE constraint failed/i.test(all)) {
+    const idx = (t: string) => new Map([...t.matchAll(/\bCREATE\s+UNIQUE\s+INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?(\w+)\s+ON\s+[^;]*/gi)].map((x) => [x[1]!, x[0]]))
+    const want = idx(input.solution)
+    for (const [name, mine] of idx(input.code)) {
+      const cond = want.get(name)?.match(/\bWHERE\b\s*([^;]+)/i)?.[1]?.trim()
+      if (cond && !/\bWHERE\b/i.test(mine))
+        return { kind: 'error', key: `index-where:${name}`, say: `The unique index ${code(name)} has no ${code('WHERE')}, so it demands every row be different, not only the rows where ${code(cond)}.`, more: `Add ${code(`WHERE ${cond}`)} to the end of the ${code('CREATE UNIQUE INDEX')}.`, now: true }
+    }
+  }
+  const cols = /constraint failed|datatype mismatch|cannot store/i.test(all) ? columnOrder(input.code, input.solution) : null
+  if (cols) return { ...cols, kind: 'error' }
   // Rows copied through a join with no ON come out many times over, and trip a UNIQUE on the way in.
   const noOn = joinWithoutOn(input.code, input.solution)
   if (noOn && /UNIQUE constraint failed/i.test(all)) return { ...noOn, kind: 'error', say: `${noOn.say} The same rows came out many times over, and they can't all go in.` }
@@ -335,7 +353,9 @@ function sqlError(input: TutorInput, all: string): Diagnosis | null {
   if (/near "OFFSET": syntax error/.test(all))
     return { kind: 'error', key: 'offset', say: `${code('OFFSET')} only works after a ${code('LIMIT')}: it skips rows at the start of what LIMIT keeps.`, more: `Write ${code('LIMIT 5 OFFSET 10')}.` }
   if ((m = all.match(/no such table: (?:main\.)?(\w+)/))) {
-    const near = closestName(m[1]!, input)
+    // The tables that exist come first: an alias (`cr` for `crew`) or a column is never what she meant.
+    const tables = [...`${input.schema ?? ''}\n${input.starter}\n${input.solution}`.matchAll(/\b(?:CREATE\s+(?:TEMP\s+)?(?:TABLE|VIEW)\s+(?:IF\s+NOT\s+EXISTS\s+)?|FROM\s+|JOIN\s+|INTO\s+|UPDATE\s+)([A-Za-z_]\w*)/gi)].map((x) => x[1]!)
+    const near = closestSlip(m[1]!, new Set(tables)) ?? closestName(m[1]!, input)
     return { kind: 'error', key: `table:${m[1]}`, say: `There's no table called ${code(m[1]!)}.${near ? ` Did you mean ${code(near)}?` : ''}` }
   }
   if ((m = all.match(/no such function: (\w+)/))) {
