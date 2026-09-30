@@ -295,116 +295,6 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     return () => window.speechSynthesis.removeEventListener('voiceschanged', read)
   }, [deviceSupported])
 
-  /* ── The device's voice ──────────────────────────────────────────────── */
-
-  const pickVoice = useCallback((): SpeechSynthesisVoice | null => {
-    if (!deviceSupported) return null
-    const all = window.speechSynthesis.getVoices()
-    const wanted = voiceNameRef.current && all.find((v) => v.name === voiceNameRef.current)
-    if (wanted) return wanted
-    const best = usableVoices(all)[0]
-    return best ? (all.find((v) => v.name === best.name) ?? null) : null
-  }, [deviceSupported])
-
-  const speakFrom = useCallback(
-    (index: number, epoch: number) => {
-      if (!deviceSupported) return
-      if (epoch !== epochRef.current) return
-      if (index < 0 || index >= utterances.length) {
-        atRef.current = -1
-        setAt(-1)
-        setState('idle')
-        return
-      }
-      atRef.current = index
-      setAt(index)
-
-      const stopId = pauseIn(utterances[index]!)
-      if (stopId) {
-        void hold(stopId, epoch).then((on) => {
-          if (on) speakFrom(index + 1, epoch)
-        })
-        return
-      }
-
-      const u = new SpeechSynthesisUtterance(utterances[index])
-      const voice = pickVoice()
-      if (voice) {
-        u.voice = voice
-        // Some engines ignore the voice unless the language agrees with it.
-        u.lang = voice.lang
-      }
-      // Read now, not when this chain started, so a speed chosen mid-lesson
-      // applies to every sentence after it.
-      u.rate = rateRef.current
-      u.onend = () => {
-        if (epoch !== epochRef.current) return
-        speakFrom(atRef.current + 1, epoch)
-      }
-      u.onerror = () => {
-        // `cancel()` raises this on the utterance in flight, and it lands after
-        // the caller has moved on — the epoch is what tells the two apart.
-        // Anything else is a real failure of one sentence, and skipping it
-        // beats stopping.
-        if (epoch !== epochRef.current) return
-        speakFrom(atRef.current + 1, epoch)
-      }
-      window.speechSynthesis.speak(u)
-      setState('speaking')
-    },
-    [deviceSupported, utterances, pickVoice, hold],
-  )
-
-  /* ── The natural voice ───────────────────────────────────────────────── */
-
-  const ctxRef = useRef<AudioContext | null>(null)
-  const scheduledRef = useRef<Scheduled[]>([])
-  const piecesRef = useRef(new Map<string, Promise<Piece>>())
-  /** Units whose audio is already made, so planning knows they cost nothing. */
-  const madeRef = useRef(new Set<string>())
-  /** Whether the natural reader has more to say than is scheduled, so a silence is buffering, not the end. */
-  const moreRef = useRef(false)
-  /** When the audio was found stopped by the system (see the clock follower), or 0. */
-  const haltedRef = useRef(0)
-  /** Whether the reader paused it, as against the system stopping the audio. */
-  const userPausedRef = useRef(false)
-
-  /** The audio for a unit, made once and kept a while: going back a sentence should not wait. */
-  const audioFor = useCallback((unit: SpeechUnit): Promise<Piece> => {
-    const voice = naturalVoiceRef.current ?? naturalVoiceFor('')!
-    const speed = rateRef.current
-    const key = `${voice.id}|${speed}|${unit.text}`
-    const cache = piecesRef.current
-    let p = cache.get(key)
-    if (!p) {
-      p = naturalVoice.synth(unit.text, voice, speed).then(({ pcm, words }) => {
-        madeRef.current.add(key)
-        // Trimming moves the start, so the word times move with it.
-        const cut = trimBounds(pcm).from / SAMPLE_RATE
-        return { pcm: trimSilence(pcm), words: words?.map((t) => (Number.isNaN(t) ? t : Math.max(0, t - cut))) }
-      })
-      p.catch(() => cache.delete(key))
-      cache.set(key, p)
-      while (cache.size > KEEP_PIECES) cache.delete(cache.keys().next().value!)
-    }
-    return p
-  }, [])
-
-  const fallBack = useCallback(
-    (reason: string, from: number) => {
-      setFellBack(true)
-      engineRef.current = 'device'
-      setNotice(`The natural voice could not start (${reason}). Reading with this device's voice instead.`)
-      if (!deviceSupported) {
-        setState('idle')
-        return
-      }
-      epochRef.current += 1
-      speakFrom(from, epochRef.current)
-    },
-    [deviceSupported, speakFrom],
-  )
-
   /* ── Following along ──────────────────────────────────────────────────── */
 
   const pageRef = useRef<PageWords | null>(null)
@@ -417,6 +307,10 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
   /** Places the reading again on a page that has been drawn again (set once both readers are defined, below). */
   const realignRef = useRef<() => void>(() => {})
   const realignedAtRef = useRef(0)
+  /** The device voice's sentence being read, and where its words are on the page. */
+  const deviceRef = useRef<{ norms: string[]; onPage: Int32Array; marks: Float64Array } | null>(null)
+  /** The device voice's last sentence placed on the page, so a skip is known from reading on. */
+  const deviceAtRef = useRef(-1)
 
   /** The lesson's words as they are on the page now (it may have re-rendered since the last reading). */
   const pageFor = useCallback((): PageWords | null => {
@@ -533,6 +427,153 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     scrollToRange(range, root?.closest('.scroll') ?? null)
     setWordOffscreen(false)
   }, [contentSelector])
+
+  /* ── The device's voice ──────────────────────────────────────────────── */
+
+  const pickVoice = useCallback((): SpeechSynthesisVoice | null => {
+    if (!deviceSupported) return null
+    const all = window.speechSynthesis.getVoices()
+    const wanted = voiceNameRef.current && all.find((v) => v.name === voiceNameRef.current)
+    if (wanted) return wanted
+    const best = usableVoices(all)[0]
+    return best ? (all.find((v) => v.name === best.name) ?? null) : null
+  }, [deviceSupported])
+
+  const speakFrom = useCallback(
+    (index: number, epoch: number) => {
+      if (!deviceSupported) return
+      if (epoch !== epochRef.current) return
+      if (index < 0 || index >= utterances.length) {
+        atRef.current = -1
+        setAt(-1)
+        setState('idle')
+        clearFollow()
+        return
+      }
+      atRef.current = index
+      setAt(index)
+
+      const stopId = pauseIn(utterances[index]!)
+      if (stopId) {
+        clearFollow()
+        void hold(stopId, epoch).then((on) => {
+          if (!on) return
+          // The page may have changed while she worked, so its words are found again.
+          pageFor()
+          speakFrom(index + 1, epoch)
+        })
+        return
+      }
+
+      // Where its words are on the page. The voice says which word it has reached as it goes
+      // (a boundary event, at the word's first character), so the light and the scrolling follow
+      // it word by word; a voice that never says lights the sentence's first word, and the page
+      // still scrolls sentence by sentence.
+      const text = utterances[index]!
+      const spans = textWords(text)
+      const norms = spans.map((w) => normWord(text.slice(w.start, w.end)))
+      if (!pageRef.current) pageFor()
+      // Not the sentence after the last one read (a skip, or a new start): its place is found afresh.
+      if (index !== deviceAtRef.current + 1) pagePosRef.current = -1
+      deviceAtRef.current = index
+      const spoken = { norms, onPage: placeOnPage(norms), marks: Float64Array.from(spans.flatMap((w) => [w.start, w.end])) }
+      deviceRef.current = spoken
+
+      const u = new SpeechSynthesisUtterance(text)
+      const voice = pickVoice()
+      if (voice) {
+        u.voice = voice
+        // Some engines ignore the voice unless the language agrees with it.
+        u.lang = voice.lang
+      }
+      // Read now, not when this chain started, so a speed chosen mid-lesson
+      // applies to every sentence after it.
+      u.rate = rateRef.current
+      u.onstart = () => {
+        if (epoch === epochRef.current) follow(spoken.marks, spoken.onPage, 0)
+      }
+      u.onboundary = (e) => {
+        if (epoch !== epochRef.current || (e.name && e.name !== 'word')) return
+        follow(spoken.marks, spoken.onPage, e.charIndex)
+      }
+      u.onend = () => {
+        if (epoch !== epochRef.current) return
+        speakFrom(atRef.current + 1, epoch)
+      }
+      u.onerror = () => {
+        // `cancel()` raises this on the utterance in flight, and it lands after
+        // the caller has moved on — the epoch is what tells the two apart.
+        // Anything else is a real failure of one sentence, and skipping it
+        // beats stopping.
+        if (epoch !== epochRef.current) return
+        speakFrom(atRef.current + 1, epoch)
+      }
+      window.speechSynthesis.speak(u)
+      setState('speaking')
+    },
+    [deviceSupported, utterances, pickVoice, hold, pageFor, placeOnPage, follow, clearFollow],
+  )
+
+  /* ── The natural voice ───────────────────────────────────────────────── */
+
+  const ctxRef = useRef<AudioContext | null>(null)
+  const scheduledRef = useRef<Scheduled[]>([])
+  const piecesRef = useRef(new Map<string, Promise<Piece>>())
+  /** Units whose audio is already made, so planning knows they cost nothing. */
+  const madeRef = useRef(new Set<string>())
+  /** Whether the natural reader has more to say than is scheduled, so a silence is buffering, not the end. */
+  const moreRef = useRef(false)
+  /** When the audio was found stopped by the system (see the clock follower), or 0. */
+  const haltedRef = useRef(0)
+  /** Whether the reader paused it, as against the system stopping the audio. */
+  const userPausedRef = useRef(false)
+
+  /** The audio for a unit, made once and kept a while: going back a sentence should not wait. */
+  const audioFor = useCallback((unit: SpeechUnit): Promise<Piece> => {
+    const voice = naturalVoiceRef.current ?? naturalVoiceFor('')!
+    const speed = rateRef.current
+    const key = `${voice.id}|${speed}|${unit.text}`
+    const cache = piecesRef.current
+    let p = cache.get(key)
+    if (!p) {
+      p = naturalVoice.synth(unit.text, voice, speed).then(({ pcm, words }) => {
+        madeRef.current.add(key)
+        // Trimming moves the start, so the word times move with it.
+        const cut = trimBounds(pcm).from / SAMPLE_RATE
+        return { pcm: trimSilence(pcm), words: words?.map((t) => (Number.isNaN(t) ? t : Math.max(0, t - cut))) }
+      })
+      p.catch(() => cache.delete(key))
+      cache.set(key, p)
+      while (cache.size > KEEP_PIECES) cache.delete(cache.keys().next().value!)
+    }
+    return p
+  }, [])
+
+  /** A reading on the device's voice, from sentence `from`: the page's words found as they are now. */
+  const startDevice = useCallback(
+    (from: number, epoch: number) => {
+      autoScrollRef.current = true
+      pageFor()
+      deviceAtRef.current = -1
+      speakFrom(from, epoch)
+    },
+    [pageFor, speakFrom],
+  )
+
+  const fallBack = useCallback(
+    (reason: string, from: number) => {
+      setFellBack(true)
+      engineRef.current = 'device'
+      setNotice(`The natural voice could not start (${reason}). Reading with this device's voice instead.`)
+      if (!deviceSupported) {
+        setState('idle')
+        return
+      }
+      epochRef.current += 1
+      startDevice(from, epochRef.current)
+    },
+    [deviceSupported, startDevice],
+  )
 
   /**
    * Reads from a sentence on. Each sentence is scheduled on the audio clock
@@ -755,6 +796,11 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       if (r) r.onPage = placeRecording(r.rec)
       return
     }
+    if (engineRef.current === 'device') {
+      const d = deviceRef.current
+      if (d) d.onPage = placeOnPage(d.norms)
+      return
+    }
     for (const item of scheduledRef.current) if (item.norms) item.page = placeOnPage(item.norms)
   }
 
@@ -941,9 +987,9 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
         void runNatural(index, epoch)
         return
       }
-      speakFrom(index, epoch)
+      startDevice(index, epoch)
     },
-    [supported, deviceSupported, utterances.length, sentenceCount, speakFrom, runNatural, runRecorded, silenceNatural, silenceRecorded, cancelWait],
+    [supported, deviceSupported, utterances.length, sentenceCount, startDevice, runNatural, runRecorded, silenceNatural, silenceRecorded, cancelWait],
   )
 
   const warm = useCallback(() => {
@@ -1165,7 +1211,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     resume,
     stop,
     skip,
-    following: engine !== 'device',
+    following: true,
     wordOffscreen: wordOffscreen && state !== 'idle' && state !== 'waiting',
     jumpToWord,
     waitingOn,
