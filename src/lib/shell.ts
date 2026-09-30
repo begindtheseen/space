@@ -8163,7 +8163,7 @@ export const COMMANDS = [
   'which', 'git', 'awk', 'jq', 'paste', 'join', 'column', 'local', 'declare', 'typeset', 'readonly', 'return', 'break', 'continue', 'shift',
   'getopts', 'trap', 'let', 'eval', 'command', 'mapfile', 'readarray', 'shopt', 'mktemp', 'sleep', 'wait', 'readlink', 'realpath', 'od',
 ]
-const GIT_SUBS = [
+export const GIT_SUBS = [
   'init', 'clone', 'config', 'status', 'add', 'rm', 'commit', 'log', 'show', 'diff', 'restore', 'reset', 'branch', 'checkout', 'switch',
   'merge', 'stash', 'tag', 'reflog', 'cherry-pick', 'revert', 'rebase', 'bisect', 'blame', 'ls-files', 'check-ignore', 'remote', 'fetch',
   'pull', 'push', '--version', 'cat-file', 'describe', 'fsck',

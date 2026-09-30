@@ -19,6 +19,10 @@
    every line it can say is testable.
    ========================================================================== */
 import type { CheckResult, LearnCheck, LearnLang } from './types'
+import { shellDiagnosis } from './tutorShell'
+import { clip, code, distance, lowerFirst, nth, pick, quote, sentence, upperFirst, type Diagnosis, type DiagnosisKind } from './tutorText'
+
+export type { DiagnosisKind } from './tutorText'
 
 export interface TutorRun {
   results: CheckResult[]
@@ -63,54 +67,7 @@ export interface TutorLine {
   memory: TutorMemory
 }
 
-export type DiagnosisKind = 'unchanged' | 'error' | 'timeout' | 'empty' | 'output' | 'case' | 'rows' | 'check'
-
-interface Diagnosis {
-  kind: DiagnosisKind
-  /** Identifies this particular problem, so a repeat can be told from a new one. */
-  key: string
-  /** Where the problem is. */
-  say: string
-  /** What should be there instead: said from the second try on. */
-  more?: string
-}
-
 /* ── Small helpers ───────────────────────────────────────────────────────── */
-
-const clip = (s: string, n = 60) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s)
-/** Lower-cases the first word to follow on from "but", unless it is a name: Python stays Python. */
-const lowerFirst = (s: string) =>
-  /^(?:Python|JavaScript|TypeScript|SQL|C\+\+|I|HTML|CSS|Git)\b/.test(s) || !/^[A-Z](?:[a-z]|\s)/.test(s) ? s : s[0]!.toLowerCase() + s.slice(1)
-const upperFirst = (s: string) => (s ? s[0]!.toUpperCase() + s.slice(1) : s)
-const sentence = (s: string) => {
-  const t = s.trim()
-  return !t ? '' : /[.!?…]["'”)]?$/.test(t) ? t : `${t}.`
-}
-const quote = (s: string) => `“${clip(s.replace(/\s+/g, ' ').trim(), 70)}”`
-const code = (s: string) => `\`${clip(s.trim(), 60).replace(/`/g, "'")}\``
-
-function hash(s: string): number {
-  let h = 2166136261
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619)
-  return h >>> 0
-}
-const pick = <T,>(list: readonly T[], seed: string): T => list[hash(seed) % list.length]!
-
-const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth']
-const nth = (i: number) => ORDINALS[i] ?? `number ${i + 1}`
-
-export function distance(a: string, b: string): number {
-  if (a === b) return 0
-  const m = a.length
-  const n = b.length
-  let prev = Array.from({ length: n + 1 }, (_, j) => j)
-  for (let i = 1; i <= m; i++) {
-    const cur = [i]
-    for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j]! + 1, cur[j - 1]! + 1, prev[j - 1]! + (a[i - 1] === b[j - 1] ? 0 : 1))
-    prev = cur
-  }
-  return prev[n]!
-}
 
 /** Words that name things in code: identifiers, without keywords or anything inside strings and comments. */
 function namesIn(src: string): Set<string> {
@@ -569,10 +526,14 @@ export function tutorLine(input: TutorInput): TutorLine | null {
   if (!failed && !errored && total > 0) return null
 
   const trimmed = (s: string) => s.replace(/\s+/g, ' ').trim()
+  const terminal = input.lang === 'bash' || input.lang === 'git'
   let d: Diagnosis | null = null
-  if (input.starter.trim() && trimmed(input.code) === trimmed(input.starter))
+  if (terminal && !input.code.trim())
+    d = { kind: 'unchanged', key: 'unchanged', say: "Nothing has been typed into the terminal yet.", more: `The task: ${sentence(firstSentence(input.task))}`, now: true }
+  else if (!terminal && input.starter.trim() && trimmed(input.code) === trimmed(input.starter))
     d = { kind: 'unchanged', key: 'unchanged', say: "The code hasn't changed from how it started yet.", more: `The task: ${sentence(firstSentence(input.task))}` }
   const repeat = !d && !!input.before && trimmed(input.before.code) === trimmed(input.code)
+  if (terminal && !d) d = shellDiagnosis({ starter: input.starter, solution: input.solution, checks: input.checks ?? [] }, input.code.split('\n'))
   d ??= errorDiagnosis(input)
   d ??= failed ? checkDiagnosis(failed, input.checks?.[run.results.indexOf(failed)], input) : { kind: 'check', key: 'unknown', say: "It didn't pass yet." }
 
@@ -588,7 +549,8 @@ export function tutorLine(input: TutorInput): TutorLine | null {
     opener = `That's closer: ${passing} of ${total} checks pass now. Next,`
   else if (input.attempt >= 4) opener = pick(OPEN_HARD, seed)
   else if (input.attempt >= 2) opener = pick(OPEN_AGAIN, seed)
-  else opener = pick(OPEN_FIRST, seed)
+  // "Nice try, but … , but …" trips over itself: when the line has its own "but", open without one.
+  else opener = pick(/\bbut\b/.test(d.say) ? OPEN_FIRST.filter((o) => !/, but$/.test(o)) : OPEN_FIRST, seed)
   if (input.name && (input.attempt === 1 || input.attempt % 3 === 0)) {
     if (/, but$/.test(opener)) opener = opener.replace(/, but$/, `, ${input.name}, but`)
     else if (/:$/.test(opener)) opener = opener.replace(/:$/, `, ${input.name}:`)
@@ -602,7 +564,7 @@ export function tutorLine(input: TutorInput): TutorLine | null {
   {
     // From the second try on, say what should be there, not only where.
     const again = before?.key === d.key
-    if (d.more && (input.attempt >= 2 || again || repeat || d.kind === 'empty' || d.kind === 'unchanged')) parts.push(d.more)
+    if (d.more && (input.attempt >= 2 || again || repeat || d.now || d.kind === 'empty' || d.kind === 'unchanged')) parts.push(d.more)
     // Further on, the lesson's own hints, one at a time, then what the solution uses.
     const hintAt = input.attempt - 3
     const unsaid = (h: string) => !input.said.some((s) => s.includes(h.slice(0, 40)))

@@ -32,7 +32,7 @@ export function TerminalChallenge({
       const g = gradeRun(lesson, '', result)
       setGrade(g)
       // What she typed stands in for code, so the tutor can see what was run.
-      onGraded(g.passed, g.results, { code: shell.transcript.map((t) => t.cmd).join('\n'), grade: g })
+      onGraded(g.passed, g.results, { code: shell.history.join('\n'), grade: g })
       if (g.passed) onPass()
     } finally {
       setRunning(false)
