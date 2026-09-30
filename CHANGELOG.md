@@ -8,6 +8,37 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.2.0
+
+- A computer science degree in Learn to code. Twelve new courses teach what a bachelor's in computer
+  science teaches, to mastery: Data Structures & Algorithms I and II, Data Structures in C++, Discrete
+  Mathematics, Computer Organization, Systems Programming, Operating Systems, Computer Networks, Theory of
+  Computation, Programming Languages & Compilers, Security, and Parallel & Distributed Computing. They sit on
+  the "Computer Science degree" roadmap after the Python, terminal, git, C++ and SQL courses they build on.
+- Five capstone projects finish the degree, each over 2,000 lines, built milestone by milestone with the
+  whole project re-tested at every step: an interpreter for a small language, a key-value store with crash
+  recovery, flight software in C++ with fixed memory and fault handling, an HTTP server with load testing,
+  and an analytics database tuned by its query plans.
+- Every lesson now has a practice set after it, climbing from a warm-up to a stretch problem, and every
+  course ends in a timed gate. A course opens only when the courses it builds on have their gates passed;
+  the lock screen says which, and you can sit a gate whenever you are ready.
+- Every coding module has the same: practice under each lesson and a module test that opens the next
+  module. What you prove once counts everywhere: mastering the Learn to code lessons that teach a module
+  lesson marks it read, mastering the courses that cover a whole module passes its test, and passing the
+  module tests that cover a course passes its gate. Credit is earned only by passing, never by time spent.
+- Answer choices are shuffled each time a question is shown, so you recognise the right answer rather
+  than remember where it sat. A question with a choice like "all of the above" keeps its order.
+- Courses load when you open them instead of all at once, so ORBIT starts with about a tenth of the
+  download it had (3 MB instead of 30 MB).
+- Python in the browser: the first run that uses NumPy or another package no longer prints "Loading
+  numpy" into your program's output, and a program that crashes Python (for example by freeing a linked
+  list of many thousands of nodes at once) says so straight away instead of waiting 30 seconds, and the
+  next run starts Python again.
+- Examples that need something the browser's C++ leaves out (exceptions, threads, signals) are marked
+  "build this on a laptop" instead of offering a Run button that cannot work.
+- Many corrections to the coding modules' lessons: numbers, sizes on ORBIT's 32-bit C++ as well as a
+  64-bit laptop, and behaviour that differs between the browser and a laptop.
+
 ## 1.1.14
 
 - Explain now covers every name the coding lessons teach, in sentences as well as in code: 2,959
