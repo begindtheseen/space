@@ -16,14 +16,19 @@
    does in a music app: the lesson, what the voice is doing, and the same
    controls. It leaves again when the capsule is back in view. The space bar
    pauses and plays from anywhere on the page that is not taking typing.
+
+   During a focus block the controls sit on the focus strip at the bottom
+   instead (lib/voice/slot.ts), always there, and no second player docks
+   above it.
    ========================================================================== */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { IconChevronLeft, IconChevronRight, IconPause, IconPlay, IconX } from '@/components/icons'
+import { IconChevronLeft, IconChevronRight, IconPause, IconPlay, IconWave, IconX } from '@/components/icons'
 import { useLearner } from '@/hooks/useLearner'
 import { useReadAloud } from '@/hooks/useReadAloud'
 import { DEFAULT_SPEECH_RATE, speechRateOptions } from '@/lib/speech'
 import { registerReader } from '@/lib/voice/say'
+import { useVoiceSlot } from '@/lib/voice/slot'
 import './read-aloud.css'
 
 export interface ReadAloudProps {
@@ -88,6 +93,7 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
   )
 
   // The capsule scrolled out of sight (under the top bar counts as out of sight): the player docks.
+  const focusSlot = useVoiceSlot()
   const barRef = useRef<HTMLDivElement>(null)
   const [barHidden, setBarHidden] = useState(false)
   const shown = player.supported && player.total > 0
@@ -213,7 +219,25 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
         : player.wordOffscreen
           ? 'Click to follow along'
           : 'Reading aloud'
-  const docked = !idle && barHidden
+  const docked = !idle && barHidden && !focusSlot
+  const go = (label: string) => (
+    <button
+      className="raloud__go"
+      onClick={() => player.start(0)}
+      onPointerEnter={player.warm}
+      onFocus={player.warm}
+      title={
+        player.engine === 'recorded'
+          ? 'This lesson is recorded in a natural voice, so it plays straight away and follows along word by word. (Space plays and pauses.)'
+          : player.engine === 'natural'
+            ? 'A natural voice, made on this device. The first time, it downloads once (about 92 MB). Choose the voice in Settings. (Space plays and pauses.)'
+            : 'Choose the voice in Settings. (Space plays and pauses.)'
+      }
+    >
+      <IconPlay size={12} />
+      <span>{label}</span>
+    </button>
+  )
 
   return (
     <div className="raloud" ref={barRef} data-on={!idle} data-engine={player.engine} data-state={player.state}>
@@ -227,22 +251,7 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
         : null}
       <div className="raloud__pill">
         {idle ? (
-          <button
-            className="raloud__go"
-            onClick={() => player.start(0)}
-            onPointerEnter={player.warm}
-            onFocus={player.warm}
-            title={
-              player.engine === 'recorded'
-                ? 'This lesson is recorded in a natural voice, so it plays straight away and follows along word by word. (Space plays and pauses.)'
-                : player.engine === 'natural'
-                  ? 'A natural voice, made on this device. The first time, it downloads once (about 92 MB). Choose the voice in Settings. (Space plays and pauses.)'
-                  : 'Choose the voice in Settings. (Space plays and pauses.)'
-            }
-          >
-            <IconPlay size={12} />
-            <span>Read aloud</span>
-          </button>
+          go('Read aloud')
         ) : (
           <>
             {main}
@@ -261,6 +270,29 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
           {player.notice}
         </p>
       ) : null}
+
+      {focusSlot
+        ? createPortal(
+            <div className="raloud raloud--strip" data-on={!idle} data-state={player.state} role="group" aria-label="Read aloud">
+              {idle ? (
+                go('Read aloud')
+              ) : (
+                <>
+                  {/* Tells the voice's pause from the block's own, a few buttons along. */}
+                  <IconWave size={13} className="raloud__mark" aria-hidden="true" />
+                  {main}
+                  {back}
+                  {track('raloud__track')}
+                  {on}
+                  {stop}
+                </>
+              )}
+              <span className="raloud__sep" aria-hidden="true" />
+              {speed}
+            </div>,
+            focusSlot,
+          )
+        : null}
 
       <Dock show={docked}>
         <button

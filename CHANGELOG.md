@@ -19,6 +19,9 @@ Reading along, and finding things.
   lesson's name, what the voice is doing, pause and play, a sentence back and on, the speed, stop, and
   a thin line for how far through you are. Click its left side to jump back to the word being read. It
   slides away again when the bar is back in view.
+- **The voice on the focus strip.** During a focus block, the read-aloud controls sit on the strip at
+  the bottom with the timer: Read aloud, then pause and play, a sentence back and on, stop and the
+  speed, always in reach wherever you are on the page.
 - **Space bar to pause and play.** On any lesson, press space to start, pause, or carry on reading.
   It leaves you alone while you type in the terminal, the code editor, or any box.
 - **⌘F to find.** On every page, ⌘F (Ctrl+F on Windows) opens a find bar at the top right. What you

@@ -364,3 +364,58 @@ html[data-focus-lock='true'] .scroll {
     animation: none;
   }
 }
+
+/* ── The voice ───────────────────────────────────────────────────────────────
+   On a lesson that can be read aloud, its controls sit on the strip, between
+   the task and the block's own buttons, in the same quiet shape as those. */
+.fbar__voice {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.fbar__voice:empty {
+  display: none;
+}
+
+.fbar__voice .raloud--strip {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  height: 34px;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--panel-2);
+  transition: border-color var(--t-fast) var(--ease-out);
+}
+
+.fbar__voice .raloud--strip[data-on='true'] {
+  border-color: var(--line-blue);
+  background: color-mix(in srgb, var(--line-blue) 10%, var(--panel-2));
+}
+
+.fbar__voice .raloud__mark {
+  flex: none;
+  margin: 0 4px 0 6px;
+  color: var(--blue-hi);
+}
+
+.fbar__voice .raloud__go {
+  height: 26px;
+  font-size: 11.5px;
+}
+
+.fbar__voice .raloud__status {
+  max-width: 18ch;
+  font-size: 11.5px;
+}
+
+@media (max-width: 760px) {
+  .fbar__voice .raloud__go span {
+    display: none;
+  }
+  .fbar__voice .raloud__track {
+    width: 36px;
+  }
+}
