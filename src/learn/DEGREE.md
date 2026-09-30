@@ -30,7 +30,11 @@ The degree courses add what a bachelor's has on top of those:
 | 10 | Programming Languages & Compilers | `cs.10-compilers.txt` | Python |
 | 11 | Security | `cs.11-security.txt` | Python and C++ |
 | 12 | Parallel & Distributed Computing | `cs.12-parallel.txt` | Python and C++ |
-| 13 | Capstones | `cs.13-capstones.txt` | Python and C++ |
+| 13 | Capstone: Interpreter | `cs.13-cap-interp.txt` | Python |
+| 14 | Capstone: Key-value store | `cs.14-cap-kv.txt` | Python |
+| 15 | Capstone: Flight software | `cs.15-cap-flight.txt` | C++ |
+| 16 | Capstone: HTTP server | `cs.16-cap-http.txt` | Python |
+| 17 | Capstone: Data system | `cs.17-cap-data.txt` | SQL |
 
 ## What every lesson holds
 
@@ -98,7 +102,11 @@ courses, not on every course numbered before it, so each names its own:
 | `cs-plc` | `cs-theory`, `cs-org` |
 | `cs-sec` | `cs-sys`, `cs-net`, `cs-disc` |
 | `cs-par` | `cs-os`, `cs-net` |
-| capstones | the courses each project draws on |
+| `cs-cap-interp` | `cs-plc` |
+| `cs-cap-kv` | `cs-os`, `cs-dsa2` |
+| `cs-cap-flight` | `cs-dsacpp`, `cs-sys`, `cs-os` |
+| `cs-cap-http` | `cs-net`, `cs-os` |
+| `cs-cap-data` | `sql-projects`, `cs-dsa1` |
 
 ## Writing a course in parts
 
@@ -476,10 +484,12 @@ Python and C++.
 12. **MapReduce and dataflow.** The model, implemented over a simulated cluster.
 13. **Mastery gate.**
 
-## Capstones (`cs.13-capstones.txt`)
+## Capstones (`cs.13-cap-interp.txt` to `cs.17-cap-data.txt`)
 
-Each capstone is a multi-lesson project of 2,000–10,000 lines, built milestone by milestone, and
-every milestone's tests must pass:
+Each capstone is its own course (`@level projects`): a project of 2,000 lines or more, built over
+12 to 14 milestones. Every milestone's starter is the whole project so far, so its checks re-run
+everything earlier and catch regressions; each milestone has six practice problems, and the gate
+gives unseen planted bugs, features and performance fixes on the finished project:
 
 1. **An interpreter** for a small language (from the Compilers course) with a standard library
    and test suite.
