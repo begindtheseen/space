@@ -407,6 +407,20 @@ export const IconPause = (p: IconProps) => (
   </Svg>
 )
 
+/** Back: two triangles pointing left, filled, as on a player. */
+export const IconRewind = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M11.5 6.5 4 12l7.5 5.5zM20 6.5 12.5 12l7.5 5.5z" fill="currentColor" />
+  </Svg>
+)
+
+/** On: two triangles pointing right, filled, as on a player. */
+export const IconForward = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12.5 6.5 20 12l-7.5 5.5zM4 6.5 11.5 12 4 17.5z" fill="currentColor" />
+  </Svg>
+)
+
 export const IconStar = (p: IconProps) => (
   <Svg {...p}>
     <path d="m12 3.4 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.9-5.4 2.9 1-6L3.2 9.8l6.1-.9z" />

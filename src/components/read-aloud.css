@@ -82,22 +82,14 @@
   background: color-mix(in srgb, var(--line-blue) 22%, transparent);
 }
 
-.raloud__track {
-  position: relative;
-  width: 72px;
-  height: 3px;
-  margin: 0 4px;
-  border-radius: 999px;
-  background: var(--line);
-  overflow: hidden;
+/* The line she moves along (components/Scrubber.tsx). */
+.raloud__icon--busy {
+  cursor: default;
 }
 
-.raloud__fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: inherit;
-  background: var(--blue, #5696f8);
-  transition: width 0.4s var(--ease-out);
+.raloud__track {
+  width: 150px;
+  margin: 0 6px;
 }
 
 .raloud__status {
@@ -173,7 +165,8 @@
   .raloud__spin {
     animation: none;
   }
-  .raloud__fill {
+  .scrub__fill,
+  .scrub__thumb {
     transition: none;
   }
 }
@@ -187,7 +180,7 @@
 
 @media (max-width: 420px) {
   .raloud__track {
-    width: 44px;
+    width: 70px;
   }
 }
 
@@ -283,10 +276,9 @@ body:has(.fbar) .raloud-jump {
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-  width: min(560px, calc(100% - 32px));
-  height: 60px;
+  width: min(680px, calc(100% - 32px));
+  height: 78px;
   padding: 0 10px 0 8px;
-  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   background: color-mix(in srgb, #0b1626 90%, transparent);
@@ -401,10 +393,21 @@ body:has(.fbar) .raloud-jump {
   font-size: 11.5px;
 }
 
+.raloud-dock__middle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
 .raloud-dock__controls {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 14px;
+}
+
+.raloud-dock__track {
+  width: 300px;
 }
 
 .raloud-dock__controls .raloud__icon {
@@ -414,8 +417,8 @@ body:has(.fbar) .raloud-jump {
 }
 
 .raloud-dock__controls .raloud__icon--main {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   color: var(--ink);
   background: rgba(255, 255, 255, 0.1);
 }
@@ -432,8 +435,8 @@ body:has(.fbar) .raloud-jump {
 .raloud-dock__wait {
   display: inline-grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
 }
 
 .raloud-dock__end {
@@ -441,18 +444,6 @@ body:has(.fbar) .raloud-jump {
   align-items: center;
   justify-content: flex-end;
   gap: 2px;
-}
-
-/* The progress, a hairline along the bottom edge. */
-.raloud-dock__track {
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 0;
-  height: 2px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  overflow: hidden;
 }
 
 /* Above the focus strip when a block is running. */
@@ -475,17 +466,26 @@ body:has(.fbar):has(.raloud-dock[data-show='true']) .tutor {
   bottom: calc(170px + var(--safe-bottom, 0px));
 }
 
+@media (max-width: 720px) {
+  .raloud-dock__track {
+    width: 200px;
+  }
+}
+
 @media (max-width: 520px) {
   .raloud-dock {
     grid-template-columns: minmax(0, 1fr) auto auto;
     gap: 4px;
   }
+  .raloud-dock__track {
+    width: 150px;
+  }
+  .raloud-dock__track .scrub__time {
+    display: none;
+  }
   .raloud-dock__art {
     width: 34px;
     height: 34px;
-  }
-  .raloud-dock__controls .raloud__icon:not(.raloud__icon--main) {
-    display: none;
   }
 }
 
@@ -510,4 +510,151 @@ body:has(.fbar):has(.raloud-dock[data-show='true']) .tutor {
 
 .shell[data-focus='true']:has(.raloud-dock[data-show='true']) .scroll {
   padding-bottom: 164px;
+}
+
+/* ── The scrubber ────────────────────────────────────────────────────────────
+   A thin line that thickens under the pointer, a knob at the voice's place,
+   a paler line to where a click would land, and a card with that sentence. */
+.scrub {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scrub__hit {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  height: 22px;
+  cursor: pointer;
+  touch-action: none;
+  outline: none;
+}
+
+.scrub__rail {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: height 0.15s var(--ease-out);
+}
+
+.scrub__hit:hover .scrub__rail,
+.scrub__hit:focus-visible .scrub__rail,
+.scrub[data-active='true'] .scrub__rail {
+  height: 6px;
+}
+
+.scrub__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: var(--blue-hi, #2a7ef5);
+  transition: width 0.25s var(--ease-out);
+}
+
+.scrub__ghost {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.scrub__thumb {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  transform: translateY(-50%) scale(0);
+  transition:
+    transform 0.15s var(--ease-out),
+    left 0.25s var(--ease-out);
+  pointer-events: none;
+}
+
+.scrub__hit:hover .scrub__thumb,
+.scrub__hit:focus-visible .scrub__thumb,
+.scrub[data-active='true'] .scrub__thumb {
+  transform: translateY(-50%) scale(1);
+}
+
+.scrub__hit:focus-visible .scrub__rail {
+  box-shadow: 0 0 0 2px var(--line-blue-strong);
+}
+
+/* Following a drag or a scan exactly, not easing behind it. */
+.scrub[data-active='true'] .scrub__fill,
+.scrub[data-active='true'] .scrub__thumb {
+  transition: transform 0.15s var(--ease-out);
+}
+
+.scrub__time {
+  min-width: 32px;
+  color: var(--ink-4);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.scrub__time--left {
+  text-align: left;
+}
+
+.scrub__peek {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: max-content;
+  max-width: 260px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(10, 21, 37, 0.97);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+  transform: translateX(-50%);
+  pointer-events: none;
+  white-space: normal;
+  text-align: left;
+}
+
+/* The capsule sits near the top of the lesson: its card opens below, clear of the top bar. */
+.raloud__pill .scrub__peek {
+  top: calc(100% + 6px);
+  bottom: auto;
+}
+
+.scrub__peek-where {
+  color: var(--ink-4);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.scrub__peek-text {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.35;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* In the docked player the card floats above the player, clear of its buttons. */
+.raloud-dock .scrub__peek {
+  bottom: calc(100% + 52px);
 }

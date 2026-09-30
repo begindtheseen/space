@@ -22,6 +22,11 @@ Reading along, and finding things.
 - **The voice on the focus strip.** During a focus block, the read-aloud controls sit on the strip at
   the bottom with the timer: Read aloud, then pause and play, a sentence back and on, stop and the
   speed, always in reach wherever you are on the page.
+- **Rewind, fast forward, and a bar you can drag.** The progress line is now a real scrubber: click
+  anywhere on it, or drag the knob, and a card shows the sentence you will land on and when it comes.
+  The rewind and fast-forward buttons go back or on a sentence at a tap; hold one down and it scans,
+  faster the longer you hold, and reads from wherever you let go. The player at the bottom shows the
+  time gone and the time left, and the ← and → keys go back and on a sentence while it reads.
 - **Space bar to pause and play.** On any lesson, press space to start, pause, or carry on reading.
   It leaves you alone while you type in the terminal, the code editor, or any box.
 - **⌘F to find.** On every page, ⌘F (Ctrl+F on Windows) opens a find bar at the top right. What you

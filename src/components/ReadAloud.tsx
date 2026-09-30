@@ -23,7 +23,8 @@
    ========================================================================== */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { IconChevronLeft, IconChevronRight, IconPause, IconPlay, IconWave, IconX } from '@/components/icons'
+import { IconPause, IconPlay, IconWave, IconX } from '@/components/icons'
+import { Scrubber, SkipButton } from '@/components/Scrubber'
 import { useLearner } from '@/hooks/useLearner'
 import { useReadAloud } from '@/hooks/useReadAloud'
 import { DEFAULT_SPEECH_RATE, speechRateOptions } from '@/lib/speech'
@@ -94,6 +95,8 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
 
   // The capsule scrolled out of sight (under the top bar counts as out of sight): the player docks.
   const focusSlot = useVoiceSlot()
+  // Where a held back or on button has scanned to, until it is let go.
+  const [scan, setScan] = useState<number | null>(null)
   const barRef = useRef<HTMLDivElement>(null)
   const [barHidden, setBarHidden] = useState(false)
   const shown = player.supported && player.total > 0
@@ -110,9 +113,16 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
   useEffect(() => {
     if (!shown) return
     const key = (e: KeyboardEvent) => {
-      if (e.key !== ' ' || e.repeat || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return
       if (keyIsForFocus(e.target) || document.querySelector('[aria-modal="true"]')) return
       const p = live.current
+      // The arrow keys go back and on a sentence while it reads.
+      if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && p.state !== 'idle') {
+        e.preventDefault()
+        p.skip(e.key === 'ArrowLeft' ? -1 : 1)
+        return
+      }
+      if (e.key !== ' ' || e.repeat) return
       e.preventDefault()
       if (p.state === 'idle') p.start(0)
       else if (p.state === 'paused') p.resume()
@@ -127,7 +137,6 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
   const idle = player.state === 'idle'
   const preparing = player.state === 'preparing'
   const paused = player.state === 'paused'
-  const share = player.total > 0 && player.at >= 0 ? Math.min(1, (player.at + 1) / player.total) : 0
 
   const preparingLabel =
     player.engine === 'recorded'
@@ -142,10 +151,16 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
     <span className="raloud__status" role="status">
       {player.waitingOn && pauses ? pauses.label(player.waitingOn) : 'Waiting…'}
     </span>
-  ) : preparing ? (
+  ) : preparing && (player.naturalStatus === 'downloading' || player.naturalStatus === 'starting' || player.at < 0) ? (
+    // Getting the voice itself ready, the first time: worth the words.
     <span className="raloud__status" role="status">
       <span className="raloud__spin" aria-hidden="true" />
       {preparingLabel}
+    </span>
+  ) : preparing ? (
+    // A sentence being made after a jump: a spinner in the button's own place, so nothing moves under her pointer.
+    <span className="raloud__icon raloud__icon--main raloud__icon--busy" role="status" aria-label={preparingLabel} title={preparingLabel}>
+      <span className="raloud__spin" aria-hidden="true" />
     </span>
   ) : (
     <button
@@ -157,16 +172,12 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
       {paused ? <IconPlay size={12} /> : <IconPause size={12} />}
     </button>
   )
-  const back = (
-    <button className="raloud__icon" onClick={() => player.skip(-1)} aria-label="Back a sentence" title="Back a sentence">
-      <IconChevronLeft size={13} />
-    </button>
+  const seek = (i: number) => player.start(i)
+  const skipButton = (dir: -1 | 1, size = 12) => (
+    <SkipButton dir={dir} at={player.at} total={player.total} onSkip={player.skip} onSeek={seek} scanTo={setScan} size={size} />
   )
-  const on = (
-    <button className="raloud__icon" onClick={() => player.skip(1)} aria-label="On a sentence" title="On a sentence">
-      <IconChevronRight size={13} />
-    </button>
-  )
+  const back = skipButton(-1)
+  const on = skipButton(1)
   const stop = (
     <button className="raloud__icon" onClick={player.stop} aria-label="Stop reading" title="Stop reading">
       <IconX size={11} />
@@ -195,18 +206,8 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
       </select>
     </label>
   )
-  const track = (className: string) => (
-    <span
-      className={className}
-      role="progressbar"
-      aria-label="How far through the lesson"
-      aria-valuemin={0}
-      aria-valuemax={player.total}
-      aria-valuenow={player.at + 1}
-      title={`Sentence ${player.at + 1} of ${player.total}`}
-    >
-      <span className="raloud__fill" style={{ width: `${(share * 100).toFixed(1)}%` }} />
-    </span>
+  const track = (className: string, times = false) => (
+    <Scrubber className={className} at={player.at} total={player.total} texts={player.texts} rate={rate} onSeek={seek} scanning={scan} times={times} />
   )
   const doing = waiting
     ? player.waitingOn && pauses
@@ -312,16 +313,18 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
             <span className="raloud-dock__doing">{doing}</span>
           </span>
         </button>
-        <span className="raloud-dock__controls">
-          {back}
-          {waiting || preparing ? <span className="raloud-dock__wait">{preparing ? <span className="raloud__spin" aria-hidden="true" /> : null}</span> : main}
-          {on}
+        <span className="raloud-dock__middle">
+          <span className="raloud-dock__controls">
+            {skipButton(-1, 15)}
+            {waiting ? <span className="raloud-dock__wait" /> : preparing ? <span className="raloud__icon raloud__icon--main raloud__icon--busy" role="status" aria-label={preparingLabel}><span className="raloud__spin" aria-hidden="true" /></span> : main}
+            {skipButton(1, 15)}
+          </span>
+          {track('raloud-dock__track', true)}
         </span>
         <span className="raloud-dock__end">
           {speed}
           {stop}
         </span>
-        {track('raloud-dock__track')}
       </Dock>
     </div>
   )

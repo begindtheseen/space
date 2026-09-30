@@ -108,6 +108,8 @@ export interface ReadAloud {
   /** Index of the sentence being spoken, or -1. */
   at: number
   total: number
+  /** What each sentence says, in the same numbering as `at` and `total` (a stop in the lesson is ''). */
+  texts: string[]
   /** The device's own voices, for the picker. */
   voices: VoiceLike[]
   engine: ReadEngine
@@ -199,6 +201,13 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
   // What the natural voice reads: whole sentences, never cut at a comma.
   const units = useMemo(() => (prepared ? speechUnits(prepared.text, (p) => toUtterances(p, 100_000), unitChars()) : []), [prepared])
   const sentenceCount = units.length ? units[units.length - 1]!.sentence + 1 : 0
+  // What each sentence says, numbered as the engine reading it numbers them: for the scrubber's preview and times.
+  const unitTexts = useMemo(() => {
+    const out: string[] = Array.from({ length: sentenceCount }, () => '')
+    for (const u of units) out[u.sentence] = out[u.sentence] ? `${out[u.sentence]} ${u.text}` : u.text
+    return out.map((t) => (pauseIn(t) ? '' : t))
+  }, [units, sentenceCount])
+  const utteranceTexts = useMemo(() => utterances.map((t) => (pauseIn(t) ? '' : t)), [utterances])
 
   const wantedNatural = naturalVoiceFor(voiceName)
 
@@ -1201,6 +1210,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     state,
     at,
     total: engine === 'device' ? utterances.length : sentenceCount,
+    texts: engine === 'device' ? utteranceTexts : unitTexts,
     voices,
     engine,
     naturalAvailable,
