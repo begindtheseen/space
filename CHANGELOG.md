@@ -8,6 +8,26 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.3.1
+
+Reading along, and finding things.
+
+- **No more "code block".** The voice passes over a block of code in silence instead of announcing it.
+  The lesson's own words already say the code is there.
+- **A player that follows you down the page.** Scroll past the read-aloud bar while the voice is on and
+  a player slides up at the bottom of the window, the way a song does in a music app. It shows the
+  lesson's name, what the voice is doing, pause and play, a sentence back and on, the speed, stop, and
+  a thin line for how far through you are. Click its left side to jump back to the word being read. It
+  slides away again when the bar is back in view.
+- **Space bar to pause and play.** On any lesson, press space to start, pause, or carry on reading.
+  It leaves you alone while you type in the terminal, the code editor, or any box.
+- **⌘F to find.** On every page, ⌘F (Ctrl+F on Windows) opens a find bar at the top right. What you
+  type is lit everywhere on the page, the one you are on in bright yellow, with "3 of 12" beside it.
+  Enter goes to the next, Shift+Enter to the one before, Escape closes it. Select a word first and ⌘F
+  finds that word.
+- **Frosted glass, properly.** The top bar, the tutor card and the new players were meant to blur what
+  is behind them, but the desktop app drew them with no blur at all. They blur now.
+
 ## 1.3.0
 
 A new voice, from the inside out.

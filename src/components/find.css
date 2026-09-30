@@ -1,0 +1,127 @@
+/* ============================================================================
+   ORBIT — find on the page
+   ========================================================================== */
+.findbar {
+  position: fixed;
+  top: calc(var(--topbar-h, 62px) + 10px);
+  right: 20px;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: min(380px, calc(100vw - 32px));
+  height: 42px;
+  padding: 0 6px 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  background: color-mix(in srgb, #0b1626 92%, transparent);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  animation: findbar-in 0.22s var(--ease-out) both;
+}
+
+@keyframes findbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+.findbar:focus-within {
+  border-color: var(--line-blue-strong);
+}
+
+.findbar__glass {
+  flex: none;
+  color: var(--ink-4);
+}
+
+.findbar__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 4px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.findbar__input:focus,
+.findbar__input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.findbar__input::placeholder {
+  color: var(--ink-4);
+}
+
+.findbar__count {
+  flex: none;
+  padding: 0 4px;
+  color: var(--ink-3);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.findbar[data-none='true'] .findbar__count {
+  color: #ff8a80;
+}
+
+.findbar__sep {
+  width: 1px;
+  height: 16px;
+  margin: 0 2px;
+  background: var(--line);
+}
+
+.findbar__btn {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out);
+}
+
+.findbar__btn:hover:not(:disabled) {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.findbar__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.findbar__btn--up svg {
+  transform: rotate(180deg);
+}
+
+/* Every match, and the one she is on. */
+::highlight(orbit-find) {
+  background-color: rgba(255, 214, 10, 0.28);
+  color: inherit;
+}
+
+::highlight(orbit-find-now) {
+  background-color: #ffd60a;
+  color: #111;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .findbar {
+    animation: none;
+  }
+}

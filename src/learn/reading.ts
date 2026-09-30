@@ -9,7 +9,7 @@
    sentences of their own ("Orbitpause c."), which the text preparation leaves
    whole and the player never speaks: reaching one, it does what the stop says
    and goes on. Code blocks that are not runnable stay as they were, and are
-   announced the way they always have been.
+   passed over the way they always are.
    ========================================================================== */
 
 /** The sentence that marks a stop. Letters only, so the text preparation leaves it exactly as written. */

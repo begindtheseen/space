@@ -6,7 +6,7 @@
    the page, so the one being spoken can be lit up and scrolled back to.
 
    What is spoken and what is shown are not the same text: code blocks and
-   equations are left out of the reading ("Code block." is said instead),
+   equations are left out of the reading (a code block is passed over in silence),
    headings and list markers are reshaped, numbers are read out, and the
    reading has its own full stops. So each spoken sentence is lined up with
    the page as a whole (alignNorms): as many of its words matched, in order, as
@@ -25,7 +25,7 @@
 import { textWords } from './kokoro'
 
 /**
- * Elements whose text is never read aloud. Code blocks (pre) and code windows are announced, not read,
+ * Elements whose text is never read aloud. Code blocks (pre) and code windows are not read,
  * but inline code is read out (lib/speech.ts codeToWords), so its words can be lit too.
  */
 const SKIP = 'pre, .katex, .katex-display, math, script, style, button, [aria-hidden="true"], .raloud, .runnable, .embed'

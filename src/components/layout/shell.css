@@ -211,8 +211,8 @@
 
 .topbar[data-stuck='true'] {
   background: rgba(5, 7, 13, 0.82);
-  backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
   border-bottom-color: var(--line-soft);
 }
 

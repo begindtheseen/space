@@ -382,7 +382,8 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     const key = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null
       if (t?.closest?.('input, textarea, select, [contenteditable], .cm-editor')) return
-      if (['PageUp', 'PageDown', 'ArrowUp', 'ArrowDown', 'Home', 'End', ' '].includes(e.key)) mine()
+      // Not the space bar: on a lesson it plays and pauses the reading (components/ReadAloud.tsx), it does not scroll.
+      if (['PageUp', 'PageDown', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) mine()
     }
     addEventListener('wheel', mine, { passive: true, capture: true })
     addEventListener('touchmove', mine, { passive: true, capture: true })

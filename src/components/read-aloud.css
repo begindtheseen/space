@@ -267,3 +267,247 @@ html[data-focus-lock='true'] .raloud-jump,
 body:has(.fbar) .raloud-jump {
   bottom: calc(96px + var(--safe-bottom, 0px));
 }
+
+/* ── The docked player ───────────────────────────────────────────────────────
+   While the voice is on and the capsule has scrolled away, the player sits at
+   the bottom of the lesson's column like a song in a music app: frosted glass
+   over the page, the lesson and what the voice is doing on the left, the
+   controls in the middle, speed and stop on the right, and the progress as a
+   hairline along its bottom edge. */
+.raloud-dock {
+  position: absolute;
+  left: 50%;
+  bottom: calc(18px + var(--safe-bottom, 0px));
+  z-index: 46;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: min(560px, calc(100% - 32px));
+  height: 60px;
+  padding: 0 10px 0 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: color-mix(in srgb, #0b1626 90%, transparent);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  backdrop-filter: blur(26px) saturate(180%);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  transform: translate(-50%, 0) scale(1);
+  opacity: 1;
+  transition:
+    transform 0.42s var(--ease-spring),
+    opacity 0.24s var(--ease-out),
+    visibility 0s linear 0s;
+}
+
+.raloud-dock[data-show='false'] {
+  transform: translate(-50%, calc(100% + 28px)) scale(0.96);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform 0.3s var(--ease-out),
+    opacity 0.2s var(--ease-out),
+    visibility 0s linear 0.3s;
+}
+
+/* Clicking the left side takes her back to where the voice is. */
+.raloud-dock__now {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 6px 8px 6px 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease-out);
+}
+
+.raloud-dock__now:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* The "artwork": a small tile whose bars move while the voice speaks, and rest when it stops. */
+.raloud-dock__art {
+  display: inline-flex;
+  flex: none;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  width: 40px;
+  height: 40px;
+  padding-bottom: 12px;
+  border-radius: 9px;
+  background:
+    radial-gradient(120% 90% at 30% 20%, rgba(154, 212, 255, 0.35), transparent 60%),
+    linear-gradient(145deg, #1b6ce0 0%, #0c2f66 100%);
+  box-shadow: 0 4px 14px rgba(27, 108, 224, 0.35);
+}
+
+.raloud-dock__art i {
+  width: 3px;
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.92);
+  transform-origin: bottom;
+  transition: height 0.3s var(--ease-out);
+}
+
+.raloud-dock__art[data-playing='true'] i {
+  animation: raloud-eq 0.9s ease-in-out infinite alternate;
+}
+.raloud-dock__art[data-playing='true'] i:nth-child(1) { animation-duration: 0.82s; }
+.raloud-dock__art[data-playing='true'] i:nth-child(2) { animation-duration: 0.64s; animation-delay: -0.3s; }
+.raloud-dock__art[data-playing='true'] i:nth-child(3) { animation-duration: 0.95s; animation-delay: -0.5s; }
+.raloud-dock__art[data-playing='true'] i:nth-child(4) { animation-duration: 0.72s; animation-delay: -0.15s; }
+
+@keyframes raloud-eq {
+  from { height: 4px; }
+  to { height: 16px; }
+}
+
+.raloud-dock__words {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.raloud-dock__title,
+.raloud-dock__doing {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.raloud-dock__title {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+}
+
+.raloud-dock__doing {
+  color: var(--ink-3);
+  font-size: 11.5px;
+}
+
+.raloud-dock__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.raloud-dock__controls .raloud__icon {
+  width: 32px;
+  height: 32px;
+  color: var(--ink-2);
+}
+
+.raloud-dock__controls .raloud__icon--main {
+  width: 40px;
+  height: 40px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.raloud-dock__controls .raloud__icon--main:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.raloud-dock__controls .raloud__icon--main svg {
+  width: 15px;
+  height: 15px;
+}
+
+.raloud-dock__wait {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+}
+
+.raloud-dock__end {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+/* The progress, a hairline along the bottom edge. */
+.raloud-dock__track {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+/* Above the focus strip when a block is running. */
+.shell[data-focus='true'] .raloud-dock,
+body:has(.fbar) .raloud-dock {
+  bottom: calc(92px + var(--safe-bottom, 0px));
+}
+
+/* The tutor steps up above the docked player. "Back to the word" is not needed while it shows: clicking the
+   player's left side does the same. */
+body:has(.raloud-dock[data-show='true']) .raloud-jump {
+  display: none;
+}
+
+body:has(.raloud-dock[data-show='true']) .tutor {
+  bottom: calc(96px + var(--safe-bottom, 0px));
+}
+
+body:has(.fbar):has(.raloud-dock[data-show='true']) .tutor {
+  bottom: calc(170px + var(--safe-bottom, 0px));
+}
+
+@media (max-width: 520px) {
+  .raloud-dock {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 4px;
+  }
+  .raloud-dock__art {
+    width: 34px;
+    height: 34px;
+  }
+  .raloud-dock__controls .raloud__icon:not(.raloud__icon--main) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .raloud-dock,
+  .raloud-dock[data-show='false'] {
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+  }
+  .raloud-dock[data-show='true'] {
+    transition: opacity 0.2s ease;
+  }
+  .raloud-dock__art[data-playing='true'] i {
+    animation: none;
+    height: 10px;
+  }
+}
+
+/* Room under the lesson's last lines, so the docked player never sits on them. */
+.shell:has(.raloud-dock[data-show='true']) .scroll {
+  padding-bottom: 88px;
+}
+
+.shell[data-focus='true']:has(.raloud-dock[data-show='true']) .scroll {
+  padding-bottom: 164px;
+}
