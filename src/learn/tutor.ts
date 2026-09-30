@@ -19,9 +19,9 @@
    every line it can say is testable.
    ========================================================================== */
 import type { CheckResult, LearnCheck, LearnLang } from './types'
-import { logicDiagnosis } from './tutorCode'
+import { assignInCondition, assignSaid, functionDiagnosis, insertOrder, joinWithoutOn, logicDiagnosis } from './tutorCode'
 import { shellDiagnosis } from './tutorShell'
-import { clip, code, distance, lowerFirst, nth, pick, quote, sentence, upperFirst, type Diagnosis, type DiagnosisKind } from './tutorText'
+import { clip, closestSlip, code, describeSlip, distance, lowerFirst, nth, pick, quote, sentence, upperFirst, type Diagnosis, type DiagnosisKind } from './tutorText'
 
 export type { DiagnosisKind } from './tutorText'
 
@@ -95,7 +95,8 @@ function closestName(wrong: string, input: TutorInput): string | null {
   let bestD = Infinity
   for (const n of pool) {
     if (n.toLowerCase() === wrong.toLowerCase()) return n
-    const d = distance(n, wrong)
+    // A tie goes to the name that starts the same way: `nex` is `next`, not `new`.
+    const d = distance(n, wrong) - (n.startsWith(wrong) || wrong.startsWith(n) ? 0.5 : 0)
     if (d < bestD && d <= Math.max(1, Math.floor(wrong.length / 3))) {
       best = n
       bestD = d
@@ -150,7 +151,7 @@ function pythonError(input: TutorInput, all: string, last: string): Diagnosis | 
       return { kind: 'error', key: `unmatched:${line}`, say: `There's a closing bracket${where} with nothing open to close.`, more: 'Look for one extra bracket, or one that opens somewhere earlier and was left out.' }
     if (/expected ':'/.test(all) || (src && BLOCK_START.test(src) && !/:\s*(#.*)?$/.test(src)))
       return { kind: 'error', key: `colon:${line}`, say: `Line ${line ?? 'that starts the block'} is missing the colon at the end.`, more: `In Python a line that starts a block, like ${code(src.trim().split(/\s/)[0] || 'if')}, ends with a colon.` }
-    if (/Maybe you meant '==' or ':=' instead of '='|cannot assign to/.test(all))
+    if (/Maybe you meant '==' or ':=' instead of '='|cannot assign to/.test(all) || (src && /^\s*(if|elif|while)\b[^=]*[^=!<>]=[^=]/.test(src)))
       return { kind: 'error', key: `assign:${line}`, say: `There's a single equals sign${where} where Python wanted a comparison.`, more: 'One equals sign stores a value. Two equals signs ask whether two things are the same.' }
     if (/Perhaps you forgot a comma/.test(all))
       return { kind: 'error', key: `comma:${line}`, say: `Something is missing between two things${where}, most likely a comma.`, more: 'Items in a list, or arguments to a call, are separated by commas.' }
@@ -191,8 +192,11 @@ function pythonError(input: TutorInput, all: string, last: string): Diagnosis | 
     return { kind: 'error', key: `index:${line}`, say: `Your code asked for a position past the end of the list${where}.`, more: 'Positions start at 0, so the last one is the length minus one.' }
   if ((m = last.match(/KeyError: (.+)$/)))
     return { kind: 'error', key: `key:${m[1]}`, say: `There's no key ${m[1]!.trim()} in the dictionary${where}.`, more: `Check the spelling, or use ${code('.get()')} if the key might not be there.` }
-  if ((m = last.match(/UnboundLocalError: .*?'(\w+)'/)))
+  if ((m = last.match(/UnboundLocalError: .*?'(\w+)'/))) {
+    const near = closestName(m[1]!, input)
+    if (near && near !== m[1]) return { kind: 'error', key: `unbound:${m[1]}`, say: `${code(m[1]!)} is used${where} before it has a value. Did you mean ${code(near)}?`, now: true }
     return { kind: 'error', key: `unbound:${m[1]}`, say: `${code(m[1]!)} is used${where} before it has been given a value.`, more: 'Check every path through your code: on one of them, maybe inside an if or an except, it never gets set.' }
+  }
   if (/ZeroDivisionError/.test(last))
     return { kind: 'error', key: `zero:${line}`, say: `Your code divided by zero${where}.`, more: 'Check what the number underneath is at that moment, and whether an empty list could make it zero.' }
   if (/RecursionError/.test(last))
@@ -237,6 +241,37 @@ function cppError(input: TutorInput, all: string): Diagnosis | null {
   const where = at(line)
   let m: RegExpMatchArray | null
   const suggest = msg.match(/did you mean '([\w:]+)'/)?.[1]
+  // if (x = 5) often doesn't compile at all, and what the compiler says about it is no help to a beginner.
+  const assign = assignInCondition(input.code, input.solution)
+  if (assign && line && assign.line === line && /assignable|assign to|assigning to|convertible to 'bool'|conversion from .* to 'bool'|lvalue|read-only/.test(msg))
+    return { ...assignSaid(assign, where), kind: 'error' }
+  // A name from a header that isn't included: the headers the solution has and her code doesn't.
+  const includes = (s: string) => [...s.matchAll(/#include\s*<([\w./]+)>/g)].map((x) => x[1]!)
+  const lacking = includes(input.solution).filter((h) => !includes(input.code).includes(h))
+  if (lacking.length && /undeclared identifier 'std'|unknown type name|no template named|implicit instantiation of undefined template|incomplete type|no member named '\w+' in namespace 'std'|use of undeclared identifier '(?:cout|cin|endl|string|vector|map|set|sort|max|min|swap|size_t|uint\w*|int\w*_t|printf|abs|sqrt|pow)'/.test(msg)) {
+    const name = msg.match(/'([\w:]+)'/)?.[1] ?? 'std'
+    const list = lacking.map((h) => code(`#include <${h}>`))
+    return {
+      kind: 'error',
+      key: `include:${lacking.join(',')}`,
+      say: `The compiler doesn't know ${code(name === 'std' ? 'std::' : name)}${where}, because the header it comes from isn't included.`,
+      more: `Put ${list.length > 1 ? `${list.slice(0, -1).join(', ')} and ${list.at(-1)}` : list[0]} at the very top of the program. Nothing from the standard library exists until its header is included.`,
+      now: true,
+    }
+  }
+  if ((m = msg.match(/no member named '(\w+)' in '(?:(?:struct|class) )?([^']+)'/))) {
+    const near = closestName(m[1]!, input) ?? suggest
+    return { kind: 'error', key: `member:${m[1]}`, say: `${code(m[2]!)} has nothing called ${code(m[1]!)}${where}.${near ? ` You meant ${code(near)}: ${describeSlip(near, m[1]!)}.` : ''}`, more: near ? undefined : `Check the spelling against where ${code(m[2]!)} is defined.`, now: !!near }
+  }
+  // A misspelt name that happens to be something else too: a function, a keyword.
+  const col = Number(all.match(/:\d+:(\d+): (?:fatal )?error:/)?.[1] ?? 0)
+  const token = line && col ? /^\w+/.exec(lineOf(input.code, line).slice(col - 1))?.[0] : undefined
+  if (token && /must be called|cannot increment value of type|called object type|non-object type|is not a (?:type|class)|invalid operands|reference to overloaded function/.test(msg)) {
+    const near = closestName(token, input)
+    if (near && namesIn(input.solution).has(near) && !namesIn(input.solution).has(token))
+      return { kind: 'error', key: `name:${token}`, say: `${code(token)}${where} isn't the name you meant. You meant ${code(near)}: ${describeSlip(near, token)}.`, now: true }
+    if (/must be called/.test(msg)) return { kind: 'error', key: `call:${token}`, say: `${code(token)}${where} is a function, and it's named without calling it.`, more: `Add the brackets: ${code(`${token}()`)}.`, now: true }
+  }
   if ((m = msg.match(/no member named '(cout|cin|endl)' in namespace 'std'/)) && !input.code.includes('#include <iostream>'))
     return { kind: 'error', key: `include:${m[1]}`, say: `The compiler doesn't know ${code(`std::${m[1]}`)}${where}, because ${code('iostream')}, the file it comes from, isn't included.`, more: `Put ${code('#include <iostream>')} at the very top of the program.`, now: true }
   if ((m = msg.match(/no member named '(\w+)' in namespace 'std'/)))
@@ -252,7 +287,7 @@ function cppError(input: TutorInput, all: string): Diagnosis | null {
       return { kind: 'error', key: `include:${wrong}`, say: `The compiler doesn't know ${code(wrong)}${where}, because the file it comes from isn't included.`, more: `Put ${code(`#include <${header[wrong]}>`)} at the very top of the program.`, now: true }
     if (header[wrong])
       return { kind: 'error', key: `std:${wrong}`, say: `The compiler doesn't recognise ${code(wrong)}${where} on its own: it lives in the standard library, ${code('std')}.`, more: `Write ${code(`std::${wrong}`)}.`, now: true }
-    const near = suggest ?? (wrong ? closestName(wrong, input) : null)
+    const near = (wrong ? closestName(wrong, input) : null) ?? suggest
     return { kind: 'error', key: `name:${wrong}`, say: `The compiler doesn't know ${code(wrong)}${where}.${near ? ` Did you mean ${code(near)}?` : ''}`, more: near ? undefined : 'Declare it, with its type, before the line that uses it.' }
   }
   if (/no matching function|no match for 'operator/.test(msg))
@@ -269,6 +304,12 @@ function cppError(input: TutorInput, all: string): Diagnosis | null {
 
 function sqlError(input: TutorInput, all: string): Diagnosis | null {
   let m: RegExpMatchArray | null
+  // A constraint that fails because the INSERT's columns are listed in another order from its values.
+  const order = insertOrder(input.code, input.solution)
+  if (order && /constraint failed|datatype mismatch|cannot store/i.test(all)) return { ...order, kind: 'error' }
+  // Rows copied through a join with no ON come out many times over, and trip a UNIQUE on the way in.
+  const noOn = joinWithoutOn(input.code, input.solution)
+  if (noOn && /UNIQUE constraint failed/i.test(all)) return { ...noOn, kind: 'error', say: `${noOn.say} The same rows came out many times over, and they can't all go in.` }
   if ((m = all.match(/no such column: ([\w.]+)/))) {
     const wrong = m[1]!.split('.').pop()!
     const asValue = new RegExp(`'${wrong}'`, 'i').test(`${input.schema ?? ''}\n${input.solution}`)
@@ -277,18 +318,43 @@ function sqlError(input: TutorInput, all: string): Diagnosis | null {
     const near = closestName(wrong, { ...input, solution: `${input.solution}` })
     return { kind: 'error', key: `column:${wrong}`, say: `There's no column called ${code(wrong)}.${near ? ` Did you mean ${code(near)}?` : ''}`, more: near ? undefined : 'Check the table: the column names are listed above the task.' }
   }
-  if ((m = all.match(/no such table: (\w+)/))) {
+  if ((m = all.match(/UNIQUE constraint failed: (\w+)\.(\w+)/)))
+    return { kind: 'error', key: `unique:${m[1]}.${m[2]}`, say: `A row with that ${code(m[2]!)} is already in ${code(m[1]!)}, and each ${code(m[2]!)} has to be different.`, more: 'Check whether the row is already there, or whether you ran the INSERT twice.' }
+  if ((m = all.match(/NOT NULL constraint failed: (\w+)\.(\w+)/)))
+    return { kind: 'error', key: `notnull:${m[1]}.${m[2]}`, say: `${code(m[2]!)} in ${code(m[1]!)} must always have a value, and your statement left it empty.`, more: `Give it one: name ${code(m[2]!)} in the column list and put its value in the same place in VALUES.` }
+  if ((m = all.match(/table (\w+) has no column named (\w+)/))) {
+    const create = new RegExp(`CREATE TABLE\\s+(?:IF NOT EXISTS\\s+)?${m[1]}\\s*\\(([\\s\\S]*?)\\);`, 'i').exec(`${input.schema ?? ''}\n${input.code}`)?.[1] ?? ''
+    const cols = [...create.matchAll(/^\s*(\w+)\s+[A-Z]/gim)].map((c) => c[1]!)
+    const near = closestSlip(m[2]!, cols)
+    return near
+      ? { kind: 'spelling', key: `insert-col:${m[2]}`, say: `${code(m[1]!)} has no column called ${code(m[2]!)}. You meant ${code(near)}: ${describeSlip(near, m[2]!)}.`, now: true }
+      : { kind: 'error', key: `insert-col:${m[2]}`, say: `${code(m[1]!)} has no column called ${code(m[2]!)}.`, more: `Its columns are ${cols.map(code).join(', ') || 'listed where the table is made'}.` }
+  }
+  if (/HAVING clause on a non-aggregate query/.test(all))
+    return { kind: 'error', key: 'having', say: `${code('HAVING')} filters groups, so it only works after a ${code('GROUP BY')}.`, more: `Add the ${code('GROUP BY')} first. To filter single rows, use ${code('WHERE')} instead.`, now: true }
+  if (/near "OFFSET": syntax error/.test(all))
+    return { kind: 'error', key: 'offset', say: `${code('OFFSET')} only works after a ${code('LIMIT')}: it skips rows at the start of what LIMIT keeps.`, more: `Write ${code('LIMIT 5 OFFSET 10')}.` }
+  if ((m = all.match(/no such table: (?:main\.)?(\w+)/))) {
     const near = closestName(m[1]!, input)
     return { kind: 'error', key: `table:${m[1]}`, say: `There's no table called ${code(m[1]!)}.${near ? ` Did you mean ${code(near)}?` : ''}` }
   }
   if ((m = all.match(/no such function: (\w+)/))) {
-    const fns = ['LOWER', 'UPPER', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'LENGTH', 'SUBSTR', 'ROUND', 'COALESCE', 'IFNULL', 'DATE', 'STRFTIME', 'ABS', 'TRIM', 'REPLACE', 'INSTR', 'GROUP_CONCAT', 'TOTAL', 'TYPEOF', 'CAST', 'JULIANDAY', 'NULLIF', 'PRINTF']
+    const fns = ['LOWER', 'UPPER', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'LENGTH', 'SUBSTR', 'SUBSTRING', 'ROUND', 'COALESCE', 'IFNULL', 'IIF', 'DATE', 'TIME', 'DATETIME', 'STRFTIME', 'ABS', 'TRIM', 'LTRIM', 'RTRIM', 'REPLACE', 'INSTR', 'GROUP_CONCAT', 'TOTAL', 'TYPEOF', 'CAST', 'JULIANDAY', 'UNIXEPOCH', 'NULLIF', 'PRINTF', 'FORMAT', 'ROW_NUMBER', 'RANK', 'DENSE_RANK', 'NTILE', 'LAG', 'LEAD', 'FIRST_VALUE', 'LAST_VALUE', 'NTH_VALUE', 'PERCENT_RANK', 'CUME_DIST', 'RANDOM', 'HEX', 'QUOTE', 'CHAR', 'UNICODE', 'JSON_EXTRACT']
     const wrong = m[1]!
     const near = fns.map((f) => [f, distance(f, wrong.toUpperCase())] as const).sort((a, b) => a[1] - b[1])[0]!
-    return { kind: 'error', key: `fn:${wrong}`, say: `There's no function called ${code(wrong)}.${near[1] <= 2 ? ` Did you mean ${code(near[0])}?` : ''}` }
+    // Suggested the way she writes: lower case if she typed lower case.
+    const say = wrong === wrong.toLowerCase() ? near[0].toLowerCase() : near[0]
+    if (near[1] <= 2) return { kind: 'spelling', key: `fn:${wrong}`, say: `There's no function called ${code(wrong)}. You meant ${code(say)}: ${describeSlip(say, wrong)}.`, now: true }
+    return { kind: 'error', key: `fn:${wrong}`, say: `There's no function called ${code(wrong)}.`, more: 'Check its spelling against the lesson.' }
   }
   if (/near ";": syntax error/.test(all))
     return { kind: 'error', key: 'near-end', say: 'The query stops before it is finished: something is missing just before the end.', more: 'Look at the last clause: a condition with nothing after AND, or a comma with nothing after it.' }
+  if ((m = all.match(/near "([^"]+)": syntax error/))) {
+    const word = m[1]!
+    const tables = [...(input.schema ?? '').matchAll(/CREATE TABLE\s+(?:IF NOT EXISTS\s+)?(\w+)/gi)].map((t) => t[1]!)
+    const near = closestSlip(word, tables)
+    if (near) return { kind: 'spelling', key: `table-keyword:${word}`, say: `The table is called ${code(near)}. ${code(word)} on its own is a SQL keyword, so the database read it as part of the query instead of as a name.`, now: true }
+  }
   if ((m = all.match(/near "([^"]+)": syntax error/)))
     return { kind: 'error', key: `near:${m[1]}`, say: `The database got confused just before ${code(m[1]!)}.`, more: 'Check the word right before it: a missing comma, a misspelt keyword, or clauses in the wrong order. The order is SELECT, FROM, WHERE, GROUP BY, HAVING, ORDER BY.' }
   if (/ambiguous column name: (\w+)/.test(all))
@@ -472,12 +538,19 @@ function checkDiagnosis(miss: CheckResult, check: LearnCheck | undefined, input:
       return caseDiagnosis(miss, input)
     case 'test': {
       const actual = (miss.actual ?? '').trim()
-      if (/Error|Traceback/i.test(actual))
-        return { kind: 'case', key: `test-crash:${miss.input}`, say: `The check ${code(miss.input ?? check.expr)} crashed your code.`, more: `It said ${quote(actual.split('\n').pop() ?? actual)}.` }
+      if (/Error|Traceback/i.test(actual)) {
+        const inner = errorDiagnosis({ ...input, program: undefined, run: { ...input.run, stderr: actual, error: actual.split('\n').pop() ?? actual } })
+        return { kind: 'case', key: `test-crash:${inner?.key ?? miss.input}`, say: `When the check ran your code, it stopped with an error.${inner && inner.kind === 'error' ? ` ${inner.say}` : ` It said ${quote(actual.split('\n').pop() ?? actual)}.`}`, more: inner?.more }
+      }
       return { kind: 'check', key: `test:${check.expr}`, say: `This check comes out false: ${lowerFirst(sentence(miss.name))}`, more: hint || `The check tests ${code(miss.input ?? check.expr)}.` }
     }
     case 'result':
       return rowsDiagnosis(miss, check.ordered)
+    case 'query': {
+      // A query the check runs after hers, on the same database: what her statements left behind.
+      const d = rowsDiagnosis(miss, true)
+      return { ...d, say: `When the check looks at the result afterwards, with ${code(check.sql.split('\n')[0]!)}: ${lowerFirst(d.say)}` }
+    }
     case 'shell': {
       // The terminal says exactly what is not true yet ("you have not run pwd yet"): first the goal, then that.
       const now = (miss.actual ?? miss.detail ?? '').trim()
@@ -548,6 +621,8 @@ export function tutorLine(input: TutorInput): TutorLine | null {
   const repeat = !d && !!input.before && trimmed(input.before.code) === trimmed(input.code)
   if (terminal && !d) d = shellDiagnosis({ starter: input.starter, solution: input.solution, checks: input.checks ?? [] }, input.code.split('\n'))
   d ??= errorDiagnosis(input)
+  // A crash on None, in Python, usually comes from a function that prints, or returns too early.
+  if (d?.kind === 'error' && input.lang === 'python' && /none/i.test(d.key)) d = functionDiagnosis(input.code, input.solution, failed?.input) ?? d
   if (!d && !terminal) {
     const i = failed ? run.results.indexOf(failed) : -1
     d = logicDiagnosis({ lang: input.lang, code: input.code, solution: input.solution, output: run.output, failed, check: i >= 0 ? input.checks?.[i] : undefined, schema: input.schema })

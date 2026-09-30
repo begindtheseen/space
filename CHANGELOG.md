@@ -28,6 +28,17 @@ it.
     `10` was wanted because `input()` gives text, a print outside the loop, a `return` inside it, a
     missing `GROUP BY`, `= NULL` instead of `IS NULL`, rows in reverse order, whole-number division
     in C++.
+  - It compares your code with the lesson's solution to find the cause behind an unhelpful error.
+    A crash on `None` is traced to the function that prints instead of returning, or to a last
+    `return` pushed inside an `if` ("whenever that doesn't happen, the function gives back
+    `None`"). A C++ error like "expression is not assignable" is read as the `=` that should be
+    `==`. A failed constraint is read as `INSERT` columns listed in a different order from the
+    values. A `JOIN` with no `ON` is named, and so is a loop that runs one step past the end
+    (`<=` where it should be `<`).
+  - Measured, not guessed. Every Terminal, Git, Python, SQL and C++ problem was tried with the
+    mistakes people really make, about 10,000 runs on real interpreters and compilers. The tutor
+    names the actual mistake in 85–100% of runs for nearly every kind of mistake, and the tests keep it
+    there.
   - Each time you try again, it helps a little more: first where the problem is, then what should be
     there, then the lesson's own hints. After several tries, it suggests reading the solution.
   - It notices when you've fixed the error or when more checks pass, and when you run the same

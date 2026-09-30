@@ -146,7 +146,7 @@ export function codeMistakesFor(unit: LearnLesson): CodeMistake[] {
   const src = unit.solution.replace(/\s+$/, '')
   const out: CodeMistake[] = []
   const add = (name: string, code: string | null, expect: DiagnosisKind[], mention?: RegExp) => {
-    if (code && code !== src) out.push({ name, code, expect, ...(mention ? { mention } : {}) })
+    if (code && code !== src && code.trim() !== unit.starter.trim()) out.push({ name, code, expect, ...(mention ? { mention } : {}) })
   }
   if (unit.lang === 'python') {
     const colon = lineIdx(src, /^\s*(if|for|while|def|elif)\b.*:\s*$/)
@@ -166,8 +166,13 @@ export function codeMistakesFor(unit: LearnLesson): CodeMistake[] {
     if (f >= 0) add('py-fstring', withLine(src, f, (l) => l.replace(/\bf"/, '"')), ['logic'], /`f`/)
     const ret = lineIdx(src, /^\s{4}return\s+\S/)
     if (ret >= 0 && unit.checks.some((c) => c.kind === 'case')) add('py-return-print', withLine(src, ret, (l) => l.replace(/return\s+(.+)$/, 'print($1)')), ['case', 'logic'], /return|give/)
-    const loopRet = src.split('\n').findIndex((l, k, all) => /^ {4}return\b/.test(l) && all.slice(0, k).some((p) => /^ {4}for\b.*:\s*$/.test(p)) && /^ {8}\S/.test(all[k - 1] ?? ''))
-    if (loopRet >= 0) add('py-return-in-loop', withLine(src, loopRet, (l) => `    ${l}`), ['logic', 'case', 'output'], /loop/)
+    // The last return pushed one step in, into the block just above it: a loop, or an if.
+    const pushed = src.split('\n').findIndex((l, k, all) => /^ {4}return\b/.test(l) && /^ {8}\S/.test(all[k - 1] ?? ''))
+    if (pushed >= 0) {
+      const block = src.split('\n').slice(0, pushed).findLast((p) => /^ {4}\S/.test(p)) ?? ''
+      if (/^ {4}(?:for|while)\b.*:\s*$/.test(block)) add('py-return-in-loop', withLine(src, pushed, (l) => `    ${l}`), ['logic', 'case', 'output'], /loop/)
+      else if (/^ {4}(?:if|elif|else)\b.*:\s*$/.test(block)) add('py-return-in-if', withLine(src, pushed, (l) => `    ${l}`), ['logic', 'case', 'output'], /inside `(?:if|elif|else)/)
+    }
     if (/int\(input\(\)\)/.test(src)) add('py-int-input', src.replace(/int\(input\(\)\)/, 'input()'), ['logic', 'error'], /int|text/)
     const qv = src.split('\n').findIndex((l) => { const m = /^\s*print\(([a-z_][a-z0-9_]*)\)\s*$/.exec(l); return !!m && usedNames(src).includes(m[1]!) })
     if (qv >= 0) add('py-quoted-var', withLine(src, qv, (l) => l.replace(/print\((\w+)\)/, 'print("$1")')), ['logic'], /quote/)
@@ -180,9 +185,11 @@ export function codeMistakesFor(unit: LearnLesson): CodeMistake[] {
     const call = src.split('\n').findIndex((l) => /^print\([a-z_]\w*\(.*\)\)\s*$/.test(l))
     if (call >= 0 && /^def /m.test(src)) add('py-no-call', src.split('\n').filter((l) => !/^print\([a-z_]\w*\(.*\)\)\s*$/.test(l)).join('\n'), ['logic', 'empty', 'output'], /call/)
   }
-  if (unit.lang === 'sql') {
-    const col = /SELECT\s+([a-z_]{4,})/i.exec(src)?.[1]
-    if (col) add('sql-column', src.replace(col, col.slice(0, -1)), ['error', 'spelling'], new RegExp(`\`${col}\``))
+  // A recursive query without its stopping condition never ends: leave those alone.
+  if (unit.lang === 'sql' && !/\bRECURSIVE\b/i.test(src)) {
+    // The first column named after a SELECT: a name, not a keyword or a function.
+    const col = [...src.matchAll(/\bSELECT\s+(?:[a-z]\w*\.)?([a-z_]{4,})\b(?!\s*\()/gi)].map((m) => m[1]!).find((c) => c === c.toLowerCase() && !/^(?:distinct|case|count|null|true|false)$/i.test(c))
+    if (col) add('sql-column', src.replace(new RegExp(`(\\bSELECT\\s+(?:[a-z]\\w*\\.)?)${col}\\b`, 'i'), `$1${col.slice(0, -1)}`), ['error', 'spelling'], new RegExp(`\`${col}\``))
     const table = /FROM\s+([a-z_]{4,})/i.exec(src)?.[1]
     if (table) add('sql-table', src.replace(new RegExp(`FROM\\s+${table}\\b`, 'i'), `FROM ${table.slice(0, -1)}`), ['error', 'spelling'], new RegExp(`\`${table}\``))
     if (/\bIS NULL\b/i.test(src)) add('sql-null', src.replace(/\bIS NULL\b/i, '= NULL'), ['logic'], /IS NULL/)
@@ -191,8 +198,13 @@ export function codeMistakesFor(unit: LearnLesson): CodeMistake[] {
     if (/\bGROUP BY\b[^;]*?(?=\bHAVING\b|\bORDER\b|;|$)/i.test(src) && /\b(COUNT|SUM|AVG|MIN|MAX)\(/i.test(src)) add('sql-group', src.replace(/\s*\bGROUP BY\s+[\w., ]+?(?=\s*(?:\bHAVING\b|\bORDER\b|;|$))/i, ''), ['logic', 'rows'], /GROUP BY/)
     if (/\bLIMIT\s+\d+/i.test(src)) add('sql-limit', src.replace(/\s*\bLIMIT\s+\d+/i, ''), ['logic', 'rows'], /LIMIT/)
     const sel = /SELECT\s+([\w.]+)\s*,\s*([\w.]+)\s+FROM/i.exec(src)
-    if (sel) add('sql-columns', src.replace(`${sel[1]}, ${sel[2]}`, `${sel[2]}, ${sel[1]}`).replace(`${sel[1]},${sel[2]}`, `${sel[2]},${sel[1]}`), ['logic', 'rows'], /order|columns/)
-    if (/\bWHERE\b/i.test(src)) add('sql-where', src.replace(/\s*\bWHERE\b[^;]*?(?=\bGROUP\b|\bORDER\b|\bLIMIT\b|;|$)/i, ' '), ['rows', 'logic'])
+    if (sel) add('sql-columns', src.replace(`${sel[1]}, ${sel[2]}`, `${sel[2]}, ${sel[1]}`).replace(`${sel[1]},${sel[2]}`, `${sel[2]},${sel[1]}`), ['logic', 'rows', 'error'], /order|columns/)
+    // Only a WHERE of the main query, and only what belongs to it: never across a bracket.
+    const where = [...src.matchAll(/\s*\bWHERE\b[^;()]*?(?=\bGROUP\b|\bORDER\b|\bLIMIT\b|;|$)/gi)].find((m) => {
+      const before = src.slice(0, m.index)
+      return (before.match(/\(/g) ?? []).length === (before.match(/\)/g) ?? []).length
+    })
+    if (where) add('sql-where', src.slice(0, where.index) + ' ' + src.slice(where.index! + where[0].length), ['rows', 'logic'])
     if (/\bDESC\b/i.test(src)) add('sql-desc', src.replace(/\s*\bDESC\b/i, ''), ['rows', 'logic'], /order|DESC/i)
     if (/\bJOIN\s+\w+(?:\s+\w+)?\s+ON\s+[\w.]+\s*=\s*[\w.]+/i.test(src)) add('sql-join-on', src.replace(/(\bJOIN\s+\w+(?:\s+\w+)?)\s+ON\s+[\w.]+\s*=\s*[\w.]+/i, '$1'), ['logic', 'rows', 'error'], /ON|join/i)
   }
