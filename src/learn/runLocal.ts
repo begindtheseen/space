@@ -166,11 +166,15 @@ async function runSql(schema: string, program: string): Promise<LearnRun> {
 }
 
 // Pyodide runs a program with top-level await (an asyncio lesson awaits at the top); CPython needs asking.
+// Memory is capped at 2 GB a program. Pyodide's WebAssembly memory stops at 4 GB, so no problem may need
+// anywhere near that; an unfinished starter that grows without end fails fast here instead of taking the
+// 16 GB CI machine down with it (one did), even with four programs running at once.
 const PY_FILE = join(dir, 'py.py')
 writeFileSync(
   PY_FILE,
   String.raw`
-import ast, asyncio, sys
+import ast, asyncio, resource, sys
+resource.setrlimit(resource.RLIMIT_DATA, (2 << 30, 2 << 30))
 path = sys.argv[1]
 sys.argv = ['main.py']
 code = compile(open(path).read(), 'main.py', 'exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
