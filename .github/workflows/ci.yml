@@ -31,6 +31,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends xvfb
       - run: npm ci --legacy-peer-deps
+      # Some unit tests run Python (lesson code blocks, the Explain coverage script, which counts a name
+      # only if this Python has it), so they get the same Python as the lesson checker.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Python packages lessons may import
+        run: pip install numpy scipy matplotlib pandas
       - name: Typecheck
         run: npx tsc -b
       # Everything but the lesson checker, which runs in the lessons job below.
