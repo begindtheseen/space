@@ -124,13 +124,53 @@ body:has(.fbar) .tutor {
   line-height: 1.55;
 }
 
-.tutor__text [data-later='true'] {
-  opacity: 0.28;
+.tutor__text {
+  position: relative;
 }
 
-.tutor__text span,
+/* Words not yet said wait, faint; each comes up as it is heard. */
+.tutor__text [data-later='true'] {
+  opacity: 0.3;
+}
+
+.tutor__text > span:not(.tutor__pill),
 .tutor__code {
-  transition: opacity 0.18s ease-out;
+  position: relative;
+  transition: opacity 0.22s ease-out, color 0.22s ease-out;
+}
+
+.tutor__text [data-now='true'] {
+  color: #fff;
+}
+
+/* The light under the word being said: one element that glides from word to word. */
+.tutor__pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--blue-hi, #2a7ef5) 34%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--blue-hi, #2a7ef5) 40%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.16s cubic-bezier(0.25, 0.8, 0.25, 1),
+    width 0.16s cubic-bezier(0.25, 0.8, 0.25, 1),
+    height 0.16s ease,
+    opacity 0.2s ease;
+  will-change: transform, width;
+}
+
+.tutor__text > span:not(.tutor__pill),
+.tutor__text > code {
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutor__pill {
+    transition: opacity 0.2s ease;
+  }
 }
 
 .tutor__code {

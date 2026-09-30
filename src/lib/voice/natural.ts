@@ -27,7 +27,10 @@ export const MODEL_URL = 'https://huggingface.co/onnx-community/Kokoro-82M-v1.0-
 /** The model's size, for the progress bar when the server does not say. */
 export const MODEL_BYTES = 92_361_116
 const CACHE_NAME = 'natural-voice-v1'
-const AUDIO_CACHE = 'natural-voice-audio-v1'
+// v2: made with full-precision layers off the phone (voice.worker.ts), so what v1 kept is not used again,
+// and is cleared away (see NaturalVoice's constructor).
+const AUDIO_CACHE = `natural-voice-audio-v2${typeof navigator !== 'undefined' && isPhone() ? '-phone' : ''}`
+const OLD_AUDIO_CACHES = ['natural-voice-audio-v1']
 /** Sentences kept on the device; the oldest go first. At ~150 KB each, about 60 MB. */
 const AUDIO_CACHE_LIMIT = 400
 /** Workers are let go after this long without anything to say, to give back their memory: sooner on a phone. */
@@ -73,6 +76,8 @@ interface Job {
   cancelled: boolean
   /** Times it was handed to a fresh worker after one failed on it. */
   retries: number
+  /** Whose it is: the lesson reader's, or a line said on its own (the tutor). Clearing one never clears the other. */
+  owner: 'reader' | 'line'
 }
 
 interface Slot {
@@ -174,6 +179,10 @@ function cacheUrl(text: string, voice: NaturalVoiceInfo, speed: number): string 
 }
 
 class NaturalVoice {
+  constructor() {
+    if (typeof caches !== 'undefined') for (const name of OLD_AUDIO_CACHES) void caches.delete(name).catch(() => {})
+  }
+
   status: NaturalStatus = 'idle'
   /** Download progress, 0 to 1, while downloading. */
   progress = 0
@@ -346,6 +355,7 @@ class NaturalVoice {
         cacheName: CACHE_NAME,
         voiceBase: new URL(`${import.meta.env.BASE_URL}voices/`, location.href).href,
         device,
+        fullPrecision: !isPhone(),
       }
       worker.postMessage(init)
     })
@@ -482,12 +492,21 @@ class NaturalVoice {
     return this.starting
   }
 
-  /** Speech for one piece of text, as 24 kHz samples: from the device's cache if it was made before. */
-  synth(text: string, voice: NaturalVoiceInfo, speed: number): Promise<Speech> {
+  /**
+   * Speech for one piece of text, as 24 kHz samples: from the device's cache if it was made before. A line
+   * said on its own (`owner: 'line'`, the tutor) goes ahead of the lesson reader's queue: she is waiting
+   * for it now, and the reading can wait a sentence.
+   */
+  synth(text: string, voice: NaturalVoiceInfo, speed: number, owner: 'reader' | 'line' = 'reader'): Promise<Speech> {
     return this.fromCache(text, voice, speed).then((hit) => {
       if (hit) return hit
       const made = new Promise<Speech>((resolve, reject) => {
-        this.queue.push({ id: this.nextId++, text, voice, speed, resolve, reject, cancelled: false, retries: 0 })
+        const job: Job = { id: this.nextId++, text, voice, speed, resolve, reject, cancelled: false, retries: 0, owner }
+        if (owner === 'line') {
+          // After any other line already waiting, before the reader's.
+          const at = this.queue.findIndex((j) => j.owner !== 'line')
+          this.queue.splice(at < 0 ? this.queue.length : at, 0, job)
+        } else this.queue.push(job)
         this.pump()
       })
       return made.then((speech) => {
@@ -531,13 +550,14 @@ class NaturalVoice {
     }
   }
 
-  /** Forgets every piece not yet started. The ones in flight finish and are kept in the cache. */
-  clear(): void {
+  /** Forgets every piece of `owner`'s not yet started. The ones in flight finish and are kept in the cache. */
+  clear(owner: 'reader' | 'line' = 'reader'): void {
     for (const j of this.queue) {
+      if (j.owner !== owner) continue
       j.cancelled = true
       j.reject(new Error('cancelled'))
     }
-    this.queue = []
+    this.queue = this.queue.filter((j) => j.owner !== owner)
   }
 
   private pump(): void {

@@ -495,7 +495,7 @@ describe('what the voice still said wrong, found by phonemising every lesson', (
     expect(said('An `enum` in `Eigen`.')).toBe('An ee num in eye gen.')
     expect(said('Use `elif`, then `async`.')).toBe('Use el if, then ay sink.')
     expect(said('The `succ` of a node.')).toBe('The successor of a node.')
-    expect(said('Open notes.txt now.')).toBe('Open notes.text now.')
+    expect(said('Open notes.txt now.')).toBe('Open notes dot text now.')
   })
 
   it('leaves ordinary words alone, and reads compiler flags anywhere', () => {
@@ -504,7 +504,7 @@ describe('what the voice still said wrong, found by phonemising every lesson', (
   })
 
   it('reads flags, tildes and escapes in a command', () => {
-    expect(said('Run `ls -la` and `git log --oneline`.')).toBe('Run ls dash L A and git log dash dash one line.')
+    expect(said('Run `ls -la` and `git log --oneline`.')).toBe('Run L S dash L A and git log dash dash one line.')
     expect(said('Test with `[ "$a" -eq 1 ]`.')).toContain('dash E Q')
     expect(said('`HEAD~1` is one back.')).toBe('HEAD tilde 1 is one back.')
     expect(said('Print `"a\\nb"`.')).toContain('newline')
@@ -517,5 +517,24 @@ describe('what the voice still said wrong, found by phonemising every lesson', (
     expect(said('Case (ii) is harder.')).toBe('Case (two) is harder.')
     expect(said('the nth term')).toBe('the enth term')
     expect(said('grows as 2ⁿ')).toBe('grows as 2 to the n')
+  })
+})
+
+describe('code in the tutor’s hints, said so it can be understood', () => {
+  const said = (md: string) => prepare(md).utterances.join(' ')
+  it('says paths, redirects and pipes as words', () => {
+    expect(said('Rename it: `mv ../feul ../fuel`.')).toBe('Rename it: M V dot dot slash feul dot dot slash fuel.')
+    expect(said('Go back with `cd ..` first.')).toBe('Go back with C D dot dot first.')
+    expect(said('Try `grep ROVER comms.log | wc -l`.')).toBe('Try grep ROVER comms dot log pipe W C dash L.')
+    expect(said('Use `echo "zara" >> names.txt`.')).toBe('Use echo "zara" double greater than names dot text.')
+    expect(said('Run `mv jan.log archive/2026/01.log`.')).toBe('Run M V jan dot log archive slash 2026 slash 01 dot log.')
+    expect(said('Run `find etc -type f -iname "*.conf"`.')).toMatch(/dash type f dash iname " star dot conf"/)
+  })
+  it('says a symbol, a letter or two, and short commands the way people do', () => {
+    expect(said('`>` should be `>>`.')).toBe('greater than should be double greater than.')
+    expect(said('The folder `/` is the top.')).toBe('The folder slash is the top.')
+    expect(said('`eu` should be `ue`: it is missing a `d`.')).toBe('E U should be U E: it is missing a D.')
+    expect(said('There is no command called `pw`.')).toBe('There is no command called P W.')
+    expect(said('Git won’t see “notes.txt” in about.html.')).toMatch(/notes dot text.*about dot html/)
   })
 })

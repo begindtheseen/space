@@ -221,12 +221,73 @@ function registry(): { Ctor: HighlightCtor; reg: HighlightRegistry } | null {
 
 /** Lights up the word being read and, faintly, the sentence around it; null clears both. */
 export function paint(word: Range | null, sentence: Range | null): void {
+  glideTo(word)
   const h = registry()
   if (!h) return
   if (word) h.reg.set('raloud-word', new h.Ctor(word))
   else h.reg.delete('raloud-word')
   if (sentence) h.reg.set('raloud-sentence', new h.Ctor(sentence))
   else h.reg.delete('raloud-sentence')
+}
+
+/* ── The light that glides ────────────────────────────────────────────────
+   A browser highlight can only jump from word to word. Under it runs one soft light that slides to each new
+   word as it is said, the way a finger follows a line: an element of its own, on top of the page but
+   ignoring the pointer, placed on the word's box. It slides when the word changes; when the page scrolls
+   under the same word it simply stays on it, with no slide to lag behind. */
+
+let glide: HTMLElement | null = null
+let glideRange: Range | null = null
+let glideFrame = 0
+let glideLast = ''
+
+function glideTo(word: Range | null): void {
+  if (typeof document === 'undefined') return
+  const changed = word !== glideRange
+  glideRange = word
+  if (!word) {
+    if (glide) glide.style.opacity = '0'
+    cancelAnimationFrame(glideFrame)
+    glideFrame = 0
+    glideLast = ''
+    return
+  }
+  if (!glide || !glide.isConnected) {
+    glide = document.createElement('div')
+    glide.className = 'raloud-glide'
+    glide.setAttribute('aria-hidden', 'true')
+    document.body.appendChild(glide)
+  }
+  place(changed)
+  if (!glideFrame) {
+    const tick = () => {
+      if (!glideRange) {
+        glideFrame = 0
+        return
+      }
+      place(false)
+      glideFrame = requestAnimationFrame(tick)
+    }
+    glideFrame = requestAnimationFrame(tick)
+  }
+}
+
+function place(slide: boolean): void {
+  if (!glide || !glideRange) return
+  const r = glideRange.getClientRects()[0] ?? glideRange.getBoundingClientRect()
+  if (!r || (!r.width && !r.height)) {
+    glide.style.opacity = '0'
+    return
+  }
+  const pad = 3
+  const key = `${Math.round(r.left)},${Math.round(r.top)},${Math.round(r.width)},${Math.round(r.height)}`
+  if (key === glideLast && !slide) return
+  glideLast = key
+  glide.dataset.slide = slide ? 'true' : 'false'
+  glide.style.opacity = '1'
+  glide.style.width = `${r.width + pad * 2}px`
+  glide.style.height = `${r.height + 2}px`
+  glide.style.transform = `translate(${r.left - pad}px, ${r.top - 1}px)`
 }
 
 export const canPaint = (): boolean => registry() !== null

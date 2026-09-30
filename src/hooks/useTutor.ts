@@ -10,16 +10,14 @@
    Never used in a course's exam or a spaced re-test: those are tests, and a
    voice helping would make them something else.
 
-   While a page that uses it is open, the voice is kept ready and the tutor's
-   first words are made ahead of time, so an answer starts the moment a run
-   fails.
+   While a page that uses it is open, the voice is kept loaded, so an answer
+   starts soon after a run fails instead of waiting for the voice to wake.
    ========================================================================== */
 import { useCallback, useEffect } from 'react'
 import { tutorDismiss, tutorSpeak } from '@/components/Tutor'
 import { DEFAULT_SETTINGS } from '@/engine/state'
 import { useLearner } from '@/hooks/useLearner'
-import { tutorLine, tutorOpeners, type TutorMemory } from '@/learn/tutor'
-import { DEFAULT_SPEECH_RATE } from '@/lib/speech'
+import { tutorLine, type TutorMemory } from '@/learn/tutor'
 import { warmVoice } from '@/lib/voice/say'
 import type { LearnGrade, LearnLesson } from '@/learn/types'
 
@@ -44,23 +42,22 @@ export function useTutor(): (id: string, unit: LearnLesson, run: HeardRun) => vo
   const full = state.settings.displayName.trim()
   const name = full && full !== DEFAULT_SETTINGS.displayName ? full.split(/\s+/)[0] : undefined
   const voiceName = state.settings.voiceName
-  const rate = state.settings.speechRate ?? DEFAULT_SPEECH_RATE
 
-  // While a problem is open, the voice stays ready and its first words are made ahead: when a run fails,
-  // the answer starts at once, not after the voice has woken up.
+  // While a problem is open, the voice stays loaded: when a run fails, the answer starts soon, not after the
+  // voice has woken up.
   useEffect(() => {
     if (!on) return
     const idle = (window as { requestIdleCallback?: (f: () => void) => number }).requestIdleCallback ?? ((f: () => void) => window.setTimeout(f, 300))
     let release: (() => void) | null = null
     let gone = false
     idle(() => {
-      if (!gone) release = warmVoice({ voiceName, rate, phrases: tutorOpeners(name) })
+      if (!gone) release = warmVoice({ voiceName })
     })
     return () => {
       gone = true
       release?.()
     }
-  }, [on, voiceName, rate, name])
+  }, [on, voiceName])
 
   return useCallback(
     (id, unit, run) => {

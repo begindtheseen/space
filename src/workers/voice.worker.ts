@@ -57,7 +57,7 @@ type Phonemize = (text: string, lang: string) => Promise<string[]>
 export type VoiceDevice = 'wasm' | 'webgpu'
 
 export type VoiceRequest =
-  | { cmd: 'init'; modelUrl: string; cacheName: string; voiceBase: string; device: VoiceDevice }
+  | { cmd: 'init'; modelUrl: string; cacheName: string; voiceBase: string; device: VoiceDevice; fullPrecision?: boolean }
   | { cmd: 'speak'; id: number; text: string; voice: string; lang: 'en-us' | 'en'; speed: number }
 
 export type VoiceReply =
@@ -155,11 +155,15 @@ async function init(req: Extract<VoiceRequest, { cmd: 'init' }>): Promise<number
   ;(ort.env as { logLevel?: string }).logLevel = 'error'
   phonemize = phon.mod.phonemize
   let bytes = await modelBytes(req.modelUrl, req.cacheName)
-  if (gpu) bytes = convIntegerToConv(bytes).bytes
+  // The 8-bit model rounds the sound to 8 bits between every layer, which is where its buzz comes from.
+  // Rewritten, the same 8-bit weights feed full-precision layers: the sound of the full model, from the
+  // same small download, for a little more work (measured: 9% slower on the CPU, 35 MB more memory).
+  // The GPU needs it to run at all; elsewhere it is used wherever speed allows (not on a phone).
+  if (gpu || req.fullPrecision) bytes = convIntegerToConv(bytes).bytes
   // The per-phoneme durations, as a second output: where every word falls.
   bytes = exposeDurations(bytes).bytes
   if (gpu) {
-    session = await ort.InferenceSession.create(bytes, { executionProviders: ['webgpu'], graphOptimizationLevel: 'all' })
+    session = await ort.InferenceSession.create(bytes, { executionProviders: ['webgpu'], graphOptimizationLevel: 'all', logSeverityLevel: 3 })
     // One short sentence first: the GPU compiles its shaders on the first
     // run, and that wait belongs here, not before the first sentence read.
     // A GPU that takes most of a minute over one word will not keep up.
@@ -174,7 +178,7 @@ async function init(req: Extract<VoiceRequest, { cmd: 'init' }>): Promise<number
     )
     return within(probe, 4_000, TOO_SLOW)
   }
-  session = await ort.InferenceSession.create(bytes, { executionProviders: ['wasm'], graphOptimizationLevel: 'all' })
+  session = await ort.InferenceSession.create(bytes, { executionProviders: ['wasm'], graphOptimizationLevel: 'all', logSeverityLevel: 3 })
   return undefined
 }
 
