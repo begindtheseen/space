@@ -449,7 +449,7 @@ describe('the rest of what the voice read wrong', () => {
   })
 
   it('reads a subscript that is a named symbol or has braces inside', () => {
-    expect(mathToWords('\\Delta v_\\perp')).toBe('delta v sub perp')
+    expect(mathToWords('\\Delta v_\\perp')).toBe('delta v sub perpendicular')
     expect(mathToWords('\\min_{u_0, u_{N-1}} J')).not.toContain('_')
   })
 })
@@ -462,5 +462,60 @@ describe('last round of voice fixes', () => {
 
   it('drops stray underscores in code names', () => {
     expect(speakableFromMarkdown('Members `_pass` and `data_` go last.')).toBe('Members pass and data go last.')
+  })
+})
+
+describe('what the voice still said wrong, found by phonemising every lesson', () => {
+  const said = (md: string) => speakableFromMarkdown(md)
+
+  it('never speaks a maths command by its name', () => {
+    expect(mathToWords('\\mathbb{E}[x] = r')).toBe('the expected value of [x] equals r')
+    expect(mathToWords('x \\in \\mathbb{R}^3')).toContain('the real numbers cubed')
+    expect(mathToWords('q_{N\\leftarrow B}')).toBe('q sub from B to N')
+    expect(mathToWords('q \\leftarrow q \\otimes \\delta q')).toBe('q gets q times delta q')
+    expect(mathToWords('y = -\\lambda\\bigl(y - \\cos t\\bigr)')).not.toMatch(/big/)
+    expect(mathToWords('t = \\lceil \\log_2 n \\rceil')).toBe('t equals the ceiling of log sub two n')
+    expect(mathToWords('\\lfloor x \\rfloor')).toBe('the floor of x')
+    expect(mathToWords('A \\succeq 0')).toBe('A is positive semidefinite')
+    expect(mathToWords('1 \\oplus 1 = 0')).toBe('1 x or 1 equals 0')
+    expect(mathToWords('R_\\oplus')).toBe('R sub Earth')
+    expect(mathToWords('\\langle \\mathbf{C}, \\mathbf{X} \\rangle')).toBe('the inner product of C and X')
+    expect(mathToWords('\\binom{n}{k}')).toBe('n choose k')
+    expect(mathToWords('\\cosh x')).toBe('hyperbolic cosine x')
+    expect(mathToWords('a \\Longrightarrow b')).toBe('a implies b')
+    expect(mathToWords('\\varepsilon_{s} = 3')).toBe('epsilon sub s equals 3')
+    expect(mathToWords('A \\cap B \\subseteq \\varnothing')).toBe('A intersect B is a subset of or equal to the empty set')
+    expect(mathToWords('\\underbrace{a+b}_{\\text{total}}')).toMatch(/^a plus b, that is total ?,$/)
+    expect(mathToWords('p(x \\mid z)')).toBe('p(x given z)')
+  })
+
+  it('says code words the way a programmer does', () => {
+    expect(said('Call `str(x)` and `sizeof(int)`.')).toBe('Call string(x) and size of(int).')
+    expect(said('Mark it `noexcept` and `constexpr`.')).toBe('Mark it no except and const expression.')
+    expect(said('An `enum` in `Eigen`.')).toBe('An ee num in eye gen.')
+    expect(said('Use `elif`, then `async`.')).toBe('Use el if, then ay sink.')
+    expect(said('The `succ` of a node.')).toBe('The successor of a node.')
+    expect(said('Open notes.txt now.')).toBe('Open notes.text now.')
+  })
+
+  it('leaves ordinary words alone, and reads compiler flags anywhere', () => {
+    expect(said('Wall clock time, approx. 5 seconds.')).toBe('Wall clock time, approximately 5 seconds.')
+    expect(said('Build with `g++ -std=c++20 -Wall -Wextra main.cpp`.')).toContain('dash W all dash W extra')
+  })
+
+  it('reads flags, tildes and escapes in a command', () => {
+    expect(said('Run `ls -la` and `git log --oneline`.')).toBe('Run ls dash L A and git log dash dash one line.')
+    expect(said('Test with `[ "$a" -eq 1 ]`.')).toContain('dash E Q')
+    expect(said('`HEAD~1` is one back.')).toBe('HEAD tilde 1 is one back.')
+    expect(said('Print `"a\\nb"`.')).toContain('newline')
+    expect(said('Negate with `y = -x`.')).not.toContain('dash')
+  })
+
+  it('reads numbers the phonemiser dropped a sign from, and letters it took for Roman numerals', () => {
+    expect(said('A tolerance of 1e-9 is fine.')).toBe('A tolerance of 1 times ten to the minus 9 is fine.')
+    expect(said('Loop over ii, then jj.')).toBe('Loop over i i, then j j.')
+    expect(said('Case (ii) is harder.')).toBe('Case (two) is harder.')
+    expect(said('the nth term')).toBe('the enth term')
+    expect(said('grows as 2ⁿ')).toBe('grows as 2 to the n')
   })
 })

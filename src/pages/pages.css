@@ -541,6 +541,17 @@
   gap: 10px;
 }
 
+.setting__control--row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting__control--row .select {
+  max-width: 240px;
+}
+
+
 .input {
   height: 34px;
   padding: 0 12px;

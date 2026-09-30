@@ -48,6 +48,7 @@ import {
 import type { CatalogTrack, CheckResult, LearnExercise, LearnLesson, LearnQuestion, LearnTrack } from '@/learn/types'
 import { answerMatches } from '@/learn/parse'
 import { markSolved, onShowItem } from '@/lib/guide'
+import { useTutor, type HeardRun } from '@/hooks/useTutor'
 import { Markdown } from '@/lib/markdown'
 import { navigate } from '@/lib/router'
 import { TerminalChallenge } from './LearnTerminal'
@@ -90,12 +91,13 @@ export function TrackLoading({ back, title, error }: { back?: { href: string; la
 
 /* ── One graded problem ─────────────────────────────────────────────────── */
 
-function useGrader(unit: LearnLesson, onGraded: (passed: boolean, results: CheckResult[]) => void) {
+function useGrader(unit: LearnLesson, onGraded: (passed: boolean, results: CheckResult[], run?: HeardRun) => void) {
   return useCallback(
     async (code: string, _stdin: string, onStatus: (s: string) => void): Promise<Graded> => {
-      const result = await runLearn(unit, buildProgram(unit, code), { onStatus })
+      const program = buildProgram(unit, code)
+      const result = await runLearn(unit, program, { onStatus })
       const g = gradeRun(unit, code, result)
-      onGraded(g.passed, g.results)
+      onGraded(g.passed, g.results, { code, program, grade: g })
       return {
         run: { stdout: g.output, stderr: g.stderr, error: g.error, plots: [], result: null, tables: g.tables, ms: g.ms },
         tests: g.results,
@@ -114,7 +116,7 @@ function ProblemWork({
   unit: LearnLesson
   saveKey?: string
   onPass: () => void
-  onGraded: (passed: boolean, results: CheckResult[]) => void
+  onGraded: (passed: boolean, results: CheckResult[], run?: HeardRun) => void
 }) {
   const grade = useGrader(unit, onGraded)
   useEffect(() => warmUp(unit.lang), [unit.lang])
@@ -283,9 +285,14 @@ export function PracticeSection({ lesson, optional = false }: { lesson: LearnLes
     setAnswer(undefined)
   }, [id])
 
-  const onGraded = useCallback((passed: boolean) => {
-    if (!passed) setFails((n) => n + 1)
-  }, [])
+  const tutor = useTutor()
+  const onGraded = useCallback(
+    (passed: boolean, _results: CheckResult[], run?: HeardRun) => {
+      if (!passed) setFails((n) => n + 1)
+      if (run && unit) tutor(id, unit, run)
+    },
+    [tutor, id, unit],
+  )
   const onPass = useCallback(() => {
     setState((s) => markPracticed(s, lesson, id))
     setSolvedNow(true)

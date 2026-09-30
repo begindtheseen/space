@@ -76,10 +76,49 @@ const SYMBOLS: [RegExp, string][] = [
   [/\\int\b/g, ' the integral of '], [/\\oint\b/g, ' the closed integral of '],
   [/\\sum\b/g, ' the sum of '], [/\\prod\b/g, ' the product of '],
   [/\\lim\b/g, ' the limit of '],
-]
+  // Arrows. Inside a frame subscript an arrow was already read as "from" (see mathToWords);
+  // anywhere else a left arrow is an assignment, "gets", as algorithms are read aloud.
+  [/\\leftarrow\b|\\gets\b/g, ' gets '], [/\\Leftarrow\b/g, ' is implied by '],
+  [/\\longrightarrow\b/g, ' goes to '], [/\\Longrightarrow\b|\\implies\b/g, ' implies '],
+  [/\\Longleftrightarrow\b|\\iff\b/g, ' if and only if '], [/\\mapsto\b/g, ' maps to '],
+  [/\\uparrow\b/g, ' up '], [/\\downarrow\b/g, ' down '],
+  // Products and sums written with circles: a quaternion product, element-wise, exclusive-or.
+  [/\\otimes\b/g, ' times '], [/\\odot\b/g, ' element-wise times '], [/\\oplus\b/g, ' x or '],
+  [/\\ominus\b/g, ' circled minus '], [/\\bigoplus\b/g, ' the direct sum of '],
+  // Relations.
+  [/\\ne\b/g, ' is not equal to '], [/\\lt\b/g, ' is less than '], [/\\gt\b/g, ' is greater than '],
+  [/\\lesssim\b/g, ' is at most about '], [/\\gtrsim\b/g, ' is at least about '],
+  [/\\cong\b/g, ' is congruent to '], [/\\simeq\b/g, ' is approximately equal to '],
+  [/\\perp\b/g, ' perpendicular '], [/\\nparallel\b/g, ' is not parallel to '], [/\\parallel\b/g, ' is parallel to '],
+  [/\\mid\b/g, ' given '], [/\\nmid\b/g, ' does not divide '],
+  // A matrix compared with zero is definite or semi-definite; anything else precedes or follows.
+  [/\\succeq\s*0(?![\d.])/g, ' is positive semidefinite '], [/\\succ\s*0(?![\d.])/g, ' is positive definite '],
+  [/\\preceq\s*0(?![\d.])/g, ' is negative semidefinite '], [/\\prec\s*0(?![\d.])/g, ' is negative definite '],
+  [/\\succeq\b/g, ' succeeds or equals '], [/\\succ\b/g, ' succeeds '], [/\\preceq\b/g, ' precedes or equals '], [/\\prec\b/g, ' precedes '],
+  // Sets and logic.
+  [/\\varnothing\b|\\emptyset\b/g, ' the empty set '], [/\\cap\b/g, ' intersect '], [/\\cup\b/g, ' union '],
+  [/\\subseteq\b/g, ' is a subset of or equal to '], [/\\subset\b/g, ' is a subset of '],
+  [/\\supseteq\b/g, ' is a superset of or equal to '], [/\\supset\b/g, ' is a superset of '],
+  [/\\notin\b/g, ' is not in '], [/\\ni\b/g, ' contains '],
+  [/\\land\b|\\wedge\b/g, ' and '], [/\\lor\b|\\vee\b/g, ' or '], [/\\lnot\b|\\neg\b/g, ' not '],
+  [/\\therefore\b/g, ' therefore '], [/\\because\b/g, ' because '],
+  // Functions and operators.
+  [/\\sinh\b/g, 'hyperbolic sine'], [/\\cosh\b/g, 'hyperbolic cosine'], [/\\tanh\b/g, 'hyperbolic tangent'],
+  [/\\coth\b/g, 'hyperbolic cotangent'], [/\\sec\b/g, 'secant'], [/\\csc\b/g, 'cosecant'], [/\\cot\b/g, 'cotangent'],
+  [/\\arg\b/g, 'the argument of'], [/\\limsup\b/g, 'the limit superior of'], [/\\liminf\b/g, 'the limit inferior of'],
+  [/\\sup\b/g, 'the supremum of'], [/\\inf\b/g, 'the infimum of'], [/\\dim\b/g, 'the dimension of'],
+  [/\\ker\b/g, 'the kernel of'], [/\\deg\b/g, 'the degree of'], [/\\gcd\b/g, 'the greatest common divisor of'],
+  [/\\bmod\b/g, ' mod '], [/\\iiint\b/g, ' the triple integral of '], [/\\iint\b/g, ' the double integral of '],
+  [/\\oiint\b/g, ' the closed surface integral of '],
+  // Letters written in another style are still those letters.
+  [/\\varpi\b/g, 'pi'], [/\\varrho\b/g, 'rho'], [/\\varsigma\b/g, 'sigma'], [/\\varkappa\b/g, 'kappa'],
+  [/\\angle\b/g, ' angle '], [/\\top\b/g, ' transpose '], [/\\checkmark\b/g, ' check '],
+  [/\\hbar\b/g, 'h bar'], [/\\aleph\b/g, 'aleph'],
+  [/\\not\b/g, ' not '],
+].map(([re, word]) => [new RegExp((re as RegExp).source.replace(/(?<!\\)\\b/g, '(?![A-Za-z])'), 'g'), word] as [RegExp, string])
 
 /** Spacing, sizing and styling commands that carry no sound at all. */
-const SILENT = /\\(?:left|right|big|Big|bigg|Bigg|displaystyle|textstyle|limits|nolimits|,|;|:|!|quad|qquad)\b|\\[,;:!]|\\ /g
+const SILENT = /\\(?:left|right|middle|[bB]igg?[lrm]?|displaystyle|textstyle|scriptstyle|limits|nolimits|quad|qquad|phantom\s*\{[^{}]*\}|hphantom\s*\{[^{}]*\}|vphantom\s*\{[^{}]*\}|,|;|:|!)(?![A-Za-z])|\\[,;:!]|\\ /g
 
 /**
  * Escaped punctuation. Only letters follow a backslash in the catch-all near
@@ -317,6 +356,71 @@ function namedSuperscripts(tex: string): string {
     .replace(/\^\s*\{?\s*\\prime\s*\}?|(?<=[A-Za-z)}])'(?![A-Za-z])/g, ' prime ')
 }
 
+/** The sets and operators written in blackboard bold: \mathbb{R} is "the real numbers", \mathbb{E} "the expected value of". */
+const BLACKBOARD: Record<string, string> = {
+  R: 'the real numbers', Z: 'the integers', N: 'the natural numbers', Q: 'the rational numbers', C: 'the complex numbers',
+  E: 'the expected value of', P: 'the probability of', S: 'the symmetric matrices', '1': 'the indicator of', I: 'the indicator of',
+}
+
+function blackboard(tex: string): string {
+  return tex.replace(/\\mathbb\s*(?:\{\s*([A-Za-z0-9]+)\s*\}|([A-Za-z0-9]))/g, (_m, a: string | undefined, b: string | undefined) => {
+    const k = (a ?? b)!
+    // Two letters, like RP, are read letter by letter.
+    return ` ${BLACKBOARD[k] ?? k.split('').join(' ')} `
+  })
+}
+
+/**
+ * Brackets that are an operation rather than grouping, the arrows and circles whose meaning
+ * depends on where they sit, and an underbrace with its label.
+ */
+function delimiters(tex: string): string {
+  let s = tex
+    // A frame pair in a subscript: q_{N\leftarrow B} is "q from B to N"; an arrow anywhere else is read with the symbols.
+    .replace(/_\s*\{([^{}]*?)\s*\\leftarrow\s*([^{}]*?)\}/g, (_m, to: string, from: string) => `_{from ${from.trim()} to ${to.trim()}}`)
+    .replace(/_\s*\{([^{}]*?)\s*\\(?:rightarrow|to)\s*([^{}]*?)\}/g, (_m, from: string, to: string) => `_{from ${from.trim()} to ${to.trim()}}`)
+    // The circled plus is Earth in a subscript (R⊕, ω⊕), and exclusive-or everywhere else.
+    .replace(/_\s*(?:\{\s*\\oplus\s*\}|\\oplus(?![A-Za-z]))/g, ' sub Earth ')
+    .replace(/\\vert(?![A-Za-z])/g, '|')
+  // Ceiling, floor and angle brackets, innermost first.
+  const pairs: [RegExp, (x: string) => string][] = [
+    [/\\lceil((?:(?!\\lceil)[\s\S])*?)\\rceil/, (x) => ` the ceiling of ${x} `],
+    [/\\lfloor((?:(?!\\lfloor)[\s\S])*?)\\rfloor/, (x) => ` the floor of ${x} `],
+    [/\\langle((?:(?!\\langle)[\s\S])*?)\\rangle/, (x) => {
+      // Two things inside are an inner product; one is an average.
+      const parts = x.split(/,(?![^{]*\})/)
+      return parts.length === 2 ? ` the inner product of ${parts[0]} and ${parts[1]} ` : ` the average of ${x} `
+    }],
+  ]
+  for (const [re, say] of pairs) for (let guard = 0; guard < 32; guard++) {
+    const m = re.exec(s)
+    if (!m) break
+    s = s.slice(0, m.index) + say(m[1]!) + s.slice(m.index + m[0].length)
+  }
+  // An underbrace names what is under it: "a, that is b,".
+  for (let guard = 0; guard < 16; guard++) {
+    const at = s.indexOf('\\underbrace')
+    if (at < 0) break
+    let i = at + '\\underbrace'.length
+    while (s[i] === ' ') i++
+    const body = readArg(s, i)
+    if (!body) {
+      s = s.slice(0, at) + s.slice(at + '\\underbrace'.length)
+      continue
+    }
+    let j = body.end
+    while (s[j] === ' ') j++
+    let label: { body: string; end: number } | null = null
+    if (s[j] === '_') {
+      j++
+      while (s[j] === ' ') j++
+      label = readArg(s, j)
+    }
+    s = s.slice(0, at) + ` ${body.body}${label ? `, that is ${label.body},` : ''} ` + s.slice(label ? label.end : body.end)
+  }
+  return s.replace(/\\overbrace\s*/g, '')
+}
+
 /**
  * Marks a centred dot between two vectors as a dot product, so it is not
  * read as "times" with everything else.
@@ -383,6 +487,8 @@ export function mathToWords(tex: string): string {
   // A thousands comma, `6{,}000`, is part of the number.
   s = s.replace(/(\d)\{,\}(?=\d)/g, '$1')
   s = mathUnitsToWords(s)
+  s = blackboard(s)
+  s = delimiters(s)
   s = rewrite(s, 'mathrm', 1, (a) => a)
   s = rewrite(s, 'text', 1, (a) => a)
   s = rewrite(s, 'mathsf', 1, (a) => a)
@@ -401,6 +507,22 @@ export function mathToWords(tex: string): string {
   s = rewrite(s, 'mathbf', 1, (a) => mathToWords(a))
   s = rewrite(s, 'boldsymbol', 1, (a) => mathToWords(a))
   s = rewrite(s, 'mathcal', 1, (a) => mathToWords(a))
+  s = rewrite(s, 'mathfrak', 1, (a) => mathToWords(a))
+  s = rewrite(s, 'mathtt', 1, (a) => a)
+  s = rewrite(s, 'mathit', 1, (a) => a)
+  s = rewrite(s, 'mathbin', 1, (a) => mathToWords(a))
+  s = rewrite(s, 'mathrel', 1, (a) => mathToWords(a))
+  s = rewrite(s, 'boxed', 1, (a) => mathToWords(a))
+  s = rewrite(s, 'reflectbox', 1, (a) => mathToWords(a))
+  s = rewrite(s, 'underline', 1, (a) => mathToWords(a))
+  s = rewrite(s, 'overline', 1, (a) => `${mathToWords(a)} bar`)
+  s = rewrite(s, 'tilde', 1, (a) => `${mathToWords(a)} tilde`)
+  s = rewrite(s, 'widetilde', 1, (a) => `${mathToWords(a)} tilde`)
+  s = rewrite(s, 'widehat', 1, (a) => `${mathToWords(a)} hat`)
+  s = rewrite(s, 'dddot', 1, (a) => `${mathToWords(a)} triple dot`)
+  s = rewrite(s, 'binom', 2, (a, b) => `${mathToWords(a)} choose ${mathToWords(b)}`)
+  s = rewrite(s, 'xrightarrow', 1, (a) => `goes, by ${mathToWords(a)}, to`)
+  s = rewrite(s, 'pmod', 1, (a) => `mod ${mathToWords(a)}`)
 
   for (const [re, word] of ESCAPED) s = s.replace(re, word)
   s = s.replace(SILENT, ' ')
@@ -427,6 +549,8 @@ export function mathToWords(tex: string): string {
   s = s.replace(/(?<!\\)\|([^|\n]{1,40}?)(?<!\\)\|/g, (m, x: string) => (balanced(x) ? ` the absolute value of ${x} ` : m))
 
   // Subscripts.
+  // Two-letter labels, and three with no vowel, are initials: omega_{nb} is "omega sub N B", not "sub nib".
+  s = s.replace(/_\{\s*([a-z]{2}|[b-df-hj-np-tv-z]{3})\s*\}/g, (_m, p: string) => ` sub ${p.toUpperCase().split('').join(' ')} `)
   s = s.replace(/_\{((?:[^{}]|\{[^{}]*\})*)\}/g, (_m, p: string) => ` sub ${mathToWords(p)} `)
   // A named symbol after the underscore has been spelled out by now: `v_\perp`.
   s = s.replace(/_\s+([A-Za-z]+)/g, (_m, p: string) => ` sub ${SUB_WORDS[p] ?? p} `)
@@ -610,8 +734,24 @@ function expandUnits(s: string): string {
  * "p minus greater than next".
  */
 export function codeToWords(code: string): string {
+  // A command line's flags: `ls -la` is "L S dash L A", `git log --oneline` "dash dash one line",
+  // `[ "$a" -eq 1 ]` "dash E Q". Not in an expression, where a dash is a minus: `y = -x`, `f(-1)`.
+  const command = !/[=(]/.test(code)
+  // A compiler warning flag reads the same anywhere: -Wall is "dash W all", -Wextra "dash W extra".
+  let c = code.replace(/(^|\s)-W([a-z][\w-]*)/g, (_m, pre: string, w: string) => `${pre}dash W ${w.replace(/-/g, ' ')}`)
+  if (command) {
+    c = c
+      .replace(/(^|\s)--([A-Za-z][\w-]*)/g, (_m, pre: string, name: string) => `${pre}dash dash ${name.replace(/-/g, ' ')}`)
+      .replace(/(^|\s)-([A-Za-z]{1,3})(?![\w-])/g, (_m, pre: string, f: string) => `${pre}dash ${f.toUpperCase().split('').join(' ')}`)
+  }
   return (
-    code
+    c
+      // Escapes inside strings: "a\nb" is "a newline b".
+      .replace(/\\n/g, ' newline ')
+      .replace(/\\t/g, ' tab ')
+      // HEAD~1 is "HEAD tilde one"; ~/notes is "home slash notes".
+      .replace(/~\//g, 'home slash ')
+      .replace(/~/g, ' tilde ')
       // Template arguments: vector<int> is "vector of int".
       .replace(/(\w)<([\w:, *&]+)>/g, '$1 of $2')
       .replace(/\bstd::/g, 'standard ')
@@ -661,14 +801,66 @@ const SAID_AS: [RegExp, string][] = [
   [/\bcin\b/g, 'see in'], [/\bJSON\b/g, 'Jason'], [/\bGUI\b/g, 'gooey'], [/\bASCII\b/g, 'ask ee'],
   [/\bLaTeX\b/g, 'lay tech'], [/\bMATLAB\b/g, 'mat lab'], [/\bgcc\b/g, 'G C C'], [/\bgdb\b/g, 'G D B'],
   [/\b[Cc][Mm]ake\b|\bcmake\b/g, 'C make'], [/\bnpm\b/g, 'N P M'], [/\bYAML\b/g, 'yam ul'],
-  [/\bSQLite\b/g, 'S Q L light'], [/\bPostgreSQL\b/g, 'post gres Q L'], [/\biff\b/g, 'if and only if'],
+  [/\bSQLite\b/g, 'S Q L light'], [/\bPostgreSQL\b/g, 'post gress Q L'], [/\biff\b/g, 'if and only if'],
   [/\bNaN\b/g, 'not a number'],
 ]
+
+/**
+ * Code words and names the phonemiser gets wrong, found by running every lesson's spoken text
+ * through it and listening for the words it had to guess: `str` was spelled "S T R", `succ`
+ * came out as "suck", `sizeof` as "size-i-off", `Eigen` as "eye-jen", `enum` as "in-um".
+ * Each is how a programmer says it aloud.
+ */
+const CODE_WORDS: [RegExp, string][] = (
+  [
+    // C and C++.
+    ['str', 'string'], ['ptr', 'pointer'], ['nullptr', 'null pointer'], ['sizeof', 'size of'], ['alignof', 'align of'],
+    ['noexcept', 'no except'], ['constexpr', 'const expression'], ['consteval', 'const eval'], ['constinit', 'const init'],
+    ['decltype', 'decl type'], ['typename', 'type name'], ['typedef', 'type def'], ['expr', 'expression'],
+    ['enum', 'ee num'], ['enums', 'ee nums'], ['nullopt', 'null opt'],
+    ['malloc', 'mal lock'], ['calloc', 'cal lock'], ['realloc', 'ree al lock'], ['alloc', 'al lock'],
+    ['memcpy', 'mem copy'], ['memmove', 'mem move'], ['memset', 'mem set'], ['memcmp', 'mem compare'],
+    ['strlen', 'string length'], ['strcpy', 'string copy'], ['strncpy', 'string N copy'], ['strcmp', 'string compare'],
+    ['strcat', 'string cat'], ['substr', 'sub string'], ['strftime', 'string F time'], ['strptime', 'string P time'],
+    ['printf', 'print F'], ['sprintf', 'S print F'], ['snprintf', 'S N print F'], ['fprintf', 'F print F'], ['scanf', 'scan F'],
+    ['println', 'print line'], ['endl', 'end line'], ['cerr', 'see err'], ['getline', 'get line'], ['argv', 'arg V'], ['argc', 'arg C'],
+    ['succ', 'successor'], ['impl', 'imple'], ['usize', 'you size'], ['isize', 'eye size'], ['fn', 'fun'],
+    ['Eigen', 'eye gen'], ["Eigen's", "eye gen's"],
+    // Python.
+    ['elif', 'el if'], ['async', 'ay sink'], ['asyncio', 'ay sink I O'], ['eval', 'ee val'], ['isinstance', 'is instance'],
+    ['kwargs', 'keyword args'], ['stdlib', 'standard lib'], ['heapq', 'heap Q'], ['iterable', 'it er a bull'], ['iterables', 'it er a bulls'],
+    ['pyproject', 'pie project'], ['mypy', 'my pie'], ['pybind11', 'pie bind eleven'], ['venv', 'V env'], ['pipx', 'pip X'],
+    ['inf', 'infinity'], ['nan', 'not a number'], ['sqrt', 'square root'], ['linalg', 'lin alg'],
+    ['allclose', 'all close'], ['julianday', 'julian day'], ['unixepoch', 'unix epoch'], ['sys', 'sis'],
+    // Everyday short names.
+    ['idx', 'index'], ['qty', 'quantity'], ['avg', 'average'], ['addr', 'address'], ['cfg', 'config'], ['cmd', 'command'],
+    ['tmp', 'temp'], ['src', 'source'], ['dst', 'destination'], ['obj', 'object'], ['inv', 'inverse'], ['recv', 'receive'],
+    ['adj', 'adjacency'], ['txt', 'text'], ['usr', 'user'], ['pid', 'P I D'], ['imu', 'I M U'],
+    ['du', 'D U'], ['cwnd', 'congestion window'], ['uniq', 'unique'], ['inode', 'eye node'], ['inodes', 'eye nodes'],
+    ['regex', 'rej ex'], ['regexes', 'rej exes'], ['regexp', 'rej exp'], ['oneline', 'one line'], ['reflog', 'ref log'],
+    // The shell.
+    ['mkdir', 'make dir'], ['rmdir', 'remove dir'], ['chmod', 'change mod'], ['chown', 'change own'], ['xargs', 'X args'],
+    ['pwd', 'P W D'], ['wc', 'W C'], ['ssh', 'S S H'], ['scp', 'S C P'], ['tmux', 'T mux'],
+    // Formats and tools.
+    ['json', 'Jason'], ['yaml', 'yam ul'], ['toml', 'tom ul'], ['TOML', 'tom ul'], ['Postgres', 'post gress'],
+    ['MySQL', 'my S Q L'], ['KiB', 'kibibytes'], ['MiB', 'mebibytes'], ['GiB', 'gibibytes'], ['kPa', 'kilopascals'],
+    ['sha256', 'shah two fifty six'], ['SHA256', 'shah two fifty six'], ['SHA', 'shah'],
+  ] as [string, string][]
+).map(([w, say]) => [new RegExp(`(?<![\\w-])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w]|'[a-rt-z])`, 'g'), say])
+
+/** Lowercase pairs and triples that the phonemiser reads as Roman numerals: `I_xx` is not "I twenty". */
+const NOT_ROMAN = /(?<![\w'])(ii|iii|xx|xxx|jj|kk)(?![\w'])/g
+
+/** List markers in brackets, "(ii)", are counted, not spelled. */
+const ROMAN_LIST: Record<string, string> = { ii: 'two', iii: 'three', iv: 'four', vi: 'six', vii: 'seven', viii: 'eight', ix: 'nine' }
+
+/** The ordinal of a letter: the nth term is "the enth term". */
+const LETTER_ORDINAL: Record<string, string> = { n: 'enth', k: 'kayth', i: 'eyeth', j: 'jayth', m: 'emth', p: 'peeth', r: 'arth', t: 'teeth' }
 
 const ABBREVIATIONS: [RegExp, string][] = [
   [/\bvs\.?(?=\s|$|[,;:)])/g, 'versus'], [/(?<=[a-z])-vs-(?=[a-z])/g, ' versus '], [/\bVs\.?(?=\s)/g, 'Versus'],
   [/\be\.g\.,?/g, 'for example,'], [/\bi\.e\.,?/g, 'that is,'], [/\betc\./g, 'et cetera.'],
-  [/\bapprox\./g, 'approximately'], [/\bcf\./g, 'compare'], [/\bw\.r\.t\.?/g, 'with respect to'],
+  [/\bapprox\b\.?/g, 'approximately'], [/\bcf\./g, 'compare'], [/\bw\.r\.t\.?/g, 'with respect to'],
   [/\ba\.k\.a\.?/g, 'also known as'], [/\bFig\.(?=\s*\d)/g, 'Figure'], [/\bEq\.(?=\s*\d)/g, 'Equation'],
   [/\bNo\.(?=\s*\d)/g, 'number'],
 ]
@@ -723,10 +915,10 @@ export function unitsToWords(text: string): string {
 }
 
 const SIGNS: [RegExp, string][] = [
-  [/(\d)\s?%/g, '$1 percent'], [/~\s?(?=\d|Mach\b)/g, 'about '], [/≈/g, ' about '],
+  [/(\d)\s?%/g, '$1 percent'], [/(?<=\w)~(?=\d)/g, ' tilde '], [/~\s?(?=\d|Mach\b)/g, 'about '], [/≈/g, ' about '],
   [/≤/g, ' less than or equal to '], [/≥/g, ' greater than or equal to '], [/≠/g, ' not equal to '],
   [/±/g, ' plus or minus '], [/→/g, ' to '], [/←/g, ' from '], [/↔/g, ' and '], [/√/g, ' the square root of '],
-  [/÷/g, ' divided by '], [/−(?=\s?\d)/g, 'minus '], [/§\s?/g, 'section '], [/′/g, ' prime'],
+  [/÷/g, ' divided by '], [/−(?=\s?\d)/g, ' minus '], [/§\s?/g, 'section '], [/′/g, ' prime'],
   [/Δ/g, 'delta '], [/σ/g, 'sigma'], [/ω/g, 'omega'], [/α/g, 'alpha'], [/β/g, 'beta'], [/π/g, 'pi'],
   [/χ/g, 'chi'], [/µ/g, 'mu'], [/Ω/g, 'omega'],
   [/⌀/g, 'diameter '], [/Ⓜ/g, ' circled M '], [/Ⓛ/g, ' circled L '], [/Ⓕ/g, ' circled F '],
@@ -753,6 +945,20 @@ export function proseToWords(text: string): string {
     .replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b/g, (id) => id.toLowerCase().replace(/_/g, ' '))
     .replace(/\b([a-z][a-z0-9]*(?:_[a-z0-9]+)+)\b/g, (id) => id.replace(/_/g, ' '))
   for (const [re, w] of SAID_AS) s = s.replace(re, w)
+  for (const [re, w] of CODE_WORDS) s = s.replace(re, w)
+  s = s
+    // Scientific notation: 1e-9 is "1 times ten to the minus 9"; the phonemiser dropped the minus.
+    .replace(/(?<![\w.])(\d+(?:\.\d+)?)[eE]([-+]?)(\d+)(?![\w.])/g, (_m, m: string, sign: string, e: string) =>
+      `${m} times ten to the ${sign === '-' ? 'minus ' : ''}${e}`,
+    )
+    // Only where a list would put one, and never a lone i, v or x: f(x) is not "f of ten".
+    .replace(/(^|[\s,;:])\((ii|iii|iv|vi|vii|viii|ix)\)/g, (_m, pre: string, r: string) => `${pre}(${ROMAN_LIST[r]})`)
+    .replace(NOT_ROMAN, (r: string) => r.split('').join(' '))
+    .replace(/(?<![\w'])([nkijmprt])(?:-| )?th(?![\w'])/g, (_m, l: string) => LETTER_ORDINAL[l]!)
+    // Superscript letters left in prose: 2ⁿ is "2 to the n".
+    .replace(/ⁿ/g, ' to the n ').replace(/ⁱ/g, ' to the i ')
+    .replace(/[₍₎]/g, ' ').replace(/₋/g, ' minus ').replace(/₊/g, ' plus ')
+    .replace(/[ₐₑₒₓₔₕₖₗₘₙₚₛₜᵢⱼ]/g, (c) => 'aeoxəhklmnpstij'['ₐₑₒₓₔₕₖₗₘₙₚₛₜᵢⱼ'.indexOf(c)]!)
   for (const [re, w] of ABBREVIATIONS) s = s.replace(re, w)
   for (const [re, w] of SIGNS) s = s.replace(re, w)
   return s.replace(/ {2,}/g, ' ').replace(/ +([.,;:!?])/g, '$1')

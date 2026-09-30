@@ -126,6 +126,8 @@ export interface Settings {
   voiceName?: string
   /** Read-aloud speed multiplier. */
   speechRate?: number
+  /** The voice talks her through a run that did not pass (learn/tutor.ts). Absent means on. */
+  spokenHints?: boolean
 }
 
 export interface LearnerState {
@@ -542,5 +544,6 @@ function pickSettings(v: unknown): Partial<Settings> {
     ...(typeof s.speechRate === 'number' && Number.isFinite(s.speechRate)
       ? { speechRate: Math.min(2, Math.max(0.5, s.speechRate)) }
       : {}),
+    ...(s.spokenHints === false ? { spokenHints: false } : {}),
   }
 }

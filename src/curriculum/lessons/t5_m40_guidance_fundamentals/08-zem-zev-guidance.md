@@ -203,7 +203,7 @@ The final position and velocity errors come out around $10^{-17}\,\mathrm{m}$ an
 :::
 
 ::: example A Mars descent, same law, different gravity
-Start at $\mathbf{r}_0 = (650, 2200)\,\mathrm{m}$ with $\mathbf{v}_0 = (-15, -60)\,\mathrm{m/s}$, $t_{go} = 40\,\mathrm{s}$ and [[Mars gravity|mars-powered]] $\mathbf{g}$ = (0, -3.71)\,\mathrm{m/s^2}$. Nothing in the law changes except the gravity fed into $ZEM$ and $ZEV$.
+Start at $\mathbf{r}_0 = (650, 2200)\,\mathrm{m}$ with $\mathbf{v}_0 = (-15, -60)\,\mathrm{m/s}$, $t_{go} = 40\,\mathrm{s}$ and [[Mars gravity|mars-powered]] $\mathbf{g} = (0, -3.71)\,\mathrm{m/s^2}$. Nothing in the law changes except the gravity fed into $ZEM$ and $ZEV$.
 
 **Coast.** $\mathbf{r} + \mathbf{v}t_{go} = (650 - 600,\ 2200 - 2400) = (50, -200)$, and gravity adds $\tfrac12(-3.71)(1600) = -2968$ to the height: $(50, -3168)$.
 

@@ -1,22 +1,23 @@
 /* ============================================================================
    ORBIT — read-aloud controls
    ----------------------------------------------------------------------------
-   Deliberately small and deliberately near the top of the lesson, because the
-   moment she needs it is before she has started, not after she has given up.
+   One quiet capsule near the top of the lesson: Read aloud, and how fast.
+   Everything else about the voice (which one it is, whether it talks her
+   through a run that did not pass) lives in Settings, so the lesson itself
+   carries only what she reaches for while reading.
 
-   The sentence counter is not decoration either. Hearing "sentence 40 of 240"
-   is the same promise a focus block makes: the thing has an end and she can
-   see where it is.
-
-   The natural voices come first in the picker, and are the default: they read
-   like a person. The device's own voices follow, for anyone who prefers one.
+   While it reads, the capsule becomes the player: pause, a sentence back, a
+   thin line that fills as the lesson goes, a sentence on, and stop. The line
+   is the same promise the old "sentence 40 of 240" made, the thing has an
+   end and she can see where it is, without numbers to read.
    ========================================================================== */
+import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { IconPause, IconPlay, IconX } from '@/components/icons'
+import { IconChevronLeft, IconChevronRight, IconPause, IconPlay, IconX } from '@/components/icons'
 import { useLearner } from '@/hooks/useLearner'
 import { useReadAloud } from '@/hooks/useReadAloud'
 import { DEFAULT_SPEECH_RATE, speechRateOptions } from '@/lib/speech'
-import { NATURAL_PREFIX, NATURAL_VOICES, naturalVoiceFor } from '@/lib/voice/kokoro'
+import { registerReader } from '@/lib/voice/say'
 import './read-aloud.css'
 
 export interface ReadAloudProps {
@@ -39,23 +40,51 @@ export function ReadAloud({ markdown, contentSelector, pauses }: ReadAloudProps)
   })
   const waiting = player.state === 'waiting'
 
+  // The tutor can speak over the reading: it steps aside for the line, then carries on where it was.
+  const live = useRef(player)
+  live.current = player
+  useEffect(
+    () =>
+      registerReader({
+        // A device voice she paused counts too: the synthesiser is shared, and a paused one would hold the line back.
+        busy: () => {
+          const s = live.current.state
+          return s === 'speaking' || s === 'preparing' || (s === 'paused' && live.current.engine === 'device')
+        },
+        hold: () => {
+          const p = live.current
+          // The device's voice cannot be paused under another line, so it stops, and starts again at the
+          // same sentence afterwards if it was reading (not if she had paused it).
+          if (p.engine === 'device') {
+            const at = Math.max(0, p.at)
+            const reading = p.state !== 'paused'
+            p.stop()
+            return () => {
+              if (reading) live.current.start(at)
+            }
+          }
+          p.pause()
+          return () => live.current.resume()
+        },
+      }),
+    [],
+  )
+
   if (!player.supported || player.total === 0) return null
 
   const idle = player.state === 'idle'
   const preparing = player.state === 'preparing'
-  const setting = learner.settings.voiceName ?? ''
-  // The picker shows the natural voice actually in use, so '' (the default)
-  // reads as its name rather than as a blank.
-  const shown = player.naturalAvailable && naturalVoiceFor(setting) ? `${NATURAL_PREFIX}${naturalVoiceFor(setting)!.id}` : setting
+  const paused = player.state === 'paused'
+  const share = player.total > 0 && player.at >= 0 ? Math.min(1, (player.at + 1) / player.total) : 0
 
   const preparingLabel =
     player.engine === 'recorded'
       ? 'Loading…'
       : player.naturalStatus === 'downloading'
-      ? `Getting the voice ready · ${Math.round(player.progress * 100)}%`
-      : player.naturalStatus === 'starting'
-        ? 'Starting the voice…'
-        : 'Preparing…'
+        ? `Getting the voice ready · ${Math.round(player.progress * 100)}%`
+        : player.naturalStatus === 'starting'
+          ? 'Starting the voice…'
+          : 'Preparing…'
 
   return (
     <div className="raloud" data-on={!idle} data-engine={player.engine} data-state={player.state}>
@@ -67,114 +96,90 @@ export function ReadAloud({ markdown, contentSelector, pauses }: ReadAloudProps)
             document.body,
           )
         : null}
-      {idle ? (
-        <button
-          className="raloud__btn raloud__btn--go"
-          onClick={() => player.start(0)}
-          onPointerEnter={player.warm}
-          onFocus={player.warm}
-          title={
-            player.engine === 'recorded'
-              ? 'This lesson is recorded in a natural voice, so it plays straight away and follows along word by word.'
-              : player.engine === 'natural'
-                ? 'A natural voice, made on this device. The first time, it downloads once (about 92 MB).'
-                : undefined
-          }
-        >
-          <IconPlay size={12} /> Read aloud
-        </button>
-      ) : (
-        <>
-          {waiting ? (
-            <span className="raloud__wait" role="status">
-              {player.waitingOn && pauses ? pauses.label(player.waitingOn) : 'Waiting…'}
-            </span>
-          ) : preparing ? (
-            <span className="raloud__prep" role="status">
-              <span className="raloud__spin" aria-hidden="true" />
-              {preparingLabel}
-            </span>
-          ) : (
-            <button
-              className="raloud__btn"
-              onClick={() => (player.state === 'paused' ? player.resume() : player.pause())}
-            >
-              {player.state === 'paused' ? <IconPlay size={12} /> : <IconPause size={12} />}
-              <span>{player.state === 'paused' ? 'Resume' : 'Pause'}</span>
+      <div className="raloud__pill">
+        {idle ? (
+          <button
+            className="raloud__go"
+            onClick={() => player.start(0)}
+            onPointerEnter={player.warm}
+            onFocus={player.warm}
+            title={
+              player.engine === 'recorded'
+                ? 'This lesson is recorded in a natural voice, so it plays straight away and follows along word by word.'
+                : player.engine === 'natural'
+                  ? 'A natural voice, made on this device. The first time, it downloads once (about 92 MB). Choose the voice in Settings.'
+                  : 'Choose the voice in Settings.'
+            }
+          >
+            <IconPlay size={12} />
+            <span>Read aloud</span>
+          </button>
+        ) : (
+          <>
+            {waiting ? (
+              <span className="raloud__status" role="status">
+                {player.waitingOn && pauses ? pauses.label(player.waitingOn) : 'Waiting…'}
+              </span>
+            ) : preparing ? (
+              <span className="raloud__status" role="status">
+                <span className="raloud__spin" aria-hidden="true" />
+                {preparingLabel}
+              </span>
+            ) : (
+              <button
+                className="raloud__icon raloud__icon--main"
+                onClick={() => (paused ? player.resume() : player.pause())}
+                aria-label={paused ? 'Resume' : 'Pause'}
+                title={paused ? 'Resume' : 'Pause'}
+              >
+                {paused ? <IconPlay size={12} /> : <IconPause size={12} />}
+              </button>
+            )}
+            <button className="raloud__icon" onClick={() => player.skip(-1)} aria-label="Back a sentence" title="Back a sentence">
+              <IconChevronLeft size={13} />
             </button>
-          )}
-
-          <button className="raloud__btn" onClick={() => player.skip(-1)} title="Back a sentence">
-            &minus;
-          </button>
-          <button className="raloud__btn" onClick={() => player.skip(1)} title="On a sentence">
-            +
-          </button>
-
-          <span className="raloud__at num">
-            {player.at + 1} / {player.total}
-          </span>
-
-          <button className="raloud__btn" onClick={player.stop} title="Stop reading">
-            <IconX size={11} />
-          </button>
-        </>
-      )}
-
-      {player.naturalAvailable || player.voices.length > 1 ? (
-        <select
-          className="raloud__voice"
-          value={shown}
-          aria-label="Voice"
-          onChange={(e) => {
-            const name = e.target.value || undefined
-            // Recorded only; the player re-says the current sentence in the new
-            // voice once the choice settles, for the same reason as the speed.
-            setState((s) => ({ ...s, settings: { ...s.settings, voiceName: name } }))
-          }}
-        >
-          {player.naturalAvailable ? (
-            <optgroup label="Natural voices">
-              {NATURAL_VOICES.map((v) => (
-                <option key={v.id} value={`${NATURAL_PREFIX}${v.id}`}>
-                  {v.name} · {v.describe}
-                </option>
-              ))}
-            </optgroup>
-          ) : (
-            <option value="">Best available</option>
-          )}
-          {player.voices.length ? (
-            <optgroup label="This device's voices">
-              {player.voices.map((v) => (
-                <option key={v.name} value={v.name}>
-                  {v.name}
-                </option>
-              ))}
-            </optgroup>
-          ) : null}
-        </select>
-      ) : null}
-
-      <select
-        className="raloud__rate"
-        value={String(rate)}
-        aria-label="Reading speed"
-        onChange={(e) => {
-          const next = Number(e.target.value)
-          // Only record the choice. The player picks it up itself: restarting
-          // from here used the `start` of the render before the change, which
-          // still carried the old speed, so the sentence came back at exactly
-          // the speed she had just moved away from.
-          setState((s) => ({ ...s, settings: { ...s.settings, speechRate: next } }))
-        }}
-      >
-        {speechRateOptions(rate).map((r) => (
-          <option key={r} value={String(r)}>
-            {r}×
-          </option>
-        ))}
-      </select>
+            <span
+              className="raloud__track"
+              role="progressbar"
+              aria-label="How far through the lesson"
+              aria-valuemin={0}
+              aria-valuemax={player.total}
+              aria-valuenow={player.at + 1}
+              title={`Sentence ${player.at + 1} of ${player.total}`}
+            >
+              <span className="raloud__fill" style={{ width: `${(share * 100).toFixed(1)}%` }} />
+            </span>
+            <button className="raloud__icon" onClick={() => player.skip(1)} aria-label="On a sentence" title="On a sentence">
+              <IconChevronRight size={13} />
+            </button>
+            <button className="raloud__icon" onClick={player.stop} aria-label="Stop reading" title="Stop reading">
+              <IconX size={11} />
+            </button>
+          </>
+        )}
+        <span className="raloud__sep" aria-hidden="true" />
+        <label className="raloud__rate" title="Reading speed">
+          <span aria-hidden="true">{rate}×</span>
+          <select
+            value={String(rate)}
+            aria-label="Reading speed"
+            onChange={(e) => {
+              const next = Number(e.target.value)
+              // Only record the choice. The player picks it up itself: restarting
+              // from here used the `start` of the render before the change, which
+              // still carried the old speed, so the sentence came back at exactly
+              // the speed she had just moved away from.
+              setState((s) => ({ ...s, settings: { ...s.settings, speechRate: next } }))
+            }}
+          >
+            {speechRateOptions(rate).map((r) => (
+              <option key={r} value={String(r)}>
+                {r}×
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       {player.notice ? (
         <p className="raloud__notice" role="status">

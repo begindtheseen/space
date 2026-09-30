@@ -6,6 +6,7 @@ import { Starfield } from '@/components/art/Starfield'
 import { Shell, phaseFor } from '@/components/layout/Shell'
 import { LearnerProvider, useLearner } from '@/hooks/useLearner'
 import { useRoute } from '@/lib/router'
+import { TutorHost } from '@/components/Tutor'
 import { Home } from '@/pages/Home'
 
 /* Split the heavy leaves out of the initial bundle. The dashboard is what the
@@ -51,6 +52,7 @@ function Routed() {
 
   return (
     <Shell dueCount={dueCount} phase={phaseFor(readiness)}>
+      <TutorHost />
       <Suspense fallback={<PageSpinner />}>
         {/* Pages that snapshot state on mount — the review queue, the
             playground's saved buffer — would otherwise build themselves from

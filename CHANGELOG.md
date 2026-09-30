@@ -8,6 +8,32 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.2.3
+
+- A voice that helps you through your code. In Learn to code, when you run your code and it doesn't
+  pass, a small card rises at the bottom of the screen and the voice tells you what it sees in that
+  run. That might be the error and the line it's on, the line of your output that's off, or the call your
+  function got wrong. For example: "Nice try, but line 3 is missing the colon at the end," or "Your
+  function prints the answer, but it doesn't give it back." Each time you try again, it guides you a
+  little further: first where the problem is, then what should be there, then the lesson's own hints.
+  After several tries it suggests reading the solution. It notices when you've fixed the error or when
+  more checks pass, and when you run the same code again. When your code passes, it says nothing and
+  the card goes away. It stays quiet in course exams and re-tests. You can turn it off in Settings.
+- Read aloud is one quiet button at the top of each lesson, with the speed beside it. While it reads,
+  the same capsule shows pause, back, a thin progress line, forward and stop.
+- Choosing the voice has moved to Settings, next to the reading speed, with a Preview button to hear
+  it first.
+- Pronunciation, fixed across every lesson. Every word the voice reads was checked, and it no longer
+  reads maths commands aloud by their code names. It used to say things like "mathbb", "leftarrow",
+  "otimes" and "lceil" hundreds of times. They now come out as "the expected value of", "gets",
+  "times" and "the ceiling of". Code words are said the way programmers say them: `str` is "string"
+  (not "S T R"), `succ` is "successor", `sizeof` is "size of", `enum` is "ee-num", `Eigen` is
+  "eye-gen", and `async` is "ay-sink". Terminal flags are read as flags ("ls dash L A"), `HEAD~1` is
+  "HEAD tilde one", 1e-9 keeps its minus sign, and names like `ii` and `xx` are no longer read as
+  Roman numerals.
+- Fixed an equation in the ZEM/ZEV guidance lesson that was broken on screen and read aloud as raw
+  code.
+
 ## 1.2.2
 
 - Read aloud follows along properly now. The highlight stays on the word being read instead of jumping
