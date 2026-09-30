@@ -8,6 +8,21 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.2.4
+
+- The voice answers right away. When a run doesn't pass, the guide starts talking almost at once,
+  instead of after a pause.
+  - While a lesson or practice problem is open, the natural voice stays ready. It used to switch
+    itself off after a few quiet minutes, so the first hint after a long think could take several
+    seconds to start.
+  - The first words of a hint ("Close, but", "Almost:", "Still not quite." and the rest, with and
+    without your name) are made ahead of time in your voice, so they play the moment a run fails
+    while the rest of the sentence is being made.
+  - Long hints are made in short pieces side by side, and each piece starts exactly as the one
+    before ends, so there are no gaps.
+  - Working out what to say is faster too: for the Terminal and Git it takes under a millisecond
+    most of the time, and never more than a few hundredths of a second.
+
 ## 1.2.3
 
 - A voice that helps you through your code, and understands what you actually did. In Learn to code,
