@@ -220,12 +220,35 @@ class NaturalVoice {
     return this.device === 'webgpu' ? 1 : poolSize()
   }
 
-  /** Whether the model is already on this device, so starting needs no download. */
+  private isDownloaded = false
+
+  /** Whether the model is already on this device, so starting needs no download. Once it is, that is remembered. */
   async downloaded(): Promise<boolean> {
+    if (this.isDownloaded || this.status === 'ready') return true
     try {
-      return !!(await (await caches.open(CACHE_NAME)).match(MODEL_URL))
+      this.isDownloaded = !!(await (await caches.open(CACHE_NAME)).match(MODEL_URL))
     } catch {
       return false
+    }
+    return this.isDownloaded
+  }
+
+  private holds = 0
+
+  /**
+   * Keeps the voice loaded while something may need it at any moment (the tutor, while a problem is open):
+   * it is not put away after a quiet spell, so the next line doesn't wait seconds for it to start again.
+   * Returns the release.
+   */
+  hold(): () => void {
+    this.holds++
+    if (this.idleTimer) clearTimeout(this.idleTimer)
+    let done = false
+    return () => {
+      if (done) return
+      done = true
+      this.holds--
+      this.touch()
     }
   }
 
@@ -534,7 +557,7 @@ class NaturalVoice {
   private touch(): void {
     if (this.idleTimer) clearTimeout(this.idleTimer)
     const busy = this.queue.length > 0 || this.slots.some((s) => s.job)
-    if (busy || !this.slots.length) return
+    if (busy || !this.slots.length || this.holds > 0) return
     this.idleTimer = setTimeout(() => {
       for (const s of this.slots) s.worker.terminate()
       this.slots = []

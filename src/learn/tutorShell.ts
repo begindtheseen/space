@@ -52,8 +52,13 @@ export interface Step {
 }
 
 /** Every file and folder in her home, by path. Git's own files are left out: they are not hers to look at. */
+const snapshots = new WeakMap<ShellState, Map<string, Entry>>()
 function snapshot(s: ShellState): Map<string, Entry> {
+  // The same state is looked at many times while one run is explained: walked once.
+  const known = snapshots.get(s)
+  if (known) return known
   const out = new Map<string, Entry>()
+  snapshots.set(s, out)
   const walk = (node: Node, path: string) => {
     if (node.kind === 'file') {
       out.set(path, { dir: false, content: node.content })
@@ -990,10 +995,24 @@ export interface ShellLesson {
  * What went wrong in a Terminal or Git run, from what she typed: null when it
  * passed, or when nothing better can be said than the check's own words.
  */
+// The problem's starting folder and the solution's replay are the same on every run of that problem: made
+// once, for the last few problems she worked on. (Shell states are never changed in place.)
+const solved = new Map<string, { start: ShellState; ref: Step[] }>()
+function solvedFor(lesson: ShellLesson): { start: ShellState; ref: Step[] } {
+  const key = `${lesson.starter}\u0000${lesson.solution}`
+  let hit = solved.get(key)
+  if (!hit) {
+    const start = lessonShell(lesson as Parameters<typeof lessonShell>[0])
+    hit = { start, ref: replay(start, lesson.solution.split('\n')) }
+    solved.set(key, hit)
+    if (solved.size > 8) solved.delete(solved.keys().next().value!)
+  }
+  return hit
+}
+
 export function shellDiagnosis(lesson: ShellLesson, typed: readonly string[]): Diagnosis | null {
-  const start = lessonShell(lesson as Parameters<typeof lessonShell>[0])
+  const { start, ref } = solvedFor(lesson)
   const steps = replay(start, typed)
-  const ref = replay(start, lesson.solution.split('\n'))
   const her = steps.length ? steps[steps.length - 1]!.after : start
   const want = ref.length ? ref[ref.length - 1]!.after : start
   const herSnap = snapshot(her)
@@ -1071,6 +1090,9 @@ export function shellDiagnosis(lesson: ShellLesson, typed: readonly string[]): D
     }
   }
 
+  // Which of her steps are errors she never got past (and the solution doesn't make too): worked out once.
+  const refErrors = new Set(ref.filter(isError).map((y) => y.line))
+  const open = steps.map((x, n) => isError(x) && !resolvedLater(steps, n, ref) && !refErrors.has(x.line))
   const lines = (xs: Step[]) => xs.map((x) => x.line.trim().replace(/\s+/g, ' '))
   const hers = lines(steps)
   const theirs = lines(ref)
@@ -1102,7 +1124,7 @@ export function shellDiagnosis(lesson: ShellLesson, typed: readonly string[]): D
   }
   // 0e. A `git add` the solution runs that she never did, when nothing else went wrong first (a commit that
   // then fails for having nothing added is what it caused).
-  const beforeCommit = steps.some((x, n) => !/^git commit\b/.test(x.line.trim()) && isError(x) && !resolvedLater(steps, n, ref) && !ref.some((y) => isError(y) && y.line === x.line))
+  const beforeCommit = steps.some((x, n) => open[n] && !/^git commit\b/.test(x.line.trim()))
   if (!beforeCommit)
     for (const l of theirs) {
       const m = /^git add\s+(.+)$/.exec(l)
@@ -1125,7 +1147,7 @@ export function shellDiagnosis(lesson: ShellLesson, typed: readonly string[]): D
       const where = (x: Step) => x.changes.filter((c) => c.kind !== 'deleted').map((c) => relative(x.cwd, c.path)).join()
       const went = t.status !== 0 || t.changes.map((c) => c.path).join() !== r.changes.map((c) => c.path).join()
       // Only when nothing before it had already gone wrong: then that is the cause, and it has its own reading.
-      const earlier = steps.slice(0, k).some((x, n) => isError(x) && !resolvedLater(steps, n, ref) && !ref.some((y) => isError(y) && y.line === x.line))
+      const earlier = open.slice(0, k).some(Boolean)
       if (!earlier && t.cwd !== r.cwd && went && (t.status !== r.status || where(t) === where(r))) {
         // When the error itself already says it (already inside, outside the repository, a leading
         // slash), its own reading is the clearer one.

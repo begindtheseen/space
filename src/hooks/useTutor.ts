@@ -9,12 +9,18 @@
 
    Never used in a course's exam or a spaced re-test: those are tests, and a
    voice helping would make them something else.
+
+   While a page that uses it is open, the voice is kept ready and the tutor's
+   first words are made ahead of time, so an answer starts the moment a run
+   fails.
    ========================================================================== */
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { tutorDismiss, tutorSpeak } from '@/components/Tutor'
 import { DEFAULT_SETTINGS } from '@/engine/state'
 import { useLearner } from '@/hooks/useLearner'
-import { tutorLine, type TutorMemory } from '@/learn/tutor'
+import { tutorLine, tutorOpeners, type TutorMemory } from '@/learn/tutor'
+import { DEFAULT_SPEECH_RATE } from '@/lib/speech'
+import { warmVoice } from '@/lib/voice/say'
 import type { LearnGrade, LearnLesson } from '@/learn/types'
 
 /** A graded run, as the lesson page has it. */
@@ -37,6 +43,24 @@ export function useTutor(): (id: string, unit: LearnLesson, run: HeardRun) => vo
   const on = state.settings.spokenHints !== false
   const full = state.settings.displayName.trim()
   const name = full && full !== DEFAULT_SETTINGS.displayName ? full.split(/\s+/)[0] : undefined
+  const voiceName = state.settings.voiceName
+  const rate = state.settings.speechRate ?? DEFAULT_SPEECH_RATE
+
+  // While a problem is open, the voice stays ready and its first words are made ahead: when a run fails,
+  // the answer starts at once, not after the voice has woken up.
+  useEffect(() => {
+    if (!on) return
+    const idle = (window as { requestIdleCallback?: (f: () => void) => number }).requestIdleCallback ?? ((f: () => void) => window.setTimeout(f, 300))
+    let release: (() => void) | null = null
+    let gone = false
+    idle(() => {
+      if (!gone) release = warmVoice({ voiceName, rate, phrases: tutorOpeners(name) })
+    })
+    return () => {
+      gone = true
+      release?.()
+    }
+  }, [on, voiceName, rate, name])
 
   return useCallback(
     (id, unit, run) => {
