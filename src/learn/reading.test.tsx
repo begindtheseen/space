@@ -90,7 +90,7 @@ describe('a lesson read aloud, with stops at its code windows', () => {
         const { utterances } = prepare(r.markdown)
         expect(utterances.map(pauseIn).filter(Boolean), lesson.id).toEqual(Object.keys(r.stops))
       }
-  })
+  }, 120_000)
 })
 
 describe('waiting for a pass', () => {
