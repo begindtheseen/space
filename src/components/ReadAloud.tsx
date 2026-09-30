@@ -37,7 +37,12 @@ export interface ReadAloudProps {
   /** The element the text is rendered in, for following along (default `.reader__md`). */
   contentSelector?: string
   /** Stops written into the text (learn/reading.ts): what to do at one, and what to say while waiting there. */
-  pauses?: { run: (id: string, signal: AbortSignal) => Promise<void>; label: (id: string) => string }
+  pauses?: {
+    run: (id: string, signal: AbortSignal) => Promise<void>
+    label: (id: string) => string
+    /** Whether a stop is practice still to do, which going forward may not pass. */
+    holds?: (id: string) => boolean
+  }
   /** What is being read, for the docked player: the lesson's title. */
   title?: string
 }
@@ -60,6 +65,7 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
     rate,
     ...(contentSelector ? { contentSelector } : {}),
     ...(pauses ? { onPause: pauses.run } : {}),
+    ...(pauses?.holds ? { holds: pauses.holds } : {}),
   })
   const waiting = player.state === 'waiting'
 
@@ -174,7 +180,7 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
   )
   const seek = (i: number) => player.start(i)
   const skipButton = (dir: -1 | 1, size = 12) => (
-    <SkipButton dir={dir} at={player.at} total={player.total} onSkip={player.skip} onSeek={seek} scanTo={setScan} size={size} />
+    <SkipButton dir={dir} at={player.at} total={player.total} limit={player.limit} onSkip={player.skip} onSeek={seek} scanTo={setScan} size={size} />
   )
   const back = skipButton(-1)
   const on = skipButton(1)
@@ -207,7 +213,18 @@ export function ReadAloud({ markdown, contentSelector, pauses, title }: ReadAlou
     </label>
   )
   const track = (className: string, times = false) => (
-    <Scrubber className={className} at={player.at} total={player.total} texts={player.texts} rate={rate} onSeek={seek} scanning={scan} times={times} />
+    <Scrubber
+      className={className}
+      at={player.at}
+      total={player.total}
+      texts={player.texts}
+      rate={rate}
+      onSeek={seek}
+      scanning={scan}
+      times={times}
+      limit={player.limit}
+      marks={player.holdsAt}
+    />
   )
   const doing = waiting
     ? player.waitingOn && pauses

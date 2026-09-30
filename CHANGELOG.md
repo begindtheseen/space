@@ -8,6 +8,22 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.3.2
+
+A faster voice, hints out loud, and no skipping the practice.
+
+- **The voice makes speech up to three times faster on a computer.** Each sentence used to be made on a
+  single core of the processor. The desktop app now lets the voice use several cores on one sentence,
+  so the first words after you press Read aloud, skip or drag the bar come much sooner. Measured on the
+  voice itself: three cores made a sentence in less than half the time of one, and four in about a
+  third. It also runs fewer copies of the voice at once, which uses less memory.
+- **Hints are read aloud.** Show a hint (in a lesson, a practice set or a Bench job) and your guide
+  says it, with each word lit as it is heard, the same as when a run does not pass.
+- **Fast forward stops at the practice.** Skipping ahead, holding fast forward, dragging the bar or
+  pressing → goes no further than the next practice you have not done yet, and the reading waits
+  there. The bar marks each practice in yellow and shows the part after it as dotted until you pass
+  it. Going back is always open.
+
 ## 1.3.1
 
 Reading along, and finding things.

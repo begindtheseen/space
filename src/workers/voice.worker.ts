@@ -6,11 +6,12 @@
    Runtime in WebAssembly, and turns one piece of text into speech: 24 kHz
    mono samples, handed back to the page to play.
 
-   Several of these run side by side (lib/voice/natural.ts keeps the pool):
-   one worker cannot make speech as fast as it is spoken on most machines,
-   because WebAssembly here runs on a single thread — the page is not
-   cross-origin isolated, so there are no shared-memory threads. Separate
-   workers each on their own core, each making a different sentence, can.
+   Several of these run side by side (lib/voice/natural.ts keeps the pool),
+   each making a different sentence. Where the page is cross-origin isolated
+   (the desktop app, desktop/protocol.js) each one also uses a few threads,
+   so one sentence is made on several cores at once and arrives sooner; on a
+   page that is not, WebAssembly has no shared-memory threads, and each
+   worker is one core.
 
    The runtime (about 14 MB) and the phonemiser (about 3 MB) are downloaded
    once from a CDN, pinned to exact versions, like the compilers; the model is
@@ -57,7 +58,7 @@ type Phonemize = (text: string, lang: string) => Promise<string[]>
 export type VoiceDevice = 'wasm' | 'webgpu'
 
 export type VoiceRequest =
-  | { cmd: 'init'; modelUrl: string; cacheName: string; voiceBase: string; device: VoiceDevice; fullPrecision?: boolean }
+  | { cmd: 'init'; modelUrl: string; cacheName: string; voiceBase: string; device: VoiceDevice; fullPrecision?: boolean; threads?: number }
   | { cmd: 'speak'; id: number; text: string; voice: string; lang: 'en-us' | 'en'; speed: number }
 
 export type VoiceReply =
@@ -148,7 +149,8 @@ async function init(req: Extract<VoiceRequest, { cmd: 'init' }>): Promise<number
   } else {
     ort.env.wasm.wasmPaths = base
   }
-  ort.env.wasm.numThreads = 1
+  // Several threads on one sentence where the page is cross-origin isolated (the desktop app), else one.
+  ort.env.wasm.numThreads = !gpu && (req.threads ?? 1) > 1 && self.crossOriginIsolated ? req.threads! : 1
   ort.env.wasm.proxy = false
   // Its warnings (unused initialisers after the rewrite, nodes left on the
   // CPU) are expected here, and would read as errors in the console.

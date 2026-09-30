@@ -110,6 +110,10 @@ export interface ReadAloud {
   total: number
   /** What each sentence says, in the same numbering as `at` and `total` (a stop in the lesson is ''). */
   texts: string[]
+  /** The furthest sentence she can go forward to: the next practice not yet done, or the last sentence. */
+  limit: number
+  /** Where each practice that still holds the reading is, in the same numbering. */
+  holdsAt: number[]
   /** The device's own voices, for the picker. */
   voices: VoiceLike[]
   engine: ReadEngine
@@ -150,6 +154,11 @@ export interface ReadAloudOptions {
    * settles, then goes on. `signal` aborts when the reading is stopped or moved.
    */
   onPause?: (id: string, signal: AbortSignal) => Promise<void>
+  /**
+   * Whether a stop still holds the reading: practice she has not done yet. Going forward (skipping, scrubbing,
+   * scanning) never passes one; it stops there, where the reading waits for the practice.
+   */
+  holds?: (id: string) => boolean
 }
 
 interface Scheduled {
@@ -177,7 +186,7 @@ function audioContextClass(): typeof AudioContext | null {
   return window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext ?? null
 }
 
-export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = '.reader__md', onPause }: ReadAloudOptions): ReadAloud {
+export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = '.reader__md', onPause, holds }: ReadAloudOptions): ReadAloud {
   const deviceSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
   const naturalAvailable = naturalSupported()
   const supported = deviceSupported || naturalAvailable
@@ -208,6 +217,15 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     return out.map((t) => (pauseIn(t) ? '' : t))
   }, [units, sentenceCount])
   const utteranceTexts = useMemo(() => utterances.map((t) => (pauseIn(t) ? '' : t)), [utterances])
+  // The stop each sentence is, if it is one, in both numberings.
+  const unitStops = useMemo(() => {
+    const out: (string | null)[] = Array.from({ length: sentenceCount }, () => null)
+    for (const u of units) out[u.sentence] ??= pauseIn(u.text)
+    return out
+  }, [units, sentenceCount])
+  const utteranceStops = useMemo(() => utterances.map((t) => pauseIn(t)), [utterances])
+  const holdsRef = useRef(holds)
+  holdsRef.current = holds
 
   const wantedNatural = naturalVoiceFor(voiceName)
 
@@ -939,7 +957,21 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       epochRef.current += 1
       cancelWait()
       const epoch = epochRef.current
-      const index = Math.max(0, Math.min(from, count - 1))
+      let index = Math.max(0, Math.min(from, count - 1))
+      // Forward never passes practice she has not done: it stops at it, and the reading waits there.
+      const hold = holdsRef.current
+      if (hold) {
+        const stops = engineRef.current === 'device' ? utteranceStops : unitStops
+        for (let k = Math.max(0, atRef.current); k < index; k++) {
+          const id = stops[k]
+          if (id && hold(id)) {
+            // Already there, waiting on it: going on does nothing until it is done.
+            if (k === atRef.current) return
+            index = k
+            break
+          }
+        }
+      }
       if (deviceSupported) window.speechSynthesis.cancel()
       silenceNatural()
       if (engineRef.current !== 'recorded') silenceRecorded()
@@ -1000,7 +1032,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       }
       startDevice(index, epoch)
     },
-    [supported, deviceSupported, utterances.length, sentenceCount, startDevice, runNatural, runRecorded, silenceNatural, silenceRecorded, cancelWait],
+    [supported, deviceSupported, utterances.length, sentenceCount, startDevice, runNatural, runRecorded, silenceNatural, silenceRecorded, cancelWait, unitStops, utteranceStops],
   )
 
   const warm = useCallback(() => {
@@ -1205,12 +1237,20 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     [],
   )
 
+  const stopsNow = engine === 'device' ? utteranceStops : unitStops
+  const holdsAt: number[] = []
+  if (holds) stopsNow.forEach((id, k) => id && holds(id) && holdsAt.push(k))
+  const totalNow = engine === 'device' ? utterances.length : sentenceCount
+  const limit = holdsAt.find((k) => k >= Math.max(0, at)) ?? totalNow - 1
+
   return {
     supported,
     state,
     at,
     total: engine === 'device' ? utterances.length : sentenceCount,
     texts: engine === 'device' ? utteranceTexts : unitTexts,
+    limit,
+    holdsAt,
     voices,
     engine,
     naturalAvailable,

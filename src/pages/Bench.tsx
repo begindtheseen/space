@@ -15,6 +15,7 @@
    ========================================================================== */
 import { useCallback, useEffect, useState } from 'react'
 import { PlaygroundEmbed, type Graded } from '@/components/ide/Embed'
+import { sayHint, tutorDismiss } from '@/components/Tutor'
 import { useLessonCode } from '@/components/ide/lessonCode'
 import { IconCheck, IconChevronLeft, IconWarn } from '@/components/icons'
 import { Button, Card, Chip } from '@/components/ui'
@@ -208,7 +209,11 @@ function Workbench({ task }: { task: BenchTask }) {
         ) : null}
 
         <div className="bench-actions">
-          <button className="btn btn--quiet btn--sm" onClick={() => setShowHint((v) => !v)} type="button">
+          <button className="btn btn--quiet btn--sm" onClick={() => {
+              if (showHint) tutorDismiss()
+              else sayHint(1, task.hint)
+              setShowHint((v) => !v)
+            }} type="button">
             {showHint ? 'Hide hint' : 'Hint'}
           </button>
           {next ? (

@@ -658,3 +658,32 @@ body:has(.fbar):has(.raloud-dock[data-show='true']) .tutor {
 .raloud-dock .scrub__peek {
   bottom: calc(100% + 52px);
 }
+
+/* Past the next practice she has not done: shaded, and not reachable going forward. */
+.scrub__locked {
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: 2;
+  background: repeating-linear-gradient(90deg, rgba(255, 200, 87, 0.35) 0 2px, rgba(10, 18, 32, 0.9) 2px 5px);
+  pointer-events: none;
+}
+
+/* Where each practice still to do sits on the line. */
+.scrub__mark {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  width: 3px;
+  height: 10px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: #ffc857;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.scrub__mark[data-next='true'] {
+  height: 12px;
+  background: #ffd76e;
+}

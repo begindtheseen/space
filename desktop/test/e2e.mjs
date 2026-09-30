@@ -369,6 +369,7 @@ class Harness {
       platform: window.orbit?.platform,
       versions: window.orbit?.versions,
       title: document.title,
+      isolated: window.crossOriginIsolated === true && typeof SharedArrayBuffer !== 'undefined',
     }))
   }
 
@@ -543,6 +544,8 @@ async function main() {
       assertEqual(title, 'ORBIT', 'main BrowserWindow title')
       const info = await harness.bridge(page)
       assert(info.defined, 'window.orbit is defined')
+      // The natural voice's threads need it (desktop/protocol.js ISOLATION_HEADERS).
+      assert(info.isolated, 'the app page is cross-origin isolated (SharedArrayBuffer available for voice threads)')
       assert(typeof info.title === 'string' && info.title.includes('ORBIT'), `document title names ORBIT (${JSON.stringify(info.title)})`)
       assertEqual(info.versions?.bundle, BUILT_IN_VERSION, 'orbit.versions.bundle')
       assertEqual(info.versions?.builtIn, BUILT_IN_VERSION, 'orbit.versions.builtIn')

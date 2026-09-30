@@ -141,6 +141,9 @@ export function VideoEmbed({ videoId, caption }: VideoEmbedProps) {
             allowFullScreen
             referrerPolicy="strict-origin"
             loading="lazy"
+            // The desktop app is cross-origin isolated (for the voice's threads): a cross-origin frame
+            // loads there only as credentialless, without cookies, which the no-cookie player never needs.
+            {...{ credentialless: '' }}
           />
         ) : (
           <button className="video__poster" onClick={() => setPlaying(true)} type="button">

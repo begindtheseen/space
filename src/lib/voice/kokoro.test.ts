@@ -27,7 +27,7 @@ import {
   trimBounds,
 } from './kokoro'
 import { unitAt, wordAt, type RecordedUnit } from './recorded'
-import { poolSize, unitChars } from './natural'
+import { poolSize, unitChars, workerPlan } from './natural'
 
 describe('the natural voice: text to tokens', () => {
   it('says what is written the way a reader would', () => {
@@ -201,6 +201,19 @@ describe('the natural voice: voices and devices', () => {
     expect(poolSize({ hardwareConcurrency: 4, userAgent: 'Mozilla/5.0 (X11; Linux x86_64)' })).toBe(2)
     expect(poolSize({ hardwareConcurrency: 8, deviceMemory: 4, userAgent: 'Mozilla/5.0 (Windows NT 10.0)' })).toBe(2)
     expect(poolSize({ hardwareConcurrency: 12, deviceMemory: 16, userAgent: 'Mozilla/5.0 (Macintosh)' })).toBe(3)
+  })
+
+  it('with threads (a cross-origin isolated page), runs fewer workers with several threads each, leaving a core for the page', () => {
+    const mac = (cores: number, memory = 16) => workerPlan({ hardwareConcurrency: cores, deviceMemory: memory, userAgent: 'Mozilla/5.0 (Macintosh)' }, true)
+    expect(mac(8)).toEqual({ workers: 2, threads: 3 })
+    expect(mac(10)).toEqual({ workers: 2, threads: 4 })
+    expect(mac(12)).toEqual({ workers: 3, threads: 3 })
+    expect(mac(4)).toEqual({ workers: 1, threads: 3 })
+    expect(mac(8, 4)).toEqual({ workers: 1, threads: 4 })
+    // No threads, a phone, or two cores: the single-threaded pool, as before.
+    expect(workerPlan({ hardwareConcurrency: 12, deviceMemory: 16, userAgent: 'Mozilla/5.0 (Macintosh)' }, false)).toEqual({ workers: 3, threads: 1 })
+    expect(workerPlan({ hardwareConcurrency: 8, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' }, true)).toEqual({ workers: 1, threads: 1 })
+    expect(workerPlan({ hardwareConcurrency: 2, userAgent: 'Mozilla/5.0 (Macintosh)' }, true)).toEqual({ workers: 1, threads: 1 })
   })
 })
 
