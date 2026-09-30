@@ -105,7 +105,7 @@ export function say(markdown: string, opts: SayOptions = {}): Saying {
     const natural = !!voice && naturalSupported() && (!!opts.download || naturalVoice.status === 'ready' || (await naturalVoice.downloaded()))
     if (natural && voice && !stopped) {
       try {
-        await sayNatural(utterances, voice, rate, total, opts, () => stopped, stops)
+        await sayNatural(utterances, voice, rate, opts, () => stopped, stops)
         return
       } catch {
         /* the device's voice says it instead */
@@ -132,54 +132,141 @@ export function say(markdown: string, opts: SayOptions = {}): Saying {
   return saying
 }
 
+/* ── Ready before it's needed ────────────────────────────────────────────── */
+
+/** Phrases made ahead, kept in memory by voice and speed: the tutor's openers, said the instant a line starts. */
+const ready = new Map<string, Float32Array>()
+const readyKey = (voice: string, rate: number, text: string) => `${voice}|${rate}|${text}`
+/** A phrase as the voice says it: prepared like any line. */
+const spoken = (phrase: string) => prepare(phrase).utterances.join(' ').trim()
+/** Said on its own, a lead-in keeps its lift: "Close, but," not a full stop. */
+const voiced = (lead: string) => (/[,:;.!?]$/.test(lead) ? lead : `${lead},`)
+
+/**
+ * Gets the voice ready to answer at once, for as long as a page may need it: loads it (when it is already on
+ * the device; this never downloads), keeps it loaded, and makes `phrases` ahead of time. Returns the release.
+ */
+export function warmVoice(opts: { voiceName?: string; rate?: number; phrases?: string[] }): () => void {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.getVoices()
+  const voice = naturalVoiceFor(opts.voiceName)
+  if (!voice || !naturalSupported()) return () => {}
+  const release = naturalVoice.hold()
+  let cancelled = false
+  void (async () => {
+    if (!(await naturalVoice.downloaded()) || cancelled) return
+    await naturalVoice.ensure()
+    const rate = opts.rate ?? 1
+    // One at a time, so a line that is needed now never waits behind more than one of these.
+    for (const phrase of opts.phrases ?? []) {
+      if (cancelled) return
+      const text = spoken(phrase)
+      const key = readyKey(voice.id, rate, text)
+      if (!text || ready.has(key)) continue
+      ready.set(key, (await naturalVoice.synth(voiced(text), voice, rate)).pcm)
+    }
+  })().catch(() => {})
+  return () => {
+    cancelled = true
+    release()
+  }
+}
+
+/** A piece of a line to make and play, and the pause after it (seconds). */
+interface Piece {
+  text: string
+  pause: number
+  pcm?: Float32Array
+}
+
+/**
+ * The line in pieces that can start sooner: a lead-in made ahead is split off the front, and a long sentence
+ * is cut at its commas and colons, so the workers make the pieces side by side and the first is ready soon.
+ */
+export function piecesOf(utterances: string[], voice: string, rate: number): Piece[] {
+  const out: Piece[] = []
+  utterances.forEach((u, i) => {
+    let rest = u.trim()
+    if (i === 0) {
+      let lead = ''
+      for (const key of ready.keys()) {
+        const [v, r, text] = key.split('|') as [string, string, string]
+        if (v === voice && Number(r) === rate && text.length > lead.length && rest.startsWith(text) && rest.length > text.length + 2) lead = text
+      }
+      if (lead) {
+        out.push({ text: lead, pause: 0.02, pcm: ready.get(readyKey(voice, rate, lead)) })
+        rest = rest.slice(lead.length).trim()
+      }
+    }
+    const clauses: string[] = []
+    for (const part of rest.length > 90 ? rest.split(/(?<=[,;:])\s+/) : [rest]) {
+      if (clauses.length && (clauses[clauses.length - 1]!.length < 30 || part.length < 20)) clauses[clauses.length - 1] += ` ${part}`
+      else clauses.push(part)
+    }
+    clauses.forEach((c, k) => out.push({ text: c, pause: k < clauses.length - 1 ? 0.05 : 0.18 }))
+  })
+  return out.filter((p) => p.text)
+}
+
 async function sayNatural(
   utterances: string[],
   voice: NonNullable<ReturnType<typeof naturalVoiceFor>>,
   rate: number,
-  total: number,
   opts: SayOptions,
   stopped: () => boolean,
   stops: (() => void)[],
 ): Promise<void> {
-  await naturalVoice.ensure()
   const c = audio()
   if (!c) throw new Error('no audio')
-  if (c.state !== 'running') await c.resume().catch(() => {})
-  // All of it is asked for at once, so the next sentence is ready when this one ends.
-  const pieces = utterances.map((u) => naturalVoice.synth(u, voice, rate))
+  if (c.state !== 'running') void c.resume().catch(() => {})
+  const pieces = piecesOf(utterances, voice.id, rate)
+  // A lead-in made ahead plays while the voice is still starting, or making the rest.
+  const starting = naturalVoice.ensure()
+  const made = pieces.map((p) => (p.pcm ? Promise.resolve(p.pcm) : starting.then(() => naturalVoice.synth(p.text, voice, rate)).then((s) => s.pcm)))
+  const chars = pieces.reduce((n, p) => n + p.text.length, 0) || 1
+  // Each piece is set to start the moment the one before ends: no gap waiting on a timer.
+  const plan: { at: number; end: number; before: number; len: number }[] = []
+  let next = 0
   let said = 0
-  for (let i = 0; i < utterances.length; i++) {
-    const { pcm } = await pieces[i]!
-    if (stopped()) return
-    if (!pcm.length) continue
-    const buffer = c.createBuffer(1, pcm.length, SAMPLE_RATE)
-    buffer.getChannelData(0).set(pcm)
-    const src = c.createBufferSource()
-    src.buffer = buffer
-    src.connect(c.destination)
-    const start = c.currentTime + 0.03
-    const before = said
-    const len = utterances[i]!.length
-    await new Promise<void>((resolve) => {
-      const tick = setInterval(() => opts.onProgress?.(Math.min(1, (before + len * Math.min(1, (c.currentTime - start) / buffer.duration)) / total)), 80)
-      const end = () => {
-        clearInterval(tick)
-        resolve()
-      }
-      src.onended = end
+  const tick = setInterval(() => {
+    const now = c.currentTime
+    const p = plan.findLast((x) => x.at <= now)
+    if (p) opts.onProgress?.(Math.min(1, (p.before + p.len * Math.min(1, (now - p.at) / Math.max(0.01, p.end - p.at))) / chars))
+  }, 80)
+  stops.push(() => clearInterval(tick))
+  let last: AudioBufferSourceNode | null = null
+  try {
+    for (let i = 0; i < pieces.length; i++) {
+      const pcm = await made[i]!
+      if (stopped()) return
+      if (!pcm.length) continue
+      const buffer = c.createBuffer(1, pcm.length, SAMPLE_RATE)
+      buffer.getChannelData(0).set(pcm)
+      const src = c.createBufferSource()
+      src.buffer = buffer
+      src.connect(c.destination)
+      const at = Math.max(c.currentTime + 0.02, next)
+      src.start(at)
+      plan.push({ at, end: at + buffer.duration, before: said, len: pieces[i]!.text.length })
+      said += pieces[i]!.text.length
+      next = at + buffer.duration + pieces[i]!.pause / Math.max(0.5, rate)
       stops.push(() => {
         try {
           src.stop()
         } catch {
-          /* not started */
+          /* already over */
         }
-        end()
       })
-      src.start(start)
-    })
-    said += len
-    // A breath between sentences.
-    if (i < utterances.length - 1 && !stopped()) await new Promise((r) => setTimeout(r, 180 / Math.max(0.5, rate)))
+      last = src
+    }
+    if (last && !stopped()) {
+      const end = last
+      await new Promise<void>((resolve) => {
+        end.onended = () => resolve()
+        stops.push(resolve)
+      })
+    }
+  } finally {
+    clearInterval(tick)
   }
 }
 

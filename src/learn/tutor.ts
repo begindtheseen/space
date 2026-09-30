@@ -687,6 +687,23 @@ const OPEN_HARD = ["This one's tricky, and that's completely fine.", "Hang in th
 const OPEN_PROGRESS_ERROR = ["Good, that error's gone.", 'Nice, it runs now.', "Great, no more error."]
 const SOLUTION = "If you'd like, open the solution, read it line by line, then close it and type it yourself. That's a real way to learn it, not cheating."
 
+/** Her name worked into an opener: "Close, Maya, but", "Almost, Maya:". */
+function withName(opener: string, name: string): string {
+  if (/, but$/.test(opener)) return opener.replace(/, but$/, `, ${name}, but`)
+  if (/:$/.test(opener)) return opener.replace(/:$/, `, ${name}:`)
+  if (/[.!]$/.test(opener) && !/ Now$|Next,$/.test(opener)) return opener.replace(/([.!])$/, `, ${name}$1`)
+  return opener
+}
+
+/**
+ * Every way a line can begin, with and without her name: made ahead by the voice, so the first words of
+ * what the tutor says play the instant a run fails, while the rest is still being made.
+ */
+export function tutorOpeners(name?: string): string[] {
+  const all = [...OPEN_FIRST, ...OPEN_AGAIN, ...OPEN_HARD, ...OPEN_PROGRESS_ERROR.map((o) => `${o} Now`)]
+  return [...all, ...(name ? all.map((o) => withName(o, name)) : [])]
+}
+
 /** What to say after a run that did not pass. Null when it passed: a right answer needs no comment. */
 export function tutorLine(input: TutorInput): TutorLine | null {
   const { run } = input
@@ -735,11 +752,7 @@ export function tutorLine(input: TutorInput): TutorLine | null {
   else if (input.attempt >= 2) opener = pick(OPEN_AGAIN, seed)
   // "Nice try, but … , but …" trips over itself: when the line has its own "but", open without one.
   else opener = pick(/\bbut\b/.test(d.say) ? OPEN_FIRST.filter((o) => !/, but$/.test(o)) : OPEN_FIRST, seed)
-  if (input.name && (input.attempt === 1 || input.attempt % 3 === 0)) {
-    if (/, but$/.test(opener)) opener = opener.replace(/, but$/, `, ${input.name}, but`)
-    else if (/:$/.test(opener)) opener = opener.replace(/:$/, `, ${input.name}:`)
-    else if (/[.!]$/.test(opener) && !/ Now$|Next,$/.test(opener)) opener = opener.replace(/([.!])$/, `, ${input.name}$1`)
-  }
+  if (input.name && (input.attempt === 1 || input.attempt % 3 === 0)) opener = withName(opener, input.name)
 
   if (repeat) opener = "That's the same code as last time, so it does the same thing."
   if (/(but|Now|Next,|:)$/.test(opener)) parts.push(`${opener} ${lowerFirst(d.say)}`)
