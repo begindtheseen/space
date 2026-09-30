@@ -222,23 +222,37 @@ export async function pool<T, R>(items: T[], width: number, f: (t: T) => Promise
 
 export const RUNNABLE = new Set(['python', 'cpp', 'sql', 'bash', 'git'])
 
+/** Which problems this run checks: all of them, or with LEARN_SHARD=k/n every n-th, starting at the k-th. */
+export function shardOf(spec = process.env.LEARN_SHARD): <T>(items: T[]) => T[] {
+  if (!spec) return (items) => items
+  const m = /^(\d+)\/(\d+)$/.exec(spec)
+  const k = Number(m?.[1])
+  const n = Number(m?.[2])
+  if (!m || n < 1 || k < 1 || k > n) throw new Error(`LEARN_SHARD must look like 2/3, not "${spec}"`)
+  return (items) => items.filter((_, i) => i % n === k - 1)
+}
+
 /** Every problem in these courses that cannot be solved, or needs no solving: empty when all is well. */
 export async function unsolvable(tracks: LearnTrack[]): Promise<string[]> {
-  const units = tracks.filter((t) => RUNNABLE.has(t.lang)).flatMap((t) => t.lessons.flatMap(gradedUnits))
+  const units = shardOf()(tracks.filter((t) => RUNNABLE.has(t.lang)).flatMap((t) => t.lessons.flatMap(gradedUnits)))
   const problems = await pool(units, Math.max(2, cpus().length), async (u) => {
+    const started = Date.now()
     const solved = gradeRun(u, u.solution, await run(u, u.solution))
+    // LEARN_TIMING=5 lists every solution that took longer than 5 seconds: the app stops a check at 30.
+    const slow = Number(process.env.LEARN_TIMING)
+    if (slow && Date.now() - started > slow * 1000) console.log(`slow: ${u.id} ${((Date.now() - started) / 1000).toFixed(1)} s`)
     const failing = solved.results.filter((r) => r.status === 'fail').map((r) => `${r.name}: ${r.detail ?? r.actual ?? ''}`.slice(0, 200))
     const out: string[] = []
     if (failing.length) out.push(`${u.id}: the solution fails ${failing.join(' | ')}${solved.error ? ` (error: ${solved.error.slice(0, 200)})` : ''}`)
     // The browser-runtime sweeps prove solutions; starters were already proved on the native build.
     if ((WASM && u.lang === 'cpp') || (PYODIDE && u.lang === 'python')) return out
-    const started = gradeRun(u, u.starter, await run(u, u.starter))
-    if (started.passed) out.push(`${u.id}: the starter already passes`)
+    const unsolved = gradeRun(u, u.starter, await run(u, u.starter))
+    if (unsolved.passed) out.push(`${u.id}: the starter already passes`)
     return out
   })
   return problems.flat()
 }
 
 export function unitCount(tracks: LearnTrack[]): number {
-  return tracks.filter((t) => RUNNABLE.has(t.lang)).reduce((n, t) => n + t.lessons.flatMap(gradedUnits).length, 0)
+  return shardOf()(tracks.filter((t) => RUNNABLE.has(t.lang)).flatMap((t) => t.lessons.flatMap(gradedUnits))).length
 }
