@@ -200,8 +200,43 @@
 }
 
 ::highlight(raloud-word) {
-  background-color: rgba(86, 150, 248, 0.42);
   color: #fff;
+}
+
+/* The light under the word being said (lib/voice/highlight.ts): slides from word to word, and holds still
+   on its word while the page scrolls. */
+.raloud-glide {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  border-radius: 6px;
+  background: rgba(86, 150, 248, 0.38);
+  box-shadow: 0 0 14px rgba(86, 150, 248, 0.35);
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, width;
+  transition: opacity 0.2s ease;
+}
+
+.raloud-glide[data-slide='true'] {
+  transition:
+    transform 0.17s cubic-bezier(0.25, 0.8, 0.25, 1),
+    width 0.17s cubic-bezier(0.25, 0.8, 0.25, 1),
+    height 0.17s ease,
+    opacity 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .raloud-glide[data-slide='true'] {
+    transition: opacity 0.2s ease;
+  }
+}
+
+:root[data-theme='light'] .raloud-glide {
+  mix-blend-mode: multiply;
+  background: rgba(86, 150, 248, 0.28);
 }
 
 /* When she has scrolled away from where the voice is. */

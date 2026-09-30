@@ -733,7 +733,30 @@ function expandUnits(s: string): string {
  * as "std colon colon vector colon colon push underscore back", `p->next` as
  * "p minus greater than next".
  */
+/** Code that is one symbol on its own, as it is said: "`>` should be `>>`" is "greater than … double greater than". */
+const SYMBOL_ALONE: Record<string, string> = {
+  '/': 'slash', '//': 'double slash', '\\': 'backslash', '-': 'dash', '--': 'double dash', '>': 'greater than',
+  '>>': 'double greater than', '<': 'less than', '<<': 'double less than', '|': 'pipe', '||': 'or', '&': 'and',
+  '&&': 'and', '.': 'dot', '..': 'dot dot', './': 'dot slash', '../': 'dot dot slash', '~': 'tilde', '~/': 'home',
+  '*': 'star', '**': 'double star', '#': 'hash', '$': 'dollar', '=': 'equals', '==': 'equals equals',
+  '!=': 'not equals', ':': 'colon', ';': 'semicolon', ',': 'comma', '+': 'plus', '%': 'percent', '^': 'caret',
+  '@': 'at', '?': 'question mark', '!': 'exclamation mark', '(': 'open bracket', ')': 'close bracket',
+  '()': 'brackets', '[': 'open square bracket', ']': 'close square bracket', '[]': 'square brackets',
+  '{': 'open brace', '}': 'close brace', '{}': 'braces', '"': 'double quote', "'": 'single quote', '`': 'backtick',
+  "'\\n'": 'newline', '"\\n"': 'newline', '\\n': 'newline', '\\t': 'tab', '2>': 'two greater than', '->': 'arrow',
+}
+
+/** Two-letter words that are words: everything else that short is read out letter by letter. */
+const SHORT_WORDS = new Set(['if', 'in', 'is', 'or', 'as', 'do', 'go', 'no', 'on', 'to', 'up', 'at', 'by', 'of', 'be', 'we', 'it', 'me', 'my', 'so', 'an', 'am', 'us', 'hi', 'oh', 'ok'])
+
+/** Letters, said as their names: `eu` is "E U", `d` is "D". */
+const spell = (w: string) => w.toUpperCase().split('').join(' ')
+
 export function codeToWords(code: string): string {
+  const alone = code.trim()
+  if (SYMBOL_ALONE[alone]) return SYMBOL_ALONE[alone]!
+  // A letter or two on its own ("it is missing a `d`", "`eu` should be `ue`") is spelled, not sounded out.
+  if (/^[A-Za-z]$/.test(alone) || (/^[a-z]{2}$/.test(alone) && !SHORT_WORDS.has(alone))) return spell(alone)
   // A command line's flags: `ls -la` is "L S dash L A", `git log --oneline` "dash dash one line",
   // `[ "$a" -eq 1 ]` "dash E Q". Not in an expression, where a dash is a minus: `y = -x`, `f(-1)`.
   const command = !/[=(]/.test(code)
@@ -743,6 +766,25 @@ export function codeToWords(code: string): string {
     c = c
       .replace(/(^|\s)--([A-Za-z][\w-]*)/g, (_m, pre: string, name: string) => `${pre}dash dash ${name.replace(/-/g, ' ')}`)
       .replace(/(^|\s)-([A-Za-z]{1,3})(?![\w-])/g, (_m, pre: string, f: string) => `${pre}dash ${f.toUpperCase().split('').join(' ')}`)
+      // find's long flags have one dash: -type, -iname, -mtime.
+      .replace(/(^|\s)-([a-z]{4,})(?![\w-])/g, '$1dash $2')
+      // A lone dash is a place (cd -) or standard input (cat -).
+      .replace(/(^|\s)-(?=\s|$)/g, '$1dash')
+      // Where the output goes: > into a file, >> onto its end, 2> the errors, | into the next command.
+      .replace(/(^|\s)2>&1(?=\s|$)/g, '$1two greater than and one')
+      .replace(/(^|\s)2>>?(?=\s|\S)/g, (_m, pre: string) => `${pre}two greater than `)
+      .replace(/\s*>>\s*/g, ' double greater than ')
+      .replace(/(^|[^\w-=>])>(?![=>])\s*/g, '$1 greater than ')
+      .replace(/\s+<(?![<=])\s+/g, ' less than ')
+      .replace(/\s+\|(?:\s+|(?=…|$))/g, ' pipe ')
+      // Paths: ../notes is "dot dot slash notes", /etc "slash etc", logs/2026 "logs slash 2026", and `git add .` ends in "dot".
+      .replace(/(^|\s|\/)\.\.(?=\/|\s|$)/g, '$1dot dot')
+      .replace(/(^|\s)\.\/(?=\S)/g, '$1dot slash ')
+      .replace(/(^|\s)\.(?=\s|$)/g, '$1dot')
+      .replace(/\/\//g, ' double slash ')
+      .replace(/(?<!~)\//g, ' slash ')
+    // Commands too short to say, like mv, cp, ls: letter by letter, as people say them.
+    c = c.replace(/(?<![\w.\\-])([bcdfghjklmnpqrstvwxz]{2,3})(?![\w.':<-])/g, (w: string) => (CODE_SHORTS.has(w) ? w : spell(w)))
   }
   return (
     c
@@ -777,9 +819,11 @@ export function codeToWords(code: string): string {
       .replace(/#include\b/g, 'hash include')
       // A call's empty brackets are silent: push_back() is "push back".
       .replace(/\(\)/g, '')
-      .replace(/(?<=[A-Za-z_)\]])\.(?=[A-Za-z_])/g, ' dot ')
+      .replace(/(?<=[A-Za-z0-9_)\]])\.(?=[A-Za-z_])/g, ' dot ')
       .replace(/\s\*\s/g, ' times ')
       .replace(/\*/g, ' star ')
+      // What followed a star, or starts a hidden file: *.conf is "star dot conf", .gitignore "dot gitignore".
+      .replace(/(^|\s)\.(?=[A-Za-z_])/g, '$1dot ')
       .replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b/g, (id) => id.toLowerCase())
       .replace(/(?<=[A-Za-z0-9])_(?=[A-Za-z0-9])/g, ' ')
       // A leading or trailing underscore (_pass, data_) has no sound.
@@ -841,12 +885,17 @@ const CODE_WORDS: [RegExp, string][] = (
     // The shell.
     ['mkdir', 'make dir'], ['rmdir', 'remove dir'], ['chmod', 'change mod'], ['chown', 'change own'], ['xargs', 'X args'],
     ['pwd', 'P W D'], ['wc', 'W C'], ['ssh', 'S S H'], ['scp', 'S C P'], ['tmux', 'T mux'],
+    ['mv', 'M V'], ['cp', 'C P'], ['rm', 'R M'], ['ls', 'L S'], ['cd', 'C D'], ['ps', 'P S'], ['md', 'M D'],
+    ['README', 'read me'], ['gitignore', 'git ignore'], ['stash', 'stash'],
     // Formats and tools.
     ['json', 'Jason'], ['yaml', 'yam ul'], ['toml', 'tom ul'], ['TOML', 'tom ul'], ['Postgres', 'post gress'],
     ['MySQL', 'my S Q L'], ['KiB', 'kibibytes'], ['MiB', 'mebibytes'], ['GiB', 'gibibytes'], ['kPa', 'kilopascals'],
     ['sha256', 'shah two fifty six'], ['SHA256', 'shah two fifty six'], ['SHA', 'shah'],
   ] as [string, string][]
 ).map(([w, say]) => [new RegExp(`(?<![\\w-])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w]|'[a-rt-z])`, 'g'), say])
+
+/** Consonant-only names with a spoken form of their own (in CODE_WORDS): not spelled out letter by letter. */
+const CODE_SHORTS = new Set(['std', 'str', 'ptr', 'tmp', 'src', 'dst', 'cfg', 'cmd', 'txt', 'pwd', 'wc', 'ssh', 'scp', 'fn', 'sqrt', 'md', 'mv', 'cp', 'rm', 'ls', 'cd', 'ps'])
 
 /** Lowercase pairs and triples that the phonemiser reads as Roman numerals: `I_xx` is not "I twenty". */
 const NOT_ROMAN = /(?<![\w'])(ii|iii|xx|xxx|jj|kk)(?![\w'])/g
@@ -944,6 +993,10 @@ export function proseToWords(text: string): string {
   s = s
     .replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b/g, (id) => id.toLowerCase().replace(/_/g, ' '))
     .replace(/\b([a-z][a-z0-9]*(?:_[a-z0-9]+)+)\b/g, (id) => id.replace(/_/g, ' '))
+  // A file named in plain text, as in “notes.txt” or about.html: its dot is said, like in code.
+  s = s.replace(/(?<![\w/.])([A-Za-z_][\w-]*)\.(txt|md|py|js|ts|tsx|log|csv|json|cfg|conf|sh|html|css|cpp|hpp|h|c|sql|yml|yaml|toml|bin|tmp|bak|png|zip)\b/g, '$1 dot $2')
+  // A flag named in plain text: "no -r needed".
+  s = s.replace(/(?<!\b(?:equals|plus|minus|times|over|than|by|of|is|to|and|or|at)\s*)(^|\s)-([a-z]{1,2})(?=[\s,.;)]|$)/g, (_m, pre: string, f: string) => `${pre}dash ${f.toUpperCase().split('').join(' ')}`)
   for (const [re, w] of SAID_AS) s = s.replace(re, w)
   for (const [re, w] of CODE_WORDS) s = s.replace(re, w)
   s = s

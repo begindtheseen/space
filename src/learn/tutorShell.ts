@@ -941,6 +941,9 @@ function gitDiagnosis(fc: FactCtx, w: string[], failing: string): Diagnosis | nu
         const moved = wrongContent(fc, `${path}/${f}`, null, '==')
         if (moved && /^lines-/.test(moved.key)) return moved
       }
+      // Nothing named in progress: what is left is a conflict that was never marked as fixed.
+      if (!mine.pending)
+        return { kind: 'git', key: 'unfinished', say: mine.conflicts.length ? `Git is still waiting on the conflict in ${mine.conflicts.map(code).join(', ')}.` : 'Git is still in the middle of something, and waiting for you to finish it.', more: mine.conflicts.length ? `Fix it, then ${code(`git add ${mine.conflicts[0]}`)} and ${code('git commit')}.` : `${code('git status')} says what it is waiting for.` }
       return { kind: 'git', key: `pending:${mine.pending}`, say: `A ${mine.pending} is still in progress, and Git is waiting for you to finish it.`, more: mine.conflicts.length ? `Fix the conflict in ${mine.conflicts.map(code).join(', ')}, then ${code('git add')} it and ${code('git commit')}.` : `Finish it with ${code(`git ${mine.pending} --continue`)}, or back out with ${code('--abort')}.` }
     case 'conflicts':
       for (const f of mine.conflicts) {

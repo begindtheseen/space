@@ -85,7 +85,7 @@ const KEEP_PIECES = 48
 const FAST_LOOKAHEAD = 36
 
 /** How often the player follows the clock: the sentence counter and the lit word. */
-const FOLLOW_MS = 50
+const FOLLOW_MS = 33
 
 /** How far ahead of the audio clock sentences are queued, in seconds. */
 const SCHEDULE_AHEAD_S = 8
@@ -723,7 +723,8 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
         return
       }
       haltedRef.current = 0
-      const now = ctx.currentTime
+      // What is heard now was scheduled a little earlier: the speakers run behind the audio clock.
+      const now = ctx.currentTime - (ctx.outputLatency || 0) - (ctx.baseLatency || 0)
       const list = scheduledRef.current
       while (list.length > 1 && list[1]!.start <= now) list.shift()
       const current = list[0]

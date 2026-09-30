@@ -695,15 +695,6 @@ function withName(opener: string, name: string): string {
   return opener
 }
 
-/**
- * Every way a line can begin, with and without her name: made ahead by the voice, so the first words of
- * what the tutor says play the instant a run fails, while the rest is still being made.
- */
-export function tutorOpeners(name?: string): string[] {
-  const all = [...OPEN_FIRST, ...OPEN_AGAIN, ...OPEN_HARD, ...OPEN_PROGRESS_ERROR.map((o) => `${o} Now`)]
-  return [...all, ...(name ? all.map((o) => withName(o, name)) : [])]
-}
-
 /** What to say after a run that did not pass. Null when it passed: a right answer needs no comment. */
 export function tutorLine(input: TutorInput): TutorLine | null {
   const { run } = input

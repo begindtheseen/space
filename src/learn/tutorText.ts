@@ -59,6 +59,8 @@ export function hash(s: string): number {
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619)
   return h >>> 0
 }
+/** "a" or "an" before a character, by how its name is said: an `r`, an `8`, a `d`, a `u`. */
+export const article = (c: string) => (/^[aefhilmnorsx8]$/i.test(c) || c === '_' ? 'an' : 'a')
 export const pick = <T,>(list: readonly T[], seed: string): T => list[hash(seed) % list.length]!
 
 const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth']
@@ -127,7 +129,7 @@ export function describeSlip(want: string, got: string): string {
   // One letter out: missing, extra, swapped, or the wrong one.
   if (got.length === want.length - 1) {
     for (let i = 0; i < want.length; i++)
-      if (want.slice(0, i) + want.slice(i + 1) === got) return `it is missing ${/[aeiou]/i.test(want[i]!) ? 'an' : 'a'} ${code(want[i]!)}`
+      if (want.slice(0, i) + want.slice(i + 1) === got) return `it is missing ${article(want[i]!)} ${code(want[i]!)}`
   }
   if (got.length === want.length + 1) {
     for (let i = 0; i < got.length; i++) if (got.slice(0, i) + got.slice(i + 1) === want) return `it has an extra ${code(got[i]!)}`

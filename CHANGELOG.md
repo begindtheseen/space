@@ -8,6 +8,38 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.3.0
+
+A new voice, from the inside out.
+
+- **Clearer, less robotic.** The natural voice runs a small, compressed model, and on a computer's
+  processor it was rounding the sound to 8 bits between every step, which is where the buzz came from.
+  It now works at full precision all the way through, from the same download. Compared sample by
+  sample with the full model, the old sound was far from it, and the new one matches it. Phones keep
+  the faster 8-bit way.
+- **Fluent again.** Each sentence is spoken in one breath, the way the model phrases it best. The last
+  update split sentences at their commas to start sooner, and that is what made her sound choppy.
+  She still starts quickly: the voice stays ready while a lesson is open, and the first sentence is made
+  on its own.
+- **Code you can understand when it's said.** The voice now says code the way a person would:
+  - `mv ../feul ../fuel` is "M V dot dot slash feul dot dot slash fuel", and `cd ..` is "C D dot dot";
+  - `>` is "greater than", `>>` "double greater than", `|` "pipe", and `/` "slash";
+  - `archive/2026/01.log` is "archive slash 2026 slash 01 dot log", and `*.conf` "star dot conf";
+  - short commands like `mv`, `cp`, `ls` and `rm` are said letter by letter, as people say them;
+  - a lone letter or pair (`d`, `eu`) is spelled out, it's "an R" and "a D", and file names in plain
+    text are said with their dot ("notes dot text").
+  
+  Before, many of these reached the voice as bare symbols it could only guess at.
+- **The highlight keeps up, and glides.** In the guide's card, each word lights exactly when it is
+  heard, using the voice's own timing, instead of a guess from how long the line is. A soft light slides
+  from word to word under what's being said, including through code, which lights as one piece while
+  its words are spoken. Reading a lesson aloud gets the same gliding light, which follows the page when
+  you scroll. Both now allow for the small delay of your speakers, so the light is on the word you hear,
+  not the one before.
+- **Steadier.** When the guide needs to speak while a lesson is being read, its words go to the front
+  of the voice's queue, and stopping one never cancels the other's. Also fixed: a hint that said "A null
+  is still in progress" when a Git conflict was left unmarked.
+
 ## 1.2.4
 
 - The voice answers right away. When a run doesn't pass, the guide starts talking almost at once,
