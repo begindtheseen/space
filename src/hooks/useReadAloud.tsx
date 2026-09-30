@@ -252,6 +252,8 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
   // The index is held in a ref as well so the chain can advance without the
   // callback closing over a stale value.
   const atRef = useRef(-1)
+  /** When she last scrolled the lesson herself. */
+  const userScrolledAtRef = useRef(0)
 
   /**
    * Which run of the player a callback belongs to. Bumped by every start and
@@ -405,6 +407,19 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     if (state === 'idle') return
     const mine = () => {
       autoScrollRef.current = false
+      userScrolledAtRef.current = performance.now()
+    }
+    // Only a real scroll of the lesson up or down counts. A trackpad sends wheel events for fingers resting on
+    // it, for the glide after a swipe, and for scrolling a wide equation or table sideways; any of those used
+    // to stop the page following the voice for the rest of the lesson.
+    const wheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) < 4 || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return
+      const main = document.querySelector(contentSelector)?.closest('.scroll')
+      for (let el = e.target as Element | null; el && el !== main; el = el.parentElement) {
+        const cs = getComputedStyle(el)
+        if (/(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight + 1) return // a box inside the lesson scrolled, not the lesson
+      }
+      mine()
     }
     const key = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null
@@ -412,15 +427,15 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       // Not the space bar: on a lesson it plays and pauses the reading (components/ReadAloud.tsx), it does not scroll.
       if (['PageUp', 'PageDown', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) mine()
     }
-    addEventListener('wheel', mine, { passive: true, capture: true })
+    addEventListener('wheel', wheel, { passive: true, capture: true })
     addEventListener('touchmove', mine, { passive: true, capture: true })
     addEventListener('keydown', key, true)
     return () => {
-      removeEventListener('wheel', mine, { capture: true })
+      removeEventListener('wheel', wheel, { capture: true })
       removeEventListener('touchmove', mine, { capture: true })
       removeEventListener('keydown', key, true)
     }
-  }, [state])
+  }, [state, contentSelector])
 
   // Keeps the word being read in sight: as the reading moves down past the screen the lesson
   // scrolls with it, unless she has scrolled away herself, when it offers to take her back instead.
@@ -432,6 +447,9 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       const root = typeof document !== 'undefined' ? document.querySelector(contentSelector) : null
       const scroller = root?.closest('.scroll') ?? null
       if (!range || !range.startContainer.isConnected || inView(range, scroller)) {
+        // She has scrolled back to where the voice is and stopped there: follow it again, as a music app's
+        // lyrics do, instead of staying put for the rest of the lesson.
+        if (range && !autoScrollRef.current && performance.now() - userScrolledAtRef.current > 1500) autoScrollRef.current = true
         setWordOffscreen(false)
         return
       }
@@ -689,6 +707,15 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
           if (wait > 0.05) {
             const until = performance.now() + wait * 1000
             while (epoch === epochRef.current && performance.now() < until) await sleep(100)
+            if (epoch !== epochRef.current) return
+          }
+          // The next sentence ready too, before the first is heard, when the voice has only just started or the
+          // first sentence is short: a fresh voice is slow on its first pieces, and the estimate above cannot
+          // know it, so the reading stopped dead after its first sentence. A moment more before the first word
+          // costs far less than that gap.
+          const next = plan.findIndex((u, i) => i > 0 && !pauseIn(u.text))
+          if (next > 0 && !isMade(plan[next]!) && (!naturalVoice.warmed || pcm.length / SAMPLE_RATE < 2.5)) {
+            await Promise.race([audioFor(plan[next]!).catch(() => {}), sleep(8000)])
             if (epoch !== epochRef.current) return
           }
           playhead = ctx.currentTime + 0.06
