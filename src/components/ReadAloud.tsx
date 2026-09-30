@@ -19,14 +19,25 @@ import { DEFAULT_SPEECH_RATE, speechRateOptions } from '@/lib/speech'
 import { NATURAL_PREFIX, NATURAL_VOICES, naturalVoiceFor } from '@/lib/voice/kokoro'
 import './read-aloud.css'
 
-export function ReadAloud({ markdown }: { markdown: string | null }) {
+export interface ReadAloudProps {
+  markdown: string | null
+  /** The element the text is rendered in, for following along (default `.reader__md`). */
+  contentSelector?: string
+  /** Stops written into the text (learn/reading.ts): what to do at one, and what to say while waiting there. */
+  pauses?: { run: (id: string, signal: AbortSignal) => Promise<void>; label: (id: string) => string }
+}
+
+export function ReadAloud({ markdown, contentSelector, pauses }: ReadAloudProps) {
   const { state: learner, setState } = useLearner()
   const rate = learner.settings.speechRate ?? DEFAULT_SPEECH_RATE
   const player = useReadAloud({
     markdown,
     voiceName: learner.settings.voiceName,
     rate,
+    ...(contentSelector ? { contentSelector } : {}),
+    ...(pauses ? { onPause: pauses.run } : {}),
   })
+  const waiting = player.state === 'waiting'
 
   if (!player.supported || player.total === 0) return null
 
@@ -74,7 +85,11 @@ export function ReadAloud({ markdown }: { markdown: string | null }) {
         </button>
       ) : (
         <>
-          {preparing ? (
+          {waiting ? (
+            <span className="raloud__wait" role="status">
+              {player.waitingOn && pauses ? pauses.label(player.waitingOn) : 'Waiting…'}
+            </span>
+          ) : preparing ? (
             <span className="raloud__prep" role="status">
               <span className="raloud__spin" aria-hidden="true" />
               {preparingLabel}

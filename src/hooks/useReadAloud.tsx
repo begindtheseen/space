@@ -34,6 +34,12 @@
 
    Both engines share the epoch: bumped by every start and stop, so anything
    still arriving from a run that has been superseded stays quiet.
+
+   STOPS. A Learn lesson is read with stops written into it (learn/reading.ts):
+   sentences the player never speaks. Reaching one, it waits for `onPause` to
+   finish — running an example, or her passing the task — then reads on. The
+   wait belongs to the run that reached it, so stop, skip or leaving the page
+   abandons it like any other part of that run.
    ========================================================================== */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { prepare, toUtterances, usableVoices, type VoiceLike } from '@/lib/speech'
@@ -55,6 +61,7 @@ import { PageWords, inView, normWord, paint, scrollToRange } from '@/lib/voice/h
 import { naturalSupported, naturalVoice, unitChars, type NaturalStatus } from '@/lib/voice/natural'
 import { recordingFor, unitAt, wordAt, type Recording } from '@/lib/voice/recorded'
 import { useWakeLock } from '@/lib/wakeLock'
+import { pauseIn } from '@/learn/reading'
 
 /** How often to nudge Chromium so it does not fall silent mid-lesson. */
 const KEEPALIVE_MS = 10_000
@@ -86,7 +93,8 @@ const SCHEDULE_AHEAD_S = 8
 /** Remembers that she uses read-aloud, so the voice warms up when a lesson opens. */
 const USED_KEY = 'natural-voice:used'
 
-export type ReadState = 'idle' | 'preparing' | 'speaking' | 'paused'
+/** waiting: at a stop in the lesson, until what it asks for is done (see STOPS above). */
+export type ReadState = 'idle' | 'preparing' | 'speaking' | 'paused' | 'waiting'
 /**
  * natural: made on the device by the neural voice. recorded: the same voice,
  * recorded ahead of time and streamed as a file (lib/voice/recorded.ts).
@@ -123,6 +131,8 @@ export interface ReadAloud {
   wordOffscreen: boolean
   /** Scrolls the lesson back to the word being read. */
   jumpToWord: () => void
+  /** The stop the reading is waiting at, or null. */
+  waitingOn: string | null
 }
 
 export interface ReadAloudOptions {
@@ -133,6 +143,11 @@ export interface ReadAloudOptions {
   rate?: number
   /** The element the lesson is rendered in, for following along (default `.reader__md`). */
   contentSelector?: string
+  /**
+   * What to do at a stop written into the lesson (learn/reading.ts): the reading waits until this
+   * settles, then goes on. `signal` aborts when the reading is stopped or moved.
+   */
+  onPause?: (id: string, signal: AbortSignal) => Promise<void>
 }
 
 interface Scheduled {
@@ -158,7 +173,7 @@ function audioContextClass(): typeof AudioContext | null {
   return window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext ?? null
 }
 
-export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = '.reader__md' }: ReadAloudOptions): ReadAloud {
+export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = '.reader__md', onPause }: ReadAloudOptions): ReadAloud {
   const deviceSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
   const naturalAvailable = naturalSupported()
   const supported = deviceSupported || naturalAvailable
@@ -201,7 +216,8 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       live = false
     }
   }, [prepared])
-  const recordedOk = !!recording && !recordingFailed && wantedNatural?.id === DEFAULT_NATURAL_VOICE
+  // A recording plays straight through, so a lesson with stops is never read from one.
+  const recordedOk = !!recording && !recordingFailed && wantedNatural?.id === DEFAULT_NATURAL_VOICE && !onPause
   const engine: ReadEngine = recordedOk ? 'recorded' : wantedNatural && naturalAvailable && !fellBack ? 'natural' : 'device'
 
   // The index is held in a ref as well so the chain can advance without the
@@ -215,6 +231,44 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
    * has been superseded and stay quiet.
    */
   const epochRef = useRef(0)
+
+  /* ── Stops ─────────────────────────────────────────────────────────── */
+
+  const onPauseRef = useRef(onPause)
+  onPauseRef.current = onPause
+  const [waitingOn, setWaitingOn] = useState<string | null>(null)
+  /** The wait in progress, aborted by anything that ends or moves the run. */
+  const waitRef = useRef<AbortController | null>(null)
+  /** Whether the reading is at a stop: the clock follower must not call that speaking or buffering. */
+  const waitingRef = useRef(false)
+
+  const cancelWait = useCallback(() => {
+    waitRef.current?.abort()
+    waitRef.current = null
+    waitingRef.current = false
+    setWaitingOn(null)
+  }, [])
+
+  /** Waits at stop `id`; true when the same run should read on. */
+  const hold = useCallback(async (id: string, epoch: number): Promise<boolean> => {
+    const handler = onPauseRef.current
+    if (!handler) return epoch === epochRef.current
+    const ac = new AbortController()
+    waitRef.current = ac
+    waitingRef.current = true
+    setWaitingOn(id)
+    setState('waiting')
+    try {
+      await handler(id, ac.signal)
+    } catch {
+      /* aborted, or the action failed: either way the reading decides below */
+    }
+    if (waitRef.current !== ac) return false
+    waitRef.current = null
+    waitingRef.current = false
+    setWaitingOn(null)
+    return epoch === epochRef.current && !ac.signal.aborted
+  }, [])
 
   // Speed, voice and engine are read at the moment each sentence is spoken
   // rather than captured when playback started. Without this the whole lesson
@@ -263,6 +317,14 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       atRef.current = index
       setAt(index)
 
+      const stopId = pauseIn(utterances[index]!)
+      if (stopId) {
+        void hold(stopId, epoch).then((on) => {
+          if (on) speakFrom(index + 1, epoch)
+        })
+        return
+      }
+
       const u = new SpeechSynthesisUtterance(utterances[index])
       const voice = pickVoice()
       if (voice) {
@@ -288,7 +350,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       window.speechSynthesis.speak(u)
       setState('speaking')
     },
-    [deviceSupported, utterances, pickVoice],
+    [deviceSupported, utterances, pickVoice, hold],
   )
 
   /* ── The natural voice ───────────────────────────────────────────────── */
@@ -439,7 +501,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
         if (rtf / Math.max(1, naturalVoice.parallel) < 0.6) return FAST_LOOKAHEAD
         return Math.max(2, Math.ceil(naturalVoice.parallel * Math.max(1, rtf)) + 1)
       }
-      const page = pageFor()
+      let page = pageFor()
       let pagePos = -1
       const voiceId = (naturalVoiceRef.current ?? naturalVoiceFor('')!).id
       const isMade = (u: SpeechUnit) => madeRef.current.has(`${voiceId}|${rateRef.current}|${u.text}`)
@@ -448,7 +510,24 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       let playhead = ctx.currentTime + 0.06
       for (let k = 0; k < plan.length; k++) {
         if (epoch !== epochRef.current) return
-        for (let a = k; a < Math.min(plan.length, k + lookahead()); a++) void audioFor(plan[a]!).catch(() => {})
+        for (let a = k; a < Math.min(plan.length, k + lookahead()); a++) if (!pauseIn(plan[a]!.text)) void audioFor(plan[a]!).catch(() => {})
+        const stopId = pauseIn(plan[k]!.text)
+        if (stopId) {
+          // Everything before the stop is heard first, then the wait.
+          while (epoch === epochRef.current && ctx.currentTime < playhead - 0.05) await sleep(100)
+          if (epoch !== epochRef.current) return
+          atRef.current = plan[k]!.sentence
+          setAt(plan[k]!.sentence)
+          clearFollow()
+          if (!(await hold(stopId, epoch))) return
+          setState(userPausedRef.current ? 'paused' : 'preparing')
+          // The page may have changed while she worked (the practice appears once the task is
+          // passed), so the words are found again, and the clock starts afresh.
+          page = pageFor()
+          pagePos = -1
+          playhead = ctx.currentTime + 0.06
+          continue
+        }
         // Queue only a little way ahead of the clock, so stop and skip stay instant.
         while (epoch === epochRef.current && playhead - ctx.currentTime > SCHEDULE_AHEAD_S) await sleep(150)
         let piece: Piece
@@ -514,7 +593,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       setAt(-1)
       setState('idle')
     },
-    [audioFor, fallBack, units, pageFor],
+    [audioFor, fallBack, units, pageFor, hold, clearFollow],
   )
 
   // Follows the audio clock: which sentence is sounding, which word of it,
@@ -525,7 +604,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     haltedRef.current = 0
     const id = setInterval(() => {
       const ctx = ctxRef.current
-      if (!ctx) return
+      if (!ctx || waitingRef.current) return
       if (ctx.state !== 'running') {
         // iOS stops web audio on its own — a call, Siri, another app's sound,
         // the screen locking — and the clock stops with it, so the reading
@@ -705,6 +784,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
 
   const stop = useCallback(() => {
     epochRef.current += 1
+    cancelWait()
     if (deviceSupported) window.speechSynthesis.cancel()
     silenceNatural()
     silenceRecorded()
@@ -712,7 +792,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     atRef.current = -1
     setAt(-1)
     setState('idle')
-  }, [deviceSupported, silenceNatural, silenceRecorded, clearFollow])
+  }, [deviceSupported, silenceNatural, silenceRecorded, clearFollow, cancelWait])
 
   const start = useCallback(
     (from = 0) => {
@@ -721,6 +801,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       // Bumping first orphans anything about to be interrupted, so the
       // outgoing sentence's end or error cannot start a rival chain.
       epochRef.current += 1
+      cancelWait()
       const epoch = epochRef.current
       const index = Math.max(0, Math.min(from, count - 1))
       if (deviceSupported) window.speechSynthesis.cancel()
@@ -783,7 +864,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       }
       speakFrom(index, epoch)
     },
-    [supported, deviceSupported, utterances.length, sentenceCount, speakFrom, runNatural, runRecorded, silenceNatural, silenceRecorded],
+    [supported, deviceSupported, utterances.length, sentenceCount, speakFrom, runNatural, runRecorded, silenceNatural, silenceRecorded, cancelWait],
   )
 
   const warm = useCallback(() => {
@@ -962,6 +1043,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
   useEffect(() => {
     return () => {
       epochRef.current += 1
+      cancelWait()
       if (deviceSupported) window.speechSynthesis.cancel()
       silenceNatural()
       piecesRef.current.clear()
@@ -975,7 +1057,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       recRef.current = null
       paint(null, null)
     }
-  }, [deviceSupported, markdown, silenceNatural])
+  }, [deviceSupported, markdown, silenceNatural, cancelWait])
 
   useEffect(
     () => () => {
@@ -1005,7 +1087,8 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     stop,
     skip,
     following: engine !== 'device',
-    wordOffscreen: wordOffscreen && state !== 'idle',
+    wordOffscreen: wordOffscreen && state !== 'idle' && state !== 'waiting',
     jumpToWord,
+    waitingOn,
   }
 }

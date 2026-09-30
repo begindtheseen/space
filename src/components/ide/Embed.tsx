@@ -20,6 +20,7 @@ import { saveCode } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
 import type { CheckResult } from '@/learn/types'
 import { cancel, canRun, runCode, warm, type CodeRun } from '@/lib/run'
+import { useGuideRunner } from '@/lib/guide'
 import { navigate } from '@/lib/router'
 import { commandLines, newShell, pretty, run as runShell, type ShellState } from '@/lib/shell'
 import type { WebLog } from '@/lib/web'
@@ -88,6 +89,8 @@ export interface EmbedProps {
   terminal?: boolean
   /** Mount the editor straight away: the page's main piece of work, not an example. */
   eager?: boolean
+  /** Lets read-aloud run this window when the reading reaches it (lib/guide.ts). */
+  guideId?: string
 }
 
 /** Mounts the editor only once the embed is near the screen: a long lesson can carry dozens. */
@@ -132,6 +135,7 @@ function CodeEmbed({
   input = true,
   transform,
   eager = false,
+  guideId,
 }: EmbedProps) {
   const { state, setState } = useLearner()
   const [code, setCode] = useState(() => (saveKey ? (state.code[saveKey] ?? initial) : initial))
@@ -199,6 +203,9 @@ function CodeEmbed({
       setStatus('')
     }
   }, [code, grade, lang, onPass, page, running, saveKey, schema, setState, stdin, web])
+
+  // Read aloud, the reading runs this example itself when it gets here.
+  useGuideRunner(guideId, () => ref.current, run)
 
   const reset = () => {
     setCode(initial)
@@ -309,7 +316,8 @@ function CodeEmbed({
  * A lesson's shell commands, runnable in the practice terminal: Run types
  * them in order, and the terminal stays open for her to carry on.
  */
-function TerminalEmbed({ code, caption, runLabel }: EmbedProps) {
+function TerminalEmbed({ code, caption, runLabel, guideId }: EmbedProps) {
+  const box = useRef<HTMLDivElement | null>(null)
   const [shell, setShell] = useState<ShellState | null>(() => (commandLines(code).length ? null : newShell()))
   const [lines, setLines] = useState<TermLine[]>([])
   const [key, setKey] = useState(0)
@@ -328,9 +336,12 @@ function TerminalEmbed({ code, caption, runLabel }: EmbedProps) {
     setShell(s)
     setKey((k) => k + 1)
   }
+  useGuideRunner(guideId, () => box.current, () => {
+    if (cmds.length) start()
+  })
 
   return (
-    <div className="embed">
+    <div className="embed" ref={box}>
       {caption ? <div className="embed__caption">{caption}</div> : null}
       <IdeWindow
         lang="bash"

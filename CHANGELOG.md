@@ -8,6 +8,15 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.2.1
+
+- Read aloud now works in every Learn to code lesson, and it reads the lesson the way a tutor would:
+  it reads the explanation, and when it reaches an example with code already in the window it runs the
+  code itself, lets you see what it printed, and reads on. At "Your turn" it waits: the reading goes on
+  only once your code passes. Then it reads each practice problem and question in turn, waiting at each
+  one until you have passed it. The button above the lesson says what it is waiting for, and Stop or the
+  skip buttons still work at any time.
+
 ## 1.2.0
 
 - A computer science degree in Learn to code. Twelve new courses teach what a bachelor's in computer

@@ -21,7 +21,8 @@
    ========================================================================== */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { PlaygroundEmbed, type Graded } from '@/components/ide/Embed'
-import { useLessonCode } from '@/components/ide/lessonCode'
+import { exampleGuideId, useLessonCode } from '@/components/ide/lessonCode'
+import { ReadAloud, type ReadAloudProps } from '@/components/ReadAloud'
 import { ExplainPanel } from '@/components/ExplainPanel'
 import { SelectionAsk } from '@/components/SelectionAsk'
 import { CertificateMark, LangMark } from '@/components/ide'
@@ -37,8 +38,11 @@ import { useTrack } from '@/learn/load'
 import { LEVEL_LABEL, type CatalogTrack, type CheckResult, type LearnLesson, type LearnTrack, type LessonMeta, type Roadmap, type TrackMeta } from '@/learn/types'
 import { onExplainRequested } from '@/lib/ctxBus'
 import type { ExplainSeed, LibraryLesson } from '@/lib/explain'
+import { bringIntoView, markSolved, runWindow, showItem, whenSolved } from '@/lib/guide'
 import { Markdown } from '@/lib/markdown'
+import { runnableFence } from '@/lib/practice'
 import { navigate, useRoute } from '@/lib/router'
+import { readingOf, type ReadingItem } from '@/learn/reading'
 import { TerminalChallenge } from './LearnTerminal'
 import { GateView, PracticeSection, RetestBanner, RetestView, TrackLoading } from './LearnMastery'
 import { courseMastered, gateOf, lessonMastered, practiceDone, practiceTotal } from '@/learn/practice'
@@ -545,8 +549,11 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   const onPassed = useCallback(() => {
     setState((s) => markPracticed(s, lesson, lesson.id))
     setPassedNow(true)
+    markSolved(lesson.id)
     requestAnimationFrame(() => winRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
   }, [lesson, setState])
+
+  const pauses = useLessonReading(lesson, terminal)
 
   const onGraded = useCallback((passed: boolean, results: CheckResult[]) => {
     setLastResults(results)
@@ -602,6 +609,7 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
           ) : null}
         </div>
         <h1 className="lm-text__title">{lesson.title}</h1>
+        <ReadAloud {...pauses} />
 
         {/* The explanation, with its examples runnable where they stand. */}
         <div className="lm-teach">
@@ -748,6 +756,69 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
       {asking ? <ExplainPanel seed={asking} here={here} extra={passedHere} lang={lesson.lang} onClose={closeAsk} /> : null}
     </div>
   )
+}
+
+/**
+ * Read aloud, the whole lesson as one reading (learn/reading.ts): each example
+ * is run where it stands and the reading goes on; the task and every practice
+ * problem or question hold the reading until she has passed it.
+ */
+function useLessonReading(lesson: LearnLesson, terminal: boolean): Pick<ReadAloudProps, 'markdown' | 'contentSelector' | 'pauses'> {
+  const { state } = useLearner()
+  const learned = useRef(state.learn)
+  learned.current = state.learn
+  // The practice still to do when the lesson opened. Fixed for the visit: the
+  // reading must not change under the voice as items are passed.
+  const [items] = useState<ReadingItem[]>(() => [
+    ...lesson.practice.filter((ex) => !state.learn[ex.id]).map((ex) => ({ id: ex.id, text: `${ex.title}\n\n${ex.task}` })),
+    ...(lesson.quiz ?? [])
+      .filter((q) => !state.learn[q.id])
+      .map((q) => ({ id: q.id, text: `${q.title}\n\n${q.ask}${q.choices ? `\n\n${q.choices.map((c) => `- ${c.text}`).join('\n')}` : ''}` })),
+  ])
+  const reading = useMemo(() => readingOf(lesson.teach, lesson.task, items, (info, code) => !!runnableFence(info, code)), [lesson, items])
+
+  const run = useCallback(
+    async (id: string, signal: AbortSignal) => {
+      const stop = reading.stops[id]
+      if (!stop) return
+      if (stop.kind === 'example') {
+        await runWindow(exampleGuideId(stop.code), signal)
+        // A breath to look at what it printed before the voice goes on.
+        await new Promise((r) => setTimeout(r, 700))
+        return
+      }
+      if (stop.kind === 'task') {
+        if (learned.current[lesson.id]) return
+        bringIntoView(document.querySelector('.lm-work'))
+        return whenSolved(lesson.id, signal)
+      }
+      if (stop.kind === 'show') {
+        // The practice appears once the task is passed; give it a moment to be there.
+        for (let i = 0; i < 40 && !document.querySelector('.lm-practice') && !signal.aborted; i++) await new Promise((r) => setTimeout(r, 50))
+        showItem(stop.id)
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+        bringIntoView(document.querySelector('.lm-practice'))
+        return
+      }
+      if (learned.current[stop.id]) return
+      return whenSolved(stop.id, signal)
+    },
+    [reading, lesson.id],
+  )
+
+  const label = useCallback(
+    (id: string) => {
+      const stop = reading.stops[id]
+      if (stop?.kind === 'example') return 'Running the example…'
+      if (stop?.kind === 'task') return terminal ? 'Your turn: type the commands and press Check. Reading goes on when they pass.' : 'Your turn: press Run Code when your code is ready. Reading goes on when it passes.'
+      if (stop?.kind === 'item') return 'Practice: reading goes on when this one passes.'
+      return 'Next…'
+    },
+    [reading, terminal],
+  )
+
+  const pauses = useMemo(() => ({ run, label }), [run, label])
+  return { markdown: reading.markdown, contentSelector: '.lm-flow', pauses }
 }
 
 function fence(lang: LearnLesson['lang']): string {

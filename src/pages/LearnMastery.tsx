@@ -47,6 +47,7 @@ import {
 } from '@/learn/practice'
 import type { CatalogTrack, CheckResult, LearnExercise, LearnLesson, LearnQuestion, LearnTrack } from '@/learn/types'
 import { answerMatches } from '@/learn/parse'
+import { markSolved, onShowItem } from '@/lib/guide'
 import { Markdown } from '@/lib/markdown'
 import { navigate } from '@/lib/router'
 import { TerminalChallenge } from './LearnTerminal'
@@ -288,7 +289,19 @@ export function PracticeSection({ lesson, optional = false }: { lesson: LearnLes
   const onPass = useCallback(() => {
     setState((s) => markPracticed(s, lesson, id))
     setSolvedNow(true)
+    markSolved(id)
   }, [id, lesson, setState])
+  // Read aloud, the reading brings up each item before it reads it.
+  useEffect(
+    () =>
+      onShowItem((want) => {
+        const i = items.findIndex((it) => idOf(it) === want)
+        if (i >= 0) setAt(i)
+      }),
+    // idOf is a pure function of the item.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items],
+  )
   const onAnswer = (ok: boolean) => {
     setAnswer(ok)
     if (ok) onPass()
