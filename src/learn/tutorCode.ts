@@ -52,7 +52,7 @@ function functions(src: string): Map<string, string> {
   const out = new Map<string, string>()
   const ls = src.split('\n')
   ls.forEach((l, k) => {
-    const m = /^(\s*)def\s+([A-Za-z_]\w*)\s*\(/.exec(l)
+    const m = /^(\s*)(?:async\s+)?def\s+([A-Za-z_]\w*)\s*\(/.exec(l)
     if (!m) return
     const ind = m[1]!.length
     let end = k + 1
@@ -91,8 +91,8 @@ function returnsInLoops(src: string): number {
       if (!p.trim()) continue
       const pi = p.match(/^\s*/)![0].length
       if (pi >= ind) continue
-      if (/^\s*def\b/.test(p)) break
-      if (/^\s*(for|while)\b.*:\s*$/.test(p)) {
+      if (/^\s*(?:async\s+)?def\b/.test(p)) break
+      if (/^\s*(?:async\s+)?(for|while)\b.*:\s*$/.test(p)) {
         n++
         break
       }

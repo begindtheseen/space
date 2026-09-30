@@ -36,9 +36,13 @@ it.
     values. A `JOIN` with no `ON` is named, and so is a loop that runs one step past the end
     (`<=` where it should be `<`).
   - Measured, not guessed. Every Terminal, Git, Python, SQL and C++ problem was tried with the
-    mistakes people really make, about 10,000 runs on real interpreters and compilers. The tutor
-    names the actual mistake in 85–100% of runs for nearly every kind of mistake, and the tests keep it
-    there.
+    mistakes people really make, about 13,000 runs on real interpreters and compilers. The tutor
+    names the actual mistake in every one of them, for every kind of mistake, and the tests keep it
+    that way.
+  - It also compares each of your lines with the solution's. When a line matches except for one
+    thing (a name one letter off, `=` for `==`, `/` for `//`, a missing `f`, colon or semicolon,
+    `print` where the answer should be returned, a missing `<< '\n'`), it names that line and that
+    one thing, even when the error it caused shows up somewhere else.
   - Each time you try again, it helps a little more: first where the problem is, then what should be
     there, then the lesson's own hints. After several tries, it suggests reading the solution.
   - It notices when you've fixed the error or when more checks pass, and when you run the same

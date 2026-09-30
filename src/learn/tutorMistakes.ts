@@ -158,14 +158,15 @@ export function codeMistakesFor(unit: LearnLesson): CodeMistake[] {
     if (n) {
       const lines = src.split('\n')
       const use = lines.findIndex((l) => new RegExp(`\\b${n}\\b`).test(l) && !new RegExp(`^\\s*${n}\\s*=(?!=)`).test(l))
-      if (use >= 0) add('py-name', withLine(src, use, (l) => l.replace(new RegExp(`\\b${n}\\b`), n.slice(0, -1))), ['error', 'case'], new RegExp(`\`${n}\``))
+      if (use >= 0) add('py-name', withLine(src, use, (l) => l.replace(new RegExp(`\\b${n}\\b`), n.slice(0, -1))), ['error', 'case', 'spelling'], new RegExp(`\`${n}\``))
     }
-    if (/\bprint\(/.test(src)) add('py-print-case', src.replace(/\bprint\(/, 'Print('), ['error'], /`print`/)
+    if (/\bprint\(/.test(src)) add('py-print-case', src.replace(/\bprint\(/, 'Print('), ['error', 'case'], /`print`/)
     const q = lineIdx(src, /print\("[^"]+"\)/)
     if (q >= 0) add('py-quote', withLine(src, q, (l) => l.replace(/"\)/, ')')), ['error'], /quote|never closes/)
     const f = lineIdx(src, /\bf"[^"]*\{[^}]+\}[^"]*"/)
     if (f >= 0) add('py-fstring', withLine(src, f, (l) => l.replace(/\bf"/, '"')), ['logic'], /`f`/)
-    const ret = lineIdx(src, /^\s{4}return\s+\S/)
+    // A return whose value is all on its line: brackets that open there close there.
+    const ret = src.split('\n').findIndex((l) => /^\s{4}return\s+\S/.test(l) && (l.match(/[([{]/g) ?? []).length === (l.match(/[)\]}]/g) ?? []).length)
     if (ret >= 0 && unit.checks.some((c) => c.kind === 'case')) add('py-return-print', withLine(src, ret, (l) => l.replace(/return\s+(.+)$/, 'print($1)')), ['case', 'logic'], /return|give/)
     // The last return pushed one step in, into the block just above it: a loop, or an if.
     const pushed = src.split('\n').findIndex((l, k, all) => /^ {4}return\b/.test(l) && /^ {8}\S/.test(all[k - 1] ?? ''))
@@ -216,7 +217,7 @@ export function codeMistakesFor(unit: LearnLesson): CodeMistake[] {
     if (decl) {
       const lines = src.split('\n')
       const use = lines.findIndex((l) => new RegExp(`\\b${decl}\\b`).test(l) && !new RegExp(`\\b(?:int|double|auto|long)\\s+${decl}\\b`).test(l))
-      if (use >= 0) add('cpp-name', withLine(src, use, (l) => l.replace(new RegExp(`\\b${decl}\\b`), decl.slice(0, -1))), ['error'], new RegExp(`\`${decl}\``))
+      if (use >= 0) add('cpp-name', withLine(src, use, (l) => l.replace(new RegExp(`\\b${decl}\\b`), decl.slice(0, -1))), ['error', 'spelling'], new RegExp(`\`${decl}\``))
     }
     if (/std::cout/.test(src) && !/using namespace std/.test(src)) add('cpp-std', src.replace(/std::cout/, 'cout'), ['error'], /std::/)
     if (/#include <iostream>/.test(src)) add('cpp-include', src.replace(/#include <iostream>\n?/, ''), ['error'], /include|iostream/)

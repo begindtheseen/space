@@ -110,7 +110,7 @@ export function describeSlip(want: string, got: string): string {
   const [, ge] = extOf(got)
   switch (slip) {
     case 'case':
-      return `the capital letters are different, and the terminal treats ${code(got)} and ${code(want)} as two different names`
+      return `the capital letters are different, and to the computer ${code(got)} and ${code(want)} are two different names`
     case 'space':
       return 'there is a space in a different place'
     case 'extension':

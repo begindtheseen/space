@@ -1,9 +1,8 @@
 /* The code tutor, measured on real runs: problems from every Python, SQL and C++ course, each with a
    realistic mistake made in its solution (tutorMistakes.ts), run for real (runLocal.ts: CPython, clang,
-   sql.js) and graded. For each kind of mistake, the share of failed runs where the tutor calls it what it
-   is and names the thing that is wrong. A floor for each, a little under what it does now, so it can only
-   get better. A sample of the problems, to keep the unit tests quick: the whole curriculum is the same
-   test with CODE_TUTOR_EVERY=1. */
+   sql.js) and graded. Every failed run must have the tutor call it what it is and name the thing that is
+   wrong, for every kind of mistake. A sample of the problems, to keep the unit tests quick: the whole
+   curriculum is the same test with CODE_TUTOR_EVERY=1, and CODE_TUTOR_REPORT=file lists what it said. */
 import { appendFileSync } from 'node:fs'
 import { afterAll, describe, expect, it } from 'vitest'
 import { TRACKS } from './full'
@@ -15,14 +14,6 @@ import { codeMistakesFor } from './tutorMistakes'
 import type { LearnLang } from './types'
 
 afterAll(cleanUp)
-
-const FLOOR: Record<string, number> = {
-  'py-colon': 0.97, 'py-indent': 0.97, 'py-eq': 0.9, 'py-div': 0.8, 'py-fstring': 0.8, 'py-name': 0.82, 'py-print-case': 0.7,
-  'py-return-in-if': 0.9, 'py-return-in-loop': 0.9, 'py-return-print': 0.9,
-  'sql-column': 0.95, 'sql-columns': 0.8, 'sql-desc': 0.85, 'sql-group': 0.9, 'sql-join-on': 0.9, 'sql-null': 0.85, 'sql-quotes': 0.85,
-  'sql-table': 0.95, 'sql-where': 0.9,
-  'cpp-assign-if': 0.9, 'cpp-bound': 0.9, 'cpp-name': 0.8, 'cpp-semicolon': 0.95,
-}
 
 async function measure(lang: LearnLang, every: number) {
   const step = Number(process.env.CODE_TUTOR_EVERY ?? every)
@@ -41,9 +32,7 @@ async function measure(lang: LearnLang, every: number) {
     else misses.push(`[${m.name}] ${u.id}: ${t?.text ?? '(nothing said)'}`)
     stats.set(m.name, st)
   })
-  const below = [...stats]
-    .filter(([k, s]) => s.ok / s.n < (FLOOR[k] ?? 0))
-    .map(([k, s]) => `${k}: ${((100 * s.ok) / s.n).toFixed(1)}% of ${s.n} (floor ${(FLOOR[k] ?? 0) * 100}%)`)
+  const below = [...stats].filter(([, s]) => s.ok < s.n).map(([k, s]) => `${k}: ${s.n - s.ok} of ${s.n} missed`)
   return { below, runs: [...stats.values()].reduce((n, s) => n + s.n, 0), stats, misses }
 }
 

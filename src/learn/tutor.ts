@@ -21,7 +21,7 @@
 import type { CheckResult, LearnCheck, LearnLang } from './types'
 import { assignInCondition, assignSaid, columnOrder, functionDiagnosis, insertOrder, joinWithoutOn, logicDiagnosis, unquotedText } from './tutorCode'
 import { shellDiagnosis } from './tutorShell'
-import { clip, closestSlip, code, describeSlip, distance, lowerFirst, nth, pick, quote, sentence, upperFirst, type Diagnosis, type DiagnosisKind } from './tutorText'
+import { clip, closestSlip, code, describeSlip, distance, slipOf, lowerFirst, nth, pick, quote, sentence, upperFirst, type Diagnosis, type DiagnosisKind } from './tutorText'
 
 export type { DiagnosisKind } from './tutorText'
 
@@ -126,6 +126,71 @@ function herLine(input: TutorInput, text: string): number | null {
 }
 
 const at = (line: number | null) => (line ? ` on line ${line}` : '')
+
+/**
+ * Her line set against the solution's: when one of the solution's lines is hers exactly but for one token,
+ * that token is the mistake, whatever error it caused further on (`count` where `counts` was meant is an
+ * int, and "does not support item assignment" says nothing about spelling). A near-miss name, `=` for
+ * `==`, `/` for `//`, a string missing its `f`, `print(x)` for `return x`, a missing colon. The line the
+ * error points at first; then any line.
+ */
+type Slip = { line: number; say: string; meant?: string; logic?: boolean; kind?: DiagnosisKind }
+const TOKEN = /[fFrRbB]?(?:"[^"\n]*"|'[^'\n]*')|[A-Za-z_]\w*|\d+(?:\.\d+)?|==|!=|<=|>=|\/\/|\*\*|->|:=|<<|>>|&&|\|\||\+\+|--|\S/g
+function lineSlip(input: TutorInput, line: number | null): Slip | null {
+  const theirs = input.solution.split('\n')
+  const ours = input.code.split('\n')
+  const comment = input.lang === 'python' ? /#.*$/ : /\/\/.*$/
+  const toks = (t: string) => t.replace(comment, '').match(TOKEN) ?? []
+  const word = (t: string) => /^[A-Za-z_]\w*$/.test(t)
+  const one = (n: number, scanning = false): Slip | null => {
+    const mine = ours[n - 1] ?? ''
+    if (!mine.trim() || theirs.some((l) => l.trim() === mine.trim())) return null
+    const a = toks(mine)
+    for (const l of theirs) {
+      const b = toks(l)
+      // print(x) where the solution returns x.
+      const pr = /^(\s*)print\((.*)\)\s*$/.exec(mine)
+      if (pr && l.trim() === `return ${pr[2]!.trim()}`)
+        return { line: n, say: `On line ${n}, ${code(mine.trim())} prints the answer, and the task needs it given back: ${code(l.trim())}. Printing only shows it on the screen; whatever called the function gets ${code('None')}.`, meant: 'return', logic: true }
+      // One or two tokens left out: a colon, a semicolon, the << '\n' that ends a line.
+      for (const gap of [1, 2]) {
+        if (b.length !== a.length + gap) continue
+        const k = b.findIndex((t, x) => t !== a[x])
+        const missing = b.slice(k, k + gap)
+        if (k < 0 || [...a.slice(0, k), ...missing, ...a.slice(k)].join(' ') !== b.join(' ') || missing.some(word)) continue
+        if (gap === 2 && missing[0] === '<<' && /^(?:'\\n'|"\\n"|endl)$/.test(missing[1]!))
+          return { line: n, say: `On line ${n}, the ${code("<< '\\n'")} is missing, so nothing starts a new line there and the next thing printed runs straight on: ${code(l.trim())}.`, meant: missing[1]!, logic: true }
+        if (missing.join('') === ':' && k === b.length - 1) return { line: n, say: `Line ${n} is missing the colon at the end: ${code(l.trim())}.`, meant: ':', kind: 'error' }
+        if (missing.join('') === ';') return { line: n, say: `A semicolon is missing at the end of line ${n}: ${code(l.trim())}. In C++ every statement ends with one.`, meant: ';', kind: 'error' }
+        return { line: n, say: `On line ${n}, ${code(missing.join(' '))} is missing: it should read ${code(l.trim())}.`, meant: missing.join(' ') }
+      }
+      if (b.length !== a.length) continue
+      const diff = a.map((w, k) => (w === b[k] ? -1 : k)).filter((k) => k >= 0)
+      if (diff.length !== 1) continue
+      const k = diff[0]!
+      const [x, y] = [a[k]!, b[k]!]
+      if (word(x) && word(y) && slipOf(y, x)) return { line: n, say: `On line ${n}, ${code(x)} should be ${code(y)}: ${describeSlip(y, x)}.`, meant: y, kind: 'spelling' }
+      // The same text, misspelt: a key or a name in quotes.
+      const inner = (t: string) => /^[fFrRbB]?(["'])(.*)\1$/.exec(t)?.[2]
+      const key = a[k + 1] === ':' || (a[k - 1] === '[' && a[k + 1] === ']')
+      if (key && inner(x) !== undefined && inner(y) !== undefined && x[0] === y[0] && slipOf(inner(y)!, inner(x)!))
+        return { line: n, say: `On line ${n}, the key ${code(inner(x)!)} should be ${code(inner(y)!)}: ${describeSlip(inner(y)!, inner(x)!)}.`, meant: inner(y)!, kind: 'spelling' }
+      if (x === '=' && y === '==') return { line: n, say: `On line ${n}, ${code('=')} should be ${code('==')}: one equals sign stores a value, two ask whether two things are equal.`, meant: '==', kind: 'error' }
+      if (x === '/' && y === '//') return { line: n, say: `On line ${n}, ${code('/')} should be ${code('//')}: ${code('/')} always gives a decimal, and ${code('//')} divides into whole numbers, dropping the rest.`, meant: '//', logic: true }
+      if (/^["']/.test(x) && y === `f${x}`) return { line: n, say: `On line ${n}, the string ${code(x)} has no ${code('f')} in front, so its ${code('{…}')} parts are printed as they are, braces and all.`, meant: `f${x}`, logic: true }
+      // A comparison the other way round only on the line the error points at: elsewhere, a solution often has both.
+      if (!scanning && /^(?:<|<=|>|>=|==|!=)$/.test(x) && /^(?:<|<=|>|>=|==|!=)$/.test(y)) return { line: n, say: `On line ${n}, ${code(x)} should be ${code(y)}: ${code(l.trim())}.`, meant: y, logic: true }
+    }
+    return null
+  }
+  const first = line ? one(line) : null
+  if (first) return first
+  for (let n = 1; n <= ours.length; n++) {
+    const r = one(n, true)
+    if (r) return r
+  }
+  return null
+}
 
 /* ── Errors, by language ─────────────────────────────────────────────────── */
 
@@ -243,7 +308,7 @@ function cppError(input: TutorInput, all: string): Diagnosis | null {
   const suggest = msg.match(/did you mean '([\w:]+)'/)?.[1]
   // if (x = 5) often doesn't compile at all, and what the compiler says about it is no help to a beginner.
   const assign = assignInCondition(input.code, input.solution)
-  if (assign && line && assign.line === line && /assignable|assign to|assigning to|convertible to 'bool'|conversion from .* to 'bool'|lvalue|read-only/.test(msg))
+  if (assign && line && assign.line === line && /assignable|assign to|assigning to|convertible to 'bool'|conversion from .* to 'bool'|lvalue|read-only|viable overloaded '='/.test(msg))
     return { ...assignSaid(assign, where), kind: 'error' }
   // A name from a header that isn't included: the headers the solution has and her code doesn't.
   const includes = (s: string) => [...s.matchAll(/#include\s*<([\w./]+)>/g)].map((x) => x[1]!)
@@ -648,6 +713,13 @@ export function tutorLine(input: TutorInput): TutorLine | null {
     d = logicDiagnosis({ lang: input.lang, code: input.code, solution: input.solution, output: run.output, failed, check: i >= 0 ? input.checks?.[i] : undefined, schema: input.schema })
   }
   d ??= failed ? checkDiagnosis(failed, input.checks?.[run.results.indexOf(failed)], input) : { kind: 'check', key: 'unknown', say: "It didn't pass yet." }
+  // A name slipped on a line that is otherwise the solution's: said for what it is.
+  if ((input.lang === 'python' || input.lang === 'cpp') && d.kind !== 'unchanged' && d.kind !== 'logic') {
+    const slip = lineSlip(input, herLine(input, `${run.stderr}\n${run.error ?? ''}\n${failed?.actual ?? ''}`))
+    const named = slip?.meant && (`${d.say} ${d.more ?? ''}`.includes(code(slip.meant)) || (slip.meant === ';' && /^semicolon/.test(d.key)) || (slip.meant === ':' && /^colon/.test(d.key)))
+    if (slip && !(named && d.kind !== 'check'))
+      d = { kind: slip.kind ?? (slip.logic ? 'logic' : d.kind === 'error' || /crash/.test(d.key) ? 'error' : 'logic'), key: `slip:${slip.line}:${slip.meant ?? ''}`, say: `${slip.say}${d.kind === 'error' || /crash/.test(d.key) ? ' That is what the error comes from.' : ''}`, now: true }
+  }
 
   const before = input.before
   const seed = `${d.key}|${input.attempt}`
