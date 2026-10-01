@@ -8,6 +8,15 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.3.4
+
+No more pausing between sentences on the Mac.
+
+- **Fluent reading, even in back-to-back lessons.** On a Mac, the voice warms up while reading the first
+  lesson. In the second lesson and beyond, it used to pause between the first and second sentences if
+  the opening sentence was long. That pause is gone: the voice now starts making the next sentence
+  before the first one finishes, whether it is warmed or cold.
+
 ## 1.3.3
 
 The voice starts sooner on a Mac, flows past its first sentence, and the page keeps up with it.
