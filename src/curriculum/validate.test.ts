@@ -156,6 +156,24 @@ describe('module shape', () => {
       }
     }
   })
+
+  it('does not deploy incomplete exercise starters with TODO placeholders', () => {
+    const incomplete: string[] = []
+    for (const m of MODULES) {
+      for (const e of m.exercises ?? []) {
+        if (e.kind !== 'code') continue
+        if (!e.starter) continue
+        // Check for common TODO markers indicating incomplete work
+        if (/\/\/\s*TODO|#\s*TODO|\/\*\s*TODO/.test(e.starter)) {
+          incomplete.push(`${m.id}/${e.id}`)
+        }
+      }
+    }
+    expect(
+      incomplete,
+      'exercise starters with // TODO or # TODO comments are incomplete and should not be deployed',
+    ).toEqual([])
+  })
 })
 
 describe('item ids', () => {
