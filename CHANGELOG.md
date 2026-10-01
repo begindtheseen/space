@@ -8,6 +8,20 @@ the entry for the one you are running is what Settings shows you afterwards.
 Newest first. Each heading is exactly `## <version>` so both readers can find
 it.
 
+## 1.3.5
+
+Press play and the voice starts at once, in any lesson.
+
+- **No wait after pressing play.** The first seconds of each lesson are now made ahead of time and kept on
+  your computer. Pressing play plays them straight away while the voice gets going behind them, instead of
+  waiting for the voice to start up and make the first sentence.
+- **Every lesson, not just some.** Lessons that open with a long sentence used to take several seconds to
+  start while others started quickly. The voice was getting the wrong sentence ready in advance for those.
+  It now gets the right one ready for every lesson.
+- **The next lessons are ready too.** While you are in a module, the openings of its other lessons and the
+  start of the next module are made in the background, one at a time, and never while something is being
+  read. A lesson you open later starts at once as well. Learn to code lessons work the same way.
+
 ## 1.3.4
 
 No more pausing between sentences on the Mac.
