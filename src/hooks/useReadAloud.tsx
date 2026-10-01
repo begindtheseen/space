@@ -663,7 +663,11 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       let playhead = ctx.currentTime + 0.06
       for (let k = 0; k < plan.length; k++) {
         if (epoch !== epochRef.current) return
-        for (let a = k; a < Math.min(plan.length, k + lookahead()); a++) if (!pauseIn(plan[a]!.text)) void audioFor(plan[a]!).catch(() => {})
+        for (let a = k; a < Math.min(plan.length, k + lookahead()); a++)
+          if (!pauseIn(plan[a]!.text))
+            void audioFor(plan[a]!).catch((e) => {
+              console.debug('[Voice] Lookahead synthesis failed:', e instanceof Error ? e.message : String(e))
+            })
         const stopId = pauseIn(plan[k]!.text)
         if (stopId) {
           // Everything before the stop is heard first, then the wait.
@@ -713,7 +717,12 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
           // an already-warmed voice still pauses between sentences if the next is not made. Start it now.
           const next = plan.findIndex((u, i) => i > 0 && !pauseIn(u.text))
           if (next > 0 && !isMade(plan[next]!)) {
-            await Promise.race([audioFor(plan[next]!).catch(() => {}), sleep(8000)])
+            await Promise.race([
+              audioFor(plan[next]!).catch((e) => {
+                console.debug('[Voice] Pre-fetch of next sentence timed out or failed:', e instanceof Error ? e.message : String(e))
+              }),
+              sleep(8000),
+            ])
             if (epoch !== epochRef.current) return
           }
           playhead = ctx.currentTime + 0.06
@@ -770,7 +779,9 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
         // the screen locking — and the clock stops with it, so the reading
         // would seem frozen. Try to carry on; if the system will not allow it
         // without a tap, show it as paused, so Resume (a tap) brings it back.
-        void ctx.resume().catch(() => {})
+        void ctx.resume().catch((e) => {
+          console.debug('[Voice] Resume during follow failed:', e)
+        })
         if (!haltedRef.current) haltedRef.current = performance.now()
         else if (performance.now() - haltedRef.current > 1500) setState('paused')
         return
@@ -1020,7 +1031,9 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
         // A context the system stopped (iOS marks it interrupted) may never
         // start again; a fresh one, made in this tap, always can.
         if (ctxRef.current && ctxRef.current.state !== 'running') {
-          void ctxRef.current.close().catch(() => {})
+          void ctxRef.current.close().catch((e) => {
+            console.debug('[Voice] Audio context close failed:', e)
+          })
           ctxRef.current = null
         }
         if (!ctxRef.current) {
@@ -1035,7 +1048,9 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
         }
         const ctx = ctxRef.current
         if (ctx) {
-          void ctx.resume().catch(() => {})
+          void ctx.resume().catch((e) => {
+            console.debug('[Voice] Resume on play failed:', e)
+          })
           // iOS unlocks audio for the page only once a sound starts inside
           // the tap itself; one silent sample is enough.
           try {
@@ -1079,8 +1094,12 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       if (!here) return
       try {
         await naturalVoice.ensure()
-        for (const u of units.slice(0, 2)) void audioFor(u).catch(() => {})
-      } catch {
+        for (const u of units.slice(0, 2))
+          void audioFor(u).catch((e) => {
+            console.debug('[Voice] Warming pre-fetch failed:', e instanceof Error ? e.message : String(e))
+          })
+      } catch (e) {
+        console.debug('[Voice] Failed to warm voice:', e)
         /* the tap will say what went wrong */
       }
     })

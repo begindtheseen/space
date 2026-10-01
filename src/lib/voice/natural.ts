@@ -199,7 +199,11 @@ function cacheUrl(text: string, voice: NaturalVoiceInfo, speed: number): string 
 
 class NaturalVoice {
   constructor() {
-    if (typeof caches !== 'undefined') for (const name of OLD_AUDIO_CACHES) void caches.delete(name).catch(() => {})
+    if (typeof caches !== 'undefined')
+      for (const name of OLD_AUDIO_CACHES)
+        void caches.delete(name).catch((e) => {
+          console.warn(`[Voice] Could not delete old cache ${name}:`, e)
+        })
   }
 
   status: NaturalStatus = 'idle'
@@ -294,9 +298,10 @@ class NaturalVoice {
     try {
       cache = await caches.open(CACHE_NAME)
       if (await cache.match(MODEL_URL)) return
-    } catch {
+    } catch (e) {
       // No Cache Storage (a private window): each worker fetches it instead,
       // and the browser's own HTTP cache is all there is.
+      console.debug('[Voice] Cache Storage not available, will use HTTP cache:', e)
       return
     }
     this.set('downloading', { progress: 0 })
@@ -471,7 +476,10 @@ class NaturalVoice {
     // being made seconds sooner than if the workers queued to start. Reading
     // can begin as soon as the first is ready.
     const all = Array.from({ length: workerPlan().workers }, () => this.spawn('wasm'))
-    for (const p of all) p.catch(() => {})
+    for (const p of all)
+      p.catch((e) => {
+        console.debug('[Voice] Worker spawn failed, will retry:', e instanceof Error ? e.message : String(e))
+      })
     await Promise.any(all)
   }
 
