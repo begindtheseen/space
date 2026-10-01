@@ -43,7 +43,7 @@ import {
   IconWarn,
 } from '@/components/icons'
 import { Bar, Button, Card, CardHead, Chip, Empty, Ring, Tile } from '@/components/ui'
-import { TRACKS, lessonCoverage, lessonKey, loadLessonBody, moduleById } from '@/curriculum'
+import { TRACKS, dag, lessonCoverage, lessonKey, loadLessonBody, moduleById } from '@/curriculum'
 import type { Exercise, Flashcard, Lesson as LessonMeta, Module, Resource } from '@/curriculum/types'
 import { markLessonRead, markRead, togglePin } from '@/engine/apply'
 import { atomsOf, dueAtoms } from '@/engine/scheduler'
@@ -55,6 +55,7 @@ import { ReadAloud } from '@/components/ReadAloud'
 import { SelectionAsk } from '@/components/SelectionAsk'
 import { ReadingProgress } from '@/components/ReadingProgress'
 import { useReadingPlace } from '@/hooks/useReadingPlace'
+import { useReadAhead } from '@/hooks/useReadAhead'
 import { useLearner } from '@/hooks/useLearner'
 import type { ExplainSeed, LibraryLesson } from '@/lib/explain'
 import { onExplainRequested } from '@/lib/ctxBus'
@@ -492,6 +493,8 @@ function Learn({
     return !state.read[key] && !testedOut.has(key) && !credited.has(key)
   })
   const coverage = lessonCoverage(module.id)
+  // Whichever lesson she opens from here, its first words are ready to play.
+  useReadAhead(hasLessons ? `module:${module.id}` : null, () => readAheadOrder(module, firstUnread))
 
   return (
     <>
@@ -1113,6 +1116,19 @@ function UnlocksCard({ dag, module }: { dag: ReturnType<typeof useLearner>['dag'
 /* ── Lesson reader ───────────────────────────────────────────────────────── */
 
 
+/**
+ * The lessons whose openings are made ahead from a module (lib/voice/ahead.ts), most likely first: the one she is
+ * on or about to open, the ones after it, the ones before, then the start of the module after this one.
+ */
+function readAheadOrder(module: Module, from: LessonMeta | undefined): (() => Promise<string>)[] {
+  const lessons = module.lessons ?? []
+  const at = from ? Math.max(0, lessons.findIndex((l) => l.id === from.id)) : 0
+  const ids = dag().ids()
+  const i = ids.indexOf(module.id)
+  const after = i >= 0 && i + 1 < ids.length ? (moduleById(ids[i + 1]!)?.lessons ?? []).slice(0, 2) : []
+  return [...lessons.slice(at), ...lessons.slice(0, at), ...after].map((l) => () => loadLessonBody(l))
+}
+
 function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }) {
   const practiceSet = practiceFor(module.id, lesson.id)
   const { state: learner } = useLearner()
@@ -1125,6 +1141,7 @@ function LessonReader({ module, lesson }: { module: Module; lesson: LessonMeta }
   const prev = index > 0 ? lessons[index - 1] : undefined
   const next = index >= 0 && index < lessons.length - 1 ? lessons[index + 1] : undefined
   const done = !!state.read[lessonKey(module.id, lesson.id)]
+  useReadAhead(`lesson:${module.id}:${lesson.id}`, () => readAheadOrder(module, lesson))
   const [body, setBody] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const renderCode = useLessonCode(`lesson:${module.id}:${lesson.id}`, body)

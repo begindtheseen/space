@@ -42,7 +42,7 @@
    abandons it like any other part of that run.
    ========================================================================== */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { prepare, toUtterances, usableVoices, type VoiceLike } from '@/lib/speech'
+import { prepare, usableVoices, type VoiceLike } from '@/lib/speech'
 import {
   CHARS_PER_SECOND,
   DEFAULT_NATURAL_VOICE,
@@ -50,7 +50,6 @@ import {
   fastStart,
   naturalVoiceFor,
   safeStart,
-  speechUnits,
   textWords,
   trimBounds,
   trimSilence,
@@ -58,7 +57,8 @@ import {
   type SpeechUnit,
 } from '@/lib/voice/kokoro'
 import { PageWords, inView, normWord, paint, scrollToRange } from '@/lib/voice/highlight'
-import { naturalSupported, naturalVoice, unitChars, type NaturalStatus } from '@/lib/voice/natural'
+import { USED_KEY, openingOf, setReaderActive, unitsOf } from '@/lib/voice/ahead'
+import { naturalSupported, naturalVoice, type NaturalStatus } from '@/lib/voice/natural'
 import { recordingFor, unitAt, wordAt, type Recording } from '@/lib/voice/recorded'
 import { useWakeLock } from '@/lib/wakeLock'
 import { pauseIn } from '@/learn/reading'
@@ -89,9 +89,6 @@ const FOLLOW_MS = 33
 
 /** How far ahead of the audio clock sentences are queued, in seconds. */
 const SCHEDULE_AHEAD_S = 8
-
-/** Remembers that she uses read-aloud, so the voice warms up when a lesson opens. */
-const USED_KEY = 'natural-voice:used'
 
 /** waiting: at a stop in the lesson, until what it asks for is done (see STOPS above). */
 export type ReadState = 'idle' | 'preparing' | 'speaking' | 'paused' | 'waiting'
@@ -208,7 +205,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
   const prepared = useMemo(() => (markdown ? prepare(markdown) : null), [markdown])
   const utterances = useMemo(() => prepared?.utterances ?? [], [prepared])
   // What the natural voice reads: whole sentences, never cut at a comma.
-  const units = useMemo(() => (prepared ? speechUnits(prepared.text, (p) => toUtterances(p, 100_000), unitChars()) : []), [prepared])
+  const units = useMemo(() => (prepared ? unitsOf(prepared.text) : []), [prepared])
   const sentenceCount = units.length ? units[units.length - 1]!.sentence + 1 : 0
   // What each sentence says, numbered as the engine reading it numbers them: for the scrubber's preview and times.
   const unitTexts = useMemo(() => {
@@ -575,14 +572,14 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
   const userPausedRef = useRef(false)
 
   /** The audio for a unit, made once and kept a while: going back a sentence should not wait. */
-  const audioFor = useCallback((unit: SpeechUnit): Promise<Piece> => {
+  const audioFor = useCallback((unit: SpeechUnit, keep = false): Promise<Piece> => {
     const voice = naturalVoiceRef.current ?? naturalVoiceFor('')!
     const speed = rateRef.current
     const key = `${voice.id}|${speed}|${unit.text}`
     const cache = piecesRef.current
     let p = cache.get(key)
     if (!p) {
-      p = naturalVoice.synth(unit.text, voice, speed).then(({ pcm, words }) => {
+      p = naturalVoice.synth(unit.text, voice, speed, 'reader', keep).then(({ pcm, words }) => {
         madeRef.current.add(key)
         // Trimming moves the start, so the word times move with it.
         const cut = trimBounds(pcm).from / SAMPLE_RATE
@@ -606,8 +603,23 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     [pageFor, speakFrom],
   )
 
+  const silenceNatural = useCallback(() => {
+    naturalVoice.clear()
+    moreRef.current = false
+    for (const item of scheduledRef.current) {
+      try {
+        item.src.stop()
+      } catch {
+        /* already stopped */
+      }
+    }
+    scheduledRef.current = []
+  }, [])
+
   const fallBack = useCallback(
     (reason: string, from: number) => {
+      // What the natural voice had already scheduled (an opening made before) stops with it.
+      silenceNatural()
       setFellBack(true)
       engineRef.current = 'device'
       setNotice(`The natural voice could not start (${reason}). Reading with this device's voice instead.`)
@@ -618,7 +630,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       epochRef.current += 1
       startDevice(from, epochRef.current)
     },
-    [deviceSupported, startDevice],
+    [deviceSupported, startDevice, silenceNatural],
   )
 
   /**
@@ -637,16 +649,45 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       setAt(from)
       moreRef.current = true
       autoScrollRef.current = true
-      try {
-        await naturalVoice.ensure()
-      } catch (err) {
-        if (epoch === epochRef.current) fallBack(err instanceof Error ? err.message : String(err), from)
-        return
+      const voice = naturalVoiceRef.current ?? naturalVoiceFor('')!
+      const speed = rateRef.current
+      const keyOf = (u: SpeechUnit) => `${voice.id}|${speed}|${u.text}`
+      const isMade = (u: SpeechUnit) => madeRef.current.has(keyOf(u))
+      // Which of the first pieces are made already, on this visit or an earlier one (an opening made ahead,
+      // lib/voice/ahead.ts): they cost nothing, and with the first one made the reading starts at once.
+      const look = async (list: SpeechUnit[]) => {
+        await Promise.all(
+          list.map(async (u) => {
+            if (!isMade(u) && !pauseIn(u.text) && (await naturalVoice.has(u.text, voice, speed))) madeRef.current.add(keyOf(u))
+          }),
+        )
+      }
+      let plan = units.filter((u) => u.sentence >= from)
+      // A long first sentence not made yet is made in two halves side by side, so it is heard sooner.
+      const split = naturalVoice.splitsFirst() ? fastStart(plan) : plan
+      await Promise.all([look(plan.slice(0, 8)), split !== plan ? look(split.slice(0, 2)) : null])
+      if (epoch !== epochRef.current) return
+      if (plan[0] && !isMade(plan[0]) && split !== plan) plan = split
+      const firstWasMade = plan[0] ? isMade(plan[0]) : false
+      // The workers are needed for what comes after the opening, so they start now either way; but with the
+      // opening made, its first words do not wait for them.
+      const up = naturalVoice.ensure()
+      const failed = (err: unknown) => {
+        if (epoch === epochRef.current) fallBack(err instanceof Error ? err.message : String(err), Math.max(0, atRef.current))
+      }
+      if (firstWasMade) up.catch(failed)
+      else {
+        try {
+          await up
+        } catch (err) {
+          failed(err)
+          return
+        }
       }
       const ctx = ctxRef.current
       if (!ctx || epoch !== epochRef.current) return
-      let plan = units.filter((u) => u.sentence >= from)
-      if (naturalVoice.device === 'wasm' && naturalVoice.parallel >= 2) plan = fastStart(plan)
+      // The opening of a lesson read from its start is kept, so the next time it starts at once too.
+      const keep = new Set(from === 0 ? openingOf(plan, speed).map((u) => u.text) : [])
       const lookahead = () => {
         const rtf = naturalVoice.rtf ?? naturalVoice.expectedRtf()
         // A device that makes speech well ahead of real time keeps making it
@@ -656,16 +697,13 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
         return Math.max(2, Math.ceil(naturalVoice.parallel * Math.max(1, rtf)) + 1)
       }
       pageFor()
-      const voiceId = (naturalVoiceRef.current ?? naturalVoiceFor('')!).id
-      const isMade = (u: SpeechUnit) => madeRef.current.has(`${voiceId}|${rateRef.current}|${u.text}`)
-      const firstWasMade = plan[0] ? isMade(plan[0]) : false
       const askedAt = performance.now()
       let playhead = ctx.currentTime + 0.06
       for (let k = 0; k < plan.length; k++) {
         if (epoch !== epochRef.current) return
         for (let a = k; a < Math.min(plan.length, k + lookahead()); a++)
           if (!pauseIn(plan[a]!.text))
-            void audioFor(plan[a]!).catch((e) => {
+            void audioFor(plan[a]!, keep.has(plan[a]!.text)).catch((e) => {
               console.debug('[Voice] Lookahead synthesis failed:', e instanceof Error ? e.message : String(e))
             })
         const stopId = pauseIn(plan[k]!.text)
@@ -688,24 +726,24 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
         while (epoch === epochRef.current && playhead - ctx.currentTime > SCHEDULE_AHEAD_S) await sleep(150)
         let piece: Piece
         try {
-          piece = await audioFor(plan[k]!)
+          piece = await audioFor(plan[k]!, keep.has(plan[k]!.text))
         } catch {
           continue // one piece that would not synthesise is skipped, not the lesson
         }
         if (epoch !== epochRef.current) return
         const pcm = piece.pcm
         if (!pcm.length) continue
-        if (k === 0) {
-          // Buffer before the first word just long enough that the reading
-          // never has to stop and wait mid-lesson (see safeStart).
+        if (k === 0 && !firstWasMade) {
+          // Made just now: buffer before the first word just long enough that
+          // the reading never has to stop and wait mid-lesson (see safeStart).
+          // An opening made before needs none: it plays while the rest is made.
           const cps = CHARS_PER_SECOND * Math.max(0.5, rateRef.current)
           const need = safeStart({
-            firstReadyAt: firstWasMade ? 0 : (performance.now() - askedAt) / 1000,
+            firstReadyAt: (performance.now() - askedAt) / 1000,
             durations: plan.map((u, i) => (i === 0 ? pcm.length / SAMPLE_RATE : u.text.length / cps)),
             pauses: plan.map((u) => u.pause / Math.max(0.5, rateRef.current)),
-            ready: plan.map((u, i) => (i === 0 ? firstWasMade : isMade(u))),
+            ready: plan.map((u, i) => (i === 0 ? false : isMade(u))),
             workers: naturalVoice.parallel,
-            rtf: firstWasMade ? naturalVoice.expectedRtf() : undefined,
           })
           const wait = need - (performance.now() - askedAt) / 1000
           if (wait > 0.05) {
@@ -726,7 +764,7 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
             if (epoch !== epochRef.current) return
           }
           playhead = ctx.currentTime + 0.06
-        }
+        } else if (k === 0) playhead = ctx.currentTime + 0.03
         const now = ctx.currentTime
         if (playhead < now + 0.02) playhead = now + 0.02
         const buffer = ctx.createBuffer(1, pcm.length, SAMPLE_RATE)
@@ -804,19 +842,6 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
     }, FOLLOW_MS)
     return () => clearInterval(id)
   }, [engine, state, follow])
-
-  const silenceNatural = useCallback(() => {
-    naturalVoice.clear()
-    moreRef.current = false
-    for (const item of scheduledRef.current) {
-      try {
-        item.src.stop()
-      } catch {
-        /* already stopped */
-      }
-    }
-    scheduledRef.current = []
-  }, [])
 
   /* ── A recorded lesson ───────────────────────────────────────────────── */
 
@@ -1086,16 +1111,27 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       }
       return
     }
-    if (engineRef.current !== 'natural' || naturalVoice.status === 'downloading' || naturalVoice.status === 'starting') return
+    if (engineRef.current !== 'natural') return
     // Only when nothing needs downloading: warming must never start a 92 MB
     // download she did not ask for. Warm means ready to speak at once: the
-    // workers started and the opening sentences already made.
+    // lesson's opening made and kept (lib/voice/ahead.ts), which plays the
+    // moment she taps, while the workers start behind it. Already made, there
+    // is nothing to start.
     void naturalVoice.downloaded().then(async (here) => {
       if (!here) return
+      const voice = naturalVoiceRef.current ?? naturalVoiceFor('')!
+      const speed = rateRef.current
+      const opening = openingOf(units, speed)
+      const missing: SpeechUnit[] = []
+      for (const u of opening) {
+        if (await naturalVoice.has(u.text, voice, speed)) madeRef.current.add(`${voice.id}|${speed}|${u.text}`)
+        else missing.push(u)
+      }
+      if (!missing.length) return
       try {
         await naturalVoice.ensure()
-        for (const u of units.slice(0, 2))
-          void audioFor(u).catch((e) => {
+        for (const u of missing)
+          void audioFor(u, true).catch((e) => {
             console.debug('[Voice] Warming pre-fetch failed:', e instanceof Error ? e.message : String(e))
           })
       } catch (e) {
@@ -1184,9 +1220,19 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
       /* no storage: no warm-up */
     }
     if (!used) return
-    const id = setTimeout(warm, 2500)
+    // Soon after the page is drawn, so even a tap a moment after opening the lesson finds the opening made.
+    const id = setTimeout(warm, 300)
     return () => clearTimeout(id)
   }, [engine, units, warm])
+
+  // Openings of other lessons are made ahead only while this one is not being read (lib/voice/ahead.ts).
+  useEffect(() => {
+    const on = engine === 'natural' && (state === 'speaking' || state === 'preparing')
+    setReaderActive(on)
+    return () => {
+      if (on) setReaderActive(false)
+    }
+  }, [engine, state])
 
   // Applying a change made while she is listening.
   //
