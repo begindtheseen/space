@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { workerPlan, poolSize } from './natural'
+import { describe, expect, it } from 'vitest'
+import { workerPlan } from './natural'
 
 describe('natural voice: edge cases and boundary conditions', () => {
   describe('GPU Real-Time Factor (RTF) threshold at 0.9', () => {
@@ -52,11 +52,12 @@ describe('natural voice: edge cases and boundary conditions', () => {
     it('rotates workers after ROTATE_AFTER = 30 sentences', () => {
       // Workers are swapped after 30 sentences because WebAssembly memory only grows.
       const ROTATE_AFTER = 30
-      const sentences_before_rotation = Array.from({ length: ROTATE_AFTER + 5 }, (_, i) => i)
+      const sentenceCount = ROTATE_AFTER + 5
 
       // The 30th sentence should trigger rotation
       const rotate_at = 30
       expect(rotate_at % ROTATE_AFTER).toBe(0)
+      expect(sentenceCount).toBeGreaterThan(ROTATE_AFTER)
 
       // But rotation only happens if the queue is empty and the worker is not currently busy
       const queue_empty = true
@@ -83,7 +84,7 @@ describe('natural voice: edge cases and boundary conditions', () => {
         {
           hardwareConcurrency: 4,
           deviceMemory: 8,
-        } as Navigator,
+        } as unknown as Navigator,
         false, // No threading
       )
       // Should be 1-3 workers on a typical 4-core machine
@@ -96,7 +97,7 @@ describe('natural voice: edge cases and boundary conditions', () => {
         {
           hardwareConcurrency: 4,
           deviceMemory: 4,
-        } as Navigator,
+        } as unknown as Navigator,
         false,
       )
       // Phone or low-memory devices should have fewer workers
@@ -134,7 +135,7 @@ describe('natural voice: edge cases and boundary conditions', () => {
       expect(states).toContain('suspended')
 
       // Attempting to use a closed context should fail
-      const ctx_state = 'closed'
+      const ctx_state: string = 'closed'
       expect(ctx_state === 'running').toBe(false)
     })
   })
@@ -164,8 +165,6 @@ describe('natural voice: edge cases and boundary conditions', () => {
   describe('remembered GPU performance across sessions', () => {
     it('stores and retrieves GPU_SLOW_KEY from localStorage', () => {
       // If GPU measured slow, key is stored: localStorage[GPU_SLOW_KEY] = RTF value
-      const GPU_SLOW_KEY = 'orbit-gpu-slow'
-      const RTF_KEY = 'orbit-rtf-'
       const gpu_slow_rtf = '0.95'
 
       // On next launch, chooseDevice() checks this key
