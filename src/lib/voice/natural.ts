@@ -33,6 +33,13 @@ const AUDIO_CACHE = `natural-voice-audio-v2${typeof navigator !== 'undefined' &&
 const OLD_AUDIO_CACHES = ['natural-voice-audio-v1']
 /** Sentences kept on the device; the oldest go first. At ~150 KB each, about 60 MB. */
 const AUDIO_CACHE_LIMIT = 400
+/**
+ * The first seconds of each lesson, kept apart from the sentences above so reading one long lesson never
+ * pushes them out: with a lesson's opening already made, pressing play starts it at once (lib/voice/ahead.ts).
+ */
+const OPENINGS_CACHE = `natural-voice-openings-v1${typeof navigator !== 'undefined' && isPhone() ? '-phone' : ''}`
+/** Opening pieces kept, the oldest going first: a few hundred lessons' worth, under about 150 MB. */
+const OPENINGS_LIMIT = 300
 /** Workers are let go after this long without anything to say, to give back their memory: sooner on a phone. */
 const IDLE_MS = 180_000
 const PHONE_IDLE_MS = 45_000
@@ -57,6 +64,8 @@ const GPU_SLOW_KEY = 'natural-voice:gpu-slow'
 const GPU_MAX_RTF = 0.9
 /** How fast each kind of worker made speech here last time, for planning before it is measured again. */
 const RTF_KEY = 'natural-voice:rtf:'
+/** The kind of worker the voice ran on last time, so plans made before it has started match the ones made after. */
+const LAST_DEVICE_KEY = 'natural-voice:last-device'
 
 /** A piece of speech: 24 kHz samples, and where each word of its text starts and ends in them (seconds; [s0, e0, s1, e1, …]). */
 export interface Speech {
@@ -76,8 +85,24 @@ interface Job {
   cancelled: boolean
   /** Times it was handed to a fresh worker after one failed on it. */
   retries: number
-  /** Whose it is: the lesson reader's, or a line said on its own (the tutor). Clearing one never clears the other. */
-  owner: 'reader' | 'line'
+  /** Whose it is (see Owner). Clearing one never clears another. */
+  owner: Owner
+}
+
+/**
+ * Who asked for a piece, which is also its place in the queue: a line said on its own (the tutor) first, then the
+ * lesson being read, then openings of lessons not yet opened, made ahead in spare time (lib/voice/ahead.ts).
+ */
+export type Owner = 'line' | 'reader' | 'ahead'
+
+const RANK: Record<Owner, number> = { line: 0, reader: 1, ahead: 2 }
+
+/** A piece being looked up or made, shared by everyone who asks for the same one meanwhile. */
+interface Pending {
+  promise: Promise<Speech>
+  owner: Owner
+  keep: boolean
+  job: Job | null
 }
 
 interface Slot {
@@ -197,9 +222,13 @@ function cacheUrl(text: string, voice: NaturalVoiceInfo, speed: number): string 
   return `https://natural-voice.invalid/${voice.id}/${speed}/${textKey(text)}`
 }
 
-class NaturalVoice {
+export class NaturalVoice {
   constructor() {
-    if (typeof caches !== 'undefined') for (const name of OLD_AUDIO_CACHES) void caches.delete(name).catch(() => {})
+    if (typeof caches !== 'undefined')
+      for (const name of OLD_AUDIO_CACHES)
+        void caches.delete(name).catch((e) => {
+          console.warn(`[Voice] Could not delete old cache ${name}:`, e)
+        })
   }
 
   status: NaturalStatus = 'idle'
@@ -218,6 +247,7 @@ class NaturalVoice {
   private listeners = new Set<() => void>()
   private gpuJobs = 0
   private audioWrites = 0
+  private openingWrites = 0
   private replacements = 0
 
   subscribe(fn: () => void): () => void {
@@ -294,9 +324,10 @@ class NaturalVoice {
     try {
       cache = await caches.open(CACHE_NAME)
       if (await cache.match(MODEL_URL)) return
-    } catch {
+    } catch (e) {
       // No Cache Storage (a private window): each worker fetches it instead,
       // and the browser's own HTTP cache is all there is.
+      console.debug('[Voice] Cache Storage not available, will use HTTP cache:', e)
       return
     }
     this.set('downloading', { progress: 0 })
@@ -459,6 +490,7 @@ class NaturalVoice {
 
   private async startWorkers(device: VoiceDevice): Promise<void> {
     this.device = device
+    store(LAST_DEVICE_KEY, device)
     this.rtf = null
     this.gpuJobs = 0
     this.replacements = 0
@@ -471,7 +503,10 @@ class NaturalVoice {
     // being made seconds sooner than if the workers queued to start. Reading
     // can begin as soon as the first is ready.
     const all = Array.from({ length: workerPlan().workers }, () => this.spawn('wasm'))
-    for (const p of all) p.catch(() => {})
+    for (const p of all)
+      p.catch((e) => {
+        console.debug('[Voice] Worker spawn failed, will retry:', e instanceof Error ? e.message : String(e))
+      })
     await Promise.any(all)
   }
 
@@ -515,7 +550,11 @@ class NaturalVoice {
       } catch (err) {
         for (const s of this.slots) s.worker.terminate()
         this.slots = []
-        this.set('failed', { error: err instanceof Error ? err.message : String(err) })
+        // Nothing will make what is waiting: each piece is told, so no one waits on it forever.
+        const reason = err instanceof Error ? err : new Error(String(err))
+        for (const j of this.queue) j.reject(reason)
+        this.queue = []
+        this.set('failed', { error: reason.message })
         throw err
       } finally {
         this.starting = null
@@ -525,34 +564,90 @@ class NaturalVoice {
   }
 
   /**
+   * Whether the first piece of a reading is split in two to start sooner (kokoro.ts fastStart): only on CPU
+   * workers, two or more. Asked before the workers have started, it answers for the ones that ran last time.
+   */
+  splitsFirst(): boolean {
+    const device = this.device ?? (stored(LAST_DEVICE_KEY) as VoiceDevice | null) ?? 'wasm'
+    return device === 'wasm' && workerPlan().workers >= 2
+  }
+
+  private pending = new Map<string, Pending>()
+
+  /**
    * Speech for one piece of text, as 24 kHz samples: from the device's cache if it was made before. A line
    * said on its own (`owner: 'line'`, the tutor) goes ahead of the lesson reader's queue: she is waiting
-   * for it now, and the reading can wait a sentence.
+   * for it now, and the reading can wait a sentence. `keep` files it with the lessons' openings, which
+   * reading a long lesson never pushes out. Asking for a piece already on its way shares it, moved up the
+   * queue if the one asking now ranks higher: the reader pressing play on an opening being made ahead
+   * waits for that one, not for a second copy.
    */
-  synth(text: string, voice: NaturalVoiceInfo, speed: number, owner: 'reader' | 'line' = 'reader'): Promise<Speech> {
-    return this.fromCache(text, voice, speed).then((hit) => {
-      if (hit) return hit
-      const made = new Promise<Speech>((resolve, reject) => {
-        const job: Job = { id: this.nextId++, text, voice, speed, resolve, reject, cancelled: false, retries: 0, owner }
-        if (owner === 'line') {
-          // After any other line already waiting, before the reader's.
-          const at = this.queue.findIndex((j) => j.owner !== 'line')
-          this.queue.splice(at < 0 ? this.queue.length : at, 0, job)
-        } else this.queue.push(job)
-        this.pump()
+  synth(text: string, voice: NaturalVoiceInfo, speed: number, owner: Owner = 'reader', keep = false): Promise<Speech> {
+    const key = cacheUrl(text, voice, speed)
+    const live = this.pending.get(key)
+    if (live) {
+      if (keep) live.keep = true
+      if (RANK[owner] < RANK[live.owner]) {
+        live.owner = owner
+        const job = live.job
+        const at = job ? this.queue.indexOf(job) : -1
+        if (job && at >= 0) {
+          this.queue.splice(at, 1)
+          job.owner = owner
+          this.enqueue(job)
+          this.pump()
+        } else if (job) job.owner = owner
+      }
+      return live.promise
+    }
+    const entry: Pending = { promise: null as unknown as Promise<Speech>, owner, keep, job: null }
+    entry.promise = this.fromCache(text, voice, speed)
+      .then((hit) => {
+        if (hit) return hit
+        const made = new Promise<Speech>((resolve, reject) => {
+          const job: Job = { id: this.nextId++, text, voice, speed, resolve, reject, cancelled: false, retries: 0, owner: entry.owner }
+          entry.job = job
+          this.enqueue(job)
+          this.pump()
+        })
+        return made.then((speech) => {
+          void this.toCache(text, voice, speed, speech, entry.keep)
+          return speech
+        })
       })
-      return made.then((speech) => {
-        void this.toCache(text, voice, speed, speech)
-        return speech
+      .finally(() => {
+        if (this.pending.get(key) === entry) this.pending.delete(key)
       })
-    })
+    this.pending.set(key, entry)
+    return entry.promise
+  }
+
+  /** Puts a job in its place: after every job ranked as high or higher, before the rest. */
+  private enqueue(job: Job): void {
+    const at = this.queue.findIndex((j) => RANK[j.owner] > RANK[job.owner])
+    this.queue.splice(at < 0 ? this.queue.length : at, 0, job)
+  }
+
+  /** Whether a piece is already made and on the device: nothing to wait for. */
+  async has(text: string, voice: NaturalVoiceInfo, speed: number): Promise<boolean> {
+    try {
+      const url = cacheUrl(text, voice, speed)
+      for (const name of [AUDIO_CACHE, OPENINGS_CACHE]) if (await (await caches.open(name)).match(url)) return true
+    } catch {
+      /* no Cache Storage */
+    }
+    return false
   }
 
   private async fromCache(text: string, voice: NaturalVoiceInfo, speed: number): Promise<Speech | null> {
     try {
-      const cache = await caches.open(AUDIO_CACHE)
       const url = cacheUrl(text, voice, speed)
-      const hit = await cache.match(url)
+      let cache = await caches.open(AUDIO_CACHE)
+      let hit = await cache.match(url)
+      if (!hit) {
+        cache = await caches.open(OPENINGS_CACHE)
+        hit = await cache.match(url)
+      }
       if (!hit) return null
       const pcm16 = new Int16Array(await hit.arrayBuffer())
       const pcm = new Float32Array(pcm16.length)
@@ -564,18 +659,20 @@ class NaturalVoice {
     }
   }
 
-  private async toCache(text: string, voice: NaturalVoiceInfo, speed: number, speech: Speech): Promise<void> {
+  private async toCache(text: string, voice: NaturalVoiceInfo, speed: number, speech: Speech, keep = false): Promise<void> {
     try {
       const { pcm } = speech
       const pcm16 = new Int16Array(pcm.length)
       for (let i = 0; i < pcm.length; i++) pcm16[i] = Math.max(-32767, Math.min(32767, Math.round(pcm[i]! * 32767)))
-      const cache = await caches.open(AUDIO_CACHE)
+      const cache = await caches.open(keep ? OPENINGS_CACHE : AUDIO_CACHE)
       const url = cacheUrl(text, voice, speed)
       await cache.put(url, new Response(pcm16.buffer, { headers: { 'content-type': 'application/octet-stream' } }))
       if (speech.words) await cache.put(`${url}/words`, new Response(speech.words.slice().buffer, { headers: { 'content-type': 'application/octet-stream' } }))
-      if (++this.audioWrites % 25 === 0) {
+      const writes = keep ? ++this.openingWrites : ++this.audioWrites
+      if (writes % 25 === 0) {
         const keys = await cache.keys()
-        for (const k of keys.slice(0, Math.max(0, keys.length - AUDIO_CACHE_LIMIT * 2))) await cache.delete(k)
+        const limit = (keep ? OPENINGS_LIMIT : AUDIO_CACHE_LIMIT) * 2
+        for (const k of keys.slice(0, Math.max(0, keys.length - limit))) await cache.delete(k)
       }
     } catch {
       /* no Cache Storage: it is made again next time */
@@ -583,7 +680,7 @@ class NaturalVoice {
   }
 
   /** Forgets every piece of `owner`'s not yet started. The ones in flight finish and are kept in the cache. */
-  clear(owner: 'reader' | 'line' = 'reader'): void {
+  clear(owner: Owner = 'reader'): void {
     for (const j of this.queue) {
       if (j.owner !== owner) continue
       j.cancelled = true
@@ -596,8 +693,11 @@ class NaturalVoice {
     this.queue = this.queue.filter((j) => !j.cancelled)
     for (const slot of this.slots) {
       if (!slot.ready || slot.job) continue
-      const job = this.queue.shift()
-      if (!job) break
+      // An opening made ahead takes one worker at most, so a reading started meanwhile finds the others free.
+      const aheadBusy = this.slots.some((s) => s.job?.owner === 'ahead')
+      const at = this.queue.findIndex((j) => j.owner !== 'ahead' || !aheadBusy)
+      if (at < 0) break
+      const job = this.queue.splice(at, 1)[0]!
       slot.job = job
       slot.watchdog = setTimeout(() => this.replace(slot, 'The voice stopped answering.'), this.deadline(job))
       const req: VoiceRequest = { cmd: 'speak', id: job.id, text: job.text, voice: job.voice.id, lang: job.voice.lang, speed: job.speed }

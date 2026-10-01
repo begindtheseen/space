@@ -52,7 +52,10 @@ function audio(): AudioContext | null {
 if (typeof window !== 'undefined') {
   const wake = () => {
     const c = audio()
-    if (c && c.state !== 'running') void c.resume().catch(() => {})
+    if (c && c.state !== 'running')
+      void c.resume().catch((e) => {
+        console.debug('[Voice] Audio context resume failed:', e)
+      })
   }
   window.addEventListener('pointerdown', wake, { capture: true, passive: true })
   window.addEventListener('keydown', wake, { capture: true, passive: true })
@@ -111,13 +114,16 @@ export function say(markdown: string, opts: SayOptions = {}): Saying {
       try {
         await sayNatural(utterances, voice, rate, opts, () => stopped, stops)
         return
-      } catch {
+      } catch (e) {
+        console.debug('[Voice] Natural voice synthesis failed, falling back to device voice:', e)
         /* the device's voice says it instead */
       }
     }
     if (!stopped) await sayDevice(utterances, opts.voiceName, rate, total, opts, () => stopped, stops)
   })()
-    .catch(() => {})
+    .catch((e) => {
+      console.error('[Voice] Failed to say text:', e)
+    })
     .finally(() => {
       opts.onProgress?.(1)
       release?.()
@@ -150,7 +156,9 @@ export function warmVoice(opts: { voiceName?: string }): () => void {
   let cancelled = false
   void (async () => {
     if ((await naturalVoice.downloaded()) && !cancelled) await naturalVoice.ensure()
-  })().catch(() => {})
+  })().catch((e) => {
+    console.debug('[Voice] Failed to warm voice:', e)
+  })
   return () => {
     cancelled = true
     release()
@@ -187,14 +195,20 @@ async function sayNatural(
 ): Promise<void> {
   const c = audio()
   if (!c) throw new Error('no audio')
-  if (c.state !== 'running') void c.resume().catch(() => {})
+  if (c.state !== 'running')
+    void c.resume().catch((e) => {
+      console.debug('[Voice] Audio context resume in sayNatural failed:', e)
+    })
   await naturalVoice.ensure()
   const pieces = piecesOf(utterances)
   // All of it is asked for at once: the pool makes the later pieces while the first is playing.
   const made = pieces.map((p) => naturalVoice.synth(p, voice, rate, 'line'))
   // Stopped before it was all made: what has not started is not made at all.
   stops.push(() => naturalVoice.clear('line'))
-  for (const m of made) m.catch(() => {})
+  for (const m of made)
+    m.catch((e) => {
+      console.debug('[Voice] Piece synthesis failed during say:', e instanceof Error ? e.message : String(e))
+    })
   const spoken = pieces.map((p) => textWords(p).map((w) => p.slice(w.start, w.end)))
   opts.onWords?.(spoken.flat())
   const chars = pieces.reduce((n, p) => n + p.length, 0) || 1

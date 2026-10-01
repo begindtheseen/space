@@ -59,7 +59,10 @@ function loadIndex(): Promise<Index | null> {
     ? fetch(new URL('index.json', at), { cache: 'no-cache' })
         .then((r) => (r.ok ? (r.json() as Promise<Index>) : null))
         .then((i) => (i && i.v === 1 && i.lessons ? i : null))
-        .catch(() => null)
+        .catch((e) => {
+          console.debug('[Voice] Failed to load recordings index:', e instanceof Error ? e.message : String(e))
+          return null
+        })
     : Promise.resolve(null)
   // A failed lookup (offline) is tried again next time rather than remembered.
   void index.then((i) => {
@@ -82,7 +85,8 @@ export async function recordingFor(text: string, voice: string = DEFAULT_NATURAL
     const t = (await res.json()) as { v: number; key: string; voice: string; duration: number; units: RecordedUnit[] }
     if (t.v !== 1 || t.key !== key || !Array.isArray(t.units) || !t.units.length) return null
     return { key, voice: t.voice, duration: t.duration, units: t.units, url: new URL(entry.mp3, at).href }
-  } catch {
+  } catch (e) {
+    console.debug('[Voice] Failed to load recording:', e instanceof Error ? e.message : String(e))
     return null
   }
 }

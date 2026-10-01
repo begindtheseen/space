@@ -31,6 +31,7 @@ import { IconArrowRight, IconCheck, IconChevronLeft, IconClock, IconFlame } from
 import { Bar, Button } from '@/components/ui'
 import { markPracticed } from '@/engine/apply'
 import { useLearner } from '@/hooks/useLearner'
+import { useReadAhead } from '@/hooks/useReadAhead'
 import { buildProgram, gradeRun } from '@/learn/grade'
 import { stuckHelp } from '@/learn/stuck'
 import { useTutor, type HeardRun } from '@/hooks/useTutor'
@@ -556,6 +557,14 @@ function LessonView({ track, lesson, index }: { track: LearnTrack; lesson: Learn
   }, [lesson, setState])
 
   const pauses = useLessonReading(lesson, terminal)
+  // This lesson's and the next ones' first words ready to play (lib/voice/ahead.ts). Only the start of a
+  // reading matters there, and it is the explanation's, whatever practice is still to do at its end.
+  useReadAhead(`learn:${lesson.id}`, () =>
+    track.lessons
+      .slice(index, index + 10)
+      .filter((l) => !l.gate)
+      .map((l) => () => readingOf(l.teach, l.task, [], (info, code) => !!runnableFence(info, code)).markdown),
+  )
 
   const tutor = useTutor()
   const onGraded = useCallback(
