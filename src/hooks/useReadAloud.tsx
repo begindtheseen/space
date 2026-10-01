@@ -709,12 +709,10 @@ export function useReadAloud({ markdown, voiceName, rate = 1, contentSelector = 
             while (epoch === epochRef.current && performance.now() < until) await sleep(100)
             if (epoch !== epochRef.current) return
           }
-          // The next sentence ready too, before the first is heard, when the voice has only just started or the
-          // first sentence is short: a fresh voice is slow on its first pieces, and the estimate above cannot
-          // know it, so the reading stopped dead after its first sentence. A moment more before the first word
-          // costs far less than that gap.
+          // The next sentence ready too, before the first is heard. A fresh voice is slow on its first pieces;
+          // an already-warmed voice still pauses between sentences if the next is not made. Start it now.
           const next = plan.findIndex((u, i) => i > 0 && !pauseIn(u.text))
-          if (next > 0 && !isMade(plan[next]!) && (!naturalVoice.warmed || pcm.length / SAMPLE_RATE < 2.5)) {
+          if (next > 0 && !isMade(plan[next]!)) {
             await Promise.race([audioFor(plan[next]!).catch(() => {}), sleep(8000)])
             if (epoch !== epochRef.current) return
           }
