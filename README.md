@@ -1,68 +1,143 @@
-# ORBIT — GNC Flight Academy
+# ORBIT: GNC Flight Academy
 
-A local-first learning platform that takes a complete beginner to guidance, navigation
-and control engineering readiness. It runs entirely in a browser tab, or as a Mac app:
-no account, no server, no telemetry. Everything you do is stored on your device.
+ORBIT is a study app I built to take myself, and anyone else starting from zero, to the
+point of being ready for an entry-level job in guidance, navigation and control (GNC)
+engineering or flight software. It runs in a browser tab or as a Mac app, with no account
+and no backend server: everything you do is stored on your own device.
+
+- **Web version:** https://orbit-ten-amber.vercel.app (deployed on Vercel from `main`)
+- **Mac app:** the [Releases](https://github.com/begindtheseen/space/releases) page
+- **Built with:** TypeScript, React 19, Vite and Vitest; CodeMirror 6 for the editor;
+  Pyodide and sql.js to run Python and SQLite in the browser (WebAssembly); IndexedDB for
+  storage; Electron for the Mac app; GitHub Actions for CI and releases.
 
 > **Not affiliated with, endorsed by, or connected to SpaceX.** This is an independent
 > personal study tool. Job requirements, compensation figures and interview details are
 > drawn from public postings and candidate accounts at the time of writing and change
-> without notice — verify the live posting before relying on any of it.
+> without notice. Verify the live posting before relying on any of it.
 
 ---
 
-## What it is
+## What it does
 
-Most study apps are a list of videos with a progress bar. This one is built around a
-memory model and a dependency graph, and it shows its working:
+I built it around a memory model and a dependency graph instead of a list of videos,
+and it shows how it gets to its numbers:
 
-- **A 100+ module curriculum** on four pillars: the mathematical and physical
+- **A curriculum of 100+ modules** on four pillars: the mathematical and physical
   foundations (algebra through optimization, dynamics, astrodynamics), the languages the
   work is done in (Python, C++, MATLAB/Simulink, Rust, SQL, CAD), the GNC core itself
   (control, estimation, navigation, guidance, flight software), and career preparation.
-  Nothing in it is off-topic — if a module does not serve getting hired into GNC, it is
-  not here.
+  If a module does not help with getting hired into GNC, it is not here.
 - **A real scheduler.** Reviews are timed by FSRS-6, a fitted power-law memory model
-  with per-item stability and difficulty. The port is validated against the upstream
-  reference implementation digit for digit — see `src/engine/fsrs.test.ts`.
-- **A prerequisite DAG.** Nothing is hidden, but the app will tell you plainly when a
-  module rests on something you have not built yet, and point upstream instead of
+  with per-item stability and difficulty. My port is checked against the upstream
+  reference implementation digit for digit in `src/engine/fsrs.test.ts`.
+- **A prerequisite graph.** Nothing is hidden, but the app tells you plainly when a
+  module rests on something you have not built yet, and points you upstream instead of
   letting you grind against material you are not ready for.
-- **Real code execution.** Python runs for real (CPython 3.14 via Pyodide, with NumPy,
+- **Code that really runs.** Python runs for real (CPython 3.14 via Pyodide, with NumPy,
   SciPy, SymPy, pandas and Matplotlib), SQL runs against SQLite compiled to
   WebAssembly, and C++ always compiles and runs: on the Mac's own compiler in the desktop
   app when one is installed, otherwise with clang++ compiled to WebAssembly in the app.
   Rust and shell run through the desktop app's toolchains; without them those exercises
   are compared against the reference solution, and the app says so. MATLAB exercises ship
   a NumPy equivalent you can run.
-- **Learn to code.** Roadmaps — GNC Engineer, Flight Software, Test & Data, Software
-  Engineer, and a mastery roadmap per language — that lay out courses in order as a
-  numbered path. 21 courses, 291 lessons: the command line, Git, Python, SQL and C++,
-  each from basics to advanced or expert and then a projects course with capstones,
-  mixing concept, debugging, problem-solving and design lessons, done in the same IDE
-  window as the playground, every step really run and shown as test cases. A course is
-  one plain-text file in `src/learn/tracks/` (`<lang>.txt` for the basics,
-  `<lang>.<level>.txt` after; format in `src/learn/parse.ts`); the roadmaps are in
-  `src/learn/platform.ts`. The same lesson engine and course files come from APEX's
-  LAUNCHPAD app, which adds JavaScript, TypeScript and the web, and checks every
+- **Learn to code.** Roadmaps (GNC Engineer, Flight Software, Test & Data, Software
+  Engineer, a Computer Science degree, and a mastery roadmap per language) lay out
+  courses in order as a numbered path. There are 38 courses: the command line, Git,
+  Python, SQL and C++, each from basics to advanced or expert and then a projects course,
+  plus computer science courses and five capstone projects. Every step is really run in
+  the same IDE window as the playground and shown as test cases. A course is one
+  plain-text file in `src/learn/tracks/` (format in `src/learn/parse.ts`); the roadmaps
+  are in `src/learn/platform.ts`. The same lesson engine and course files come from
+  APEX's LAUNCHPAD app, which adds JavaScript, TypeScript and the web, and checks every
   lesson's starter and solution in the real runtimes.
-- **Read aloud** uses a natural neural voice, Kokoro-82M, made on the device
-  (`src/lib/voice/`), downloaded once (92 MB) from Hugging Face; the device's
-  own voices stay in the picker and are the fallback. **C++ on iPhone and
-  iPad**, which cannot run the in-browser compiler, is compiled on Compiler
-  Explorer, with Wandbox as a fallback (`src/lib/cppRemote.ts`).
-- **The playground, embedded.** `components/ide/Embed.tsx` is the playground's window as a
-  component. Lesson code blocks that can run become it (`src/lib/practice.ts` decides which),
-  each lesson ends with Try it here, code exercises are done and graded in it on the module
-  page, and every Workbench scenario is coded in it. `src/lib/run.ts` says how each language
-  runs.
-- **The playground** has three modes — Code, SQL and Terminal — in one IDE window with
-  a floating Run Code button and a panel for test cases, console, input and results.
-  Terminal is a practice shell that lives in the page (`src/lib/shell.ts`): files,
-  folders and enough git to learn the loop, the same on every machine.
-- **Honest numbers.** The Progress page shows your predicted retention over a year,
-  your review workload ahead, and a reliability diagram of how well-calibrated your own
+- **Read aloud** uses a neural voice, Kokoro-82M, generated on the device
+  (`src/lib/voice/`) and downloaded once (92 MB) from Hugging Face; the device's own
+  voices stay in the picker as the fallback. **C++ on iPhone and iPad**, which cannot run
+  the in-browser compiler, is compiled on Compiler Explorer, with Wandbox as a fallback
+  (`src/lib/cppRemote.ts`).
+- **The playground** has three modes (Code, SQL and Terminal) in one IDE window with a
+  Run Code button and a panel for test cases, console, input and results. Terminal is a
+  practice shell that lives in the page (`src/lib/shell.ts`): files, folders and enough
+  git to learn the loop, the same on every machine. The same window is embedded in
+  lessons (`src/components/ide/Embed.tsx`), so exercises are done and graded where you
+  read them. `src/lib/run.ts` says how each language runs.
+- **Honest numbers.** The Progress page shows your predicted retention over a year, your
+  review workload ahead, and a reliability diagram of how well calibrated your own
   confidence turns out to be. Completion estimates are given as a range, never a date.
+
+---
+
+## Running it
+
+Node 22 required.
+
+```bash
+npm install
+npm run dev         # http://localhost:5173
+```
+
+```bash
+npm run build       # static output in dist/
+npm run preview     # serve the built output
+npm run typecheck   # tsc -b
+npm test            # vitest run: engine, curriculum, lessons and the desktop updater
+```
+
+`npm test` includes the lesson checker (`src/learn/solutions.test.ts`), which runs every
+exercise's reference solution and starter code for real (Python on `python3`, C++ on
+`clang++`). It is thousands of programs and takes a long time, so CI runs it in three
+parallel shards on Python 3.14. To run everything else, the way CI's main job does:
+
+```bash
+npx vitest run --exclude src/learn/solutions.test.ts
+```
+
+```bash
+npm run desktop        # build the bundle and run it in the Electron shell
+npm run desktop:pack   # build the Mac app into release/ (DMG needs macOS)
+npm run desktop:e2e    # end-to-end: real Electron against a fake GitHub API
+```
+
+The build output is a plain static site that any static host can serve from `dist/`.
+For a subpath deploy, set `BASE_PATH`:
+
+```bash
+BASE_PATH=/space/ npm run build
+```
+
+### CI
+
+`.github/workflows/ci.yml` typechecks, tests, builds the bundle and runs the desktop
+end-to-end suite under xvfb on every push and pull request, keeping the e2e screenshots
+as an artifact. Every merge to `main` is also released automatically; how that works is
+in [docs/releasing.md](docs/releasing.md).
+
+---
+
+## How this project evolved
+
+The full history is in [CHANGELOG.md](CHANGELOG.md) and the git log. The main steps:
+
+- **It started as a browser-only app** (2026-09-20): the curriculum, the FSRS scheduler
+  and the prerequisite graph. The next change I made that day was making it work
+  properly on a phone.
+- **Two days later I added the Mac app**, an Electron shell with its own updater and a
+  GitHub Releases pipeline. The first fixes after that were to the release itself: the
+  macOS build needed fixing, and 1.0.1 hardened the updater and the boot path after a
+  review.
+- **Writing lessons for every module (1.0.3) taught me to test my own content.** I added
+  an arithmetic checker to the test suite, and once it understood units, and later
+  `\approx`, it found wrong numbers in lessons I had already written.
+- **Learn to code (1.1.0) meant running real code in the browser**, which brought its own
+  bugs: some solutions failed only in the browser's Python (Pyodide). CI now runs every
+  exercise's starter and solution, split across three machines because it is thousands
+  of programs.
+- **1.2.0 added the computer science courses**, with practice sets, timed gates and five
+  capstone projects, and 1.2.3 added a tutor voice that explains why a run failed.
+- **The 1.3 releases were mostly about the read-aloud voice.** 1.3.0 fixed a buzz caused
+  by rounding the voice model's audio to 8 bits on a computer's processor, and 1.3.2
+  through 1.3.4 made it start sooner and stopped it pausing between sentences.
 
 ---
 
@@ -71,15 +146,15 @@ memory model and a dependency graph, and it shows its working:
 Open a track, start its first module, and work the module page top to bottom. Every
 module runs the same three steps:
 
-1. **Learn.** Read the objectives, then the lessons in order — written for the app,
-   with derivations, worked examples and check-yourself questions, and required to cover
-   every topic the module lists. Lessons are arriving track by track (Foundations first);
-   a module without them yet says so and points at the best free material instead. Skim
-   the Notes — the flashcards laid out to read — and press **Mark as studied**.
+1. **Learn.** Read the objectives, then the lessons in order. They are written for the
+   app, with derivations, worked examples and check-yourself questions, and they cover
+   every topic the module lists. A module without lessons yet says so and points at the
+   best free material instead. Skim the Notes (the flashcards laid out to read) and press
+   **Mark as studied**.
 2. **Practice.** The exercises. Code ones open in the playground with tests; derivations
    and analyses are done on paper and checked against the solution afterwards.
 3. **Recall.** The flashcards and questions as a spaced-repetition session. Questions
-   are held back until here on purpose — attempting one cold is what makes it stick.
+   are held back until here on purpose: attempting one cold is what makes it stick.
 
 **Where to start.** A complete beginner starts in Foundations & Math with Algebra &
 Precalculus, which assumes nothing. If the maths is already comfortable, go to Learning
@@ -93,7 +168,7 @@ the interval it will set. "Nothing due right now" is the scheduler working, not 
 
 **Mastery and unlocking.** Every module has a mastery percentage built from its recall
 items. A prerequisite at 70% unlocks the modules that rest on it; 90% counts as
-mastered. Gated modules are shown, not hidden, and the gate is advice — you can study
+mastered. Gated modules are shown, not hidden, and the gate is advice: you can study
 one anyway, it will just be harder than it needs to be.
 
 **Back up your data.** Everything lives on this device; there is no account and no sync.
@@ -111,8 +186,8 @@ Download `ORBIT-<version>-universal.dmg` from the
 ORBIT onto the Applications folder shown beside it. One app runs natively on Apple
 silicon and Intel; it needs macOS 12 (Monterey) or newer.
 
-The first launch takes one extra step. The app is signed ad hoc — there is no $99-a-year
-Apple Developer ID behind it, so it is not notarised — and Gatekeeper will refuse to open
+The first launch takes one extra step. The app is signed ad hoc (there is no $99-a-year
+Apple Developer ID behind it, so it is not notarised), and Gatekeeper will refuse to open
 it the first time ("Apple could not verify ORBIT is free of malware", or on older
 systems "cannot be opened because Apple cannot check it for malicious software"):
 
@@ -133,125 +208,28 @@ Your progress lives in `~/Library/Application Support/ORBIT/` and survives updat
 reinstalls and moving the app. The backup in Settings is still the copy to keep
 somewhere else.
 
----
-
-## Updates
-
-The Mac app is two things: a thin Electron shell, and the curriculum bundle — this
-site's `dist/` — carried inside it. Almost every change ships as a new bundle, and a
-bundle update does not need a new app: **Settings → Updates → Check for updates** asks
-GitHub for the latest release, downloads the bundle zip (a few megabytes, seconds),
-checks its SHA-256, and switches to it on the next restart. The app also checks quietly
-a few seconds after launch and marks the avatar in the top bar when something is
-waiting. If a downloaded bundle fails to start, the app quarantines it and goes back to
-the last good one on its own; **Roll back** in the same card does the same by hand.
-
-While this repository is private, GitHub answers an anonymous request with 404 and the
-card says so. Create a fine-grained personal access token with read-only **Contents**
-permission for `begindtheseen/space` and paste it into the Access token row. It is
-stored encrypted by macOS (`safeStorage`, backed by the login keychain) and is only
-ever sent to `api.github.com` and the release download it redirects to. Two ways to
-need no token at all: make the repository public, or publish releases from a separate
-public repository and point `orbit.updates.repo` in `package.json` at it.
-
-Changes to the shell itself — anything under `desktop/`, or a new Electron — need a
-new DMG. The card says "This update needs a newer ORBIT app" and links to it; nothing
-is downloaded that the installed app cannot run.
+Most updates arrive inside the app (**Settings → Updates**) as a small bundle download,
+without a new DMG. How updates and releases work is in [docs/releasing.md](docs/releasing.md).
 
 ---
 
-## Running it
+## What this cannot do
 
-```bash
-npm install
-npm run dev       # http://localhost:5173
-```
+Stated plainly, because a study tool that oversells itself wastes your time:
 
-```bash
-npm run build     # static output in dist/
-npm run preview   # serve the built output
-npm test          # engine + curriculum integrity tests (+ the desktop updater's)
-npx tsc -b        # typecheck
-```
-
-```bash
-npm run desktop        # build the bundle and run it in the Electron shell
-npm run desktop:pack   # build the Mac app into release/ (DMG needs macOS)
-npm run desktop:e2e    # end-to-end: real Electron against a fake GitHub API
-```
-
-Node 22 required. The build output is a plain static site — drop `dist/` on Vercel,
-Netlify, Cloudflare Pages or any static host. For a subpath deploy, set `BASE_PATH`:
-
-```bash
-BASE_PATH=/space/ npm run build
-```
-
-### CI
-
-`.github/workflows/ci.yml` typechecks, tests, builds the bundle and runs the desktop
-end-to-end suite under xvfb on every push and pull request, keeping the e2e screenshots
-as an artifact. Releases are a separate workflow — see the next section.
-
----
-
-## Publishing an update (the back door)
-
-Every merge to `main` is released: `.github/workflows/auto-release.yml` works out
-the next version and hands it to the release pipeline, so installed apps update
-themselves without anyone cutting a release. The version is `package.json`'s when that
-is newer than every release (bump it in a PR to move to a new minor or major version),
-otherwise the latest release's patch number plus one; a merge whose files are exactly
-the latest release's publishes nothing. `bash scripts/next-version.sh` shows what the
-next merge would publish.
-
-A release can also be cut by hand, from a version tag:
-
-```bash
-npm version patch          # or minor / major: bumps package.json and creates the tag
-git push --follow-tags
-```
-
-`.github/workflows/release.yml` then checks that the tag equals `package.json`'s
-version, typechecks and tests, builds the bundle zip and `orbit-manifest.json` on
-Linux, builds the ad-hoc-signed universal DMG and drag-install zip on macOS, and
-publishes all four as a GitHub Release. Installed apps see it on their next check. Put
-a `RELEASE_NOTES.md` in the repository before tagging to control the notes shown inside
-the app (Markdown); without one, the notes are generated from the commits.
-
-No terminal handy? The same pipeline runs from a file change instead of a tag: set
-`version` in `package.json` and write that version on the first line of `RELEASE.txt`,
-then commit and push (any branch but `main`, or edit both files on github.com). CI checks the two
-agree and that the tag does not exist yet, creates `v<version>` at that commit, and
-publishes the release. Both routes end in the same place.
-
-What needs what:
-
-| Change | Do | Ships as |
-| --- | --- | --- |
-| Curriculum, engine, pages — anything under `src/` or `public/` | Merge it | A bundle. Every installed app updates in place. |
-| Anything under `desktop/`, or the Electron version | Merge it, **and** in the same PR set `version` and `orbit.minShell` in `package.json` to the version it will ship as | A new DMG. Older apps are told to download it instead of a bundle they cannot run. |
-
-`minShell` is the contract between bundle and shell: a bundle is only ever activated by
-a shell at least that new, so an old app never ends up running a bundle that expects an
-IPC channel it does not have. The manifest carries it, the bundle carries it, and the
-shell checks it at both download and startup.
-
----
-
-## Where things live
-
-| What | Where |
-| --- | --- |
-| The curriculum | `src/curriculum/gnc-*.ts` (tiers 0–7), `coding.ts`, `tracks-aux.ts`; `types.ts` is the schema |
-| The engine | `src/engine/` — FSRS, mastery, graph, scheduler, persistence |
-| The Mac app shell | `desktop/` — Electron main process, `app://` server, updater, splash. Architecture in `desktop/README.md` |
-| Build helpers | `scripts/` — bundle stamping and zipping, app icon, drag-install zips, the signing hook |
-| Packaging config | `electron-builder.yml`; versions, `orbit.updates.repo` and `orbit.minShell` in `package.json` |
-| A built bundle | `dist/` after `npm run build:bundle` (with `dist/orbit-bundle.json` stamped in) |
-| Release artefacts | `release/` — bundle zip, manifest, DMG, zips; git-ignored |
-| Your data (browser) | IndexedDB for the site's origin; export a backup from Settings |
-| Your data (Mac app) | `~/Library/Application Support/ORBIT/` — IndexedDB under the `app://orbit` origin, `bundles/` for downloaded updates, `config.json` (encrypted token), `window.json` |
+- **It is not a degree.** Essentially every GNC engineer posting requires a bachelor's
+  in physics, CS, aerospace or an engineering discipline, and recruiters screen on that
+  line. This platform can make you a stronger candidate; it does not substitute for the
+  credential. The Career track covers the three realistic paths honestly.
+- **ITAR is a hard gate.** US-person status is required for essentially every role in
+  this field. No amount of skill substitutes for it.
+- **Rust and MATLAB need the desktop app's toolchains.** There is no Rust compiler that
+  runs in a browser at all, and MATLAB is proprietary (Octave is used when installed).
+  Without them those exercises are checked against expected output, and the app labels
+  them as such. C++ in the browser has no exception support: `throw` and `try` need the
+  Mac's own compiler.
+- **Your progress lives on one device.** There is no account and no sync. Export a
+  backup from Settings and keep it somewhere else; that file is the durable copy.
 
 ---
 
@@ -268,29 +246,29 @@ is why there are four.
 | **Prerequisite DAG** | What is safe to study next? | `src/engine/graph.ts` |
 
 **Scheduling.** FSRS tracks stability `S`, difficulty `D` and retrievability `R` per
-item, where `R(t,S) = (1 + FACTOR·t/S)^DECAY` — a power law, not an exponential, which
-is why a well-stabilised item stays usable for months. The load-bearing term is
+item, where `R(t,S) = (1 + FACTOR·t/S)^DECAY`. That is a power law, not an exponential,
+which is why a well-stabilised item stays usable for months. The key term is
 `e^(w₁₀(1−R)) − 1` in the stability update: the gain from a successful retrieval is
 *inversely* related to how easily you retrieved it. Recalling something you nearly
-forgot is worth far more than drilling something fresh, and the whole product is built
+forgot is worth far more than drilling something fresh, and the whole app is built
 on that.
 
-**Mastery** blends retention, a Bayesian estimate of skill, and durability — then
+**Mastery** blends retention, a Bayesian estimate of skill, and durability, then
 multiplies by coverage. That last multiplication is deliberate: 100% on 3 of 40 items
 is not mastery of a topic, and an additive blend would let it look like one.
 
 **Readiness** (the ring on the dashboard) is a weighted mean of *effective* mastery,
 where a module counts for more when more of the curriculum depends on it, and is
 discounted by the state of its weakest prerequisite. The discount is soft
-(`0.5 + 0.5·gate`) rather than a hard multiply — a number that lurches when one upstream
-topic wobbles is a number nobody trusts.
+(`0.5 + 0.5·gate`) rather than a hard multiply, because a number that lurches when one
+upstream topic wobbles is a number nobody trusts.
 
 **Selection** takes overdue reviews first, always; then picks new material from the
 frontier, ranked by closeness to ~84% predicted success, staleness, novelty, and how
 many modules it unblocks.
 
 The whole model is documented inline in `src/engine/`, with the reasoning next to the
-code rather than in a wiki that will rot.
+code.
 
 ---
 
@@ -301,13 +279,14 @@ src/
   components/
     art/          procedural SVG + canvas artwork (Earth limb, starfield, thumbnails)
     icons/        the icon set, drawn on a 24×24 grid
+    ide/          the playground window, also embedded in lessons
     layout/       shell, sidebar, top bar
     ui/           Card, Bar, Ring, Button, Tile, Check, …
     charts.tsx    line / bar / reliability / heat-strip charts
     Editor.tsx    CodeMirror 6 with a theme built from the app's own tokens
   curriculum/
     types.ts      the schema every module conforms to
-    gnc-*.ts      the knowledge tree, tier 0 → 7 (tiers 0–2 are the Foundations
+    gnc-*.ts      the knowledge tree, tiers 0 to 7 (tiers 0 to 2 are the Foundations
                   pillar, 3+ are GNC Preparation)
     coding.ts     Python, C++, MATLAB, Simulink, Rust, SQL, CAD, Linux, Git
     tracks-aux.ts the career track
@@ -320,29 +299,44 @@ src/
     apply.ts      the single write path for a graded attempt
     state.ts      learner state + migration
     store.ts      IndexedDB persistence, backup, restore
-  lib/            router, markdown, language runtimes
+  learn/          Learn to code: course files, parser, roadmaps, lesson checker
+  lib/            router, markdown, language runtimes, voice
   pages/          dashboard, tracks, module, review, playground, progress, …
   workers/        Pyodide worker
 desktop/          the Mac app: Electron shell, app:// server, updater, splash (desktop/README.md)
 scripts/          build helpers: bundle stamp + zip, app icon, drag-install zips, signing hook
+docs/             how updates and releases work
 ```
+
+### Where things live
+
+| What | Where |
+| --- | --- |
+| The curriculum | `src/curriculum/gnc-*.ts` (tiers 0 to 7), `coding.ts`, `tracks-aux.ts`; `types.ts` is the schema |
+| The engine | `src/engine/`: FSRS, mastery, graph, scheduler, persistence |
+| The Mac app shell | `desktop/`: Electron main process, `app://` server, updater, splash. Architecture in `desktop/README.md` |
+| Build helpers | `scripts/`: bundle stamping and zipping, app icon, drag-install zips, the signing hook |
+| Packaging config | `electron-builder.yml`; versions, `orbit.updates.repo` and `orbit.minShell` in `package.json` |
+| Release request file | `RELEASE.txt`, read by `.github/workflows/release-request.yml` (see [docs/releasing.md](docs/releasing.md)) |
+| A built bundle | `dist/` after `npm run build:bundle` (with `dist/orbit-bundle.json` stamped in) |
+| Release artefacts | `release/`: bundle zip, manifest, DMG, zips; git-ignored |
+| Your data (browser) | IndexedDB for the site's origin; export a backup from Settings |
+| Your data (Mac app) | `~/Library/Application Support/ORBIT/`: IndexedDB under the `app://orbit` origin, `bundles/` for downloaded updates, `config.json` (encrypted token), `window.json` |
 
 ---
 
 ## Design notes
 
 The interface follows a single reference layout: a fixed left rail, a full-bleed hero
-plate, a two-column body with four domain cards on the left and a focus/tools/resources
-rail on the right. Every surface is cold-tinted near-black; no surface is ever pure
+plate, and a two-column body with four domain cards on the left and a focus/tools/resources
+rail on the right. Every surface is a cold-tinted near-black; no surface is ever pure
 `#000` and none is ever neutral grey, so the starfield behind the UI reads as depth
 rather than noise.
 
-All artwork is drawn rather than photographed — the Earth limb, the ascending vehicle,
-the powered-descent trajectory, the high bay at dusk, the code and candlestick plates.
-That keeps the bundle small, the licensing clean, and lets the scene respond to state
-(the vehicle on the hero plate climbs with your readiness).
-
----
+All artwork is drawn in code rather than photographed: the Earth limb, the ascending
+vehicle, the powered-descent trajectory, the high bay at dusk, the code and candlestick
+plates. That keeps the bundle small and the licensing clean, and lets the scene respond
+to state (the vehicle on the hero plate climbs with your readiness).
 
 ## Known trade-offs
 
@@ -350,29 +344,11 @@ The curriculum ships as one ~600KB (gzipped) chunk, because the dashboard
 cannot compute readiness without every module's prerequisites and item ids.
 It is fetched once and then served from the service worker, so the cost lands
 on the first visit only. Splitting the light metadata from the heavy card and
-quiz bodies is the obvious next win and wants a generated index rather than a
-bundler tweak.
+quiz bodies is the obvious next improvement, and it needs a generated index
+rather than a bundler tweak.
 
-CodeMirror and the Python runtime are both lazy — the dashboard pays for
+CodeMirror and the Python runtime are both lazy loaded, so the dashboard pays for
 neither. Opening the playground is what downloads them.
-
-## What this cannot do
-
-Stated plainly, because a study tool that oversells itself wastes your time:
-
-- **It is not a degree.** Essentially every GNC engineer posting requires a bachelor's
-  in physics, CS, aerospace or an engineering discipline, and recruiters screen on that
-  line. This platform makes you a far stronger candidate; it does not substitute for the
-  credential. The Career track covers the three realistic paths honestly.
-- **ITAR is a hard gate.** US-person status is required for essentially every role in
-  this field. No amount of skill substitutes for it.
-- **Rust and MATLAB need the desktop app's toolchains.** There is no Rust compiler that
-  runs in a browser at all, and MATLAB is proprietary (Octave is used when installed).
-  Without them those exercises are checked against expected output, and the app labels
-  them as such. C++ in the browser has no exception support: `throw` and `try` need the
-  Mac's own compiler.
-- **Your progress lives on one device.** There is no account and no sync. Export a
-  backup from Settings and keep it somewhere else — that file is the durable copy.
 
 ---
 
