@@ -4,8 +4,8 @@ The Mac app is a thin Electron shell around the web build. It has no npm runtime
 dependencies — Node and Electron built-ins only — and it never bundles the web app
 into itself: `dist/` travels beside the shell as a *bundle*, and the updater can
 replace that bundle without a new app. This file is the condensed architecture; the
-user-facing story is in the root README ("Install on a Mac", "Updates", "Publishing an
-update").
+user-facing story is in the root README ("Install on a Mac") and in
+`docs/releasing.md` ("How the Mac app updates", "Publishing an update").
 
 ## Files
 
